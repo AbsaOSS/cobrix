@@ -21,6 +21,7 @@ package za.co.absa.cobrix.cobol.parser.common
   */
 object ReservedWords {
   val COMP = "COMP"
+  val BINARY = "BINARY"
   val COMP123 = "COMP-"
   val DEPENDING = "DEPENDING"
   val FILLER = "FILLER"

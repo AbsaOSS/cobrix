@@ -48,9 +48,11 @@ object CopybookParser extends LazyLogging{
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
+      // miniumum level
+      val minLevel = lines.map(line => line.level).min
       // create a tuple of index value and root names for all the 01 levels
       val recordStartLines: Seq[(String, Int)] = lines.zipWithIndex.collect {
-        case (CopybookLine(1, name: String, _), i: Int) => (name, i)
+        case (CopybookLine(`minLevel`, name: String, _), i: Int) => (name, i)
       }
       val recordChangeLines: Seq[Int] = recordStartLines.drop(1).map(_._2) :+ lines.length
       val recordBeginEnd: Seq[((String, Int), Int)] = recordStartLines.zip(recordChangeLines)
@@ -343,7 +345,7 @@ object CopybookParser extends LazyLogging{
       if (keywords.contains(COMP123))
         Some(modifiers.getOrElse(COMP123, "1").toInt)
       else {
-        if (keywords.contains(COMP)) Some(4)
+        if (keywords.contains(COMP) || keywords.contains(BINARY)) Some(4)
         else None
       }
 
@@ -410,7 +412,7 @@ object CopybookParser extends LazyLogging{
     */
   def lex(tokens: Array[String]): Map[String, String] = {
     val keywordsWithModifiers = List(REDEFINES, OCCURS, TO, PIC)
-    val keywordsWithoutModifiers = List(COMP)
+    val keywordsWithoutModifiers = List(COMP, BINARY)
 
     if (tokens.length < 3) {
       Map[String, String]()
