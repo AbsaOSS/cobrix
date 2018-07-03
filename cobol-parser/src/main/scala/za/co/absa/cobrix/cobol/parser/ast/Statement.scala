@@ -83,10 +83,10 @@ case class Statement(
       case i: Integer =>
         val codec = i.enc.getOrElse(EBCDIC()).codec(i.compact, i.precision, i.signPosition)
         // Hack around byte-alignment
-        val precision = if (i.compact.nonEmpty && i.compact.get == 3 && i.precision % 2 == 0) i.precision + 1 else i.precision
-        getBitCount(codec, i.compact, precision)
+        getBitCount(codec, i.compact, i.precision)
     }
-    size
+    // round size up to next byte
+    ((size + 7)/8)*8
   }
 
   /** Returns the string representation of a field biven a binary data.
