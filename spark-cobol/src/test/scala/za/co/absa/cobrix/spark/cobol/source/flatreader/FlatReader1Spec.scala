@@ -26,7 +26,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 
 class FlatReader1Spec extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test1"
+  private val exampleName = "Test1_Flat"
   private val inputCopybookPath = "data/test1_copybook.cob"
   private val inpudDataPath = "data/test1_data/example.bin"
 

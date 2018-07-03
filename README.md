@@ -51,6 +51,16 @@ Among the motivations for this project, it is possible to highlight:
 
 ## Usage
 
+#### Coordinate for Maven POM dependancy
+
+```xml
+<dependency>
+      <groupId>za.co.absa.cobrix</groupId>
+      <artifactId>spark-cobol</artifactId>
+      <version>0.1.2</version>
+</dependency>
+```
+
 ### Reading Cobol binary files from HDFS/local and querying them 
 
 1. Create a Spark ```SQLContext```
