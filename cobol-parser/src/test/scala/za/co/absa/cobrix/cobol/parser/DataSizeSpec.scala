@@ -38,6 +38,7 @@ class DataSizeSpec extends FunSuite {
 
     assert (CopybookParser.decimalLength("99999.99") == (5,2))
     assert (CopybookParser.decimalLength("9(13).99") == (13,2))
+    assert (CopybookParser.decimalLength("9(13)V") == (13,0))
     assert (CopybookParser.decimalLength("9(13).9(2)") == (13,2))
     assert (CopybookParser.decimalLength("9999999999.9(2)") == (10,2))
     assert (CopybookParser.decimalLength("99(5).99(2)") == (6,3))
