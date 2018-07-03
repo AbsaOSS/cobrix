@@ -522,8 +522,7 @@ object CopybookParser extends LazyLogging{
     var str = expandPic(s)
     val separator = if (str.contains('V')) 'V' else '.'
     val parts = str.split(separator)
-    val nines1 = parts.head.count(_ == '9').toString
-    val nines2 = parts.last.count(_ == '9').toString
-    (nines1.toInt, nines2.toInt)
-  }
+    val nines1 = parts.head.count(_ == '9')
+    val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
+    (nines1, nines2)  }
 }
