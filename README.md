@@ -57,7 +57,7 @@ Among the motivations for this project, it is possible to highlight:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.1.3</version>
+      <version>0.1.4</version>
 </dependency>
 ```
 
