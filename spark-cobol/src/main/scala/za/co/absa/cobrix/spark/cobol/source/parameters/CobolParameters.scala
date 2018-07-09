@@ -17,37 +17,65 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import java.io.FileNotFoundException
+import java.nio.file.{Files, Paths}
 import java.security.InvalidParameterException
+
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
+import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 
 object CobolParameters {
-    
+
   val SHORT_NAME = "cobol"
   val PARAM_COPYBOOK_PATH = "copybook"
-  val PARAM_SOURCE_PATH = "path"  
-  
+  val PARAM_COPYBOOK_CONTENTS = "copybook_contents"
+  val PARAM_SOURCE_PATH = "path"
+
   def validateOrThrow(sparkConf: SparkConf, hadoopConf: Configuration): Unit = {
-    val parameters = Map[String,String](PARAM_COPYBOOK_PATH -> sparkConf.get(PARAM_COPYBOOK_PATH), PARAM_SOURCE_PATH -> sparkConf.get(PARAM_SOURCE_PATH))
-    validateOrThrow(parameters,hadoopConf)
+    val parameters = Map[String, String](PARAM_COPYBOOK_PATH -> sparkConf.get(PARAM_COPYBOOK_PATH), PARAM_SOURCE_PATH -> sparkConf.get
+    (PARAM_SOURCE_PATH))
+    validateOrThrow(parameters, hadoopConf)
   }
-  
+
   def validateOrThrow(parameters: Map[String, String], hadoopConf: Configuration): Unit = {
-    parameters.getOrElse(PARAM_COPYBOOK_PATH, throw new IllegalStateException(s"Cannot define path to Copybook file: missing parameter: '$PARAM_COPYBOOK_PATH'"))
-    parameters.getOrElse(PARAM_SOURCE_PATH, throw new IllegalStateException(s"Cannot define path to source files: missing parameter: '$PARAM_SOURCE_PATH'"))            
-    
     val hdfs = FileSystem.get(hadoopConf)
-        
-    if (!hdfs.exists(new Path(parameters(PARAM_COPYBOOK_PATH)))) {
-      throw new FileNotFoundException(s"Copybook not found at ${parameters(PARAM_COPYBOOK_PATH)}")
+    val copyBookContents = parameters.get(PARAM_COPYBOOK_CONTENTS)
+    val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
+
+    parameters.getOrElse(PARAM_SOURCE_PATH, throw new IllegalStateException(s"Cannot define path to source files: missing " +
+      s"parameter: '$PARAM_SOURCE_PATH'"))
+
+    (copyBookContents, copyBookPathFileName) match {
+      case (Some(contents), Some(fileName)) =>
+        throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
+      case (Some(contents), None) =>
+      // This is fine
+      case (None, Some(fileName)) =>
+        val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(parameters(PARAM_COPYBOOK_PATH))
+        if (isLocalFS) {
+          if (!Files.exists(Paths.get(copyBookFileName))) {
+            throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
+          }
+          if (!Files.isReadable(Paths.get(copyBookFileName))) {
+            throw new InvalidParameterException(s"Value does not point at a valid Copybook file: $copyBookFileName")
+          }
+        } else {
+          if (!hdfs.exists(new Path(copyBookFileName))) {
+            throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
+          }
+          if (!hdfs.isFile(new Path(copyBookFileName))) {
+            throw new InvalidParameterException(s"Please specify copybook file location via '$PARAM_COPYBOOK_PATH' option or provide copybook " +
+              s"contents via '$PARAM_COPYBOOK_CONTENTS' option.")
+          }
+        }
+      case (None, None) =>
+        throw new IllegalStateException(s"Cannot define path to source files: missing parameter: '$PARAM_SOURCE_PATH'")
     }
+
     if (!hdfs.exists(new Path(parameters(PARAM_SOURCE_PATH)))) {
       throw new FileNotFoundException(s"Data source not found at ${parameters(PARAM_SOURCE_PATH)}")
-    }           
-    if (!hdfs.isFile(new Path(parameters(PARAM_COPYBOOK_PATH)))) {
-      throw new InvalidParameterException(s"Value does not point at a valid Copybook file: ${parameters(PARAM_COPYBOOK_PATH)}")      
-    }       
-  }  
+    }
+  }
 }

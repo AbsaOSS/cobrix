@@ -27,7 +27,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 class CobolIntegration1Spec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test1"
-  private val inputCopybookPath = "../data/test1_copybook.cob"
+  private val inputCopybookPath = "file://../data/test1_copybook.cob"
   private val inpudDataPath = "../data/test1_data"
 
   private val expectedSchemaPath = "../data/test1_expected/test1_schema.json"

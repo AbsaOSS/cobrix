@@ -16,20 +16,16 @@
 
 package za.co.absa.cobrix.spark.cobol.reader
 
-import scala.collection.JavaConverters.asScalaBufferConverter
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.spark.cobol.reader.iterator.{BinaryDataFlatRowIterator, BinaryDataMapIterator}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-/** The Cobol data reader from HDFS filesystem that flattens the original schema and prvides flattened schema */
-class HDFSFlatReader (hadoopConfiguration: Configuration, val copyBookFile: String) extends Reader with Serializable {
-  private val cobolSchema: CobolSchema = loadCopyBook(hadoopConfiguration, new Path(copyBookFile))
+/** The Cobol data reader that provides output using flattened schema */
+class FlatReader(val copyBookContents: String) extends Reader with Serializable {
+  private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
   override def getCobolSchema: CobolSchema = cobolSchema
   override def getSparkSchema: StructType = cobolSchema.getSparkFlatSchema
@@ -60,10 +56,7 @@ class HDFSFlatReader (hadoopConfiguration: Configuration, val copyBookFile: Stri
     }
   }
 
-  private def loadCopyBook(hadoopConfiguration: Configuration, copyBookFile: Path): CobolSchema = {
-    val hdfs = FileSystem.get(hadoopConfiguration)
-    val stream = hdfs.open(copyBookFile)
-    val copyBookContents = try IOUtils.readLines(stream).asScala.mkString("\n") finally stream.close()
+  private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     new CobolSchema(schema)
   }
