@@ -21,24 +21,25 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.spark.cobol.reader.HDFSFlatReader
+import za.co.absa.cobrix.spark.cobol.reader.FlatReader
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 
 class FlatReader1Spec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test1_Flat"
-  private val inputCopybookPath = "data/test1_copybook.cob"
-  private val inpudDataPath = "data/test1_data/example.bin"
+  private val inputCopybookPath = "../data/test1_copybook.cob"
+  private val inpudDataPath = "../data/test1_data/example.bin"
 
-  private val expectedSchemaPath = "data/test1_expected/test1_FlatSchema.json"
-  private val actualSchemaPath = "data/test1_expected/test1_FlatSchema_actual.json"
-  private val expectedResultsPath = "data/test1_expected/test1.csv"
-  private val actualResultsPath = "data/test1_expected/test1_actual.csv"
+  private val expectedSchemaPath = "../data/test1_expected/test1_flat_schema.json"
+  private val actualSchemaPath = "../data/test1_expected/test1_flat_schema_actual.json"
+  private val expectedResultsPath = "../data/test1_expected/test1.csv"
+  private val actualResultsPath = "../data/test1_expected/test1_actual.csv"
 
   test(s"Flat reader test on $exampleName data") {
-
     val hadoopConfiguration = spark.sparkContext.hadoopConfiguration
-    val reader = new HDFSFlatReader(hadoopConfiguration, inputCopybookPath)
+
+    val copyBookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val reader = new FlatReader(copyBookContents)
     val cobolSchema = reader.getCobolSchema
     val sparkSchema = reader.getSparkSchema
 

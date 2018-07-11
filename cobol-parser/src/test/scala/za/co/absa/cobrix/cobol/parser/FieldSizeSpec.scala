@@ -1,7 +1,6 @@
 package za.co.absa.cobrix.cobol.parser
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 

@@ -57,7 +57,7 @@ Among the motivations for this project, it is possible to highlight:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.1.3</version>
+      <version>0.1.4</version>
 </dependency>
 ```
 
@@ -82,7 +82,7 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
     val cobolDataframe = sqlContext
       .read
       .format("cobol")      
-      .option("copybook", "path_to_copybook_file")
+      .option("copybook", "path_to_copybook_file") // Use "file://somefile" to use the local file system and not HDFS
       .load("path_to_directory_containing_the_binary_files") // can point to both, local and HDFS
       
     cobolDataframe
@@ -91,6 +91,7 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
     	.foreach(v => println(v))
 ```
 
+Alternatively, you can use `.option("copybook_contents", contents)` to provide a copybook contents directly. 
 
 ### Streaming Cobol binary files from a directory
 
@@ -139,8 +140,9 @@ This library also provides convenient methods to extract Spark SQL schemas and C
 If you want to extract a Spark SQL schema from a copybook: 
 
 ```scala
-	val configuration: org.apache.hadoop.conf.Configuration = ...
-    val reader = new HDFSFlatReader(configuration, "path_to_copybook")    
+    import za.co.absa.cobrix.spark.cobol.reader.FlatReader
+    
+    val reader = new FlatReader("...copybook_contents...")    
     val sparkSchema = reader.getSparkSchema
     println(sparkSchema)
 ```  
@@ -148,8 +150,9 @@ If you want to extract a Spark SQL schema from a copybook:
 If you want to check the layout of the copybook: 
 
 ```scala
-	val configuration: org.apache.hadoop.conf.Configuration = ...
-    val reader = new HDFSFlatReader(configuration, "path_to_copybook") 
+    import za.co.absa.cobrix.spark.cobol.reader.NestedReader
+    
+    val reader = new NestedReader("...copybook_contents...") 
     val cobolSchema = reader.getCobolSchema
     println(cobolSchema.generateRecordLayoutPositions())
 ```

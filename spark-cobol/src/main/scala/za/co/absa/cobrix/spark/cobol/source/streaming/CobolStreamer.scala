@@ -16,8 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
+import org.apache.commons.io.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.streaming.StreamingContext
-import za.co.absa.cobrix.spark.cobol.reader.HDFSReader
+import scala.collection.JavaConverters.asScalaBufferConverter
+import za.co.absa.cobrix.spark.cobol.reader.NestedReader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
 import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.sql.Row
@@ -27,7 +31,7 @@ import za.co.absa.cobrix.spark.cobol.reader.ReaderFactory
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.reader.HDFSFlatReader
+import za.co.absa.cobrix.spark.cobol.reader.FlatReader
 
 /**
  * Provides an integration point for adding streaming support to the Spark-Cobol library.
@@ -39,7 +43,7 @@ object CobolStreamer {
   import CobolParameters._
   
   def getReader(implicit ssc: StreamingContext): Reader = {
-    new HDFSFlatReader(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH))
+    new FlatReader(loadCopybookFromHDFS(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
   }
   
   implicit class Deserializer(@transient val ssc: StreamingContext) extends Serializable {
@@ -58,4 +62,11 @@ object CobolStreamer {
         })
     }
   }
+
+  private def loadCopybookFromHDFS(hadoopConfiguration: Configuration, copyBookHDFSPath: String): String = {
+    val hdfs = FileSystem.get(hadoopConfiguration)
+    val stream = hdfs.open(new Path(copyBookHDFSPath))
+    try IOUtils.readLines(stream).asScala.mkString("\n") finally stream.close()
+  }
+
 }
