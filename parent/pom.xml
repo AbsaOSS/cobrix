@@ -37,7 +37,6 @@
 		<connection>scm:git:git://github.com/AbsaOSS/cobrix.git</connection>
 		<developerConnection>scm:git:ssh://github.com:AbsaOSS/cobrix.git</developerConnection>
 		<url>http://github.com/AbsaOSS/cobrix/tree/master</url>
-		<tag>release/0.1.1</tag>
 	</scm>
 
 	<licenses>
@@ -78,6 +77,9 @@
 		<maven.shade.version>2.3</maven.shade.version>
 		<maven.sources.version>3.0.1</maven.sources.version>
 		<maven.surefire.version>2.18.1</maven.surefire.version>
+		<nexus.staging.plugin.version>1.6.7</nexus.staging.plugin.version>
+		<apache.rat.plugin.version>0.12</apache.rat.plugin.version>
+		<gpg.plugin.version>1.6</gpg.plugin.version>
 		<specs.version>2.4.16</specs.version>
 		<scalatest.version>3.0.0</scalatest.version>
 		<scalatest.maven.version>1.0</scalatest.maven.version>
@@ -319,6 +321,12 @@
 							<goal>testCompile</goal>
 						</goals>
 					</execution>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>doc-jar</goal>
+						</goals>
+					</execution>
 				</executions>
 			</plugin>
 			<!-- disable surefire -->
@@ -361,19 +369,100 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>doc-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>license-check</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.rat</groupId>
+						<artifactId>apache-rat-plugin</artifactId>
+						<version>${apache.rat.plugin.version}</version>
+						<executions>
+							<execution>
+								<phase>verify</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<excludes>
+								<exclude>**/*.json</exclude>
+								<exclude>**/*.csv</exclude>
+								<exclude>**/*.txt</exclude>
+								<exclude>**/*.bin</exclude>
+								<exclude>**/org.apache.spark.sql.sources.DataSourceRegister</exclude>
+								<exclude>dependency-reduced-pom.xml</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<id>public</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-source-plugin</artifactId>
+						<version>${maven.sources.version}</version>
+						<executions>
+							<execution>
+								<id>attach-sources</id>
+								<goals>
+									<goal>jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>net.alchim31.maven</groupId>
+						<artifactId>scala-maven-plugin</artifactId>
+						<version>${maven.scala.version}</version>
+						<executions>
+							<execution>
+								<id>attach-javadocs</id>
+								<goals>
+									<goal>doc-jar</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${gpg.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${nexus.staging.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
 
 </project>
