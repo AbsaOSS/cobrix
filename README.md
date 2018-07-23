@@ -33,20 +33,20 @@ Among the motivations for this project, it is possible to highlight:
 
 - Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management
 
-- Mainframe data only can take part in data science activities through very expensive investments
+- Mainframe data can only take part in data science activities through very expensive investments
 
 
 ## Features
 
 - Supports primitive types (althouth some are "Cobol compiler specific")
 
-- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unckecked unions and variable-size arrays)
+- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays)
 
 - Supports nested structures and arrays (including "flattened" nested names)
 
 - Supports HDFS as well as local file systems
 
-- The COBOL copybooks parser don't have Spark dependency and can be reused for integrating into other data processing engines
+- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines
 
 
 ## Usage
@@ -91,7 +91,7 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
     	.foreach(v => println(v))
 ```
 
-Alternatively, you can use `.option("copybook_contents", contents)` to provide a copybook contents directly. 
+Alternatively, you can use `.option("copybook_contents", contents)` to provide copybook contents directly. 
 
 ### Streaming Cobol binary files from a directory
 
