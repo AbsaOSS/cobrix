@@ -21,5 +21,5 @@ object Constants {
   // Max integer precision after the number is considered Long
   val maxIntegerPrecision = 9
   // Max picture size of a Copybook field
-  val maxFieldLength = 10000
+  val maxFieldLength = 100000
 }

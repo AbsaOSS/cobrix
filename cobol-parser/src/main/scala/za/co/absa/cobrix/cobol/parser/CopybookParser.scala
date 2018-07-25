@@ -491,10 +491,12 @@ object CopybookParser extends LazyLogging{
           parsingCount = false
           val num = repeatCount.mkString("").toInt - 1
           repeatCount.clear()
-          if (num > 0 && num < Constants.maxFieldLength) {
+          if (num > 0 && num <= Constants.maxFieldLength) {
             for (i <- Range(0, num)) {
               outputCharacters += lastCharacter
             }
+          } else {
+            throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
           }
         }
         else {
