@@ -29,7 +29,7 @@ class CobolSchemaSpec extends FunSuite {
       |      *             This is an example COBOL copybook
       |      ******************************************************************
       |           05  BIN-INT                  PIC S9(4)  COMP.
-      |           05  STRUCT-FLD
+      |           05  STRUCT-FLD.
       |               10  STR-FLD
       |                   PIC X(10).
       |           05  DATA-STRUCT.
@@ -37,7 +37,8 @@ class CobolSchemaSpec extends FunSuite {
       |               10  EXAMPLE-STR-FLD      PIC X(06).
       |""".stripMargin
 
-  val expectedSchema: String = "StructType(StructField(RECORD,StructType(StructField(BIN_INT,IntegerType,true), StructField(STRUCT_FLD,StringType," +
+  val expectedSchema: String = "StructType(StructField(RECORD,StructType(StructField(BIN_INT,IntegerType,true), StructField(STRUCT_FLD,StructType" +
+    "(StructField(STR_FLD,StringType,true))," +
     "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))," +
     "true))"
 
