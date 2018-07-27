@@ -22,6 +22,7 @@ import scala.collection.mutable
   *
   * @param level       A level for the statement
   * @param name        An identifier
+  * @param lineNumber  An line number in the copybook
   * @param children    Child entities
   * @param redefines   A name of a field which is redefined by this one
   * @param occurs      The number of elements in an fixed size array / minimum items in variable-sized array
@@ -32,6 +33,7 @@ import scala.collection.mutable
 case class Group(
                   level: Int,
                   name: String,
+                  lineNumber: Int,
                   children: mutable.ArrayBuffer[CBTree] = mutable.ArrayBuffer(),
                   redefines: Option[String] = None,
                   isRedefined: Boolean = false,

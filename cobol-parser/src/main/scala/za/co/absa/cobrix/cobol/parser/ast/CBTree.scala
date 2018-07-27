@@ -28,6 +28,9 @@ trait CBTree {
   /** Returns the name of the AST element */
   def name: String
 
+  /** Returns the line number in the copybook where the ast object is defined */
+  def lineNumber: Int
+
   /** Returns the parent element of the ASt element */
   def parent: Option[Group]
 

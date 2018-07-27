@@ -27,6 +27,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
   *
   * @param level       A level for the statement
   * @param name        An identifier
+  * @param lineNumber  An line number in the copybook
   * @param redefines   A name of a field which is redefined by this one
   * @param occurs      The number of elements in an fixed size array / minimum items in variable-sized array
   * @param to          The maximum number of items in a variable size array
@@ -36,6 +37,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 case class Statement(
                       level: Int,
                       name: String,
+                      lineNumber: Int,
                       dataType: CobolType,
                       redefines: Option[String] = None,
                       isRedefined: Boolean = false,

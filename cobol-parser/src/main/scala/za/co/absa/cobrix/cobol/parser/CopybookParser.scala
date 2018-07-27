@@ -21,9 +21,10 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Dec
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, CBTree, Group, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
+import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 /**
   * The object contains generic function for the Copybook parser
@@ -34,7 +35,11 @@ object CopybookParser extends LazyLogging{
 
   import za.co.absa.cobrix.cobol.parser.common.ReservedWords._
 
-  case class CopybookLine(level: Int, name: String, modifiers: Map[String, String])
+  case class StatementLine(lineNumber: Int, text: String)
+
+  case class StatementTokens(lineNumber: Int, tokens: Array[String])
+
+  case class CopybookLine(level: Int, name: String, lineNumber: Int, modifiers: Map[String, String])
 
   case class RecordBoundary(name: String, begin: Int, end: Int)
 
@@ -52,7 +57,7 @@ object CopybookParser extends LazyLogging{
       val minLevel = lines.map(line => line.level).min
       // create a tuple of index value and root names for all the 01 levels
       val recordStartLines: Seq[(String, Int)] = lines.zipWithIndex.collect {
-        case (CopybookLine(`minLevel`, name: String, _), i: Int) => (name, i)
+        case (CopybookLine(`minLevel`, name: String, _, _), i: Int) => (name, i)
       }
       val recordChangeLines: Seq[Int] = recordStartLines.drop(1).map(_._2) :+ lines.length
       val recordBeginEnd: Seq[((String, Int), Int)] = recordStartLines.zip(recordChangeLines)
@@ -64,20 +69,29 @@ object CopybookParser extends LazyLogging{
 
     def getMatchingGroup(element: CBTree, newElementLevel: Int): Group = {
       newElementLevel match {
-        case level if level < 1 => throw new IllegalStateException("Couldn't find matching level.")
-        case level if level > element.level => element.asInstanceOf[Group]
-        case level if level <= element.level => getMatchingGroup(element.up().get, level)
+        case level if level < 1 =>
+          throw new IllegalStateException("Couldn't find matching level.")
+        case level if level > element.level =>
+          element match {
+            case g: Group => g
+            case s: Statement =>
+              throw new SyntaxErrorException(s.lineNumber, s"Field '${s.name}' is a leaf element and cannot contain nested fields.")
+            case c: CBTree =>
+              throw new SyntaxErrorException(c.lineNumber, s"Unknown AST object ${c.name}.")
+          }
+        case level if level <= element.level =>
+          getMatchingGroup(element.up().get, level)
       }
     }
 
     val tokens = tokenize(copyBookContents)
-    val lexedLines = tokens.map(lineTokens => lex(lineTokens))
+    val lexedLines = tokens.map(lineTokens => lex(lineTokens.tokens))
 
     val lines: Seq[CopybookLine] =
       tokens.zip(lexedLines)
-        .map { case (levelNameArray, modifiers) =>
-          val nameWithoutColons = transformIdentifier(levelNameArray(1))
-          CopybookLine(levelNameArray(0).toInt, nameWithoutColons, modifiers)
+        .map { case (lineTokens, modifiers) =>
+          val nameWithoutColons = transformIdentifier(lineTokens.tokens(1))
+          CopybookLine(lineTokens.tokens(0).toInt, nameWithoutColons, lineTokens.lineNumber, modifiers)
         }
 
     val breakpoints: Seq[RecordBoundary] = getBreakpoints(lines)
@@ -87,7 +101,9 @@ object CopybookParser extends LazyLogging{
 
     val schema: MutableCopybook = new MutableCopybook()
     forest.foreach { fields =>
-      val root = Group(1, fields.head.name,
+      val root = Group(1,
+        fields.head.name,
+        fields.head.lineNumber,
         mutable.ArrayBuffer(),
         redefines = None)(None)
       val trees = fields
@@ -102,10 +118,10 @@ object CopybookParser extends LazyLogging{
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers)(enc)
-          Statement(field.level, field.name, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
+          Statement(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
         }
         else {
-          Group(field.level, field.name, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn)(None)
+          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn)(None)
         }
 
         val attachLevel = getMatchingGroup(element, field.level)
@@ -380,7 +396,7 @@ object CopybookParser extends LazyLogging{
   /**
     * Tokenizes a copybook to lift the relevant information
     */
-  def tokenize(cpyBook: String): Array[Array[String]] = {
+  def tokenize(cpyBook: String): Array[StatementTokens] = {
     val tokens = cpyBook
       // split by line breaks
       .split("\\r?\\n")
@@ -394,15 +410,46 @@ object CopybookParser extends LazyLogging{
             .replaceAll("\\s\\s+", " ")
             .trim()
       )
+      .zipWithIndex
+      .map(v => StatementLine(v._2 + 1, v._1))
       // ignore commented lines
-      .filterNot(l => l.startsWith("*"))
-      .mkString(" ")
-      .split('.')
-      .map(l => l.replaceAll("^\\s+", ""))
+      .filterNot(l => l.text.startsWith("*"))
+
+    val tokensSplit = ResplitByStatementSeparator(tokens)
+
+    tokensSplit
+      .map(l => l.copy(text = l.text.replaceAll("^\\s+", "")))
       // filter out aliases and enumerations
-      .filterNot(l => l.startsWith("66") || l.startsWith("77") || l.startsWith("88") || l.trim.isEmpty)
-      .map(l => l.trim().split("\\s+"))
-    tokens
+      .filterNot(l => l.text.startsWith("66") || l.text.startsWith("77") || l.text.startsWith("88") || l.text.trim.isEmpty)
+      .map(l => StatementTokens(l.lineNumber, l.text.trim().split("\\s+")))
+      .toArray
+  }
+
+  /**
+    * This re-splits lines separated by a new line character to lines separated by '.' (COBOL statement separator)
+    */
+  private def ResplitByStatementSeparator(linesIn: Seq[StatementLine]): Seq[StatementLine] = {
+    val linesOut = new ListBuffer[StatementLine]()
+    var partiallLine: String = ""
+    var lastLineNumber = 0
+
+    linesIn.foreach( line => {
+      if (line.text.contains('.')) {
+        val parts = (line.text + " ").split('.')
+        parts.dropRight(1).foreach( p => {
+          linesOut += StatementLine(line.lineNumber, s"${partiallLine.trim} $p")
+          partiallLine = ""
+        })
+        partiallLine = parts.last
+      } else {
+        partiallLine += " " + line.text
+      }
+      lastLineNumber = line.lineNumber
+    })
+    if (partiallLine.trim.nonEmpty) {
+      linesOut += StatementLine(lastLineNumber, partiallLine)
+    }
+    linesOut
   }
 
   /** Lex the parsed tokens
