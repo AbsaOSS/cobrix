@@ -25,6 +25,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.util.control.NonFatal
 
 /**
   * The object contains generic function for the Copybook parser
@@ -70,17 +71,24 @@ object CopybookParser extends LazyLogging{
     def getMatchingGroup(element: CBTree, newElementLevel: Int): Group = {
       newElementLevel match {
         case level if level < 1 =>
-          throw new IllegalStateException("Couldn't find matching level.")
+          throw new SyntaxErrorException(element.lineNumber, element.name, s"Couldn't find matching level.")
         case level if level > element.level =>
           element match {
             case g: Group => g
             case s: Statement =>
-              throw new SyntaxErrorException(s.lineNumber, s"Field '${s.name}' is a leaf element and cannot contain nested fields.")
+              throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
             case c: CBTree =>
-              throw new SyntaxErrorException(c.lineNumber, s"Unknown AST object ${c.name}.")
+              throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
           }
         case level if level <= element.level =>
           getMatchingGroup(element.up().get, level)
+      }
+    }
+
+    def getUsageModifiers(modifiers: Map[String, String]): Map[String, String] = {
+      getComactLevel(modifiers) match {
+        case Some(value) => Map[String, String](COMP123 -> value.toString)
+        case None => Map[String, String]()
       }
     }
 
@@ -110,21 +118,22 @@ object CopybookParser extends LazyLogging{
         .drop(1) // root already added so drop first line
         .foldLeft[CBTree](root)((element, field) => {
         val keywords = field.modifiers.keys.toList
-        val isLeaf = keywords.contains(PIC) || keywords.contains(COMP123)
+        val isLeaf = keywords.contains(PIC)
         val redefines = field.modifiers.get(REDEFINES)
         val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
         val to = field.modifiers.get(TO).map(i => i.toInt)
         val dependingOn = field.modifiers.get(DEPENDING)
+        val attachLevel = getMatchingGroup(element, field.level)
 
         val newElement = if (isLeaf) {
-          val dataType = typeAndLengthFromString(keywords, field.modifiers)(enc)
+          val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
           Statement(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
         }
         else {
-          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn)(None)
+          val groupUsage = getUsageModifiers(field.modifiers)
+          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn, groupUsage)(None)
         }
 
-        val attachLevel = getMatchingGroup(element, field.level)
         attachLevel.add(newElement)
       })
       schema += root
@@ -182,10 +191,10 @@ object CopybookParser extends LazyLogging{
           redefinedNames.clear()
         case Some(redefines) =>
           if (i == 0) {
-            throw new IllegalStateException(s"First field ${child.name} of a group cannot use REDEFINES keyword.")
+            throw new SyntaxErrorException(child.lineNumber, child.name, s"The first field of a group cannot use REDEFINES keyword.")
           }
           if (!redefinedNames.contains(redefines.toUpperCase)) {
-            throw new IllegalStateException(s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
+            throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
           }
           newSchema(i-1) = newSchema(i-1).withUpdatedIsRedefined(newIsRedefined = true)
       }
@@ -351,22 +360,41 @@ object CopybookParser extends LazyLogging{
     *
     * @param keywords Keywords of a Copybook statement
     * @param modifiers Modifiers of a Copybook field
+    * @param groupModifiers Modifiers of the group level
+    * @param lineNumber Line number of the field definition
+    * @param fieldName The name of the field
     * @return Cobol data type
     */
   def typeAndLengthFromString(
                                keywords: List[String],
-                               modifiers: Map[String, String]
+                               modifiers: Map[String, String],
+                               groupModifiers: Map[String, String],
+                               lineNumber: Int,
+                               fieldName: String
                              )(enc: Encoding): CobolType = {
-    val comp: Option[Int] =
-      if (keywords.contains(COMP123))
-        Some(modifiers.getOrElse(COMP123, "1").toInt)
-      else {
-        if (keywords.contains(COMP) || keywords.contains(BINARY)) Some(4)
-        else None
-      }
+    val compDefined = getComactLevel(modifiers)
+    val compInherited = getComactLevel(groupModifiers)
+
+    val comp = (compDefined, compInherited) match {
+      case (None, None) => None
+      case (Some(x), None) => Some(x)
+      case (None, Some(y)) => Some(y)
+      case (Some(x), Some(y)) =>
+        if (x != y) {
+          throw new SyntaxErrorException(lineNumber, fieldName, s"Field USAGE (COMP-$x) doesn't match group's USAGE (COMP-$y).")
+        }
+        Some(x)
+    }
+
+    val pic = try {
+      modifiers(PIC)
+    }
+    catch {
+      case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
+    }
 
     val sync = keywords.contains(SYNC)
-    modifiers.get(PIC).head match {
+    pic match {
       case s if s.contains("X") || s.contains("A") =>
         AlphaNumeric(s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
       case s if s.contains("V") || s.contains(".") =>
@@ -452,6 +480,21 @@ object CopybookParser extends LazyLogging{
     linesOut
   }
 
+  /** Returns compact level of a binary field */
+  private def getComactLevel(modifiers: Map[String, String]): Option[Int] = {
+    val keywords = modifiers.keys.toList
+    val comp: Option[Int] =
+      if (keywords.contains(COMP123))
+        Some(modifiers.getOrElse(COMP123, "1").toInt)
+      else {
+        if (keywords.contains(COMP) || keywords.contains(COMPUTATIONAL) || keywords.contains(BINARY))
+          Some(4)
+        else
+          None
+      }
+    comp
+  }
+
   /** Lex the parsed tokens
     *
     * @param tokens Tokens to lex
@@ -459,7 +502,7 @@ object CopybookParser extends LazyLogging{
     */
   def lex(tokens: Array[String]): Map[String, String] = {
     val keywordsWithModifiers = List(REDEFINES, OCCURS, TO, PIC)
-    val keywordsWithoutModifiers = List(COMP, BINARY)
+    val keywordsWithoutModifiers = List(COMP, COMPUTATIONAL, BINARY)
 
     if (tokens.length < 3) {
       Map[String, String]()
@@ -489,7 +532,7 @@ object CopybookParser extends LazyLogging{
           // Add modifiers with parameters
           mapAccumulator += tokens(index) -> tokens(index + 1)
           index += 1
-        } else if (tokens(index).startsWith(COMP123)) {
+        } else if (tokens(index).startsWith(COMP123) || tokens(index).startsWith(COMPUTATIONAL123)) {
           // Handle COMP-1 / COMP-2 / COMP-3
           mapAccumulator += COMP123 -> tokens(index).split('-')(1)
         } else if (tokens(index) == SYNC) {
@@ -543,7 +586,10 @@ object CopybookParser extends LazyLogging{
               outputCharacters += lastCharacter
             }
           } else {
-            throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+            // Do nothing if num == 0
+            if (num < 0 || num > Constants.maxFieldLength) {
+              throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+            }
           }
         }
         else {

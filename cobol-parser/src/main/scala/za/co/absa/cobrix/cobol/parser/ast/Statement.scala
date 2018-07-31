@@ -22,6 +22,9 @@ import za.co.absa.cobrix.cobol.parser.common.BinaryUtils._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integer}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+
+import scala.util.control.NonFatal
 
 /** An abstraction of the leaves in the Cobol copybook
   *
@@ -72,6 +75,7 @@ case class Statement(
 
   /** Returns the binary size in bits for the field */
   def getBinarySizeBits: Int = {
+    validateDataTypes()
     val size = dataType match {
       case a: AlphaNumeric =>
         // Each character is represented by a byte
@@ -125,30 +129,38 @@ case class Statement(
     */
   def decodeTypeValue(itOffset: Long, record: BitVector): Any = {
     val str = decodeValue2(itOffset, record)
-    str match {
-      case None => null
-      case Some(strValue) =>
-        val value = dataType match {
-          case _: AlphaNumeric =>
-            strValue
-          case _: Decimal =>
-            BigDecimal(strValue)
-          case dt: Integer =>
-            // Here the explicit converters to boxed types are used.
-            // This is because Scala tries to generalize output and will
-            // produce java.lang.Long for both str.get.toLong and str.get.toInt
-            if (dt.precision > Constants.maxIntegerPrecision) {
-              val longValue: java.lang.Long = strValue.toLong
-              longValue
-            }
-            else {
-              val intValue: java.lang.Integer = strValue.toInt
-              intValue
-            }
-          case _ => throw new IllegalStateException("Unknown AST object")
-        }
-        value
+    val value = try {
+      str match {
+        case None => null
+        case Some(strValue) =>
+          val value = dataType match {
+            case _: AlphaNumeric =>
+              strValue
+            case _: Decimal =>
+              BigDecimal(strValue)
+            case dt: Integer =>
+              // Here the explicit converters to boxed types are used.
+              // This is because Scala tries to generalize output and will
+              // produce java.lang.Long for both str.get.toLong and str.get.toInt
+                if (dt.precision > Constants.maxIntegerPrecision) {
+                  val longValue: java.lang.Long = strValue.toLong
+                  longValue
+                }
+                else {
+                  val intValue: java.lang.Integer = strValue.toInt
+                  intValue
+                }
+            case _ => throw new IllegalStateException("Unknown AST object")
+          }
+          value
+      }
+    } catch {
+      case e: java.lang.NumberFormatException =>
+        // Out of bound values are considered malformed, should be handled gracefully
+        null
+      case NonFatal(e) => throw e
     }
+    value
   }
 
 
@@ -169,6 +181,29 @@ case class Statement(
         }
       case None => precision * codec.sizeBound.lowerBound.toInt
     }
+  }
+
+  private def validateDataTypes(): Unit = {
+    dataType match {
+      case d: Decimal =>
+        if (d.precision - d.scale > Constants.maxDecimalPrecision) {
+          throw new SyntaxErrorException(lineNumber, name,
+            s"Decimal numbers with precision bigger than ${Constants.maxDecimalPrecision} are not supported.")
+        }
+        if (d.scale > Constants.maxDecimalScale) {
+          throw new SyntaxErrorException(lineNumber, name,
+            s"Decimal numbers with scale bigger than ${Constants.maxDecimalScale} are not supported.")
+        }
+      case i: Integer =>
+        for (bin <- i.compact) {
+          if ((bin == 0 || bin == 4) && i.precision > Constants.maxBinIntPrecision) {
+            throw new SyntaxErrorException(lineNumber, name,
+              s"BINARY-encoded integers with precision bigger than ${Constants.maxBinIntPrecision} are not supported.")
+          }
+        }
+      case _ =>
+    }
+
   }
 
 }

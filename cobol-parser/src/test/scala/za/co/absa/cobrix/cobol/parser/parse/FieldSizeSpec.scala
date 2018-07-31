@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser
+package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 
 class FieldSizeSpec extends FunSuite {

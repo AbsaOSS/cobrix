@@ -22,4 +22,12 @@ object Constants {
   val maxIntegerPrecision = 9
   // Max picture size of a Copybook field
   val maxFieldLength = 100000
+
+  // Max COMP/BINARY format precision
+  val maxBinIntPrecision = 18
+
+  // For Decimal types
+  val maxDecimalPrecision = 38
+  val maxDecimalScale = 18
+
 }
