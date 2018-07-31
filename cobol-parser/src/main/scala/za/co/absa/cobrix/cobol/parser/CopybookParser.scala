@@ -182,10 +182,10 @@ object CopybookParser extends LazyLogging{
           redefinedNames.clear()
         case Some(redefines) =>
           if (i == 0) {
-            throw new IllegalStateException(s"First field ${child.name} of a group cannot use REDEFINES keyword.")
+            throw new SyntaxErrorException(child.lineNumber, child.name, s"The first field of a group cannot use REDEFINES keyword.")
           }
           if (!redefinedNames.contains(redefines.toUpperCase)) {
-            throw new IllegalStateException(s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
+            throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
           }
           newSchema(i-1) = newSchema(i-1).withUpdatedIsRedefined(newIsRedefined = true)
       }

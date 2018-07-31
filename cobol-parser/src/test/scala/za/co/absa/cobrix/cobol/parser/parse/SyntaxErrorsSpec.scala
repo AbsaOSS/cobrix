@@ -44,6 +44,22 @@ class SyntaxErrorsSpec extends FunSuite {
     assert(syntaxErrorException.msg.contains("The field is a leaf element"))
   }
 
+  test("Test handle malformed redefines") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           07  SUB_FLD1         PIC X(30).
+        |           07  FILLER2          PIC X(20).
+        |           07  SUB_FLD2         PIC X(30) REDEFINES SUB_FLD1.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.msg.contains("The field SUB_FLD2 redefines SUB_FLD1, which is not part if the redefined fields block"))
+  }
+
   test("Test too big decimal precision") {
     val copyBookContents: String =
       """        01  RECORD.
