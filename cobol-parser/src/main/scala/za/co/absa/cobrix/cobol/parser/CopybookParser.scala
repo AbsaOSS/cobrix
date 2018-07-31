@@ -25,6 +25,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.util.control.NonFatal
 
 /**
   * The object contains generic function for the Copybook parser
@@ -117,7 +118,7 @@ object CopybookParser extends LazyLogging{
         val dependingOn = field.modifiers.get(DEPENDING)
 
         val newElement = if (isLeaf) {
-          val dataType = typeAndLengthFromString(keywords, field.modifiers)(enc)
+          val dataType = typeAndLengthFromString(keywords, field.modifiers, field.lineNumber, field.name )(enc)
           Statement(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
         }
         else {
@@ -351,11 +352,15 @@ object CopybookParser extends LazyLogging{
     *
     * @param keywords Keywords of a Copybook statement
     * @param modifiers Modifiers of a Copybook field
+    * @param lineNumber Line number of the field definition
+    * @param fieldName The name of the field
     * @return Cobol data type
     */
   def typeAndLengthFromString(
                                keywords: List[String],
-                               modifiers: Map[String, String]
+                               modifiers: Map[String, String],
+                               lineNumber: Int,
+                               fieldName: String
                              )(enc: Encoding): CobolType = {
     val comp: Option[Int] =
       if (keywords.contains(COMP123))
@@ -365,8 +370,15 @@ object CopybookParser extends LazyLogging{
         else None
       }
 
+    val pic = try {
+      modifiers(PIC)
+    }
+    catch {
+      case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
+    }
+
     val sync = keywords.contains(SYNC)
-    modifiers.get(PIC).head match {
+    pic match {
       case s if s.contains("X") || s.contains("A") =>
         AlphaNumeric(s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
       case s if s.contains("V") || s.contains(".") =>
