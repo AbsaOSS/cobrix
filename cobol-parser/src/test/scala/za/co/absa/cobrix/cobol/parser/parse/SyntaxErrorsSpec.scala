@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser
+package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -40,8 +41,33 @@ class SyntaxErrorsSpec extends FunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 5)
-    assert(syntaxErrorException.msg.contains("Field 'GRP_FIELD' is a leaf element"))
+    assert(syntaxErrorException.msg.contains("The field is a leaf element"))
   }
 
+  test("Test too big decimal precision") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           10  FIELD           PIC 9(39)V9(5).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("Decimal numbers with precision bigger"))
+  }
+
+  test("Test too big decimal scale") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           10  FIELD           PIC 9(38)V9(19).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("Decimal numbers with scale bigger"))
+  }
 
 }

@@ -75,9 +75,9 @@ object CopybookParser extends LazyLogging{
           element match {
             case g: Group => g
             case s: Statement =>
-              throw new SyntaxErrorException(s.lineNumber, s"Field '${s.name}' is a leaf element and cannot contain nested fields.")
+              throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
             case c: CBTree =>
-              throw new SyntaxErrorException(c.lineNumber, s"Unknown AST object ${c.name}.")
+              throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
           }
         case level if level <= element.level =>
           getMatchingGroup(element.up().get, level)
@@ -543,7 +543,10 @@ object CopybookParser extends LazyLogging{
               outputCharacters += lastCharacter
             }
           } else {
-            throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+            // Do nothing if num == 0
+            if (num < 0 || num > Constants.maxFieldLength) {
+              throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+            }
           }
         }
         else {

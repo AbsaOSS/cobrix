@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser
+package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 
 class DataSizeSpec extends FunSuite {
 

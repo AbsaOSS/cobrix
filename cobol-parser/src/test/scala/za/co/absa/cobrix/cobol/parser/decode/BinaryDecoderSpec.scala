@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser
+package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 
 class BinaryDecoderSpec extends FunSuite {
-  import za.co.absa.cobrix.cobol.parser.common.BinaryUtils.decodeBinaryNumber
-  import za.co.absa.cobrix.cobol.parser.common.BinaryUtils.addDecimalPoint
+  import za.co.absa.cobrix.cobol.parser.common.BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
 
   test("Test string fields decoding") {
     assert(BinaryUtils.decodeString(ASCII(), "TestString".toCharArray.map(_.toByte), 4) == "Test")
