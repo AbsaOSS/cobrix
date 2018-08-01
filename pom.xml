@@ -16,14 +16,13 @@
   ~ limitations under the License.
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>za.co.absa.cobrix</groupId>
 	<artifactId>cobrix</artifactId>
 
-	<version>0.1.6-SNAPSHOT</version>
+	<version>0.1.7-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 
@@ -31,7 +30,8 @@
 		<url>https://bitbucket.absa.co.za/projects/BACIBBD/repos/cobrix/browse</url>
 		<connection>scm:git:https://bitbucket.absa.co.za/scm/bacibbd/cobrix.git</connection>
 		<developerConnection>scm:git:https://bitbucket.absa.co.za/scm/bacibbd/cobrix.git</developerConnection>
-	</scm>
+	  <tag>HEAD</tag>
+  </scm>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -50,41 +50,30 @@
 		<module>spark-cobol</module>
 	</modules>
 
-	<profiles>
-		<profile>
-			<id>release</id>
-			<properties>
-				<project.scm.id>cobrix-scm-server</project.scm.id>
-			</properties>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-release-plugin</artifactId>
-						<version>2.5.3</version>
-						<configuration>
-							<tagNameFormat>v@{project.version}</tagNameFormat>
-							<providerImplementations>
-								<git>jgit</git>
-							</providerImplementations>
-						</configuration>
-						<dependencies>
-							<dependency>
-								<groupId>org.apache.maven.scm</groupId>
-								<artifactId>maven-scm-provider-jgit</artifactId>
-								<version>1.9.5</version>
-							</dependency>
-							<dependency>
-								<groupId>org.eclipse.jgit</groupId>
-								<artifactId>org.eclipse.jgit</artifactId>
-								<version>3.7.1.201504261725-r</version>
-							</dependency>
-						</dependencies>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
+    <properties>
+        <project.scm.id>cobrix-scm-server</project.scm.id>
+    </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.4.2</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.scm</groupId>
+                        <artifactId>maven-scm-provider-gitexe</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 
+	<profiles>
 		<profile>
 			<id>license-check</id>
 			<!-- defined in parent/pom.xml -->
