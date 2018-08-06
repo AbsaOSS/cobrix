@@ -16,15 +16,13 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.sources.TableScan
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Reader
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.Row
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.streamreader.StreamReader
 
 class CobolRelation(sourceDirPath: String, reader: Reader)(@transient val sqlContext: SQLContext)
   extends BaseRelation
@@ -39,6 +37,19 @@ class CobolRelation(sourceDirPath: String, reader: Reader)(@transient val sqlCon
 
   override def buildScan(): RDD[Row] = {
 
+    if (reader.isInstanceOf[StreamReader]) {
+      buildScanForVariableLength(reader.asInstanceOf[StreamReader])
+    }
+    else {
+      buildScanForFixedLength(reader)
+    }
+  }
+
+  private def buildScanForVariableLength(reader: StreamReader): RDD[Row] = {
+    null
+  }
+
+  private def buildScanForFixedLength(reader: Reader): RDD[Row] = {
     // This reads whole text files as RDD[String]
     // Todo For Cobol files need to use
     // binaryRecords() for fixed size records

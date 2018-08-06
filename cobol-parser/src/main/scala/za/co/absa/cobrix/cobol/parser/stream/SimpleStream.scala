@@ -16,13 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.stream
 
-import scala.reflect.io.Streamable.Bytes
-
 trait SimpleStream {
 
-  def hasNext(numberOfBytes: Int): Boolean
-
-  def next(numberOfBytes: Int): Array[Bytes]
+  def next(numberOfBytes: Int): Array[Byte]
 
   def close(): Unit
 }
