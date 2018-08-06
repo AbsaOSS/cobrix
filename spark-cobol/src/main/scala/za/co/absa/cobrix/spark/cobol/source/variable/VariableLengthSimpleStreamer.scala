@@ -40,9 +40,13 @@ class VariableLengthSimpleStreamer(filePath: String, fileSystem: FileSystem) ext
     else {
       logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
       // resize buffer so that the consumer knows how many bytes are there
-      val shrunkBuffer = new Array[Byte](readBytes)
-      System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
-      shrunkBuffer
+      if (readBytes > 0) {
+        val shrunkBuffer = new Array[Byte](readBytes)
+        System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
+        shrunkBuffer
+      } else {
+        new Array[Byte](0)
+      }
     }
   }
 

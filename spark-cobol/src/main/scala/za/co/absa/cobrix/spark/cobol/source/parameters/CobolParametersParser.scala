@@ -42,8 +42,8 @@ object CobolParametersParser {
       Some(new VariableLengthParameters
       (
         params.get(PARAM_RECORD_LENGTH).get,
-        params.getOrElse(PARAM_RECORD_START_OFFSET, 0).asInstanceOf[Int],
-        params.getOrElse(PARAM_RECORD_END_OFFSET, 0).asInstanceOf[Int]
+        params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
+        params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt
       ))
     }
     else {

@@ -21,7 +21,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.source.variable.VariableLengthSimpleStreamer
@@ -61,7 +61,10 @@ class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])
     filesDF.mapPartitions(
       partition =>
       {
-        val fileSystem = FileSystem.get(sqlContext.sparkContext.hadoopConfiguration)
+        val conf = SparkSession.builder.getOrCreate().sparkContext.hadoopConfiguration
+
+        //val fileSystem = FileSystem.get(sqlContext.sparkContext.hadoopConfiguration)
+        val fileSystem = FileSystem.get(conf)
         partition.flatMap(row =>
         {
           val file = row.getString(0)
