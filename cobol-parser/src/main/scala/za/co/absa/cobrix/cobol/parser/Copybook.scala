@@ -16,9 +16,12 @@
 
 package za.co.absa.cobrix.cobol.parser
 
+import javafx.scene.control.cell.CheckBoxTreeCell
+
 import com.typesafe.scalalogging.LazyLogging
+import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 
 class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
@@ -33,6 +36,57 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
   }
 
   def isRecordFixedSize: Boolean = true
+
+
+  def extractPrimitiveField(field: Statement, data: Array[Byte], offset: Int = 0): Any = {
+    val bits = BitVector(data)
+    field.decodeTypeValue( field.binaryProperties.offset + offset*8, bits)
+  }
+
+  /**
+    * Get the AST object of a field by name.
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param fieldName A field name
+    * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
+    *
+    */
+  def getFieldByName(fieldName: String): CBTree = {
+
+    def getFieldByNameInGroup(group: Group, fieldName: String): Seq[CBTree] = {
+      val groupMatch = if (group.name.compareToIgnoreCase(fieldName) == 0) Seq(group) else Seq()
+      groupMatch ++ group.children.flatMap(child => {
+        child match {
+          case g: Group => getFieldByNameInGroup(g, fieldName)
+          case st: Statement => if (st.name.compareToIgnoreCase(fieldName) == 0) Seq(st) else Seq()
+        }
+      })
+    }
+
+    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): CBTree = {
+      val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
+      val foundFields = schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
+
+      if (foundFields.isEmpty) {
+        throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
+      } else if (foundFields.lengthCompare(1) == 0) {
+        foundFields.head
+      } else {
+        throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
+          s"notation.")
+      }
+    }
+
+    val schema = getCobolSchema
+
+    if (fieldName.contains('.')) {
+      ???
+    } else {
+      getFieldByUniqueName(schema, fieldName)
+    }
+  }
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
   def generateRecordLayoutPositions(): String = {

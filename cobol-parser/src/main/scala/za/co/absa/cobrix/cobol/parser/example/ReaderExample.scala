@@ -18,11 +18,10 @@ package za.co.absa.cobrix.cobol.parser.example
 
 import za.co.absa.cobrix.cobol.parser.reader.FSReader
 
-object Example {
+object ReaderExample {
 
   def main(args: Array[String]): Unit = {
 
-    println("test")
     val reader = new FSReader("examples/example_copybook.cob", "examples/example_data/file1.bin")
 
     val it = reader.getIterator
