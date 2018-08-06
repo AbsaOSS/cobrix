@@ -54,35 +54,64 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
   def getFieldByName(fieldName: String): CBTree = {
 
     def getFieldByNameInGroup(group: Group, fieldName: String): Seq[CBTree] = {
-      val groupMatch = if (group.name.compareToIgnoreCase(fieldName) == 0) Seq(group) else Seq()
+      val groupMatch = if (group.name.equalsIgnoreCase(fieldName)) Seq(group) else Seq()
       groupMatch ++ group.children.flatMap(child => {
         child match {
           case g: Group => getFieldByNameInGroup(g, fieldName)
-          case st: Statement => if (st.name.compareToIgnoreCase(fieldName) == 0) Seq(st) else Seq()
+          case st: Statement => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
         }
       })
     }
 
-    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): CBTree = {
+    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
       val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
-      val foundFields = schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
+      schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
+    }
 
-      if (foundFields.isEmpty) {
-        throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
-      } else if (foundFields.lengthCompare(1) == 0) {
-        foundFields.head
+    def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[CBTree] = {
+      if (path.length == 0) {
+        Seq()
       } else {
-        throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
-          s"notation.")
+        group.children.flatMap(child => {
+          child match {
+            case g: Group =>
+              if (g.name.equalsIgnoreCase(path.head))
+                getFieldByPathInGroup(g, path.drop(1))
+              else Seq()
+            case st: Statement =>
+              if (st.name.equalsIgnoreCase(path.head))
+                Seq(st)
+              else Seq()
+          }
+        })
       }
+    }
+
+    def getFielByPathName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
+      val path = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
+      schema.flatMap(grp =>
+        if (grp.name.equalsIgnoreCase(path.head))
+          getFieldByPathInGroup(grp, path.drop(1))
+        else
+          Seq()
+      )
     }
 
     val schema = getCobolSchema
 
-    if (fieldName.contains('.')) {
-      ???
+    val foundFields = if (fieldName.contains('.')) {
+      getFielByPathName(schema, fieldName)
     } else {
       getFieldByUniqueName(schema, fieldName)
+    }
+
+    if (foundFields.isEmpty) {
+      throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
+    } else if (foundFields.lengthCompare(1) == 0) {
+      foundFields.head
+    } else {
+      throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
+        s"notation.")
     }
   }
 

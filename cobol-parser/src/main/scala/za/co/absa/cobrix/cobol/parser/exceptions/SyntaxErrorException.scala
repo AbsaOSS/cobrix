@@ -16,4 +16,15 @@
 
 package za.co.absa.cobrix.cobol.parser.exceptions
 
-class SyntaxErrorException (val lineNumber: Int, val field: String, val msg: String) extends Exception(s"Syntax error in the copybook at line $lineNumber, field $field: $msg")
+class SyntaxErrorException(val lineNumber: Int, val field: String, val msg: String)
+  extends Exception(SyntaxErrorException.constructErrorMessage(lineNumber, field, msg)) {
+}
+
+object SyntaxErrorException {
+  private def constructErrorMessage(lineNumber: Int, field: String, msg: String): String = {
+    val atLine = if (lineNumber > 0) s" at line $lineNumber"
+    val atField = if (field.nonEmpty) s", field $field" else ""
+
+    s"Syntax error in the copybook$atLine$atField: $msg"
+  }
+}

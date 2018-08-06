@@ -98,6 +98,9 @@ object CopybookParser extends LazyLogging{
     val lines: Seq[CopybookLine] =
       tokens.zip(lexedLines)
         .map { case (lineTokens, modifiers) =>
+          if (lineTokens.tokens.length < 2) {
+            throw new SyntaxErrorException(lineTokens.lineNumber, "", s"Syntax error at '${lineTokens.tokens.mkString(" ").trim}'")
+          }
           val nameWithoutColons = transformIdentifier(lineTokens.tokens(1))
           CopybookLine(lineTokens.tokens(0).toInt, nameWithoutColons, lineTokens.lineNumber, modifiers)
         }
