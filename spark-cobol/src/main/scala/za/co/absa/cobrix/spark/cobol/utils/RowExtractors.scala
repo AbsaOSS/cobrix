@@ -14,22 +14,19 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.common
+package za.co.absa.cobrix.spark.cobol.utils
 
+import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 
 import scala.collection.mutable.ArrayBuffer
 
-object DataExtractors {
-
-  def extractValues(ast: CopybookAST, bytes: Array[Byte], offset: Int = 0): Seq[Any] = {
-
-    val dataBits: BitVector = BitVector(bytes)
+object RowExtractors {
+  def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
-
-    // Todo Extract common features and combine with BinaryDataRowIterator as it does almost the same
 
     def extractArray(field: CBTree, useOffset: Long): IndexedSeq[Any] = {
       val from = 0
@@ -81,7 +78,7 @@ object DataExtractors {
       }
     }
 
-    def getGroupValues(offset: Long, group: Group): Seq[Any] = {
+    def getGroupValues(offset: Long, group: Group): Row = {
       var bitOffset = offset
       val fields = new ArrayBuffer[Any]()
 
@@ -98,16 +95,17 @@ object DataExtractors {
           fields += fieldValue
         }
       }
-      fields
+      Row.fromSeq(fields)
     }
 
-    var nextOffset = offset * 8
+    var nextOffset = offsetBits
     val records = for (record <- ast) yield {
       val values = getGroupValues(nextOffset, record)
       nextOffset += record.binaryProperties.actualSize
       values
     }
-    records
+
+    Row.fromSeq(records)
   }
 
 }

@@ -14,29 +14,32 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.reader.iterator
+package za.co.absa.cobrix.spark.cobol.streamreader
 
+import org.apache.spark.sql.Row
+import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.Statement
 import za.co.absa.cobrix.cobol.parser.common.DataExtractors
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
-class VarLenIterator(cobolSchema: Copybook,
-                     dataStream: SimpleStream,
-                     lengthFieldName: String,
-                     startOffset: Int = 0,
-                     endOffset: Int = 0) extends Iterator[Seq[Any]] {
+class NestedStreamIterator (cobolSchema: Copybook,
+                            dataStream: SimpleStream,
+                            lengthFieldName: String,
+                            startOffset: Int = 0,
+                            endOffset: Int = 0) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = 0L
-  private var cachedValue: Option[Seq[Any]] = _
+  private var cachedValue: Option[Row] = _
   private val lengthField = getLengthField
 
   fetchNext()
 
   override def hasNext: Boolean = cachedValue.nonEmpty
 
-  override def next(): Seq[Any] = {
+  override def next(): Row = {
     cachedValue match {
       case None => throw new NoSuchElementException
       case Some(value) =>
@@ -65,21 +68,21 @@ class VarLenIterator(cobolSchema: Copybook,
     if (dropLength > 0)
       dataStream.next(dropLength)
 
-    cachedValue = Some(DataExtractors.extractValues(cobolSchema.getCobolSchema, binaryData, startOffset))
+    val dataBits = BitVector(binaryData)
+
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8))
   }
 
   private def getLengthField: Statement = {
     val field = cobolSchema.getFieldByName(lengthFieldName)
     field match {
       case s: Statement =>
-        s.dataType match {
-          case _: za.co.absa.cobrix.cobol.parser.ast.datatype.Integer => //ok
-          case _ => throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
+        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer]) {
+          throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
         }
         s
       case _ =>
         throw new IllegalStateException(s"The record length field $lengthFieldName must be an primitive integral type.")
     }
   }
-
 }

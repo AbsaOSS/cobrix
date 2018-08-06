@@ -16,8 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser
 
-import javafx.scene.control.cell.CheckBoxTreeCell
-
 import com.typesafe.scalalogging.LazyLogging
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
