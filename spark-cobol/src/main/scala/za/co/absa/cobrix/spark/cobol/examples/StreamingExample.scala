@@ -17,13 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.examples
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.streaming.Seconds
-import org.apache.spark.streaming.StreamingContext
-
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters._
-import za.co.absa.cobrix.spark.cobol.source.streaming.CobolStreamer
-
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 object StreamingExample {
 
   private final val PARAM_COPYBOOK = "-Dcopybook"

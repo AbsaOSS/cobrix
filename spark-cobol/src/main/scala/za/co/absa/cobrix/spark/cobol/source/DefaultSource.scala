@@ -19,31 +19,25 @@ package za.co.absa.cobrix.spark.cobol.source
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import scala.collection.JavaConverters.asScalaBufferConverter
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.sources.BaseRelation
-import org.apache.spark.sql.sources.DataSourceRegister
-import org.apache.spark.sql.sources.RelationProvider
-import org.apache.spark.sql.sources.SchemaRelationProvider
+import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.NestedReader
-import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.reader.ReaderFactory
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
+import za.co.absa.cobrix.spark.cobol.reader.{NestedReader, Reader, ReaderFactory}
+import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
+import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
 import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
+
+import scala.collection.JavaConverters.asScalaBufferConverter
 
 class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
     with DataSourceRegister
     with ReaderFactory {
-
-  import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters._
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -54,19 +48,32 @@ class DefaultSource
   }
 
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
-    CobolParameters.validateOrThrow(parameters, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
+    CobolParametersValidator.validateOrThrow(parameters, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
     new CobolRelation(parameters(PARAM_SOURCE_PATH), buildReader(sqlContext.sparkSession, parameters))(sqlContext)
   }
 
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): Reader = {
-    val copyBookContents = parameters.get(PARAM_COPYBOOK_CONTENTS)
-    val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
+
+    val cobolParameters = CobolParametersParser.parse(parameters)
+    CobolParametersValidator.checkSanity(cobolParameters)
+
+    if (cobolParameters.variableLengthParams.isEmpty) {
+      createFixedLengthReader(cobolParameters, spark)
+    }
+    else {
+      null
+    }
+  }
+
+  private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): Reader = {
+    val copyBookContents = parameters.copybookContent
+    val copyBookPathFileName = parameters.copybookPath
 
     copyBookContents match {
       case Some(contents) =>
         new NestedReader(contents)
       case None =>
-        val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(parameters(PARAM_COPYBOOK_PATH))
+        val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(copyBookPathFileName.get)
         val copyBookContents = if (isLocalFS) {
           loadCopybookFromLocalFS(copyBookFileName)
         } else {
@@ -74,6 +81,10 @@ class DefaultSource
         }
         new NestedReader(copyBookContents)
     }
+  }
+
+  private def createVariableLengthReader(parameters: CobolParameters) = {
+
   }
 
   private def loadCopybookFromLocalFS(copyBookLocalPath: String): String = {

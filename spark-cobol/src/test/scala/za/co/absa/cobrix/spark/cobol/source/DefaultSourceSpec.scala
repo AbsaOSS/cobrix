@@ -16,19 +16,17 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import java.io.FileNotFoundException
-import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
-import scala.io.Source
+import java.io.{File, FileNotFoundException}
 import java.security.InvalidParameterException
-import java.io.File
+
 import org.apache.commons.io.FileUtils
+import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
 import za.co.absa.cobrix.spark.cobol.source.utils.SourceTestUtils
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
 
 class DefaultSourceSpec extends SparkCobolTestBase {
    
-  import CobolParameters._
-  import SourceTestUtils._  
+  import SourceTestUtils._
+  import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
   
   private var defaultSource: DefaultSource = _
     

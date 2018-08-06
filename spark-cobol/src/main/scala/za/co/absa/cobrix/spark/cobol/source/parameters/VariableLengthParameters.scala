@@ -16,9 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
-case class CobolParameters(
-                            copybookPath:         Option[String],
-                            copybookContent:      Option[String],
-                            sourcePath:           Option[String],
-                            variableLengthParams: Option[VariableLengthParameters]
-                          )
+case class VariableLengthParameters(
+                                     recordLengthField: String,
+                                     recordStartOffset: Int,
+                                     recordEndOffset:   Int
+                                   )
