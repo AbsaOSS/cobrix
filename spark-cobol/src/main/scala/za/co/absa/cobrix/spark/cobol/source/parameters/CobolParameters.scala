@@ -16,6 +16,15 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+/**
+  * This class holds parameters for the job.
+  *
+  * @param copybookPath String containing the path to the copybook in a given file system.
+  * @param copybookContent String containing the actual content of the copybook. Either this or the copybookPath parameter must be specified.
+  * @param sourcePath String containing the path to the Cobol file to be parsed.
+  * @param variableLengthParams VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
+  *                             If None, the records will be assumed to be fixed-length.
+  */
 case class CobolParameters(
                             copybookPath:         Option[String],
                             copybookContent:      Option[String],

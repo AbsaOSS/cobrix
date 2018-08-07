@@ -16,6 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+/**
+  * This class provides methods for parsing the parameters set as Spark options.
+  */
 object CobolParametersParser {
 
   val SHORT_NAME                = "cobol"
