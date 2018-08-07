@@ -19,19 +19,15 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.streaming.StreamingContext
-import scala.collection.JavaConverters.asScalaBufferConverter
-import za.co.absa.cobrix.spark.cobol.reader.NestedReader
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
-import org.apache.spark.streaming.dstream.DStream
 import org.apache.spark.sql.Row
-import za.co.absa.cobrix.spark.cobol.reader.Reader
-import org.apache.spark.SparkConf
-import za.co.absa.cobrix.spark.cobol.reader.ReaderFactory
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
-import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.reader.FlatReader
+import org.apache.spark.streaming.StreamingContext
+import org.apache.spark.streaming.dstream.DStream
+import za.co.absa.cobrix.spark.cobol.reader.{FlatReader, Reader}
+import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
+import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
+
+import scala.collection.JavaConverters.asScalaBufferConverter
 
 /**
  * Provides an integration point for adding streaming support to the Spark-Cobol library.
@@ -39,8 +35,6 @@ import za.co.absa.cobrix.spark.cobol.reader.FlatReader
  * This version is experimental and does not yet provide support to schemas or structured streaming.
  */
 object CobolStreamer {
-
-  import CobolParameters._
   
   def getReader(implicit ssc: StreamingContext): Reader = {
     new FlatReader(loadCopybookFromHDFS(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
@@ -48,7 +42,7 @@ object CobolStreamer {
   
   implicit class Deserializer(@transient val ssc: StreamingContext) extends Serializable {
 
-    CobolParameters.validateOrThrow(ssc.sparkContext.getConf, ssc.sparkContext.hadoopConfiguration)
+    CobolParametersValidator.validateOrThrow(ssc.sparkContext.getConf, ssc.sparkContext.hadoopConfiguration)
     val reader = CobolStreamer.getReader(ssc)
     
     def cobolStream(): DStream[Row] = {

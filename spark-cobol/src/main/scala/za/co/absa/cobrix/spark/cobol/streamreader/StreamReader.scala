@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.exceptions
+package za.co.absa.cobrix.spark.cobol.streamreader
 
-class SyntaxErrorException(val lineNumber: Int, val field: String, val msg: String)
-  extends Exception(SyntaxErrorException.constructErrorMessage(lineNumber, field, msg)) {
-}
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
+import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-object SyntaxErrorException {
-  private def constructErrorMessage(lineNumber: Int, field: String, msg: String): String = {
-    val atLine = if (lineNumber > 0) s" at line $lineNumber"
-    val atField = if (field.nonEmpty) s", field $field" else ""
+/** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records)*/
+abstract class StreamReader extends Serializable {
+  type Field = String
+  type Value = String
 
-    s"Syntax error in the copybook$atLine$atField: $msg"
-  }
+  def getCobolSchema: CobolSchema
+
+  def getSparkSchema: StructType
+
+  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream): Iterator[Row]
 }

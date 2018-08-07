@@ -22,7 +22,7 @@ import java.io.FileInputStream
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
-import za.co.absa.cobrix.cobol.parser.common.ReservedWords
+import za.co.absa.cobrix.cobol.parser.common.{DataExtractors, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.Copybook
 
 import scala.collection.mutable.ArrayBuffer
@@ -45,87 +45,7 @@ class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends I
     val bytes = new Array[Byte](recordSize)
     inputStream.read(bytes)
 
-    val dataBits: BitVector = BitVector(bytes)
-    val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
-
-    // Todo Extract common features and combine with BinaryDataRowIterator as it does almost the same
-
-    def extractArray(field: CBTree, useOffset: Long): IndexedSeq[Any] = {
-      val from = 0
-      val arraySize = field.arrayMaxSize
-      val actualSize = field.dependingOn match {
-        case None => arraySize
-        case Some(dependingOn) =>
-          val dependValue = dependFields.getOrElse(dependingOn, arraySize)
-          if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
-            dependValue
-          else
-            arraySize
-      }
-
-      var offset = useOffset
-      field match {
-        case grp: Group =>
-          val groupValues = for (_ <- Range(from, actualSize)) yield {
-            val value = getGroupValues(offset, grp)
-            offset += grp.binaryProperties.dataSize
-            value
-          }
-          groupValues
-        case s: Statement =>
-          val values = for (_ <- Range(from, actualSize)) yield {
-            val value = s.decodeTypeValue(offset, dataBits)
-            offset += s.binaryProperties.dataSize
-            value
-          }
-          values
-      }
-    }
-
-    def extractValue(field: CBTree, useOffset: Long): Any = {
-      field match {
-        case grp: Group =>
-          getGroupValues(useOffset, grp)
-        case st: Statement =>
-          val value = st.decodeTypeValue(useOffset, dataBits)
-          if (value != null && st.isDependee) {
-            val intVal: Int = value match {
-              case v: Int => v
-              case v: Number => v.intValue()
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
-            }
-            dependFields += st.name -> intVal
-          }
-          value
-      }
-    }
-
-    def getGroupValues(offset: Long, group: Group): Seq[Any] = {
-      var bitOffset = offset
-      val fields = new ArrayBuffer[Any]()
-
-      for (field <- group.children) {
-        val fieldValue = if (field.isArray) {
-          extractArray(field, bitOffset)
-        } else {
-          extractValue(field, bitOffset)
-        }
-        if (!field.isRedefined) {
-          bitOffset += field.binaryProperties.actualSize
-        }
-        if (field.name.toUpperCase != ReservedWords.FILLER) {
-          fields += fieldValue
-        }
-      }
-      fields
-    }
-
-    var offset = 0
-    val records = for (record <- cobolSchema.getCobolSchema) yield {
-      val values = getGroupValues(offset, record)
-      offset += record.binaryProperties.actualSize
-      values
-    }
+    val records = DataExtractors.extractValues(cobolSchema.getCobolSchema, bytes)
 
     // Advance bit index to the next record
     val lastRecord = cobolSchema.getCobolSchema.last

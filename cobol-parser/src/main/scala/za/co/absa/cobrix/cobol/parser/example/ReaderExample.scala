@@ -14,11 +14,24 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.source.parameters
+package za.co.absa.cobrix.cobol.parser.example
 
-case class CobolParameters(
-                            copybookPath:         Option[String],
-                            copybookContent:      Option[String],
-                            sourcePath:           Option[String],
-                            variableLengthParams: Option[VariableLengthParameters]
-                          )
+import za.co.absa.cobrix.cobol.parser.reader.FSReader
+
+object ReaderExample {
+
+  def main(args: Array[String]): Unit = {
+
+    val reader = new FSReader("examples/example_copybook.cob", "examples/example_data/file1.bin")
+
+    val it = reader.getIterator
+
+    println(it.hasNext)
+
+    while (it.hasNext) {
+      println(it.next())
+    }
+
+  }
+
+}

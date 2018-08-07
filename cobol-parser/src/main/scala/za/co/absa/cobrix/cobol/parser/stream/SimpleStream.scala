@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.example
+package za.co.absa.cobrix.cobol.parser.stream
 
-import za.co.absa.cobrix.cobol.parser.reader.FSReader
+trait SimpleStream {
 
-object Example {
+  def next(numberOfBytes: Int): Array[Byte]
 
-  def main(args: Array[String]): Unit = {
-
-    println("test")
-    val reader = new FSReader("examples/example_copybook.cob", "examples/example_data/file1.bin")
-
-    val it = reader.getIterator
-
-    println(it.hasNext)
-
-    while (it.hasNext) {
-      println(it.next())
-    }
-
-  }
-
+  def close(): Unit
 }

@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.exceptions
+package za.co.absa.cobrix.spark.cobol.utils
 
-class SyntaxErrorException(val lineNumber: Int, val field: String, val msg: String)
-  extends Exception(SyntaxErrorException.constructErrorMessage(lineNumber, field, msg)) {
-}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
-object SyntaxErrorException {
-  private def constructErrorMessage(lineNumber: Int, field: String, msg: String): String = {
-    val atLine = if (lineNumber > 0) s" at line $lineNumber"
-    val atField = if (field.nonEmpty) s", field $field" else ""
+object FileUtils {
 
-    s"Syntax error in the copybook$atLine$atField: $msg"
+  def getAllFilesInDirectory(dir: String, hadoopConf: Configuration): List[String] = {
+    getAllFilesInDirectory(dir, FileSystem.get(hadoopConf))
+  }
+
+  def getAllFilesInDirectory(dir: String, fs: FileSystem): List[String] = {
+    val dirPath = new Path(dir)
+    val files: Array[FileStatus] = fs.listStatus(dirPath)
+    val allFiles = for (file <- files if fs.isFile(file.getPath)) yield file
+    allFiles.map(_.getPath.toUri.getRawPath).toList
   }
 }

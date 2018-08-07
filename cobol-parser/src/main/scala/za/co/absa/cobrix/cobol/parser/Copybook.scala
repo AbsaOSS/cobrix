@@ -17,8 +17,9 @@
 package za.co.absa.cobrix.cobol.parser
 
 import com.typesafe.scalalogging.LazyLogging
+import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 
 class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
@@ -33,6 +34,86 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
   }
 
   def isRecordFixedSize: Boolean = true
+
+
+  def extractPrimitiveField(field: Statement, data: Array[Byte], offset: Int = 0): Any = {
+    val bits = BitVector(data)
+    field.decodeTypeValue( field.binaryProperties.offset + offset*8, bits)
+  }
+
+  /**
+    * Get the AST object of a field by name.
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param fieldName A field name
+    * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
+    *
+    */
+  def getFieldByName(fieldName: String): CBTree = {
+
+    def getFieldByNameInGroup(group: Group, fieldName: String): Seq[CBTree] = {
+      val groupMatch = if (group.name.equalsIgnoreCase(fieldName)) Seq(group) else Seq()
+      groupMatch ++ group.children.flatMap(child => {
+        child match {
+          case g: Group => getFieldByNameInGroup(g, fieldName)
+          case st: Statement => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
+        }
+      })
+    }
+
+    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
+      val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
+      schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
+    }
+
+    def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[CBTree] = {
+      if (path.length == 0) {
+        Seq()
+      } else {
+        group.children.flatMap(child => {
+          child match {
+            case g: Group =>
+              if (g.name.equalsIgnoreCase(path.head))
+                getFieldByPathInGroup(g, path.drop(1))
+              else Seq()
+            case st: Statement =>
+              if (st.name.equalsIgnoreCase(path.head))
+                Seq(st)
+              else Seq()
+          }
+        })
+      }
+    }
+
+    def getFielByPathName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
+      val path = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
+      schema.flatMap(grp =>
+        if (grp.name.equalsIgnoreCase(path.head))
+          getFieldByPathInGroup(grp, path.drop(1))
+        else
+          Seq()
+      )
+    }
+
+    val schema = getCobolSchema
+
+    val foundFields = if (fieldName.contains('.')) {
+      getFielByPathName(schema, fieldName)
+    } else {
+      getFieldByUniqueName(schema, fieldName)
+    }
+
+    if (foundFields.isEmpty) {
+      throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
+    } else if (foundFields.lengthCompare(1) == 0) {
+      foundFields.head
+    } else {
+      throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
+        s"notation.")
+    }
+  }
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
   def generateRecordLayoutPositions(): String = {
