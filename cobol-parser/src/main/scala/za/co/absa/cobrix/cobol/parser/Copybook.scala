@@ -20,7 +20,6 @@ import com.typesafe.scalalogging.LazyLogging
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
-import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 
 class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
 
@@ -35,11 +34,6 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
 
   def isRecordFixedSize: Boolean = true
 
-
-  def extractPrimitiveField(field: Statement, data: Array[Byte], offset: Int = 0): Any = {
-    val bits = BitVector(data)
-    field.decodeTypeValue( field.binaryProperties.offset + offset*8, bits)
-  }
 
   /**
     * Get the AST object of a field by name.
@@ -112,6 +106,43 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     } else {
       throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
         s"notation.")
+    }
+  }
+
+  /**
+    * Get value of a field of the copybook record by the AST object of the field
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param field The AST object of the field
+    * @param bytes Binary encoded data of the record
+    * @param startOffset An offset to the beginning of the field in the data (in bytes).
+    * @return The value of the field
+    *
+    */
+  def extractPrimitiveField(field: Statement, bytes: Array[Byte], startOffset: Int = 0): Any = {
+    val bits = BitVector(bytes)
+    field.decodeTypeValue( field.binaryProperties.offset + startOffset*8, bits)
+  }
+
+  /**
+    * Get value of a field of the copybook record by name
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param fieldName A field name
+    * @param bytes Binary encoded data of the record
+    * @param startOffset An offset where the record starts in the data (in bytes).
+    * @return The value of the field
+    *
+    */
+  def getFieldValueByName(fieldName: String, bytes: Array[Byte], startOffset: Int = 0): Any = {
+    val ast = getFieldByName(fieldName)
+    ast match {
+      case s: Statement => extractPrimitiveField(s, bytes, startOffset)
+      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract it's value.")
     }
   }
 
