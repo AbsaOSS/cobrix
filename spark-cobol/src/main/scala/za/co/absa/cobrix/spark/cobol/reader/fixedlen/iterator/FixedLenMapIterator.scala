@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader.iterator
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import com.typesafe.scalalogging.LazyLogging
 import scodec.bits.BitVector
@@ -32,7 +32,7 @@ import scala.collection.mutable.ListBuffer
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
 @deprecated("This iterator was built for testing purposes only. Please use BinaryDataFlatRowIterator instead.")
-class BinaryDataMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Map[String, Option[String]]] with LazyLogging {
+class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Map[String, Option[String]]] with LazyLogging {
   private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
   private var bitIndex = 0L

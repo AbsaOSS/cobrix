@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader.iterator
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
@@ -32,7 +32,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param binaryData  A binary data to traverse
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
-class BinaryDataRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
+class FixedLenNestedRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
   private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
   private var bitIndex = 0L

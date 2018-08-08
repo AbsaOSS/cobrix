@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
-import za.co.absa.cobrix.spark.cobol.reader.iterator.{BinaryDataFlatRowIterator, BinaryDataMapIterator}
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.{FixedLenFlatRowIterator, FixedLenMapIterator}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 /** The Cobol data reader that provides output using flattened schema */
-class FlatReader(val copyBookContents: String) extends Reader with Serializable {
+class FixedLenFlatReader(val copyBookContents: String) extends FixedLenReader with Serializable {
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
   override def getCobolSchema: CobolSchema = cobolSchema
@@ -32,16 +32,16 @@ class FlatReader(val copyBookContents: String) extends Reader with Serializable 
 
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
-    new BinaryDataFlatRowIterator(binaryData, cobolSchema)
+    new FixedLenFlatRowIterator(binaryData, cobolSchema)
   }
 
   def getRowIteratorMap(binaryData: Array[Byte]): Iterator[Map[Field, Option[Value]]] = {
     checkBinaryDataValidity(binaryData)
-    new BinaryDataMapIterator(binaryData, cobolSchema)
+    new FixedLenMapIterator(binaryData, cobolSchema)
   }
 
   def generateDebugCsv(binaryData: Array[Byte]): String = {
-    val it = getRowIteratorMap(binaryData).asInstanceOf[BinaryDataMapIterator]
+    val it = getRowIteratorMap(binaryData).asInstanceOf[FixedLenMapIterator]
     val headers = it.generateDebugCSVHeaders
     val rows = for(row <- it) yield it.generateDebugCSVCurrentRow
     headers + "\n" + rows.mkString("\n")

@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
-import za.co.absa.cobrix.spark.cobol.reader.iterator.BinaryDataRowIterator
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 /** The Cobol data reader that produces nested structure schema */
-class NestedReader(val copyBookContents: String) extends Reader with Serializable {
+class FixedLenNestedReader(val copyBookContents: String) extends FixedLenReader with Serializable {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
@@ -33,7 +33,7 @@ class NestedReader(val copyBookContents: String) extends Reader with Serializabl
 
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
-    new BinaryDataRowIterator(binaryData, cobolSchema)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema)
   }
 
   private def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {

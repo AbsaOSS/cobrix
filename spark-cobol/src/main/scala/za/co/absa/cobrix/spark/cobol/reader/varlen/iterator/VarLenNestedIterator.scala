@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.streamreader
+package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Statement
-import za.co.absa.cobrix.cobol.parser.common.DataExtractors
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
-class NestedStreamIterator (cobolSchema: Copybook,
-                            dataStream: SimpleStream,
-                            lengthFieldName: String,
-                            startOffset: Int = 0,
-                            endOffset: Int = 0) extends Iterator[Row] {
+class VarLenNestedIterator(cobolSchema: Copybook,
+                           dataStream: SimpleStream,
+                           lengthFieldName: String,
+                           startOffset: Int = 0,
+                           endOffset: Int = 0) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = 0L

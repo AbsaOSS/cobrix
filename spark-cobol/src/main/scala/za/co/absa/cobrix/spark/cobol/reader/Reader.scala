@@ -16,11 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.reader
 
-import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-/** The abstract class for Cobol data readers from various sources */
+/** The abstract class for Cobol all data readers from various sources */
 abstract class Reader extends Serializable {
   type Field = String
   type Value = String
@@ -28,6 +27,4 @@ abstract class Reader extends Serializable {
   def getCobolSchema: CobolSchema
 
   def getSparkSchema: StructType
-
-  @throws(classOf[Exception]) def getRowIterator(binaryData: Array[Byte]): Iterator[Row]
 }

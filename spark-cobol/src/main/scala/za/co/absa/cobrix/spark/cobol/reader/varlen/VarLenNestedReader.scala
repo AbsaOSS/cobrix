@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.streamreader
+package za.co.absa.cobrix.spark.cobol.reader.varlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
 /** The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema */
-class NestedStreamReader(copybookContents: String,
+class VarLenNestedReader(copybookContents: String,
                          lengthFieldName: String,
                          startOffset: Int = 0,
-                         endOffset: Int = 0) extends StreamReader {
+                         endOffset: Int = 0) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -36,7 +37,7 @@ class NestedStreamReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def getRowIterator(binaryData: SimpleStream): Iterator[Row] = new NestedStreamIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset )
+  override def getRowIterator(binaryData: SimpleStream): Iterator[Row] = new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset )
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)

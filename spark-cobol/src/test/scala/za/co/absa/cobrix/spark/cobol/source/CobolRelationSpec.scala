@@ -23,10 +23,10 @@ import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
-import za.co.absa.cobrix.spark.cobol.source.base.impl.{DummyCobolSchema, DummyReader}
+import za.co.absa.cobrix.spark.cobol.source.base.impl.{DummyCobolSchema, DummyFixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.utils.SourceTestUtils.{createFileInRandomDirectory, sampleCopybook}
 
 class CobolRelationSpec extends SparkCobolTestBase with Serializable {
@@ -55,9 +55,9 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   behavior of "CobolRelation"
 
   it should "return an RDD[Row] if data are correct" in {
-    val testReader: Reader = new DummyReader(sparkSchema, cobolSchema, testData)(() => Unit)
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, Left(testReader))(sqlContext)
-    val cobolData: RDD[Row] = relation.parseRecords(oneRowRDD)
+    val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => Unit)
+    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, testReader)(sqlContext)
+    val cobolData: RDD[Row] = relation.parseRecords(testReader, oneRowRDD)
 
     val cobolDataFrame = sqlContext.createDataFrame(cobolData, sparkSchema)
     cobolDataFrame.collect().foreach(row => {
@@ -76,11 +76,11 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
 
   it should "manage exceptions from Reader" in {
     val exceptionMessage = "exception expected message"
-    val testReader: Reader = new DummyReader(sparkSchema, cobolSchema, testData)(() => throw new Exception(exceptionMessage))
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, Left(testReader))(sqlContext)
+    val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => throw new Exception(exceptionMessage))
+    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, testReader)(sqlContext)
 
     val caught = intercept[Exception] {
-      relation.parseRecords(oneRowRDD).collect()
+      relation.parseRecords(testReader, oneRowRDD).collect()
     }
     assert(caught.getMessage.contains(exceptionMessage))
   }
@@ -88,11 +88,11 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   it should "manage records with missing fields" in {
     val absentField = "absentField"
     val modifiedSparkSchema = sparkSchema.add(new StructField(absentField, StringType, false))
-    val testReader: Reader = new DummyReader(modifiedSparkSchema, cobolSchema, testData)(() => Unit)
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, Left(testReader))(sqlContext)
+    val testReader: FixedLenReader = new DummyFixedLenReader(modifiedSparkSchema, cobolSchema, testData)(() => Unit)
+    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath, testReader)(sqlContext)
     
     val caught = intercept[SparkException] {
-      relation.parseRecords(oneRowRDD).collect()
+      relation.parseRecords(testReader, oneRowRDD).collect()
     }    
     
     assert(caught.getMessage.contains("key not found: absentField"))

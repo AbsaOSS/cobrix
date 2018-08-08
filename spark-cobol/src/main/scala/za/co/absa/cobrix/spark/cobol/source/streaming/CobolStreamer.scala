@@ -23,7 +23,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
-import za.co.absa.cobrix.spark.cobol.reader.{FlatReader, Reader}
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenFlatReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
 
@@ -36,8 +36,8 @@ import scala.collection.JavaConverters.asScalaBufferConverter
  */
 object CobolStreamer {
   
-  def getReader(implicit ssc: StreamingContext): Reader = {
-    new FlatReader(loadCopybookFromHDFS(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
+  def getReader(implicit ssc: StreamingContext): FixedLenReader = {
+    new FixedLenFlatReader(loadCopybookFromHDFS(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
   }
   
   implicit class Deserializer(@transient val ssc: StreamingContext) extends Serializable {
