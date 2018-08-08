@@ -24,10 +24,17 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.source.variable.VariableLengthSimpleStreamer
+import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.streamreader.StreamReader
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
+/**
+  * This class implements an actual Spark relation.
+  *
+  * It currently supports both, fixed and variable-length records.
+  *
+  * Its constructor is expected to change after the hierarchy of [[Reader]] is put in place.
+  */
 class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
@@ -62,14 +69,13 @@ class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])
       partition =>
       {
         val conf = SparkSession.builder.getOrCreate().sparkContext.hadoopConfiguration
-
-        //val fileSystem = FileSystem.get(sqlContext.sparkContext.hadoopConfiguration)
         val fileSystem = FileSystem.get(conf)
+
         partition.flatMap(row =>
         {
           val file = row.getString(0)
           logger.info(s"Going to parse file: $file")
-          reader.getRowIterator(new VariableLengthSimpleStreamer(file, fileSystem))
+          reader.getRowIterator(new FileStreamer(file, fileSystem))
         }
         )
       })

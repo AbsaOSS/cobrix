@@ -26,6 +26,9 @@ import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
 import za.co.absa.cobrix.spark.cobol.streamreader.{NestedStreamReader, StreamReader}
 
+/**
+  * This class represents a Cobol data source.
+  */
 class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
@@ -45,8 +48,14 @@ class DefaultSource
     new CobolRelation(parameters(PARAM_SOURCE_PATH), buildEitherReader(sqlContext.sparkSession, parameters))(sqlContext)
   }
 
+  //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): Reader = null
 
+  /**
+    * Builds one of two Readers, depending on the parameters.
+    *
+    * This method will probably be removed once the correct hierarchy for [[Reader]] is put in place.
+    */
   private def buildEitherReader(spark: SparkSession, parameters: Map[String, String]): Either[Reader,StreamReader] = {
 
     val cobolParameters = CobolParametersParser.parse(parameters)
@@ -60,12 +69,20 @@ class DefaultSource
     }
   }
 
+  /**
+    * Creates a Reader that knows how to consume fixed-length Cobol records.
+    */
   private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): Reader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     new NestedReader(copybookContent)
   }
 
+  /**
+    * Creates a Reader that is capable of reading variable-length Cobol records.
+    *
+    * The variable-length reading process is approached as if reading from a stream.
+    */
   private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): StreamReader = {
 
     if (!parameters.variableLengthParams.isDefined) {

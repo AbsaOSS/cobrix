@@ -27,6 +27,9 @@ import org.apache.spark.SparkConf
 import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 
+/**
+  * This class provides methods for checking the Spark job options after parsed.
+  */
 object CobolParametersValidator {
 
   def checkSanity(params: CobolParameters) = {
