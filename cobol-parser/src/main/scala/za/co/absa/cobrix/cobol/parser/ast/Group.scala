@@ -34,7 +34,7 @@ case class Group(
                   level: Int,
                   name: String,
                   lineNumber: Int,
-                  children: mutable.ArrayBuffer[CBTree] = mutable.ArrayBuffer(),
+                  children: mutable.ArrayBuffer[Statement] = mutable.ArrayBuffer(),
                   redefines: Option[String] = None,
                   isRedefined: Boolean = false,
                   occurs: Option[Int] = None,
@@ -44,19 +44,19 @@ case class Group(
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )
                 (val parent: Option[Group] = None)
-  extends CBTree {
+  extends Statement {
 
-  /** This method is used to add a [[za.co.absa.cobrix.cobol.parser.ast.CBTree]] object as a child of
-    * another [[za.co.absa.cobrix.cobol.parser.ast.CBTree]] object
+  /** This method is used to add a [[za.co.absa.cobrix.cobol.parser.ast.Statement]] object as a child of
+    * another [[za.co.absa.cobrix.cobol.parser.ast.Statement]] object
     *
     * @param tree A tree to add this item to
-    * @tparam T Either Group or Statement
+    * @tparam T Either Group or Primitive
     * @return the new tree
     */
-  def add[T <: CBTree](tree: T): CBTree = {
+  def add[T <: Statement](tree: T): Statement = {
     val child = tree match {
       case grp: Group => grp.copy()(Some(this))
-      case st: Statement => st.copy()(Some(this))
+      case st: Primitive => st.copy()(Some(this))
       case _ => throw new IllegalStateException("Unknown AST object encountered while parsing a Cobol copybook")
     }
     children += child
@@ -64,7 +64,7 @@ case class Group(
   }
 
   /** Returns the original Group with updated children */
-  def withUpdatedChildren(newChildren: mutable.ArrayBuffer[CBTree]): Group = {
+  def withUpdatedChildren(newChildren: mutable.ArrayBuffer[Statement]): Group = {
     copy(children = newChildren)(parent)
   }
 

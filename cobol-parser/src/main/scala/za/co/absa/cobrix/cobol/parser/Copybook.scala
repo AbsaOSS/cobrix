@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser
 import com.typesafe.scalalogging.LazyLogging
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 
 class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
 
@@ -45,24 +45,24 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
     *
     */
-  def getFieldByName(fieldName: String): CBTree = {
+  def getFieldByName(fieldName: String): Statement = {
 
-    def getFieldByNameInGroup(group: Group, fieldName: String): Seq[CBTree] = {
+    def getFieldByNameInGroup(group: Group, fieldName: String): Seq[Statement] = {
       val groupMatch = if (group.name.equalsIgnoreCase(fieldName)) Seq(group) else Seq()
       groupMatch ++ group.children.flatMap(child => {
         child match {
           case g: Group => getFieldByNameInGroup(g, fieldName)
-          case st: Statement => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
+          case st: Primitive => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
         }
       })
     }
 
-    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
+    def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
       val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
       schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
     }
 
-    def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[CBTree] = {
+    def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
       if (path.length == 0) {
         Seq()
       } else {
@@ -72,7 +72,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
               if (g.name.equalsIgnoreCase(path.head))
                 getFieldByPathInGroup(g, path.drop(1))
               else Seq()
-            case st: Statement =>
+            case st: Primitive =>
               if (st.name.equalsIgnoreCase(path.head))
                 Seq(st)
               else Seq()
@@ -81,7 +81,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
       }
     }
 
-    def getFielByPathName(schema: CopybookAST, fieldName: String): Seq[CBTree] = {
+    def getFielByPathName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
       val path = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
       schema.flatMap(grp =>
         if (grp.name.equalsIgnoreCase(path.head))
@@ -121,7 +121,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     * @return The value of the field
     *
     */
-  def extractPrimitiveField(field: Statement, bytes: Array[Byte], startOffset: Int = 0): Any = {
+  def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val bits = BitVector(bytes)
     field.decodeTypeValue( field.binaryProperties.offset + startOffset*8, bits)
   }
@@ -141,7 +141,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
   def getFieldValueByName(fieldName: String, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val ast = getFieldByName(fieldName)
     ast match {
-      case s: Statement => extractPrimitiveField(s, bytes, startOffset)
+      case s: Primitive => extractPrimitiveField(s, bytes, startOffset)
       case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract it's value.")
     }
   }
@@ -188,7 +188,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
             val fieldLengthPart = alignRight(s"$length", 7)
             val groupDescription = s"$namePart$picturePart$fieldCounterPart$startPart$fieldEndPart$fieldLengthPart\n"
             groupDescription + groupStr
-          case s: Statement =>
+          case s: Primitive =>
             val isDependeeStr = if (s.isDependee) "D" else ""
             val modifiers = s"$isDependeeStr$isRedefinedByStr$isRedefines$isArray"
             val start = s.binaryProperties.offset / 8 + 1

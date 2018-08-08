@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -41,7 +41,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
   override def next(): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: CBTree, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
+    def extractArray(field: Statement, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
       val fields = new ListBuffer[Any]()
       val from = 0
       val arraySize = field.arrayMaxSize
@@ -65,7 +65,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
             fields ++= value
           }
           groupValues
-        case s: Statement =>
+        case s: Primitive =>
           val values = for (i <- Range(from, arraySize)) yield {
             val useNullPath = isNullPath || i >= actualSize
             val value = s.decodeTypeValue(offset, dataBits)
@@ -77,11 +77,11 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
       fields
     }
 
-    def extractValue(field: CBTree, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
+    def extractValue(field: Statement, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp, isNullPath)
-        case st: Statement =>
+        case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, dataBits)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {

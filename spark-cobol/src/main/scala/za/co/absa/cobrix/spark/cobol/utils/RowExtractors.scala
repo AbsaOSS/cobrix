@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.utils
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,7 +28,7 @@ object RowExtractors {
   def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: CBTree, useOffset: Long): IndexedSeq[Any] = {
+    def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -50,7 +50,7 @@ object RowExtractors {
             value
           }
           groupValues
-        case s: Statement =>
+        case s: Primitive =>
           val values = for (_ <- Range(from, actualSize)) yield {
             val value = s.decodeTypeValue(offset, dataBits)
             offset += s.binaryProperties.dataSize
@@ -60,11 +60,11 @@ object RowExtractors {
       }
     }
 
-    def extractValue(field: CBTree, useOffset: Long): Any = {
+    def extractValue(field: Statement, useOffset: Long): Any = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp)
-        case st: Statement =>
+        case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, dataBits)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {

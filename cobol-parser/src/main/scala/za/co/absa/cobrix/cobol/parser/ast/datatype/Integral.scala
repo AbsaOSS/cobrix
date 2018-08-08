@@ -27,7 +27,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
   * @param compact      A type of binary number representation format
   * @param enc          An encoding
   */
-case class Integer(
+case class Integral(
                     precision: Int,
                     signPosition: Option[Position] = None,
                     wordAlligned: Option[Position] = None,

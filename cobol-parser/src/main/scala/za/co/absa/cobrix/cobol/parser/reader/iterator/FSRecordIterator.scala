@@ -21,7 +21,7 @@ import java.io.FileInputStream
 
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.{DataExtractors, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.Copybook
 

@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import com.typesafe.scalalogging.LazyLogging
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -43,7 +43,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
   override def next(): Map[String, Option[String]] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: CBTree, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
+    def extractArray(field: Statement, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
       val fields = new ListBuffer[Tuple2[String, Option[String]]]()
       val from = 0
       val arraySize = field.arrayMaxSize
@@ -67,7 +67,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
             offset += grp.binaryProperties.dataSize
             fields ++= values
           }
-        case s: Statement =>
+        case s: Primitive =>
           for (i <- Range(from, arraySize)) yield {
             val useNullPath = isNullPath || i >= actualSize
             val value: Option[String] = if (useNullPath) None else {
@@ -82,11 +82,11 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
       fields
     }
 
-    def extractValue(field: CBTree, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
+    def extractValue(field: Statement, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp, s"$path${grp.name}_", isNullPath)
-        case st: Statement =>
+        case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, dataBits)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {
@@ -188,7 +188,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
     val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
       field match {
         case group: Group => getGroupValues(group, s"$path${group.name}_")
-        case s: Statement =>
+        case s: Primitive =>
           val name = s"$path${s.name}"
           val value = s.decodeValue2(bitIndex + s.binaryProperties.offset, dataBits)
           Map[String, Option[String]](name -> value)

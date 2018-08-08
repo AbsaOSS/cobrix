@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Statement
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
@@ -72,11 +72,11 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8))
   }
 
-  private def getLengthField: Statement = {
+  private def getLengthField: Primitive = {
     val field = cobolSchema.getFieldByName(lengthFieldName)
     field match {
-      case s: Statement =>
-        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer]) {
+      case s: Primitive =>
+        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
           throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
         }
         s

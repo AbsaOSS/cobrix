@@ -20,7 +20,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.sql.types._
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integer}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 
 import scala.collection.mutable.ArrayBuffer
@@ -63,11 +63,11 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
       field match {
         case group: Group =>
           parseGroup(group)
-        case s: Statement =>
+        case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case Decimal(scale, precision, _, _, _, _, _) => DecimalType(precision, scale)
             case _: AlphaNumeric => StringType
-            case dt: Integer =>
+            case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }
@@ -106,11 +106,11 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
             val path = s"$structPath${group.name}_"
             fields ++= parseGroupFlat(group, path)
           }
-        case s: Statement =>
+        case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case Decimal(scale, precision, _, _, _, _, _) => DecimalType(precision, scale)
             case _: AlphaNumeric => StringType
-            case dt: Integer =>
+            case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }

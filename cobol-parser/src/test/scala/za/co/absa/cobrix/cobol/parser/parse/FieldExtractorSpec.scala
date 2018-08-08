@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.Statement
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.ast.datatype.AlphaNumeric
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 
@@ -65,7 +65,7 @@ class FieldExtractorSpec extends FunSuite {
 
     val field4 = parsedSchema.getFieldByName("RECORD.DATA-STRUCT2.EXAMPLE-STR-FLD")
     assert(field4.name.equalsIgnoreCase("EXAMPLE_STR_FLD"))
-    assert(field4.asInstanceOf[Statement].dataType.asInstanceOf[AlphaNumeric].length == 8)
+    assert(field4.asInstanceOf[Primitive].dataType.asInstanceOf[AlphaNumeric].length == 8)
   }
 
 

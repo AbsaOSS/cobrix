@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
@@ -36,7 +36,7 @@ class FieldSizeSpec extends FunSuite {
     val item = cpy.ast.head.children(index)
     val sizebits = item match {
       case grp: Group => grp.binaryProperties.actualSize
-      case stat: Statement => stat.binaryProperties.actualSize
+      case stat: Primitive => stat.binaryProperties.actualSize
     }
     sizebits
   }

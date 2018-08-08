@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
