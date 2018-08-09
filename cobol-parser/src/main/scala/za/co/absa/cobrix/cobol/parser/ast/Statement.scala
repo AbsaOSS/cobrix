@@ -47,6 +47,7 @@ trait Statement {
   def to: Option[Int]
 
   /** Returns the minimum OCCURS (array) size of the field. Returns 1 for non-OCCURS (non-array) fields. */
+  @throws(classOf[IllegalThreadStateException])
   def arrayMinSize: Int = {
     (occurs, to) match {
       case (None, None) => 1
@@ -57,6 +58,7 @@ trait Statement {
   }
 
   /** Returns the maximum OCCURS (array) size of the field. Returns 1 for non-OCCURS (non-array) fields. */
+  @throws(classOf[IllegalThreadStateException])
   def arrayMaxSize: Int = {
     (occurs, to) match {
       case (None, None) => 1

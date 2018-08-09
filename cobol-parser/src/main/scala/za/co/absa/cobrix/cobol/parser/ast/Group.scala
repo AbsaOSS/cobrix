@@ -53,6 +53,7 @@ case class Group(
     * @tparam T Either Group or Primitive
     * @return the new tree
     */
+  @throws(classOf[IllegalThreadStateException])
   def add[T <: Statement](tree: T): Statement = {
     val child = tree match {
       case grp: Group => grp.copy()(Some(this))

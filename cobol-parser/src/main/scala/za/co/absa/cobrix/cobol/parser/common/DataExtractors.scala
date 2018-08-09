@@ -24,6 +24,8 @@ import scala.collection.mutable.ArrayBuffer
 
 object DataExtractors {
 
+
+  @throws(classOf[IllegalStateException])
   def extractValues(ast: CopybookAST, bytes: Array[Byte], offset: Int = 0): Seq[Any] = {
 
     val dataBits: BitVector = BitVector(bytes)

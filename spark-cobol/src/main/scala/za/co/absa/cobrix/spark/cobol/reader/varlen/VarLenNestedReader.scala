@@ -26,6 +26,7 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
 /** The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema */
+@throws(classOf[IllegalArgumentException])
 class VarLenNestedReader(copybookContents: String,
                          lengthFieldName: String,
                          startOffset: Int = 0,
@@ -50,6 +51,7 @@ class VarLenNestedReader(copybookContents: String,
 
   override def getRecordEndOffset: Int = endOffset
 
+  @throws(classOf[IllegalArgumentException])
   private def checkInputArgumentsValidity(): Unit = {
     if (startOffset < 0) {
       throw new IllegalArgumentException (s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")

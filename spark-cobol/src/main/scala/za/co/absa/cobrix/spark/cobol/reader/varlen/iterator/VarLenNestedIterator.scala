@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+@throws(classOf[IllegalStateException])
 class VarLenNestedIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            lengthFieldName: String,
@@ -38,6 +39,8 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
   override def hasNext: Boolean = cachedValue.nonEmpty
 
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[NoSuchElementException])
   override def next(): Row = {
     cachedValue match {
       case None => throw new NoSuchElementException
@@ -47,6 +50,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     }
   }
 
+  @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
     val binaryData = dataStream.next(startOffset + copyBookRecordSize)
 
@@ -72,6 +76,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8))
   }
 
+  @throws(classOf[IllegalStateException])
   private def getLengthField: Primitive = {
     val field = cobolSchema.getFieldByName(lengthFieldName)
     field match {

@@ -25,6 +25,7 @@ import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import scala.collection.mutable.ArrayBuffer
 
 object RowExtractors {
+  @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 

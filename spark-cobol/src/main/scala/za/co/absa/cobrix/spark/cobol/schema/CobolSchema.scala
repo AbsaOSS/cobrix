@@ -29,6 +29,7 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   def getCobolSchema: Copybook = copybook
 
+  @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val records = for (record <- copybook.ast) yield {
@@ -37,6 +38,7 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
     StructType(records.toArray)
   }
 
+  @throws(classOf[IllegalStateException])
   private[this] lazy val sparkFlatSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val arraySchema = copybook.ast.toArray
@@ -58,6 +60,7 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
 
+  @throws(classOf[IllegalStateException])
   private def parseGroup(group: Group): StructField = {
     val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
       field match {
@@ -92,6 +95,7 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   }
 
+  @throws(classOf[IllegalStateException])
   private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
     val fields = new ArrayBuffer[StructField]()
     for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) {

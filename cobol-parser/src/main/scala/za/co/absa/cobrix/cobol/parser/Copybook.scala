@@ -45,6 +45,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
     *
     */
+  @throws(classOf[IllegalArgumentException])
   def getFieldByName(fieldName: String): Statement = {
 
     def getFieldByNameInGroup(group: Group, fieldName: String): Seq[Statement] = {
@@ -121,6 +122,7 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     * @return The value of the field
     *
     */
+  @throws(classOf[Exception])
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val bits = BitVector(bytes)
     field.decodeTypeValue( field.binaryProperties.offset + startOffset*8, bits)
@@ -138,6 +140,8 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
     * @return The value of the field
     *
     */
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[Exception])
   def getFieldValueByName(fieldName: String, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val ast = getFieldByName(fieldName)
     ast match {

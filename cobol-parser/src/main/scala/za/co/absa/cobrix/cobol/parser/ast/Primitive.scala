@@ -101,6 +101,7 @@ case class Primitive(
     * @param bitOffset An offset of the field inside the binary data
     * @param record    A record in a binary format represented as a vector of bits
     */
+  @throws(classOf[IllegalStateException])
   def decodeValue2(bitOffset: Long, record: BitVector): Option[String] = {
     val bitCount = binaryProperties.dataSize
     val idx = bitOffset
@@ -127,6 +128,7 @@ case class Primitive(
     * @param itOffset An offset of the field inside the binary data
     * @param record   A record in a binary format represented as a vector of bits
     */
+  @throws(classOf[Exception])
   def decodeTypeValue(itOffset: Long, record: BitVector): Any = {
     val str = decodeValue2(itOffset, record)
     val value = try {
@@ -183,6 +185,7 @@ case class Primitive(
     }
   }
 
+  @throws(classOf[SyntaxErrorException])
   private def validateDataTypes(): Unit = {
     dataType match {
       case d: Decimal =>

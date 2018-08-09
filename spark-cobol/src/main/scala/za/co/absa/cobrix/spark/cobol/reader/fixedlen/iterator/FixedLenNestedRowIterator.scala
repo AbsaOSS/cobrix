@@ -42,6 +42,7 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
 
   override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
 
+  @throws(classOf[IllegalStateException])
   override def next(): Row = {
     if (!hasNext) {
       throw new NoSuchElementException()

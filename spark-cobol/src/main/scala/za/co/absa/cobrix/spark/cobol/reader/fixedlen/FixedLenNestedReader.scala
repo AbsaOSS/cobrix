@@ -33,11 +33,13 @@ class FixedLenNestedReader(val copyBookContents: String,
   override def getCobolSchema: CobolSchema = cobolSchema
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
+  @throws(classOf[Exception])
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
     new FixedLenNestedRowIterator(binaryData, cobolSchema, startOffset, endOffset)
   }
 
+  @throws(classOf[IllegalArgumentException])
   private def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
     if (startOffset < 0) {
       throw new IllegalArgumentException (s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")

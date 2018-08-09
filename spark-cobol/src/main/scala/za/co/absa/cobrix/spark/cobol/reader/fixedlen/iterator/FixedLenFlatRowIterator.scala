@@ -38,6 +38,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
 
   override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
 
+  @throws(classOf[IllegalStateException])
   override def next(): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 

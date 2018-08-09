@@ -32,6 +32,7 @@ class FixedLenFlatReader(val copyBookContents: String,
   override def getCobolSchema: CobolSchema = cobolSchema
   override def getSparkSchema: StructType = cobolSchema.getSparkFlatSchema
 
+  @throws(classOf[Exception])
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
     new FixedLenFlatRowIterator(binaryData, cobolSchema)
@@ -49,6 +50,7 @@ class FixedLenFlatReader(val copyBookContents: String,
     headers + "\n" + rows.mkString("\n")
   }
 
+  @throws(classOf[IllegalArgumentException])
   private def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
     if (binaryData.length < cobolSchema.getRecordSize) {
       throw new IllegalArgumentException (s"Binary record too small. Expected binary record size = ${cobolSchema.getRecordSize}, got ${binaryData.length} ")
