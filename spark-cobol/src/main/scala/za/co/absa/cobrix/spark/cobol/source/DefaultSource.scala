@@ -76,7 +76,8 @@ class DefaultSource
   private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    new FixedLenNestedReader(copybookContent)
+    new FixedLenNestedReader(copybookContent, parameters.recordStartOffset, parameters.recordEndOffset
+    )
   }
 
   /**
@@ -96,8 +97,8 @@ class DefaultSource
     new VarLenNestedReader(
       copybookContent,
       variableLengthParameters.recordLengthField,
-      variableLengthParameters.recordStartOffset,
-      variableLengthParameters.recordEndOffset
+      parameters.recordStartOffset,
+      parameters.recordEndOffset
     )
   }
 }

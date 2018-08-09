@@ -33,6 +33,8 @@ class VarLenNestedReader(copybookContents: String,
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
+  checkInputArgumentsValidity()
+
   override def getCobolSchema: CobolSchema = cobolSchema
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
@@ -42,6 +44,19 @@ class VarLenNestedReader(copybookContents: String,
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     new CobolSchema(schema)
+  }
+
+  override def getRecordStartOffset: Int = startOffset
+
+  override def getRecordEndOffset: Int = endOffset
+
+  private def checkInputArgumentsValidity(): Unit = {
+    if (startOffset < 0) {
+      throw new IllegalArgumentException (s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
+    }
+    if (endOffset < 0) {
+      throw new IllegalArgumentException (s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
+    }
   }
 
 }

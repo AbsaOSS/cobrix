@@ -24,7 +24,9 @@ import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowI
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 /** The Cobol data reader that produces nested structure schema */
-class FixedLenNestedReader(val copyBookContents: String) extends FixedLenReader with Serializable {
+class FixedLenNestedReader(val copyBookContents: String,
+                           startOffset: Int = 0,
+                           endOffset: Int = 0) extends FixedLenReader with Serializable {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
@@ -33,20 +35,34 @@ class FixedLenNestedReader(val copyBookContents: String) extends FixedLenReader 
 
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
-    new FixedLenNestedRowIterator(binaryData, cobolSchema)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, startOffset, endOffset)
   }
 
   private def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
-    if (binaryData.length < cobolSchema.getRecordSize) {
-      throw new IllegalArgumentException (s"Binary record too small. Expected binary record size = ${cobolSchema.getRecordSize}, got ${binaryData.length} ")
+    if (startOffset < 0) {
+      throw new IllegalArgumentException (s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
     }
-    if (binaryData.length % cobolSchema.getRecordSize > 0) {
-      throw new IllegalArgumentException (s"Binary record size ${cobolSchema.getRecordSize} does not divide data size ${binaryData.length}.")
+    if (endOffset < 0) {
+      throw new IllegalArgumentException (s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
     }
+    if (binaryData.length < getExpectedLength) {
+      throw new IllegalArgumentException (s"Binary record too small. Expected binary record size = $getExpectedLength, got ${binaryData.length} ")
+    }
+    if (binaryData.length % getExpectedLength > 0) {
+      throw new IllegalArgumentException (s"Binary record size $getExpectedLength does not divide data size ${binaryData.length}.")
+    }
+  }
+
+  private def getExpectedLength: Int = {
+    cobolSchema.getRecordSize + startOffset + endOffset
   }
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     new CobolSchema(schema)
   }
+
+  override def getRecordStartOffset: Int = startOffset
+
+  override def getRecordEndOffset: Int = endOffset
 }

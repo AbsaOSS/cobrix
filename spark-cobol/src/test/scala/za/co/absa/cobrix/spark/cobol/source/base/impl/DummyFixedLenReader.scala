@@ -52,4 +52,7 @@ class DummyFixedLenReader(sparkSchema: StructType, cobolSchema: CobolSchema, dat
     throw new NotImplementedException("")
   }
 
+  override def getRecordStartOffset: Int = 0
+
+  override def getRecordEndOffset: Int = 0
 }

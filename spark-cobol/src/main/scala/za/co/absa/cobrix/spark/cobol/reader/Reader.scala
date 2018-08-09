@@ -27,4 +27,8 @@ abstract class Reader extends Serializable {
   def getCobolSchema: CobolSchema
 
   def getSparkSchema: StructType
+
+  def getRecordStartOffset: Int
+
+  def getRecordEndOffset: Int
 }

@@ -32,10 +32,13 @@ import scala.collection.mutable.ArrayBuffer
   * @param binaryData  A binary data to traverse
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
-class FixedLenNestedRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
+class FixedLenNestedRowIterator(val binaryData: Array[Byte],
+                                val cobolSchema: CobolSchema,
+                                startOffset: Int = 0,
+                                endOffset: Int = 0) extends Iterator[Row] {
   private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
-  private var bitIndex = 0L
+  private var bitIndex = startOffset.toLong * 8
 
   override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
 
@@ -50,7 +53,7 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte], val cobolSchema: Co
     // Advance bit index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    bitIndex += lastRecordActualSize
+    bitIndex += lastRecordActualSize + endOffset * 8
 
     records
   }

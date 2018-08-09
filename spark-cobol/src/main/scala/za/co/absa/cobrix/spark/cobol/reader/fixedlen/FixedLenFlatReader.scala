@@ -24,7 +24,9 @@ import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.{FixedLenFlatRowIt
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 /** The Cobol data reader that provides output using flattened schema */
-class FixedLenFlatReader(val copyBookContents: String) extends FixedLenReader with Serializable {
+class FixedLenFlatReader(val copyBookContents: String,
+                         startOffset: Int = 0,
+                         endOffset: Int = 0) extends FixedLenReader with Serializable {
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
   override def getCobolSchema: CobolSchema = cobolSchema
@@ -60,4 +62,8 @@ class FixedLenFlatReader(val copyBookContents: String) extends FixedLenReader wi
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     new CobolSchema(schema)
   }
+
+  override def getRecordStartOffset: Int = startOffset
+
+  override def getRecordEndOffset: Int = endOffset
 }
