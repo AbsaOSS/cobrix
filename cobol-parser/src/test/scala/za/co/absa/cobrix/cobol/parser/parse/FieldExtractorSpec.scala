@@ -66,6 +66,11 @@ class FieldExtractorSpec extends FunSuite {
     val field4 = parsedSchema.getFieldByName("RECORD.DATA-STRUCT2.EXAMPLE-STR-FLD")
     assert(field4.name.equalsIgnoreCase("EXAMPLE_STR_FLD"))
     assert(field4.asInstanceOf[Primitive].dataType.asInstanceOf[AlphaNumeric].length == 8)
+
+    // If a copybook has only 1 root group, the name of the group can be omitted in the path
+    val field5 = parsedSchema.getFieldByName("DATA-STRUCT2.EXAMPLE-STR-FLD")
+    assert(field4.name.equalsIgnoreCase("EXAMPLE_STR_FLD"))
+    assert(field4.asInstanceOf[Primitive].dataType.asInstanceOf[AlphaNumeric].length == 8)
   }
 
 

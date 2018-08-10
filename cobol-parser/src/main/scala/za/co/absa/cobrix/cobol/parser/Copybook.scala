@@ -82,9 +82,23 @@ class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
       }
     }
 
-    def getFielByPathName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
-      val path = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
-      schema.flatMap(grp =>
+    def pathBeginsWithRoot(ast: CopybookAST, fieldPath: Array[String]): Boolean = {
+      if (ast.lengthCompare(1) == 0 && fieldPath.length>0) {
+        val rootFieldName = CopybookParser.transformIdentifier(fieldPath.head)
+        ast.head.name.equalsIgnoreCase(rootFieldName)
+      } else {
+        false
+      }
+    }
+
+    def getFielByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
+      val origPath = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
+      val path = if (!pathBeginsWithRoot(ast, origPath)) {
+        ast.head.name +: origPath
+      } else {
+        origPath
+      }
+      ast.flatMap(grp =>
         if (grp.name.equalsIgnoreCase(path.head))
           getFieldByPathInGroup(grp, path.drop(1))
         else

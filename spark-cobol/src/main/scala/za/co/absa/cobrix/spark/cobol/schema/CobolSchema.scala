@@ -35,7 +35,12 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
     val records = for (record <- copybook.ast) yield {
       parseGroup(record)
     }
-    StructType(records.toArray)
+    if (records.lengthCompare(1) == 0) {
+      // If the copybook consists only of 1 root group, expand it's fields
+      records.head.dataType.asInstanceOf[StructType]
+    } else {
+      StructType(records.toArray)
+    }
   }
 
   @throws(classOf[IllegalStateException])

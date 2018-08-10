@@ -17,9 +17,10 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.types.StructType
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 
 import scala.collection.mutable.ArrayBuffer
@@ -106,7 +107,12 @@ object RowExtractors {
       values
     }
 
-    Row.fromSeq(records)
+    if (ast.lengthCompare(1) == 0) {
+      // If the copybook consists only of 1 root group, expand it's fields
+      records.head
+    } else {
+      Row.fromSeq(records)
+    }
   }
 
 }
