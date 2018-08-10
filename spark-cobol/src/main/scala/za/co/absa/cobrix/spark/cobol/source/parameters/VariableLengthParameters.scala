@@ -20,7 +20,5 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
   * This class holds the parameters currently used for parsing variable-length records.
   */
 case class VariableLengthParameters(
-                                     recordLengthField: String,
-                                     recordStartOffset: Int,
-                                     recordEndOffset:   Int
+                                     recordLengthField: String
                                    )

@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decode
 import org.scalatest.FunSuite
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -33,10 +33,10 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    val statement = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Statement]
+    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
-    val dataType = statement.dataType
-    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer].compact
+    val dataType = primitive.dataType
+    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
     assert(compact.get == 3)
@@ -50,10 +50,10 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    val statement = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Statement]
+    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
-    val dataType = statement.dataType
-    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer].compact
+    val dataType = primitive.dataType
+    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
     assert(compact.get == 3)
@@ -67,10 +67,10 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    val statement = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Statement]
+    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
-    val dataType = statement.dataType
-    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer].compact
+    val dataType = primitive.dataType
+    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
     assert(compact.get == 4)
@@ -84,10 +84,10 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    val statement = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Statement]
+    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
-    val dataType = statement.dataType
-    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer].compact
+    val dataType = primitive.dataType
+    val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isEmpty)
   }

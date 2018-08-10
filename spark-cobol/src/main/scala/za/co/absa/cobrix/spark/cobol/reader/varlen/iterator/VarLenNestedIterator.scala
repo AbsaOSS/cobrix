@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.streamreader
+package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Statement
-import za.co.absa.cobrix.cobol.parser.common.DataExtractors
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
-class NestedStreamIterator (cobolSchema: Copybook,
-                            dataStream: SimpleStream,
-                            lengthFieldName: String,
-                            startOffset: Int = 0,
-                            endOffset: Int = 0) extends Iterator[Row] {
+@throws(classOf[IllegalStateException])
+class VarLenNestedIterator(cobolSchema: Copybook,
+                           dataStream: SimpleStream,
+                           lengthFieldName: String,
+                           startOffset: Int = 0,
+                           endOffset: Int = 0) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = 0L
@@ -39,6 +39,8 @@ class NestedStreamIterator (cobolSchema: Copybook,
 
   override def hasNext: Boolean = cachedValue.nonEmpty
 
+  @throws(classOf[IllegalStateException])
+  @throws(classOf[NoSuchElementException])
   override def next(): Row = {
     cachedValue match {
       case None => throw new NoSuchElementException
@@ -48,6 +50,7 @@ class NestedStreamIterator (cobolSchema: Copybook,
     }
   }
 
+  @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
     val binaryData = dataStream.next(startOffset + copyBookRecordSize)
 
@@ -73,11 +76,12 @@ class NestedStreamIterator (cobolSchema: Copybook,
     cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8))
   }
 
-  private def getLengthField: Statement = {
+  @throws(classOf[IllegalStateException])
+  private def getLengthField: Primitive = {
     val field = cobolSchema.getFieldByName(lengthFieldName)
     field match {
-      case s: Statement =>
-        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integer]) {
+      case s: Primitive =>
+        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
           throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
         }
         s

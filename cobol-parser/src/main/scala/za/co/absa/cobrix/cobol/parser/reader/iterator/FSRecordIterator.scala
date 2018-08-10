@@ -21,12 +21,13 @@ import java.io.FileInputStream
 
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.{DataExtractors, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.Copybook
 
 import scala.collection.mutable.ArrayBuffer
 
+@throws(classOf[IllegalArgumentException])
 class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends Iterator[Seq[Any]] {
   private val binaryFileSize = Files.size(Paths.get(binaryFilePath))
   private val recordSize = cobolSchema.getRecordSize
@@ -37,6 +38,8 @@ class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends I
 
   override def hasNext: Boolean = byteIndex + recordSize <= binaryFileSize
 
+  @throws(classOf[NoSuchElementException])
+  @throws(classOf[IllegalStateException])
   override def next(): Seq[Any] = {
     if (!hasNext) {
       throw new NoSuchElementException()
@@ -55,6 +58,7 @@ class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends I
     records
   }
 
+  @throws(classOf[IllegalArgumentException])
   private def checkBinaryFileValidity(): Unit = {
     if (recordSize <= 0) {
       throw new IllegalArgumentException (s"Incorrect binary record size $recordSize. The size should be greater than zero.")

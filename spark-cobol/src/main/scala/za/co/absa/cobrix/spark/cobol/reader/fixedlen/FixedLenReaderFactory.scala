@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.SQLContext
 
 /**
   * Trait used to specify entities (e.g. DataSources) that know how to produce Readers.
@@ -25,6 +24,6 @@ import org.apache.spark.sql.SQLContext
   * This would push the burden to created specialized Readers into specialized DataSources, "decentralizing" the implementation of new sources.
   * If, at any time, this decentralization becomes undesired, the model can be easily redone as a Factory Method (GoF).
   */
-trait ReaderFactory {
-  def buildReader(spark: SparkSession, parameters: Map[String, String]): Reader
+trait FixedLenReaderFactory {
+  def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader
 }

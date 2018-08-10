@@ -14,21 +14,14 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.streamreader
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-/** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records)*/
-abstract class StreamReader extends Serializable {
-  type Field = String
-  type Value = String
-
-  def getCobolSchema: CobolSchema
-
-  def getSparkSchema: StructType
-
-  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream): Iterator[Row]
+/** The abstract class for Cobol block (fixed length records) data readers from various sources */
+abstract class FixedLenReader extends Reader with Serializable {
+  @throws(classOf[Exception]) def getRowIterator(binaryData: Array[Byte]): Iterator[Row]
 }

@@ -18,12 +18,14 @@ package za.co.absa.cobrix.cobol.parser.common
 
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 
 import scala.collection.mutable.ArrayBuffer
 
 object DataExtractors {
 
+
+  @throws(classOf[IllegalStateException])
   def extractValues(ast: CopybookAST, bytes: Array[Byte], offset: Int = 0): Seq[Any] = {
 
     val dataBits: BitVector = BitVector(bytes)
@@ -31,7 +33,7 @@ object DataExtractors {
 
     // Todo Extract common features and combine with BinaryDataRowIterator as it does almost the same
 
-    def extractArray(field: CBTree, useOffset: Long): IndexedSeq[Any] = {
+    def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -53,7 +55,7 @@ object DataExtractors {
             value
           }
           groupValues
-        case s: Statement =>
+        case s: Primitive =>
           val values = for (_ <- Range(from, actualSize)) yield {
             val value = s.decodeTypeValue(offset, dataBits)
             offset += s.binaryProperties.dataSize
@@ -63,11 +65,11 @@ object DataExtractors {
       }
     }
 
-    def extractValue(field: CBTree, useOffset: Long): Any = {
+    def extractValue(field: Statement, useOffset: Long): Any = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp)
-        case st: Statement =>
+        case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, dataBits)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {

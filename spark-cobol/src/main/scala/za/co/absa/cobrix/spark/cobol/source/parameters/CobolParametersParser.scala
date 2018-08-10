@@ -35,6 +35,8 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_PATH, params),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
+      params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
+      params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params)
     )
   }
@@ -44,9 +46,7 @@ object CobolParametersParser {
     if (params.contains(PARAM_RECORD_LENGTH)) {
       Some(new VariableLengthParameters
       (
-        params.get(PARAM_RECORD_LENGTH).get,
-        params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
-        params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt
+        params.get(PARAM_RECORD_LENGTH).get
       ))
     }
     else {

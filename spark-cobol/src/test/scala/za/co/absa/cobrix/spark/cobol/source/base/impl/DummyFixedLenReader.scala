@@ -18,11 +18,11 @@ package za.co.absa.cobrix.spark.cobol.source.base.impl
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.reader.Reader
 import org.apache.commons.lang3.NotImplementedException
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-class DummyReader(sparkSchema: StructType, cobolSchema: CobolSchema, data: List[Map[String, Option[String]]])(invokeOnTraverse: () => Unit) extends Reader with Serializable {
+class DummyFixedLenReader(sparkSchema: StructType, cobolSchema: CobolSchema, data: List[Map[String, Option[String]]])(invokeOnTraverse: () => Unit) extends FixedLenReader with Serializable {
   def getCobolSchema: CobolSchema = cobolSchema
 
   def getSparkSchema: StructType = sparkSchema
@@ -52,4 +52,7 @@ class DummyReader(sparkSchema: StructType, cobolSchema: CobolSchema, data: List[
     throw new NotImplementedException("")
   }
 
+  override def getRecordStartOffset: Int = 0
+
+  override def getRecordEndOffset: Int = 0
 }

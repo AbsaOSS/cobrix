@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.reader.iterator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.DataExtractors
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 
@@ -68,12 +68,12 @@ class VarLenIterator(cobolSchema: Copybook,
     cachedValue = Some(DataExtractors.extractValues(cobolSchema.getCobolSchema, binaryData, startOffset))
   }
 
-  private def getLengthField: Statement = {
+  private def getLengthField: Primitive = {
     val field = cobolSchema.getFieldByName(lengthFieldName)
     field match {
-      case s: Statement =>
+      case s: Primitive =>
         s.dataType match {
-          case _: za.co.absa.cobrix.cobol.parser.ast.datatype.Integer => //ok
+          case _: za.co.absa.cobrix.cobol.parser.ast.datatype.Integral => //ok
           case _ => throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
         }
         s

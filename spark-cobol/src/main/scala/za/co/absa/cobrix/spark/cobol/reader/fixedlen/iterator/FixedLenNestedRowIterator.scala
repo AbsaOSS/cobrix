@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader.iterator
+package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
@@ -32,13 +32,17 @@ import scala.collection.mutable.ArrayBuffer
   * @param binaryData  A binary data to traverse
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
-class BinaryDataRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
+class FixedLenNestedRowIterator(val binaryData: Array[Byte],
+                                val cobolSchema: CobolSchema,
+                                startOffset: Int = 0,
+                                endOffset: Int = 0) extends Iterator[Row] {
   private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
-  private var bitIndex = 0L
+  private var bitIndex = startOffset.toLong * 8
 
   override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
 
+  @throws(classOf[IllegalStateException])
   override def next(): Row = {
     if (!hasNext) {
       throw new NoSuchElementException()
@@ -50,7 +54,7 @@ class BinaryDataRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolS
     // Advance bit index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    bitIndex += lastRecordActualSize
+    bitIndex += lastRecordActualSize + endOffset * 8
 
     records
   }

@@ -20,7 +20,7 @@ import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.sql.types._
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integer}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 
 import scala.collection.mutable.ArrayBuffer
@@ -29,14 +29,21 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   def getCobolSchema: Copybook = copybook
 
+  @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val records = for (record <- copybook.ast) yield {
       parseGroup(record)
     }
-    StructType(records.toArray)
+    if (records.lengthCompare(1) == 0) {
+      // If the copybook consists only of 1 root group, expand it's fields
+      records.head.dataType.asInstanceOf[StructType]
+    } else {
+      StructType(records.toArray)
+    }
   }
 
+  @throws(classOf[IllegalStateException])
   private[this] lazy val sparkFlatSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val arraySchema = copybook.ast.toArray
@@ -58,16 +65,17 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
 
+  @throws(classOf[IllegalStateException])
   private def parseGroup(group: Group): StructField = {
     val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
       field match {
         case group: Group =>
           parseGroup(group)
-        case s: Statement =>
+        case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case Decimal(scale, precision, _, _, _, _, _) => DecimalType(precision, scale)
             case _: AlphaNumeric => StringType
-            case dt: Integer =>
+            case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }
@@ -92,6 +100,7 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
 
   }
 
+  @throws(classOf[IllegalStateException])
   private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
     val fields = new ArrayBuffer[StructField]()
     for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) {
@@ -106,11 +115,11 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
             val path = s"$structPath${group.name}_"
             fields ++= parseGroupFlat(group, path)
           }
-        case s: Statement =>
+        case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case Decimal(scale, precision, _, _, _, _, _) => DecimalType(precision, scale)
             case _: AlphaNumeric => StringType
-            case dt: Integer =>
+            case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }

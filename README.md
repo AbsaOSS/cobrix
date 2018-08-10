@@ -38,7 +38,7 @@ Among the motivations for this project, it is possible to highlight:
 
 ## Features
 
-- Supports primitive types (althouth some are "Cobol compiler specific")
+- Supports primitive types (although some are "Cobol compiler specific")
 
 - Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays)
 
@@ -51,7 +51,7 @@ Among the motivations for this project, it is possible to highlight:
 
 ## Usage
 
-#### Coordinate for Maven POM dependancy
+#### Coordinate for Maven POM dependency
 
 ```xml
 <dependency>
@@ -129,7 +129,6 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
     
     streamingContext.start()
     streamingContext.awaitTermination()
-
 ```
 
 ## Other Features
@@ -140,19 +139,19 @@ This library also provides convenient methods to extract Spark SQL schemas and C
 If you want to extract a Spark SQL schema from a copybook: 
 
 ```scala
-    import za.co.absa.cobrix.spark.cobol.reader.FlatReader
+    import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenFlatReader
     
-    val reader = new FlatReader("...copybook_contents...")    
+    val reader = new FixedLenFlatReader("...copybook_contents...")
     val sparkSchema = reader.getSparkSchema
     println(sparkSchema)
-```  
+```
 
 If you want to check the layout of the copybook: 
 
 ```scala
-    import za.co.absa.cobrix.spark.cobol.reader.NestedReader
+    import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenNestedReader
     
-    val reader = new NestedReader("...copybook_contents...") 
+    val reader = new FixedLenNestedReader("...copybook_contents...")
     val cobolSchema = reader.getCobolSchema
     println(cobolSchema.generateRecordLayoutPositions())
 ```
@@ -160,7 +159,7 @@ If you want to check the layout of the copybook:
 
 ## Performance
 
-Tests were peformed on a synthetic dataset. The setup and results are as follows.
+Tests were performed on a synthetic dataset. The setup and results are as follows.
 
 ### Cluster setup
 

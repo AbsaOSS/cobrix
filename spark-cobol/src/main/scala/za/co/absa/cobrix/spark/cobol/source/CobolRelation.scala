@@ -23,9 +23,10 @@ import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
-import za.co.absa.cobrix.spark.cobol.streamreader.StreamReader
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 /**
@@ -35,7 +36,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
   *
   * Its constructor is expected to change after the hierarchy of [[Reader]] is put in place.
   */
-class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])(@transient val sqlContext: SQLContext)
+class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
   with TableScan {
@@ -43,25 +44,19 @@ class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   override def schema: StructType = {
-    //TODO refactor when Reader hierarchy is changed
-    if (cobolReader.isLeft) {
-      cobolReader.left.get.getSparkSchema
-    }
-    else {
-      cobolReader.right.get.getSparkSchema
-    }
+    cobolReader.getSparkSchema
   }
 
   override def buildScan(): RDD[Row] = {
-    if (cobolReader.isRight) {
-      buildScanForVariableLength(cobolReader.right.get)
-    }
-    else {
-      buildScanForFixedLength(cobolReader.left.get)
+
+    cobolReader match {
+      case blockReader: FixedLenReader => buildScanForFixedLength(blockReader)
+      case streamReader: VarLenReader => buildScanForVariableLength(streamReader)
+      case _ => throw new IllegalStateException("Invalid reader object $cobolReader.")
     }
   }
 
-  private def buildScanForVariableLength(reader: StreamReader): RDD[Row] = {
+  private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
     val filesDF = getParallelizedFiles(sourceDir)
     implicit val rowEncoder = RowEncoder.apply(reader.getSparkSchema)
 
@@ -89,23 +84,23 @@ class CobolRelation(sourceDir: String, cobolReader: Either[Reader,StreamReader])
     sqlContext.sparkContext.parallelize(files, files.size).toDF()
   }
 
-  private def buildScanForFixedLength(reader: Reader): RDD[Row] = {
+  private def buildScanForFixedLength(reader: FixedLenReader): RDD[Row] = {
     // This reads whole text files as RDD[String]
     // Todo For Cobol files need to use
     // binaryRecords() for fixed size records
     // binaryFiles() for varying size records
     // https://spark.apache.org/docs/2.1.1/api/java/org/apache/spark/SparkContext.html#binaryFiles(java.lang.String,%20int)
 
-    val recordSize = reader.getCobolSchema.getRecordSize
+    val recordSize = reader.getCobolSchema.getRecordSize + reader.getRecordStartOffset + reader.getRecordEndOffset
     val schema = reader.getSparkSchema
 
     val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
-    parseRecords(records)
+    parseRecords(reader, records)
   }
 
-  private[source] def parseRecords(records: RDD[Array[Byte]]) = {
+  private[source] def parseRecords(reader: FixedLenReader, records: RDD[Array[Byte]]) = {
     records.flatMap(record => {
-      val it = cobolReader.left.get.getRowIterator(record)
+      val it = reader.getRowIterator(record)
       for (parsedRecord <- it) yield {
         parsedRecord
       }

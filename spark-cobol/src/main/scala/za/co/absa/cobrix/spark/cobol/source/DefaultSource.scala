@@ -20,11 +20,12 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.{NestedReader, Reader, ReaderFactory}
+import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
+import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
-import za.co.absa.cobrix.spark.cobol.streamreader.{NestedStreamReader, StreamReader}
 
 /**
   * This class represents a Cobol data source.
@@ -33,7 +34,7 @@ class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
     with DataSourceRegister
-    with ReaderFactory {
+    with FixedLenReaderFactory {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -49,33 +50,34 @@ class DefaultSource
   }
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
-  override def buildReader(spark: SparkSession, parameters: Map[String, String]): Reader = null
+  override def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader = null
 
   /**
     * Builds one of two Readers, depending on the parameters.
     *
-    * This method will probably be removed once the correct hierarchy for [[Reader]] is put in place.
+    * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
-  private def buildEitherReader(spark: SparkSession, parameters: Map[String, String]): Either[Reader,StreamReader] = {
+  private def buildEitherReader(spark: SparkSession, parameters: Map[String, String]): Reader = {
 
     val cobolParameters = CobolParametersParser.parse(parameters)
     CobolParametersValidator.checkSanity(cobolParameters)
 
     if (cobolParameters.variableLengthParams.isEmpty) {
-      Left(createFixedLengthReader(cobolParameters, spark))
+      createFixedLengthReader(cobolParameters, spark)
     }
     else {
-      Right(createVariableLengthReader(cobolParameters, spark))
+      createVariableLengthReader(cobolParameters, spark)
     }
   }
 
   /**
     * Creates a Reader that knows how to consume fixed-length Cobol records.
     */
-  private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): Reader = {
+  private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    new NestedReader(copybookContent)
+    new FixedLenNestedReader(copybookContent, parameters.recordStartOffset, parameters.recordEndOffset
+    )
   }
 
   /**
@@ -83,7 +85,7 @@ class DefaultSource
     *
     * The variable-length reading process is approached as if reading from a stream.
     */
-  private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): StreamReader = {
+  private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
 
     if (!parameters.variableLengthParams.isDefined) {
       throw new IllegalArgumentException("Trying to create StreamReader by parameters for variable-length records are missing.")
@@ -92,11 +94,11 @@ class DefaultSource
     val variableLengthParameters = parameters.variableLengthParams.get
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
 
-    new NestedStreamReader(
+    new VarLenNestedReader(
       copybookContent,
       variableLengthParameters.recordLengthField,
-      variableLengthParameters.recordStartOffset,
-      variableLengthParameters.recordEndOffset
+      parameters.recordStartOffset,
+      parameters.recordEndOffset
     )
   }
 }

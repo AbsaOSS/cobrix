@@ -16,12 +16,14 @@
 
 package za.co.absa.cobrix.cobol.parser.stream
 
-import java.io.{BufferedInputStream, FileInputStream}
+import java.io.{BufferedInputStream, FileInputStream, IOException}
 
 class FSStream (fileName: String) extends SimpleStream {
   val bytesStream = new BufferedInputStream(new FileInputStream(fileName))
   private var isClosed = false
 
+  @throws(classOf[IllegalArgumentException])
+  @throws(classOf[IOException])
   override def next(numberOfBytes: Int): Array[Byte] = {
     if (numberOfBytes <= 0) throw new IllegalArgumentException("Value of numberOfBytes should be greater than zero.")
     val b = new Array[Byte](numberOfBytes)
@@ -34,6 +36,7 @@ class FSStream (fileName: String) extends SimpleStream {
     }
   }
 
+  @throws(classOf[IOException])
   override def close(): Unit = {
     if (!isClosed) {
       bytesStream.close()

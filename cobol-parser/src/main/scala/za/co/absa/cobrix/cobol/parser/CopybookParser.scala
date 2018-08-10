@@ -17,10 +17,10 @@
 package za.co.absa.cobrix.cobol.parser
 
 import com.typesafe.scalalogging.LazyLogging
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integer}
-import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, CBTree, Group, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.encoding.Encoding
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 import scala.collection.mutable
@@ -31,7 +31,7 @@ import scala.util.control.NonFatal
   * The object contains generic function for the Copybook parser
   */
 object CopybookParser extends LazyLogging{
-  type MutableCopybook = mutable.ArrayBuffer[CBTree]
+  type MutableCopybook = mutable.ArrayBuffer[Statement]
   type CopybookAST = Seq[Group]
 
   import za.co.absa.cobrix.cobol.parser.common.ReservedWords._
@@ -47,9 +47,19 @@ object CopybookParser extends LazyLogging{
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param enc ASCII/EBCDIC
     * @return Seq[Group] where a group is a record inside the copybook
     */
+  def parseTree(copyBookContents: String): Copybook = {
+    parseTree(EBCDIC(), copyBookContents)
+  }
+
+  /**
+    * Tokenizes a Cobol Copybook contents and returns the AST.
+    *
+    * @param enc Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @return Seq[Group] where a group is a record inside the copybook
+    */
+  @throws(classOf[SyntaxErrorException])
   def parseTree(enc: Encoding, copyBookContents: String): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
@@ -68,16 +78,16 @@ object CopybookParser extends LazyLogging{
       breakpoints
     }
 
-    def getMatchingGroup(element: CBTree, newElementLevel: Int): Group = {
+    def getMatchingGroup(element: Statement, newElementLevel: Int): Group = {
       newElementLevel match {
         case level if level < 1 =>
           throw new SyntaxErrorException(element.lineNumber, element.name, s"Couldn't find matching level.")
         case level if level > element.level =>
           element match {
             case g: Group => g
-            case s: Statement =>
+            case s: Primitive =>
               throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
-            case c: CBTree =>
+            case c: Statement =>
               throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
           }
         case level if level <= element.level =>
@@ -93,7 +103,7 @@ object CopybookParser extends LazyLogging{
     }
 
     val tokens = tokenize(copyBookContents)
-    val lexedLines = tokens.map(lineTokens => lex(lineTokens.tokens))
+    val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
 
     val lines: Seq[CopybookLine] =
       tokens.zip(lexedLines)
@@ -119,7 +129,7 @@ object CopybookParser extends LazyLogging{
         redefines = None)(None)
       val trees = fields
         .drop(1) // root already added so drop first line
-        .foldLeft[CBTree](root)((element, field) => {
+        .foldLeft[Statement](root)((element, field) => {
         val keywords = field.modifiers.keys.toList
         val isLeaf = keywords.contains(PIC)
         val redefines = field.modifiers.get(REDEFINES)
@@ -130,7 +140,7 @@ object CopybookParser extends LazyLogging{
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          Statement(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
+          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
         }
         else {
           val groupUsage = getUsageModifiers(field.modifiers)
@@ -163,6 +173,7 @@ object CopybookParser extends LazyLogging{
     * @param subSchema An array of AST objects
     * @return The same AST with binary properties set for every field
     */
+  @throws(classOf[SyntaxErrorException])
   def calculateSchemaSizes(subSchema: MutableCopybook ): MutableCopybook  = {
 
     def calculateGroupSize(originalGroup: Group): Group = {
@@ -173,11 +184,11 @@ object CopybookParser extends LazyLogging{
       originalGroup.withUpdatedChildren(children).withUpdatedBinaryProperties(newBinProps)
     }
 
-    def calculateStatementSize(originalStatement: Statement): Statement = {
-      val size = originalStatement.getBinarySizeBits
-      val sizeAllOccurs = size*originalStatement.arrayMaxSize
-      val binProps = BinaryProperties(originalStatement.binaryProperties.offset, size, sizeAllOccurs)
-      originalStatement.withUpdatedBinaryProperties(binProps)
+    def calculatePrimitiveSize(originalPrimitive: Primitive): Primitive = {
+      val size = originalPrimitive.getBinarySizeBits
+      val sizeAllOccurs = size*originalPrimitive.arrayMaxSize
+      val binProps = BinaryProperties(originalPrimitive.binaryProperties.offset, size, sizeAllOccurs)
+      originalPrimitive.withUpdatedBinaryProperties(binProps)
     }
 
     val newSchema: MutableCopybook = new MutableCopybook()
@@ -204,7 +215,7 @@ object CopybookParser extends LazyLogging{
 
       val childWithSizes = child match {
         case group: Group => calculateGroupSize(group)
-        case st: Statement => calculateStatementSize(st)
+        case st: Primitive => calculatePrimitiveSize(st)
       }
       redefinedSizes += childWithSizes.binaryProperties.actualSize
       redefinedNames += childWithSizes.name.toUpperCase
@@ -246,7 +257,7 @@ object CopybookParser extends LazyLogging{
       val newField = field match {
         case grp: Group =>
           getGroupWithOffsets(useOffset, grp)
-        case st: Statement =>
+        case st: Primitive =>
           val binProps = BinaryProperties(useOffset, st.binaryProperties.dataSize, st.binaryProperties.actualSize)
           st.withUpdatedBinaryProperties(binProps)
         case _ => field
@@ -265,9 +276,10 @@ object CopybookParser extends LazyLogging{
     * @param originalSchema An AST as a set of copybook records
     * @return The same AST with binary properties set for every field
     */
+  @throws(classOf[IllegalStateException])
   def markDependeeFields(originalSchema: MutableCopybook): MutableCopybook = {
-    val flatFields = new mutable.ArrayBuffer[Statement]()
-    val dependees = new mutable.HashSet[Statement]()
+    val flatFields = new mutable.ArrayBuffer[Primitive]()
+    val dependees = new mutable.HashSet[Primitive]()
 
     def addDependeeField(name: String): Unit = {
       val nameUpper = name.toUpperCase
@@ -287,7 +299,7 @@ object CopybookParser extends LazyLogging{
         field.dependingOn.foreach(name => addDependeeField(name))
         field match {
           case grp: Group => traverseDepends(grp.children)
-          case st: Statement => flatFields += st
+          case st: Primitive => flatFields += st
         }
       }
     }
@@ -300,19 +312,19 @@ object CopybookParser extends LazyLogging{
 
     def markDependees(subSchema: MutableCopybook): MutableCopybook = {
       val newSchema = for (field <- subSchema) yield {
-        val newField: CBTree = field match {
+        val newField: Statement = field match {
           case grp: Group => markDependeesForGroup(grp)
-          case st: Statement =>
-            val newStatement = if (dependees contains st) {
-              st.dataType match {
-                case _: Integer => true
-                case dt => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+          case primitive: Primitive =>
+            val newPrimitive = if (dependees contains primitive) {
+              primitive.dataType match {
+                case _: Integral => true
+                case dt => throw new IllegalStateException(s"Field ${primitive.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
               }
-              st.withUpdatedIsDependee(newIsDependee = true)
+              primitive.withUpdatedIsDependee(newIsDependee = true)
             } else {
-              st
+              primitive
             }
-            newStatement
+            newPrimitive
         }
         newField
       }
@@ -343,14 +355,14 @@ object CopybookParser extends LazyLogging{
     }
 
     def renameFillers(subSchema: MutableCopybook): MutableCopybook = {
-      val newSchema = ArrayBuffer[CBTree]()
+      val newSchema = ArrayBuffer[Statement]()
       subSchema.foreach {
         case grp: Group =>
           val newGrp = renameSubGroupFillers(grp)
           if (newGrp.children.nonEmpty) {
             newSchema += newGrp
           }
-        case st: Statement => newSchema += st
+        case st: Primitive => newSchema += st
       }
       newSchema
     }
@@ -368,6 +380,7 @@ object CopybookParser extends LazyLogging{
     * @param fieldName The name of the field
     * @return Cobol data type
     */
+  @throws(classOf[SyntaxErrorException])
   def typeAndLengthFromString(
                                keywords: List[String],
                                modifiers: Map[String, String],
@@ -414,7 +427,7 @@ object CopybookParser extends LazyLogging{
               Some(enc))
         }
       case s if s.contains("9") =>
-        Integer(
+        Integral(
           precision = if (s.startsWith("S")) s.length-1 else s.length,
           signPosition = if (s.startsWith("S")) Some(position.Left) else None,
           wordAlligned = if (sync) Some(position.Right) else None,
@@ -503,7 +516,8 @@ object CopybookParser extends LazyLogging{
     * @param tokens Tokens to lex
     * @return lexed properties
     */
-  def lex(tokens: Array[String]): Map[String, String] = {
+  @throws(classOf[SyntaxErrorException])
+  def lex(lineNumber: Int, tokens: Array[String]): Map[String, String] = {
     val keywordsWithModifiers = List(REDEFINES, OCCURS, TO, PIC)
     val keywordsWithoutModifiers = List(COMP, COMPUTATIONAL, BINARY)
 
@@ -515,7 +529,7 @@ object CopybookParser extends LazyLogging{
       while (index < tokens.length) {
         if (tokens(index) == PIC) {
           if (index >= tokens.length - 1) {
-            throw new IllegalStateException("PIC should be followed by a pattern")
+            throw new SyntaxErrorException(lineNumber, "", "PIC should be followed by a pattern")
           }
           // Expand PIC, e.g. S9(5) -> S99999
           mapAccumulator += tokens(index) -> expandPic(tokens(index + 1))
@@ -523,14 +537,14 @@ object CopybookParser extends LazyLogging{
         } else if (tokens(index) == REDEFINES) {
           // Expand REDEFINES, ensure current field redefines the consequent field
           if (index >= tokens.length - 1) {
-            throw new IllegalStateException(s"Modifier ${tokens(index)} should be followed by a field name")
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${tokens(index)} should be followed by a field name")
           }
           // Add modifiers with parameters
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 1))
           index += 1
         } else if (keywordsWithModifiers.contains(tokens(index))) {
           if (index >= tokens.length - 1) {
-            throw new IllegalStateException(s"Modifier ${tokens(index)} should be followed by a parameter")
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${tokens(index)} should be followed by a parameter")
           }
           // Add modifiers with parameters
           mapAccumulator += tokens(index) -> tokens(index + 1)
@@ -544,7 +558,7 @@ object CopybookParser extends LazyLogging{
         } else if (tokens(index) == DEPENDING) {
           // Handle DEPENDING ON
           if (index >= tokens.length - 2 || tokens(index+1) != ON) {
-            throw new IllegalStateException(s"Modifier DEPENDING should be followed by ON FIELD")
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier DEPENDING should be followed by ON FIELD")
           }
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
         } else if (keywordsWithoutModifiers.contains(tokens(index))) {
@@ -565,6 +579,7 @@ object CopybookParser extends LazyLogging{
     * @param inputPIC An input PIC specification, e.g. "9(5)V9(2)"
     * @return The expanded version of a PIC value, e.g. "99999V99"
     */
+  @throws(classOf[IllegalStateException])
   def expandPic(inputPIC: String): String = {
     val outputCharacters = new ArrayBuffer[Char]()
     val repeatCount = new ArrayBuffer[Char]()
