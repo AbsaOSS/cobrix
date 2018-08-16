@@ -26,12 +26,12 @@ import scodec.codecs.{float, floatL, int16, int32, int64, uint, uint16, uint32, 
   * @return : scodec [Codec] type that is used for encoding/decoding bit vectors to numbers and visa versa.
   */
 case class EBCDIC() extends Encoding {
-  def codec(comp: Option[Int], scale: Int, signPosition: Option[Position]): Codec[_ <: AnyVal] = {
+  def codec(comp: Option[Int], precision: Int, signPosition: Option[Position]): Codec[_ <: AnyVal] = {
     val cd = comp match {
       case Some(x) if x.isInstanceOf[Int] =>
         x match {
           case bin if bin == 0 || bin == 4 =>
-            scale match { //if native binary follow IBM guide to digit binary length
+            precision match { //if native binary follow IBM guide to digit binary length
               case a if a >= 1 && a <= 4 =>
                 if (signPosition.getOrElse(None) != None) int16 else uint16
               case b if b >= 5 && b <= 9 =>
