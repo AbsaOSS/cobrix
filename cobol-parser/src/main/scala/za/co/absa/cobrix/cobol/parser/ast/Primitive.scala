@@ -82,7 +82,7 @@ case class Primitive(
         val codec = a.enc.getOrElse(EBCDIC()).codec(None, a.length, None)
         getBitCount(codec, None, a.length) //count of entire word
       case d: Decimal =>
-        val codec = d.enc.getOrElse(EBCDIC()).codec(d.compact, d.scale, d.signPosition)
+        val codec = d.enc.getOrElse(EBCDIC()).codec(d.compact, d.precision, d.signPosition)
         // Support explicit decimal point (aka REAL DECIMAL, PIC 999.99.)
         val precision = if (d.compact.isEmpty && d.explicitDecimal) d.precision + 1 else d.precision
         getBitCount(codec, d.compact, precision)
