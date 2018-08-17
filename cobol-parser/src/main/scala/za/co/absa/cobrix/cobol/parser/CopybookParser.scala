@@ -108,11 +108,7 @@ object CopybookParser extends LazyLogging{
     val lines: Seq[CopybookLine] =
       tokens.zip(lexedLines)
         .map { case (lineTokens, modifiers) =>
-          if (lineTokens.tokens.length < 2) {
-            throw new SyntaxErrorException(lineTokens.lineNumber, "", s"Syntax error at '${lineTokens.tokens.mkString(" ").trim}'")
-          }
-          val nameWithoutColons = transformIdentifier(lineTokens.tokens(1))
-          CopybookLine(lineTokens.tokens(0).toInt, nameWithoutColons, lineTokens.lineNumber, modifiers)
+          CreateCopybookLine(lineTokens, modifiers)
         }
 
     val breakpoints: Seq[RecordBoundary] = getBreakpoints(lines)
@@ -155,6 +151,23 @@ object CopybookParser extends LazyLogging{
     val newTrees = renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema)))
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
     new Copybook(ast)
+  }
+
+  private def CreateCopybookLine(lineTokens: StatementTokens, modifiers: Map[String, String]): CopybookLine = {
+    if (lineTokens.tokens.length < 2) {
+      throw new SyntaxErrorException(lineTokens.lineNumber, "", s"Syntax error at '${lineTokens.tokens.mkString(" ").trim}'")
+    }
+    val nameWithoutColons = transformIdentifier(lineTokens.tokens(1))
+    val level = try {
+      lineTokens.tokens(0).toInt
+    } catch {
+      case e: NumberFormatException =>
+        throw new SyntaxErrorException(
+          lineTokens.lineNumber,
+          "",
+          s"Unable to parse the value of LEVEL. Numeric value expected, but '${lineTokens.tokens(0)}' encountered")
+    }
+    CopybookLine(level, nameWithoutColons, lineTokens.lineNumber, modifiers)
   }
 
   /** Calculate binary properties based on the whole AST
