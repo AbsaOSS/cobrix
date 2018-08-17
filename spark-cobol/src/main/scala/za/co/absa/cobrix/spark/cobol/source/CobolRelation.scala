@@ -70,7 +70,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
         {
           val file = row.getString(0)
           logger.info(s"Going to parse file: $file")
-          reader.getRowIterator(new FileStreamer(file, fileSystem))
+          reader.getRowIterator(new FileStreamer(file, fileSystem), fileNumber = 0 /*ToDo add a file sequence here is possible*/)
         }
         )
       })

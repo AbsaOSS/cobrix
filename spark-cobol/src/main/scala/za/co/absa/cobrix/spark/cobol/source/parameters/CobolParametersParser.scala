@@ -21,13 +21,15 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
   */
 object CobolParametersParser {
 
-  val SHORT_NAME                = "cobol"
-  val PARAM_COPYBOOK_PATH       = "copybook"
-  val PARAM_COPYBOOK_CONTENTS   = "copybook_contents"
-  val PARAM_SOURCE_PATH         = "path"
-  val PARAM_RECORD_LENGTH       = "record_length_field"
-  val PARAM_RECORD_START_OFFSET = "record_start_offset"
-  val PARAM_RECORD_END_OFFSET   = "record_end_offset"
+  val SHORT_NAME                     = "cobol"
+  val PARAM_COPYBOOK_PATH            = "copybook"
+  val PARAM_COPYBOOK_CONTENTS        = "copybook_contents"
+  val PARAM_SOURCE_PATH              = "path"
+  val PARAM_RECORD_LENGTH            = "record_length_field"
+  val PARAM_RECORD_START_OFFSET      = "record_start_offset"
+  val PARAM_RECORD_END_OFFSET        = "record_end_offset"
+  val PARAM_GENERATE_RECORD_ID       = "generate_record_id"        /*ToDo Add support for this*/
+  val PARAM_RECORD_ID_FILE_INCREMENT = "record_id_file_increment"  /*ToDo Add support for this*/
 
   def parse(params: Map[String,String]): CobolParameters = {
 

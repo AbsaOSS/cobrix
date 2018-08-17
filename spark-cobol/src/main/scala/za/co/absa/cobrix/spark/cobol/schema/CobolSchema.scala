@@ -25,7 +25,14 @@ import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 
 import scala.collection.mutable.ArrayBuffer
 
-class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging {
+/**
+  *  This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class
+  *  provides the corresponding Spark schema and also other properties for the Spark data source.
+  *
+  * @param copybook            A parsed copybook.
+  * @param generateRecordId    If true, a record id field will be prepended to to the begginning of the schema.
+  */
+class CobolSchema(val copybook: Copybook, generateRecordId: Boolean = false) extends Serializable with LazyLogging {
 
   def getCobolSchema: Copybook = copybook
 
@@ -35,12 +42,18 @@ class CobolSchema(val copybook: Copybook) extends Serializable with LazyLogging 
     val records = for (record <- copybook.ast) yield {
       parseGroup(record)
     }
-    if (records.lengthCompare(1) == 0) {
+    val expandRecords = if (records.lengthCompare(1) == 0) {
       // If the copybook consists only of 1 root group, expand it's fields
-      records.head.dataType.asInstanceOf[StructType]
+      records.head.dataType.asInstanceOf[StructType].fields
     } else {
-      StructType(records.toArray)
+      records.toArray
     }
+    val recordsWithRecordId = if (generateRecordId) {
+      StructField("Record_Id", LongType, nullable = false) +: expandRecords
+    } else {
+      expandRecords
+    }
+    StructType(recordsWithRecordId)
   }
 
   @throws(classOf[IllegalStateException])

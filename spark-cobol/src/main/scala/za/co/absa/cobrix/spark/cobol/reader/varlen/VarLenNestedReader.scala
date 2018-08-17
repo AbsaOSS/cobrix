@@ -25,12 +25,25 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
-/** The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema */
+/**
+  *  The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
+  *
+  * @param copybookContents      The contents of a copybook.
+  * @param lengthFieldName       A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param startOffset           An offset to the start of the record in each binary data block.
+  * @param endOffset             An offset from the end of the record to the end of the binary data block.
+  * @param generateRecordId      If true, a record id field will be prepended to each record.
+  * @param startRecordId         A starting record id value
+  * @param recordIdFileIncrement An increment for record id when switching between binary files
+  */
 @throws(classOf[IllegalArgumentException])
 class VarLenNestedReader(copybookContents: String,
-                         lengthFieldName: String,
+                         lengthFieldName: Option[String],
                          startOffset: Int = 0,
-                         endOffset: Int = 0) extends VarLenReader {
+                         endOffset: Int = 0,
+                         generateRecordId: Boolean = false,
+                         startRecordId: Long = 1,
+                         recordIdFileIncrement: Long = 1000000) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -40,11 +53,13 @@ class VarLenNestedReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def getRowIterator(binaryData: SimpleStream): Iterator[Row] = new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset )
+  override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId, startRecordId +
+      recordIdFileIncrement * fileNumber)
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema)
+    new CobolSchema(schema, generateRecordId)
   }
 
   override def getRecordStartOffset: Int = startOffset
@@ -54,10 +69,10 @@ class VarLenNestedReader(copybookContents: String,
   @throws(classOf[IllegalArgumentException])
   private def checkInputArgumentsValidity(): Unit = {
     if (startOffset < 0) {
-      throw new IllegalArgumentException (s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
+      throw new IllegalArgumentException(s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
     }
     if (endOffset < 0) {
-      throw new IllegalArgumentException (s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
+      throw new IllegalArgumentException(s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
     }
   }
 
