@@ -26,8 +26,20 @@ import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import scala.collection.mutable.ArrayBuffer
 
 object RowExtractors {
+
+  /**
+    * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
+    *
+    * @param ast              The parsed copybook
+    * @param dataBits         The data bits containing the record
+    * @param offsetBits       The offset to the beginning of the record (in bits)
+    * @param generateRecordId If true a record id field will be added as the first field of the record.
+    * @param recordId         The record id to be saved to the record id field
+    *
+    * @return                 A Spark [[Row]] object corresponding to the record schema
+    */
   @throws(classOf[IllegalStateException])
-  def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0): Row = {
+  def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0, generateRecordId: Boolean = false, recordId: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
@@ -107,12 +119,47 @@ object RowExtractors {
       values
     }
 
-    if (ast.lengthCompare(1) == 0) {
-      // If the copybook consists only of 1 root group, expand it's fields
-      records.head
-    } else {
-      Row.fromSeq(records)
-    }
+    applyRowPostProcessing(ast, records, generateRecordId, recordId)
   }
 
+  /**
+    * <p>This method applies additional postprocessing to the schema obtained from a copybook to make it easier to use as a Spark Schema.</p>
+    *
+    * <p>The following transofmations will currently be applied:
+    * <ul>
+    *   <li>If `generateRecordId == true` the record id field will be prepended to the row.</li>
+    *   <li>If the schema has only one root StructType element, the element will be expanded. The the resulting schema will contain only the children fields of
+    *   the element.</li>
+    * </ul>
+    * Combinations of the listed transformations are supported.
+    * </p>
+    *
+    * @param ast              The parsed copybook
+    * @param records          The array of [[Row]] object for each Group of the copybook
+    * @param generateRecordId If true a record id field will be added as the first field of the record.
+    * @param recordId         The record id to be saved to the record id field
+    *
+    * @return                 A Spark [[Row]] object corresponding to the record schema
+    */
+  private def applyRowPostProcessing(ast: CopybookAST, records: Seq[Row], generateRecordId: Boolean, recordId: Long): Row = {
+    if (generateRecordId) {
+      if (ast.lengthCompare(1) == 0) {
+        // If the copybook consists only of 1 root group, expand it's fields
+        // and add recordId
+        Row.fromSeq(recordId +: records.head.toSeq)
+      } else {
+        // Add recordId as the first field
+        Row.fromSeq(recordId +: records)
+      }
+    } else {
+      // Addition of record index is not required
+      if (ast.lengthCompare(1) == 0) {
+        // If the copybook consists only of 1 root group, expand it's fields
+        records.head
+      } else {
+        // Return rows as the original sequence of groups
+        Row.fromSeq(records)
+      }
+    }
+  }
 }

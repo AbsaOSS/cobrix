@@ -96,7 +96,7 @@ class DefaultSource
 
     new VarLenNestedReader(
       copybookContent,
-      variableLengthParameters.recordLengthField,
+      Some(variableLengthParameters.recordLengthField), /*ToDo this should be specified only if recordLengthField is provided*/
       parameters.recordStartOffset,
       parameters.recordEndOffset
     )

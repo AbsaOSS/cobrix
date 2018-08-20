@@ -86,4 +86,17 @@ class SyntaxErrorsSpec extends FunSuite {
     assert(syntaxErrorException.msg.contains("Decimal numbers with scale bigger"))
   }
 
+  test("Test invalid LEVEL token") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |        ///   10  FIELD           PIC 9(38)V9(19).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("Unable to parse the value of LEVEL"))
+  }
+
 }

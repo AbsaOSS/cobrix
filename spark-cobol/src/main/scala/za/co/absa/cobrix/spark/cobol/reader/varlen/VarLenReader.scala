@@ -24,5 +24,5 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 /** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records)*/
 abstract class VarLenReader extends Reader with Serializable {
-  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream): Iterator[Row]
+  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row]
 }

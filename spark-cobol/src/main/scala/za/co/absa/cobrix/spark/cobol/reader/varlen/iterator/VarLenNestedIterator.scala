@@ -23,15 +23,29 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+/**
+  *  This iterator is used to variable length data sequentially using the [[SimpleStream]] interface.
+  *
+  * @param cobolSchema           A parsed copybook.
+  * @param dataStream            A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
+  * @param lengthFieldName       A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param startOffset           An offset to the start of the record in each binary data block.
+  * @param endOffset             An offset from the end of the record to the end of the binary data block.
+  * @param generateRecordId      If true, a record id field will be prepended to each record.
+  * @param startRecordId         A starting record id value for this particular file/stream `dataStream`
+  */
 @throws(classOf[IllegalStateException])
 class VarLenNestedIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
-                           lengthFieldName: String,
+                           lengthFieldName: Option[String],
                            startOffset: Int = 0,
-                           endOffset: Int = 0) extends Iterator[Row] {
+                           endOffset: Int = 0,
+                           generateRecordId: Boolean = false,
+                           startRecordId: Long = 1) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = 0L
+  private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
   private val lengthField = getLengthField
 
@@ -59,11 +73,15 @@ class VarLenNestedIterator(cobolSchema: Copybook,
       return
     }
 
-    val recordLength = cobolSchema.extractPrimitiveField(lengthField, binaryData, startOffset) match {
-      case i: Int => i
-      case l: Long => l.toInt
-      case s: String => s.toInt
-      case _=> throw new IllegalStateException(s"Record length value of the field $lengthFieldName must be an integral type.")
+    val recordLength = if (lengthField.isDefined) {
+      cobolSchema.extractPrimitiveField(lengthField.get, binaryData, startOffset) match {
+        case i: Int => i
+        case l: Long => l.toInt
+        case s: String => s.toInt
+        case _=> throw new IllegalStateException(s"Record length value of the field $lengthFieldName must be an integral type.")
+      }
+    } else {
+      copyBookRecordSize
     }
 
     // Drop out of the record values
@@ -73,20 +91,25 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
     val dataBits = BitVector(binaryData)
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8))
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, recordIndex) )
+
+    recordIndex = recordIndex + 1
   }
 
   @throws(classOf[IllegalStateException])
-  private def getLengthField: Primitive = {
-    val field = cobolSchema.getFieldByName(lengthFieldName)
-    field match {
-      case s: Primitive =>
-        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
-          throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
-        }
-        s
-      case _ =>
-        throw new IllegalStateException(s"The record length field $lengthFieldName must be an primitive integral type.")
-    }
+  private def getLengthField: Option[Primitive] = {
+    lengthFieldName.flatMap(fieldName => {
+      val field = cobolSchema.getFieldByName(fieldName)
+      val astNode = field match {
+        case s: Primitive =>
+          if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
+            throw new IllegalStateException(s"The record length field $lengthFieldName must be an integral type.")
+          }
+          s
+        case _ =>
+          throw new IllegalStateException(s"The record length field $lengthFieldName must be an primitive integral type.")
+      }
+      Some(astNode)
+    })
   }
 }
