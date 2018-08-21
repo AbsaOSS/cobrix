@@ -31,7 +31,7 @@
 	</parent>
 
 	<dependencies>
-		<!-- libraries -->
+		<!-- binary codecs -->
 		<dependency>
 			<groupId>org.scodec</groupId>
 			<artifactId>scodec-bits_${scala.compat.version}</artifactId>
@@ -39,6 +39,11 @@
 		<dependency>
 			<groupId>org.scodec</groupId>
 			<artifactId>scodec-core_${scala.compat.version}</artifactId>
+		</dependency>
+		<!-- logging -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 

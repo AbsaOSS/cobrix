@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.common
 
 import java.nio.ByteBuffer
 
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
 import scodec._
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
@@ -29,7 +29,9 @@ import scala.util.control.NonFatal
 
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
-object BinaryUtils extends LazyLogging {
+object BinaryUtils {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   // Binary number format codecs (big endian and little endian)
   lazy val int8B: Codec[Int] = scodec.codecs.int8
   lazy val int8L: Codec[Int] = scodec.codecs.int8L

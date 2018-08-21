@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser
 
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
@@ -30,7 +30,9 @@ import scala.util.control.NonFatal
 /**
   * The object contains generic function for the Copybook parser
   */
-object CopybookParser extends LazyLogging{
+object CopybookParser {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   type MutableCopybook = mutable.ArrayBuffer[Statement]
   type CopybookAST = Seq[Group]
 
