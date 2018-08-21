@@ -21,6 +21,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -43,7 +44,7 @@ class VarLenNestedReader(copybookContents: String,
                          endOffset: Int = 0,
                          generateRecordId: Boolean = false,
                          startRecordId: Long = 1,
-                         recordIdFileIncrement: Long = 1000000) extends VarLenReader {
+                         recordIdFileIncrement: Long = Constants.defaultFileRecordIdIncrement) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
