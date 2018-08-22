@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.spark.cobol.reader.Constants
+
 /**
   * This class provides methods for parsing the parameters set as Spark options.
   */
@@ -28,8 +30,8 @@ object CobolParametersParser {
   val PARAM_RECORD_LENGTH            = "record_length_field"
   val PARAM_RECORD_START_OFFSET      = "record_start_offset"
   val PARAM_RECORD_END_OFFSET        = "record_end_offset"
-  val PARAM_GENERATE_RECORD_ID       = "generate_record_id"        /*ToDo Add support for this*/
-  val PARAM_RECORD_ID_FILE_INCREMENT = "record_id_file_increment"  /*ToDo Add support for this*/
+  val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
+  val PARAM_RECORD_ID_FILE_INCREMENT = "record_id_file_increment"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -39,7 +41,9 @@ object CobolParametersParser {
       getParameter(PARAM_SOURCE_PATH, params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
-      parseVariableLengthParameters(params)
+      parseVariableLengthParameters(params),
+      params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
+      params.getOrElse(PARAM_RECORD_ID_FILE_INCREMENT, Constants.defaultFileRecordIdIncrement.toString).toLong
     )
   }
 
