@@ -30,6 +30,11 @@ import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 /**
+  * Represents a file attached to an order.
+  */
+private[source] case class FileWithOrder(filePath: String, order: Int)
+
+/**
   * This class implements an actual Spark relation.
   *
   * It currently supports both, fixed and variable-length records.
@@ -57,8 +62,13 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   }
 
   private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
-    val filesDF = getParallelizedFiles(sourceDir)
+    val filesDF = getParallelizedFilesWithOrder(sourceDir)
+
     implicit val rowEncoder = RowEncoder.apply(reader.getSparkSchema)
+
+    // both field names are retrieved from the case class FileWithOrder
+    val pathFieldIndex = filesDF.schema.fieldIndex("filePath")
+    val orderFieldIdIndex = filesDF.schema.fieldIndex("order")
 
     filesDF.mapPartitions(
       partition =>
@@ -68,17 +78,28 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
         partition.flatMap(row =>
         {
-          val file = row.getString(0)
-          logger.info(s"Going to parse file: $file")
-          reader.getRowIterator(new FileStreamer(file, fileSystem), fileNumber = 0 /*ToDo add a file sequence here is possible*/)
+          val filePath = row.getString(pathFieldIndex)
+          val fileOrder = row.getInt(orderFieldIdIndex)
+
+          logger.info(s"Going to parse file: $filePath")
+          reader.getRowIterator(new FileStreamer(filePath, fileSystem), fileOrder)
         }
         )
       })
       .rdd
   }
 
-  private def getParallelizedFiles(sourceDir: String): DataFrame = {
-    val files = FileUtils.getAllFilesInDirectory(sourceDir, sqlContext.sparkContext.hadoopConfiguration)
+  /**
+    * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
+    * as their order.
+    *
+    * The DataFrame contains [[za.co.absa.cobrix.spark.cobol.source.FileWithOrder]] instances.
+    */
+  private def getParallelizedFilesWithOrder(sourceDir: String): DataFrame = {
+    val files = FileUtils
+      .getAllFilesInDirectory(sourceDir, sqlContext.sparkContext.hadoopConfiguration)
+      .zipWithIndex
+      .map(file => FileWithOrder(file._1, file._2))
 
     import sqlContext.implicits._
     sqlContext.sparkContext.parallelize(files, files.size).toDF()

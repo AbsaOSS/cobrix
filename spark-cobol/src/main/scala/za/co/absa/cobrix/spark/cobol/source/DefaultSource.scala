@@ -62,7 +62,7 @@ class DefaultSource
     val cobolParameters = CobolParametersParser.parse(parameters)
     CobolParametersValidator.checkSanity(cobolParameters)
 
-    if (cobolParameters.variableLengthParams.isEmpty) {
+    if (cobolParameters.variableLengthParams.isEmpty && !cobolParameters.generateRecordId) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -87,18 +87,16 @@ class DefaultSource
     */
   private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
 
-    if (!parameters.variableLengthParams.isDefined) {
-      throw new IllegalArgumentException("Trying to create StreamReader by parameters for variable-length records are missing.")
-    }
-
-    val variableLengthParameters = parameters.variableLengthParams.get
+    val recordLengthField = if (parameters.variableLengthParams.isDefined) Some(parameters.variableLengthParams.get.recordLengthField) else None
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
 
     new VarLenNestedReader(
       copybookContent,
-      Some(variableLengthParameters.recordLengthField), /*ToDo this should be specified only if recordLengthField is provided*/
+      recordLengthField,
       parameters.recordStartOffset,
-      parameters.recordEndOffset
+      parameters.recordEndOffset,
+      parameters.generateRecordId,
+      parameters.recordIdFileIncrement
     )
   }
 }

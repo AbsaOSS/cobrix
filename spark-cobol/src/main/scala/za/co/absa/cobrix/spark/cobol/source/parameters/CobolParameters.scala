@@ -26,10 +26,12 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
   *                             If None, the records will be assumed to be fixed-length.
   */
 case class CobolParameters(
-                            copybookPath:         Option[String],
-                            copybookContent:      Option[String],
-                            sourcePath:           Option[String],
-                            recordStartOffset:    Int,
-                            recordEndOffset:      Int,
-                            variableLengthParams: Option[VariableLengthParameters]
+                            copybookPath:          Option[String],
+                            copybookContent:       Option[String],
+                            sourcePath:            Option[String],
+                            recordStartOffset:     Int,
+                            recordEndOffset:       Int,
+                            variableLengthParams:  Option[VariableLengthParameters],
+                            generateRecordId:      Boolean = false,
+                            recordIdFileIncrement: Long = 0
                           )

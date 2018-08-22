@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
@@ -34,7 +34,6 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   * @param startOffset           An offset to the start of the record in each binary data block.
   * @param endOffset             An offset from the end of the record to the end of the binary data block.
   * @param generateRecordId      If true, a record id field will be prepended to each record.
-  * @param startRecordId         A starting record id value
   * @param recordIdFileIncrement An increment for record id when switching between binary files
   */
 @throws(classOf[IllegalArgumentException])
@@ -43,7 +42,6 @@ class VarLenNestedReader(copybookContents: String,
                          startOffset: Int = 0,
                          endOffset: Int = 0,
                          generateRecordId: Boolean = false,
-                         startRecordId: Long = 1,
                          recordIdFileIncrement: Long = Constants.defaultFileRecordIdIncrement) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
@@ -55,7 +53,7 @@ class VarLenNestedReader(copybookContents: String,
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
   override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId, startRecordId +
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId,
       recordIdFileIncrement * fileNumber)
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
