@@ -16,12 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser
 
-import com.typesafe.scalalogging.LazyLogging
+import org.slf4j.LoggerFactory
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 
-class Copybook(val ast: CopybookAST) extends Serializable with LazyLogging {
+class Copybook(val ast: CopybookAST) extends Serializable {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getCobolSchema: CopybookAST = ast
 

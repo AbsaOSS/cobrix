@@ -16,8 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.schema
 
-import com.typesafe.scalalogging.LazyLogging
 import org.apache.spark.sql.types._
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
@@ -32,7 +32,9 @@ import scala.collection.mutable.ArrayBuffer
   * @param copybook            A parsed copybook.
   * @param generateRecordId    If true, a record id field will be prepended to to the begginning of the schema.
   */
-class CobolSchema(val copybook: Copybook, generateRecordId: Boolean = false) extends Serializable with LazyLogging {
+class CobolSchema(val copybook: Copybook, generateRecordId: Boolean = false) extends Serializable {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getCobolSchema: Copybook = copybook
 

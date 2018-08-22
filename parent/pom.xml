@@ -81,7 +81,7 @@
 		<apache.rat.plugin.version>0.12</apache.rat.plugin.version>
 		<gpg.plugin.version>1.6</gpg.plugin.version>
 		<specs.version>2.4.16</specs.version>
-		<scalatest.version>3.0.0</scalatest.version>
+		<scalatest.version>3.0.1</scalatest.version>
 		<scalatest.maven.version>1.0</scalatest.maven.version>
 		<scala.version>2.11.8</scala.version>
 		<scala.compat.version>2.11</scala.compat.version>
@@ -99,7 +99,6 @@
 		<dependency>
 			<groupId>org.scala-lang</groupId>
 			<artifactId>scala-library</artifactId>
-			<scope>provided</scope>
 		</dependency>
 
 		<!-- scalatest -->
@@ -119,13 +118,6 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
-		</dependency>
-
-		<!-- libraries -->
-		<dependency>
-			<groupId>com.typesafe.scala-logging</groupId>
-			<artifactId>scala-logging_${scala.compat.version}</artifactId>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
@@ -165,11 +157,6 @@
 				<groupId>org.apache.spark</groupId>
 				<artifactId>spark-streaming_${scala.compat.version}</artifactId>
 				<version>${spark.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.json4s</groupId>
-				<artifactId>json4s-ext_${scala.compat.version}</artifactId>
-				<version>${json4s.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -238,21 +225,6 @@
 				<version>${slf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-core</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-classic</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>ch.qos.logback</groupId>
-				<artifactId>logback-access</artifactId>
-				<version>${logback.version}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.scodec</groupId>
 				<artifactId>scodec-bits_${scala.compat.version}</artifactId>
 				<version>${scodec_bits.version}</version>
@@ -262,27 +234,12 @@
 				<artifactId>scodec-core_${scala.compat.version}</artifactId>
 				<version>${scodec_core.version}</version>
 			</dependency>
-			<dependency>
-				<groupId>com.typesafe.scala-logging</groupId>
-				<artifactId>scala-logging_${scala.compat.version}</artifactId>
-				<version>${scala_logging.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.stanch</groupId>
-				<artifactId>reftree_${scala.compat.version}</artifactId>
-				<version>${reftree.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.stanch</groupId>
-				<artifactId>zipper_${scala.compat.version}</artifactId>
-				<version>${zipper.version}</version>
-			</dependency>
 
 			<!-- Test scope dependencies -->
 			<dependency>
 				<groupId>org.scalatest</groupId>
 				<artifactId>scalatest_${scala.compat.version}</artifactId>
-				<version>3.0.1</version>
+				<version>${scalatest.version}</version>
 				<scope>test</scope>
 			</dependency>
 			<dependency>
