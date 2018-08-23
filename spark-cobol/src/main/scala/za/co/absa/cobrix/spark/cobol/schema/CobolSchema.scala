@@ -22,6 +22,7 @@ import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,8 +32,11 @@ import scala.collection.mutable.ArrayBuffer
   *
   * @param copybook            A parsed copybook.
   * @param generateRecordId    If true, a record id field will be prepended to to the begginning of the schema.
+  * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
-class CobolSchema(val copybook: Copybook, generateRecordId: Boolean = false) extends Serializable {
+class CobolSchema(val copybook: Copybook,
+                  generateRecordId: Boolean,
+                  policy: SchemaRetentionPolicy) extends Serializable {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -44,14 +48,15 @@ class CobolSchema(val copybook: Copybook, generateRecordId: Boolean = false) ext
     val records = for (record <- copybook.ast) yield {
       parseGroup(record)
     }
-    val expandRecords = if (records.lengthCompare(1) == 0) {
-      // If the copybook consists only of 1 root group, expand it's fields
-      records.head.dataType.asInstanceOf[StructType].fields
+    val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot) {
+      // Expand root group fields
+      records.toArray.flatMap( group => group.dataType.asInstanceOf[StructType].fields )
     } else {
       records.toArray
     }
     val recordsWithRecordId = if (generateRecordId) {
-      StructField("Record_Id", LongType, nullable = false) +: expandRecords
+      StructField(Constants.fileIdField, IntegerType, nullable = false) +:
+        StructField(Constants.recordIdField, LongType, nullable = false) +: expandRecords
     } else {
       expandRecords
     }

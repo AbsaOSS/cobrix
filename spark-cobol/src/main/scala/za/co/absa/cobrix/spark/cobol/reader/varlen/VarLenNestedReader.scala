@@ -23,7 +23,8 @@ import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 
 /**
@@ -34,7 +35,7 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   * @param startOffset           An offset to the start of the record in each binary data block.
   * @param endOffset             An offset from the end of the record to the end of the binary data block.
   * @param generateRecordId      If true, a record id field will be prepended to each record.
-  * @param recordIdFileIncrement An increment for record id when switching between binary files
+  * @param policy                Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 @throws(classOf[IllegalArgumentException])
 class VarLenNestedReader(copybookContents: String,
@@ -42,7 +43,7 @@ class VarLenNestedReader(copybookContents: String,
                          startOffset: Int = 0,
                          endOffset: Int = 0,
                          generateRecordId: Boolean = false,
-                         recordIdFileIncrement: Long = Constants.defaultFileRecordIdIncrement) extends VarLenReader {
+                         policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -53,12 +54,11 @@ class VarLenNestedReader(copybookContents: String,
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
   override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId,
-      recordIdFileIncrement * fileNumber)
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId, policy, fileNumber, 0)
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, generateRecordId)
+    new CobolSchema(schema, generateRecordId, policy)
   }
 
   override def getRecordStartOffset: Int = startOffset

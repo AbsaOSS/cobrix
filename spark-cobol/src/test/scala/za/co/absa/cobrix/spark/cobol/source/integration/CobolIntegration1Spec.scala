@@ -40,6 +40,7 @@ class CobolIntegration1Spec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
+      .option("schema_retention_policy", "collapse_root")
       .load(inpudDataPath)
 
     // This is to print the actual output

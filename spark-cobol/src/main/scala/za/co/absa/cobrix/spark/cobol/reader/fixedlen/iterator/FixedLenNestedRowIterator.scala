@@ -18,9 +18,10 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
 import scala.collection.mutable
@@ -34,8 +35,9 @@ import scala.collection.mutable.ArrayBuffer
   */
 class FixedLenNestedRowIterator(val binaryData: Array[Byte],
                                 val cobolSchema: CobolSchema,
-                                startOffset: Int = 0,
-                                endOffset: Int = 0) extends Iterator[Row] {
+                                policy: SchemaRetentionPolicy,
+                                startOffset: Int,
+                                endOffset: Int) extends Iterator[Row] {
   private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
   private var bitIndex = startOffset.toLong * 8
@@ -49,7 +51,7 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
     }
 
     var offset = bitIndex
-    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, dataBits, offset)
+    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, dataBits, offset, generateRecordId = false, policy)
 
     // Advance bit index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last

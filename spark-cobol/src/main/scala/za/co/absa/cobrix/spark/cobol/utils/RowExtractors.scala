@@ -22,6 +22,8 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -39,7 +41,13 @@ object RowExtractors {
     * @return                 A Spark [[Row]] object corresponding to the record schema
     */
   @throws(classOf[IllegalStateException])
-  def extractRecord(ast: CopybookAST, dataBits: BitVector, offsetBits: Long = 0, generateRecordId: Boolean = false, recordId: Long = 0): Row = {
+  def extractRecord(ast: CopybookAST,
+                    dataBits: BitVector,
+                    offsetBits: Long = 0,
+                    generateRecordId: Boolean = false,
+                    policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                    fileId: Int = 0,
+                    recordId: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
@@ -119,7 +127,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, generateRecordId, recordId)
+    applyRowPostProcessing(ast, records, generateRecordId, policy, fileId, recordId)
   }
 
   /**
@@ -137,25 +145,32 @@ object RowExtractors {
     * @param ast              The parsed copybook
     * @param records          The array of [[Row]] object for each Group of the copybook
     * @param generateRecordId If true a record id field will be added as the first field of the record.
+    * @param fileId           The file id to be saved to the file id field
     * @param recordId         The record id to be saved to the record id field
     *
     * @return                 A Spark [[Row]] object corresponding to the record schema
     */
-  private def applyRowPostProcessing(ast: CopybookAST, records: Seq[Row], generateRecordId: Boolean, recordId: Long): Row = {
+  private def applyRowPostProcessing(ast: CopybookAST,
+                                     records: Seq[Row],
+                                     generateRecordId: Boolean,
+                                     policy: SchemaRetentionPolicy,
+                                     fileId: Int,
+                                     recordId: Long): Row = {
     if (generateRecordId) {
-      if (ast.lengthCompare(1) == 0) {
-        // If the copybook consists only of 1 root group, expand it's fields
-        // and add recordId
-        Row.fromSeq(recordId +: records.head.toSeq)
+      if (policy == SchemaRetentionPolicy.CollapseRoot) {
+        // If the policy for schema retention is root collapsing, expand root fields
+        // and add fileId and recordId
+        val expandedRows = records.flatMap( record => record.toSeq )
+        Row.fromSeq(fileId +: recordId +: expandedRows)
       } else {
         // Add recordId as the first field
-        Row.fromSeq(recordId +: records)
+        Row.fromSeq(fileId +: recordId +: records)
       }
     } else {
       // Addition of record index is not required
-      if (ast.lengthCompare(1) == 0) {
-        // If the copybook consists only of 1 root group, expand it's fields
-        records.head
+      if (policy == SchemaRetentionPolicy.CollapseRoot) {
+        // If the policy for schema retention is root collapsing, expand root fields
+        Row.fromSeq(records.flatMap( record => record.toSeq ))
       } else {
         // Return rows as the original sequence of groups
         Row.fromSeq(records)

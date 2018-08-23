@@ -16,6 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+
 /**
   * This class holds parameters for the job.
   *
@@ -32,6 +35,6 @@ case class CobolParameters(
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],
-                            generateRecordId:      Boolean = false,
-                            recordIdFileIncrement: Long = 0
+                            generateRecordId:      Boolean,
+                            schemaRetentionPolicy: SchemaRetentionPolicy
                           )

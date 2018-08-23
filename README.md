@@ -57,7 +57,7 @@ Among the motivations for this project, it is possible to highlight:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.0</version>
+      <version>0.2.3</version>
 </dependency>
 ```
 
@@ -156,6 +156,76 @@ If you want to check the layout of the copybook:
     println(cobolSchema.generateRecordLayoutPositions())
 ```
 
+### Varialble length records support
+
+Cobrix supports variable length records is an experimental feature. If a record contains a field that contains the actual record size, this
+field can be specified as a data source option and Cobrix will fetch records according to the value of the field.
+
+Usage example:
+```
+.option("record_length_field", "LENGTH")
+```
+
+### Schema collapsing
+
+Mainframe data often contain only one root GROUP. In such cases such a GROUP can be considered something similar to XML rowtag.
+Cobrix allows to collapse the GROUP and expand it's records. To turn this on use the following option:
+
+```
+.option("schema_retention_policy", "collapse_root")
+``` 
+
+Let's loot at an example. Let's say we have a copybook that looks like this:
+```
+       01  RECORD.
+           05  ID                        PIC S9(4)  COMP.
+           05  COMPANY.
+               10  SHORT-NAME            PIC X(10).
+               10  COMPANY-ID-NUM        PIC 9(5) COMP-3.
+```
+
+Normally Spark schema for such a copybook will look like this:
+
+```
+root
+ |-- RECORD: struct (nullable = true)
+ |    |-- ID: integer (nullable = true)
+ |    |-- COMPANY: struct (nullable = true)
+ |    |    |-- SHORT_NAME: string (nullable = true)
+ |    |    |-- COMPANY_ID_NUM: integer (nullable = true)
+```
+
+But when "schema_retention_policy" is set to "collapse_root" the root group will be collapsed and the schema will look
+like this (note the RECORD field is no longer present):
+```
+root
+ |-- ID: integer (nullable = true)
+ |-- COMPANY: struct (nullable = true)
+ |    |-- SHORT_NAME: string (nullable = true)
+ |    |-- COMPANY_ID_NUM: integer (nullable = true)
+```
+
+You can experiment with this feature using built-in example in `za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample`
+
+
+### Record Id fields generation
+
+For data that has record order dependency generation of "File_Id" and "Record_Id" fields is supported. File_Id is unique for each file when
+a directory is specified as the source for data. Record_Id is a unique sequential record identifier within the file.
+
+Turn this feature on use
+```
+.option("generate_record_id", true)
+``` 
+
+The following fields will be added to the top of the schema:
+```
+root
+ |-- File_Id: integer (nullable = false)
+ |-- Record_Id: long (nullable = false)
+```
+
+Currently this feature may inpact performance and scaling, please use it with caution.  
 
 ## Performance
 
