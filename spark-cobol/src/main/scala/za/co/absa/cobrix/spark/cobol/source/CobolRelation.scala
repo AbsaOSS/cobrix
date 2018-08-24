@@ -62,15 +62,9 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   }
 
   private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
-    val filesDF = getParallelizedFilesWithOrder(sourceDir)
+    val filesRDD = getParallelizedFilesWithOrder(sourceDir)
 
-    implicit val rowEncoder = RowEncoder.apply(reader.getSparkSchema)
-
-    // both field names are retrieved from the case class FileWithOrder
-    val pathFieldIndex = filesDF.schema.fieldIndex("filePath")
-    val orderFieldIdIndex = filesDF.schema.fieldIndex("order")
-
-    filesDF.mapPartitions(
+    filesRDD.mapPartitions(
       partition =>
       {
         val conf = SparkSession.builder.getOrCreate().sparkContext.hadoopConfiguration
@@ -78,31 +72,30 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
         partition.flatMap(row =>
         {
-          val filePath = row.getString(pathFieldIndex)
-          val fileOrder = row.getInt(orderFieldIdIndex)
+          val filePath = row.filePath
+          val fileOrder = row.order
 
           logger.info(s"Going to parse file: $filePath")
           reader.getRowIterator(new FileStreamer(filePath, fileSystem), fileOrder)
         }
         )
       })
-      .rdd
   }
 
   /**
     * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
     * as their order.
     *
-    * The DataFrame contains [[za.co.absa.cobrix.spark.cobol.source.FileWithOrder]] instances.
+    * The RDD contains [[za.co.absa.cobrix.spark.cobol.source.FileWithOrder]] instances.
     */
-  private def getParallelizedFilesWithOrder(sourceDir: String): DataFrame = {
+  private def getParallelizedFilesWithOrder(sourceDir: String): RDD[FileWithOrder] = {
     val files = FileUtils
       .getAllFilesInDirectory(sourceDir, sqlContext.sparkContext.hadoopConfiguration)
       .zipWithIndex
       .map(file => FileWithOrder(file._1, file._2))
 
     import sqlContext.implicits._
-    sqlContext.sparkContext.parallelize(files, files.size).toDF()
+    sqlContext.sparkContext.parallelize(files, files.size)
   }
 
   private def buildScanForFixedLength(reader: FixedLenReader): RDD[Row] = {
