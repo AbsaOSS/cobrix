@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 class CobolSchemaSpec extends FunSuite {
 
@@ -43,20 +43,21 @@ class CobolSchemaSpec extends FunSuite {
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
 
     val parsedSchema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema)
+    val cobolSchema = new CobolSchema(parsedSchema, false, SchemaRetentionPolicy.CollapseRoot)
     val actualSchema = cobolSchema.getSparkSchema.toString()
 
     assert(actualSchema == expectedSchema)
   }
 
   test("Test generation of record id field") {
-    val expectedSchema: String = "StructType(StructField(Record_Id,LongType,false), StructField(BIN_INT,IntegerType,true), StructField(STRUCT_FLD," +
+    val expectedSchema: String = "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(BIN_INT," +
+      "IntegerType,true), StructField(STRUCT_FLD," +
       "StructType" +
       "(StructField(STR_FLD,StringType,true))," +
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
 
     val parsedSchema = CopybookParser.parseTree(copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema, true)
+    val cobolSchema = new CobolSchema(parsedSchema, true, SchemaRetentionPolicy.CollapseRoot)
     val actualSchema = cobolSchema.getSparkSchema.toString()
 
     assert(actualSchema == expectedSchema)
@@ -71,22 +72,40 @@ class CobolSchemaSpec extends FunSuite {
         |""".stripMargin
 
     val expectedSchemaWithRecordId: String =
-      "StructType(StructField(Record_Id,LongType,false), StructField(STRUCT1,StructType(StructField(IntValue,IntegerType,true)),true), StructField" +
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(STRUCT1,StructType(StructField(IntValue," +
+        "IntegerType,true)),true), StructField" +
         "(STRUCT2,StructType(StructField(STR_FLD,StringType,true)),true))"
     val expectedSchemaWithoutRecordId: String =
       "StructType(StructField(STRUCT1,StructType(StructField(IntValue,IntegerType,true)),true), StructField(STRUCT2,StructType(StructField(STR_FLD," +
         "StringType,true)),true))"
 
+    val expectedCollapsedSchemaWithRecordId: String =
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(IntValue,IntegerType,true), StructField" +
+        "(STR_FLD,StringType,true))"
+    val expectedCollapsedSchemaWithoutRecordId: String =
+      "StructType(StructField(IntValue,IntegerType,true), StructField(STR_FLD,StringType,true))"
+
     val parsedSchema = CopybookParser.parseTree(copyBook)
-    val cobolSchema1 = new CobolSchema(parsedSchema, true)
+    val cobolSchema1 = new CobolSchema(parsedSchema, true, SchemaRetentionPolicy.KeepOriginal)
     val actualSchema1 = cobolSchema1.getSparkSchema.toString()
 
     assert(actualSchema1 == expectedSchemaWithRecordId)
 
-    val cobolSchema2 = new CobolSchema(parsedSchema, false)
+    val cobolSchema2 = new CobolSchema(parsedSchema, false, SchemaRetentionPolicy.KeepOriginal)
     val actualSchema2 = cobolSchema2.getSparkSchema.toString()
 
     assert(actualSchema2 == expectedSchemaWithoutRecordId)
+
+    val cobolSchema3 = new CobolSchema(parsedSchema, true, SchemaRetentionPolicy.CollapseRoot)
+    val actualSchema3 = cobolSchema3.getSparkSchema.toString()
+
+    assert(actualSchema3 == expectedCollapsedSchemaWithRecordId)
+
+    val cobolSchema4 = new CobolSchema(parsedSchema, false, SchemaRetentionPolicy.CollapseRoot)
+    val actualSchema4 = cobolSchema4.getSparkSchema.toString()
+
+    assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)
+
   }
 
 

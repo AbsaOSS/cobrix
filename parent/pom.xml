@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
-  ~ Copyright 2018 Barclays Africa Group Limited
+  ~ Copyright 2018 ABSA Group Limited
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@
 	</licenses>
 
 	<organization>
-		<name>Barclays Africa Group Limited</name>
+		<name>ABSA Group Limited</name>
 		<url>https://www.barclaysafrica.com</url>
 	</organization>
 

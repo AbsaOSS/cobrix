@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
 import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
@@ -76,7 +77,7 @@ class DefaultSource
   private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    new FixedLenNestedReader(copybookContent, parameters.recordStartOffset, parameters.recordEndOffset
+    new FixedLenNestedReader(copybookContent, parameters.recordStartOffset, parameters.recordEndOffset, parameters.schemaRetentionPolicy
     )
   }
 
@@ -96,7 +97,7 @@ class DefaultSource
       parameters.recordStartOffset,
       parameters.recordEndOffset,
       parameters.generateRecordId,
-      parameters.recordIdFileIncrement
+      parameters.schemaRetentionPolicy
     )
   }
 }

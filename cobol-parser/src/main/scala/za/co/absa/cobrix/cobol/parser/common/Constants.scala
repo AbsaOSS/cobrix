@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,5 +29,9 @@ object Constants {
   // For Decimal types
   val maxDecimalPrecision = 38
   val maxDecimalScale = 18
+
+  // FThe fields that can be automatically generated
+  val fileIdField = "File_Id"
+  val recordIdField = "Record_Id"
 
 }

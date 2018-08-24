@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
 /**
@@ -32,16 +34,20 @@ import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
   * @param startOffset           An offset to the start of the record in each binary data block.
   * @param endOffset             An offset from the end of the record to the end of the binary data block.
   * @param generateRecordId      If true, a record id field will be prepended to each record.
+  * @param policy                Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param fileId                A FileId to put to the corresponding column
   * @param startRecordId         A starting record id value for this particular file/stream `dataStream`
   */
 @throws(classOf[IllegalStateException])
 class VarLenNestedIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            lengthFieldName: Option[String],
-                           startOffset: Int = 0,
-                           endOffset: Int = 0,
-                           generateRecordId: Boolean = false,
-                           startRecordId: Long = 1) extends Iterator[Row] {
+                           startOffset: Int,
+                           endOffset: Int,
+                           generateRecordId: Boolean,
+                           policy: SchemaRetentionPolicy,
+                           fileId: Int,
+                           startRecordId: Long) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = 0L
@@ -91,7 +97,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
     val dataBits = BitVector(binaryData)
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, recordIndex) )
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, policy, fileId, recordIndex) )
 
     recordIndex = recordIndex + 1
   }

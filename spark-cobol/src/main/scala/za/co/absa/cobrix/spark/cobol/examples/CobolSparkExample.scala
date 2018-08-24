@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,17 +29,21 @@ object CobolSparkExample {
       .master("local")
       .getOrCreate()
 
+    // This is an example read from a mainframe data file.
+    // You can turn on/off the 'generate_record_id' and 'schema_retention_policy' options to see what difference it makes.
     val df = spark
       .read
       .format("cobol")
-      .option("copybook", "data/test1_copybook.cob")
-      .load("data/test1_data")
+      .option("copybook", "data/test2_copybook.cob")
+      //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
+      //.option("schema_retention_policy", "collapse_root")   // Collapses the root group returning it's field on the top level of the schema
+      .load("data/test2_data")
 
     df.printSchema
     println(df.count)
-    df.show
+    df.show(100, truncate = false)
 
-    df.toJSON.take(200).foreach(println)
+    df.toJSON.take(100).foreach(println)
 
     df.write.mode(SaveMode.Overwrite)
       .parquet("data/output/example")

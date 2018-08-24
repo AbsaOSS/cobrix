@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,7 @@ class CobolIntegration2Spec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
+      .option("schema_retention_policy", "collapse_root")
       .option("record_start_offset", "2")
       .option("record_end_offset", "27")
       .load(inpudDataPath)

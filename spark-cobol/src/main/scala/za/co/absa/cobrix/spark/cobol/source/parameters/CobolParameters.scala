@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
  */
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
+
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 /**
   * This class holds parameters for the job.
@@ -32,6 +35,6 @@ case class CobolParameters(
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],
-                            generateRecordId:      Boolean = false,
-                            recordIdFileIncrement: Long = 0
+                            generateRecordId:      Boolean,
+                            schemaRetentionPolicy: SchemaRetentionPolicy
                           )

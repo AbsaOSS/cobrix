@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 /**
   * This class provides methods for parsing the parameters set as Spark options.
@@ -31,11 +33,18 @@ object CobolParametersParser {
   val PARAM_RECORD_START_OFFSET      = "record_start_offset"
   val PARAM_RECORD_END_OFFSET        = "record_end_offset"
   val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
-  val PARAM_RECORD_ID_FILE_INCREMENT = "record_id_file_increment"
+  val PARAM_SCHEMA_RETENTION_POLICY  = "schema_retention_policy"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
-    new CobolParameters(
+    val policyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
+    val policy = SchemaRetentionPolicy.withNameOpt(policyName)
+
+    if (policy.isEmpty) {
+      throw new IllegalArgumentException(s"Invalid value '$policyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
+    }
+
+    CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
@@ -43,16 +52,16 @@ object CobolParametersParser {
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
-      params.getOrElse(PARAM_RECORD_ID_FILE_INCREMENT, Constants.defaultFileRecordIdIncrement.toString).toLong
+      policy.get
     )
   }
 
   private def parseVariableLengthParameters(params: Map[String,String]): Option[VariableLengthParameters] = {
 
     if (params.contains(PARAM_RECORD_LENGTH)) {
-      Some(new VariableLengthParameters
+      Some(VariableLengthParameters
       (
-        params.get(PARAM_RECORD_LENGTH).get
+        params(PARAM_RECORD_LENGTH)
       ))
     }
     else {
@@ -62,7 +71,7 @@ object CobolParametersParser {
 
   private def getParameter(key: String, params: Map[String,String]): Option[String] = {
     if (params.contains(key)) {
-      Some(params.get(key).get)
+      Some(params(key))
     }
     else {
       None

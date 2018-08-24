@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Barclays Africa Group Limited
+ * Copyright 2018 ABSA Group Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.{FixedLenFlatRowIterator, FixedLenMapIterator}
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 /** The Cobol data reader that provides output using flattened schema */
 class FixedLenFlatReader(val copyBookContents: String,
@@ -62,7 +62,7 @@ class FixedLenFlatReader(val copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema)
+    new CobolSchema(schema, false, SchemaRetentionPolicy.KeepOriginal)
   }
 
   override def getRecordStartOffset: Int = startOffset
