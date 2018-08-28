@@ -83,9 +83,5 @@ object CobolParametersValidator {
       case (None, None) =>
         throw new IllegalStateException(s"Cannot define path to source files: missing parameter: '$PARAM_SOURCE_PATH'")
     }
-
-    if (!hdfs.exists(new Path(parameters(PARAM_SOURCE_PATH)))) {
-      throw new FileNotFoundException(s"Data source not found at ${parameters(PARAM_SOURCE_PATH)}")
-    }
   }
 }
