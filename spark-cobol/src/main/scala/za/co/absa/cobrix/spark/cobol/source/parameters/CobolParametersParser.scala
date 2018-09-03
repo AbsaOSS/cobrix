@@ -30,10 +30,14 @@ object CobolParametersParser {
   val PARAM_COPYBOOK_CONTENTS        = "copybook_contents"
   val PARAM_SOURCE_PATH              = "path"
   val PARAM_RECORD_LENGTH            = "record_length_field"
+  val PARAM_RECORD_LENGTH_MIN        = "record_length_min"
+  val PARAM_RECORD_LENGTH_MAX        = "record_length_max"
   val PARAM_RECORD_START_OFFSET      = "record_start_offset"
   val PARAM_RECORD_END_OFFSET        = "record_end_offset"
   val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY  = "schema_retention_policy"
+  val PARAM_SEARCH_SIGNATURE_FIELD   = "search_signature_field"
+  val PARAM_SEARCH_SIGNATURE_VALUE   = "search_signature_value"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -52,7 +56,9 @@ object CobolParametersParser {
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
-      policy.get
+      policy.get,
+      getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
+      getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params)
     )
   }
 
@@ -61,7 +67,9 @@ object CobolParametersParser {
     if (params.contains(PARAM_RECORD_LENGTH)) {
       Some(VariableLengthParameters
       (
-        params(PARAM_RECORD_LENGTH)
+        params(PARAM_RECORD_LENGTH),
+        params.get(PARAM_RECORD_LENGTH_MIN).map(_.toInt),
+        params.get(PARAM_RECORD_LENGTH_MAX).map(_.toInt)
       ))
     }
     else {

@@ -22,7 +22,7 @@ import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
-import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenSearchReader, VarLenNestedReader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
@@ -63,7 +63,9 @@ class DefaultSource
     val cobolParameters = CobolParametersParser.parse(parameters)
     CobolParametersValidator.checkSanity(cobolParameters)
 
-    if (cobolParameters.variableLengthParams.isEmpty && !cobolParameters.generateRecordId) {
+    val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
+
+    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -90,14 +92,30 @@ class DefaultSource
 
     val recordLengthField = if (parameters.variableLengthParams.isDefined) Some(parameters.variableLengthParams.get.recordLengthField) else None
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    val isSearchSignature = parameters.searchSignatureField.isDefined && parameters.searchSignatureValue.isDefined
 
-    new VarLenNestedReader(
-      copybookContent,
-      recordLengthField,
-      parameters.recordStartOffset,
-      parameters.recordEndOffset,
-      parameters.generateRecordId,
-      parameters.schemaRetentionPolicy
-    )
+    if (isSearchSignature) {
+      new VarLenSearchReader(
+        copybookContent,
+        recordLengthField,
+        parameters.variableLengthParams.flatMap(_.minimumLength),
+        parameters.variableLengthParams.flatMap(_.maximumLength),
+        parameters.searchSignatureField.get,
+        parameters.searchSignatureValue.get,
+        parameters.recordStartOffset,
+        parameters.recordEndOffset,
+        parameters.generateRecordId,
+        parameters.schemaRetentionPolicy
+      )
+    } else {
+      new VarLenNestedReader(
+        copybookContent,
+        recordLengthField,
+        parameters.recordStartOffset,
+        parameters.recordEndOffset,
+        parameters.generateRecordId,
+        parameters.schemaRetentionPolicy
+      )
+    }
   }
 }
