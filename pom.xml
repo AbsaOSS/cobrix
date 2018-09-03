@@ -30,8 +30,8 @@
         <url>${scm.url}</url>
         <connection>${scm.connection}</connection>
         <developerConnection>${scm.developerConnection}</developerConnection>
-        <tag>HEAD</tag>
-    </scm>
+	  <tag>HEAD</tag>
+  </scm>
 
     <distributionManagement>
         <snapshotRepository>

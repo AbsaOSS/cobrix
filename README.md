@@ -86,7 +86,7 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
       .load("path_to_directory_containing_the_binary_files") // can point to both, local and HDFS
       
     cobolDataframe
-    	.filter("MBSK861_LNGTH861 % 2 = 0") // filter the even values of the nested field 'MBSK861.LNGTH861'
+    	.filter("RECORD_LENGTH % 2 = 0") // filter the even values of the nested field 'RECORD_LENGTH'
     	.take(10)
     	.foreach(v => println(v))
 ```
@@ -124,7 +124,7 @@ Below is an example whose full version can be found at ```za.co.absa.cobrix.spar
     val stream = streamingContext.cobolStream() // streams the binary files into the application    
     
 	stream
-		.filter(row => row.getAs[Integer]("MBSK862_PKEYK862_PAYM-NO-K862") % 2 == 0) // filters the even values of the nested field 'MBSK862_PKEYK862_PAYM-NO-K862'
+		.filter(row => row.getAs[Integer]("NUMERIC_FLD") % 2 == 0) // filters the even values of the nested field 'NUMERIC_FLD'
 		.print(10)		
     
     streamingContext.start()
