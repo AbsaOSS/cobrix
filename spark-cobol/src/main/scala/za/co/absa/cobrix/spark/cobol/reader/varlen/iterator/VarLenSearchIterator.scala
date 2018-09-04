@@ -20,26 +20,39 @@ import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.common.{BinaryUtils, SimpleMemoryStream}
-import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.stream.{SimpleMemoryStream, SimpleStream}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
 /**
-  * This iterator is used to variable length data sequentially using the [[SimpleStream]] interface.
+  * This iterator is used to variable length data sequentially using the [[za.co.absa.cobrix.cobol.parser.stream.SimpleStream]] interface.
+  * This iterator fetches rows from binary data stream by searching the stream for the signature sequence of bytes.
+  * This sequence of bytes we call signature. Once a signature is found in the stream a row is extracted.
+  * As an additional check is a length field is specified the value of the field is checked against the expected range of values.
   *
   * @param cobolSchema A parsed copybook.
-  * @param dataStream  A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
-  * @param policy      Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param dataStream  A source of bytes for sequential reading and parsing. It should implement
+  *                    [[za.co.absa.cobrix.cobol.parser.stream.SimpleStream]] interface.
+  * @param signatureFieldName  The name of the field that contains the signature.
+  * @param signatureFieldValue The value of the signature should match.
+  * @param lengthFieldName  A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param minimumLength  The mininum possible value of the length field.
+  * @param maximumLength  The maximum possible value of the length field.
+  * @param startOffset  An offset to the start of the record in each binary data block.
+  * @param endOffset  An offset from the end of the record to the end of the binary data block.
+  * @param generateRecordId  If true, a record id field will be prepended to each record.
+  * @param fileId  A FileId to put to the corresponding column
+  * @param policy  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 @throws(classOf[IllegalStateException])
 class VarLenSearchIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
+                           signatureFieldName: String,
+                           signatureFieldValue: String,
                            lengthFieldName: Option[String],
                            minimumLength: Option[Int],
                            maximumLength: Option[Int],
-                           signatureFieldName: String,
-                           signatureFieldValue: String,
                            startOffset: Int,
                            endOffset: Int,
                            generateRecordId: Boolean,
@@ -75,10 +88,32 @@ class VarLenSearchIterator(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
+    val signatureOffset = signatureField.binaryProperties.offset / 8
+
+    def isLengthFieldValid(lengthFieldValue: Int): Boolean = {
+      val lengthValid = for (minValue <- minimumLength;
+                             maxValue <- maximumLength) yield lengthFieldValue > minValue && lengthFieldValue < maxValue
+
+      if (lengthValid.isDefined) {
+        lengthValid.get
+      } else {
+        true
+      }
+    }
+
+    def advanceByteIndex(recordMarkStart: Long, lengthFieldValue: Int, isFound: Boolean): Unit = {
+      byteIndex = if (isFound) {
+        if (lengthField.isDefined && lengthFieldValue > 0)
+          recordMarkStart + lengthFieldValue
+        else
+          recordMarkStart + copyBookRecordSize / 2
+      } else {
+        recordMarkStart + signatureOffset
+      }
+    }
+
     var isFound = false
     var recordMarkStart = byteIndex
-
-    val signatureOffset = signatureField.binaryProperties.offset / 8
 
     while (!isFound) {
       recordMarkStart = memoryStream.search(signature, byteIndex)
@@ -92,41 +127,17 @@ class VarLenSearchIterator(cobolSchema: Copybook,
 
       val bytesRead = memoryStream.getBytes(buffer, recordMarkStart - signatureOffset, recordMarkStart + fullRecordSize - signatureOffset - 1)
 
-      if (bytesRead < copyBookRecordSize / 2) {
+      val minimumBytesRequired = getMinimumParsableNumOfBytes
+      if (bytesRead < minimumBytesRequired) {
         cachedValue = None
         return
       }
 
-      // Check sanity of the length field
-      val lengthFieldValue = if (lengthField.isDefined) {
-        cobolSchema.extractPrimitiveField(lengthField.get, buffer, startOffset) match {
-          case i: Int => i
-          case l: Long => l.toInt
-          case s: String => s.toInt
-          case _ => throw new IllegalStateException(s"Record length value of the field $lengthFieldName must be an integral type.")
-        }
-      } else {
-        0
-      }
-
-      val lengthValid = for (minValue <- minimumLength;
-                             maxValue <- maximumLength) yield lengthFieldValue > minValue && lengthFieldValue < maxValue
-
-      isFound = if (lengthValid.isDefined) {
-        lengthValid.get
-      } else {
-        true
-      }
+      val lengthFieldValue = getLengthFieldValue
+      isFound = isLengthFieldValid(lengthFieldValue)
 
       // Advance to the next search point
-      byteIndex = if (isFound) {
-        if (lengthField.isDefined && lengthFieldValue > 0)
-          recordMarkStart + lengthFieldValue
-        else
-          recordMarkStart + copyBookRecordSize / 2
-      } else {
-        recordMarkStart + signatureOffset
-      }
+      advanceByteIndex(recordMarkStart, lengthFieldValue, isFound)
     }
 
     val dataBits = BitVector(buffer)
@@ -135,6 +146,26 @@ class VarLenSearchIterator(cobolSchema: Copybook,
       /*recordMarkStart - signatureOffset)*/
       recordIndex))
     recordIndex += 1
+  }
+
+  private def getMinimumParsableNumOfBytes: Int = {
+    lengthField match {
+      case Some(lengthFld) => lengthFld.binaryProperties.offset/8 + lengthFld.binaryProperties.actualSize/8
+      case None => copyBookRecordSize + startOffset + endOffset
+    }
+  }
+
+  private def getLengthFieldValue: Int = {
+    if (lengthField.isDefined) {
+      cobolSchema.extractPrimitiveField(lengthField.get, buffer, startOffset) match {
+        case i: Int => i
+        case l: Long => l.toInt
+        case s: String => s.toInt
+        case _ => throw new IllegalStateException(s"Record length value of the field $lengthFieldName must be an integral type.")
+      }
+    } else {
+      0
+    }
   }
 
   @throws(classOf[IllegalStateException])

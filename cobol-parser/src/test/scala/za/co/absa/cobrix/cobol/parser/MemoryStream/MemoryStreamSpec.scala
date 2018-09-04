@@ -17,8 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.MemoryStream
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.common.SimpleMemoryStream
-import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.cobol.parser.stream.{SimpleMemoryStream, SimpleStream}
 
 class MemoryStreamSpec extends FunSuite {
 

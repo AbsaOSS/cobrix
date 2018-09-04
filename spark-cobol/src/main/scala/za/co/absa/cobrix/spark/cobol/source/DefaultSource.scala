@@ -95,13 +95,14 @@ class DefaultSource
     val isSearchSignature = parameters.searchSignatureField.isDefined && parameters.searchSignatureValue.isDefined
 
     if (isSearchSignature) {
+      logger.warn("An experimental 'variable length search reader' is used")
       new VarLenSearchReader(
         copybookContent,
+        parameters.searchSignatureField.get,
+        parameters.searchSignatureValue.get,
         recordLengthField,
         parameters.variableLengthParams.flatMap(_.minimumLength),
         parameters.variableLengthParams.flatMap(_.maximumLength),
-        parameters.searchSignatureField.get,
-        parameters.searchSignatureValue.get,
         parameters.recordStartOffset,
         parameters.recordEndOffset,
         parameters.generateRecordId,

@@ -34,7 +34,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
   *
   * It currently supports both, fixed and variable-length records.
   *
-  * Its constructor is expected to change after the hierarchy of [[Reader]] is put in place.
+  * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
 class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlContext: SQLContext)
   extends BaseRelation

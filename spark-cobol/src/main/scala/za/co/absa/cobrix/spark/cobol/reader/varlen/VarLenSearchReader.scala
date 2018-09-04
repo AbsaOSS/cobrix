@@ -27,19 +27,32 @@ import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 
 /**
-  * The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
+  * The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema.
+  * This reader fetches rows from binary data stream by searching the stream for the signature sequence of bytes.
+  * This sequence of bytes we call signature. Once a signature is found in the stream a row is extracted.
+  * As an additional check is a length field is specified the value of the field is checked against the expected range of values.
+  *
+  * Note. This is an EXPERIMENTAL reader and should be used with CAUTION.
   *
   * @param copybookContents The contents of a copybook.
+  * @param signatureFieldName  The name of the field that contains the signature.
+  * @param signatureFieldValue The value of the signature should match.
+  * @param lengthFieldName  A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param minimumLength  The mininum possible value of the length field.
+  * @param maximumLength  The maximum possible value of the length field.
+  * @param startOffset  An offset to the start of the record in each binary data block.
+  * @param endOffset  An offset from the end of the record to the end of the binary data block.
+  * @param generateRecordId  If true, a record id field will be prepended to each record.
   * @param policy           Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the
   *                         copybook.
   */
 @throws(classOf[IllegalArgumentException])
 class VarLenSearchReader(copybookContents: String,
+                         signatureFieldName: String,
+                         signatureFieldValue: String,
                          lengthFieldName: Option[String],
                          minimumLength: Option[Int],
                          maximumLength: Option[Int],
-                         signatureFieldName: String,
-                         signatureFieldValue: String,
                          startOffset: Int = 0,
                          endOffset: Int = 0,
                          generateRecordId: Boolean = false,
@@ -54,8 +67,8 @@ class VarLenSearchReader(copybookContents: String,
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
   override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenSearchIterator(cobolSchema.copybook, binaryData, lengthFieldName, minimumLength, maximumLength, signatureFieldName,
-      signatureFieldValue, startOffset, endOffset, generateRecordId, fileNumber, policy)
+    new VarLenSearchIterator(cobolSchema.copybook, binaryData, signatureFieldName, signatureFieldValue, lengthFieldName, minimumLength,
+      maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
