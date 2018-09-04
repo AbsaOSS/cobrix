@@ -17,41 +17,47 @@
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-	<groupId>za.co.absa.cobrix</groupId>
-	<artifactId>cobrix</artifactId>
+    <groupId>za.co.absa.cobrix</groupId>
+    <artifactId>cobrix</artifactId>
 
-	<version>0.2.5-SNAPSHOT</version>
+    <version>0.2.5-SNAPSHOT</version>
 
-	<packaging>pom</packaging>
+    <packaging>pom</packaging>
 
-	<scm>
-		<url>https://bitbucket.absa.co.za/projects/BACIBBD/repos/cobrix/browse</url>
-		<connection>scm:git:https://bitbucket.absa.co.za/scm/bacibbd/cobrix.git</connection>
-		<developerConnection>scm:git:https://bitbucket.absa.co.za/scm/bacibbd/cobrix.git</developerConnection>
-	  <tag>HEAD</tag>
-  </scm>
+    <scm>
+        <url>${scm.url}</url>
+        <connection>${scm.connection}</connection>
+        <developerConnection>${scm.developerConnection}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
-	<distributionManagement>
-		<snapshotRepository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</snapshotRepository>
-		<repository>
-			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
-	</distributionManagement>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
-	<modules>
-		<module>parent</module>
-		<module>cobol-parser</module>
-		<module>spark-cobol</module>
-	</modules>
+    <modules>
+        <module>parent</module>
+        <module>cobol-parser</module>
+        <module>spark-cobol</module>
+    </modules>
 
     <properties>
+        <!-- This is server id for configuring access credentials via settings.xml-->
         <project.scm.id>cobrix-scm-server</project.scm.id>
+
+        <!-- Overridable SCM properties to support multiple SCM URLs-->
+        <scm.connection>scm:git:git://github.com/AbsaOSS/cobrix.git</scm.connection>
+        <scm.developerConnection>scm:git:ssh://github.com:AbsaOSS/cobrix.git</scm.developerConnection>
+        <scm.url>http://github.com/AbsaOSS/cobrix/tree/master</scm.url>
     </properties>
     <build>
         <plugins>
@@ -73,15 +79,15 @@
         </plugins>
     </build>
 
-	<profiles>
-		<profile>
-			<id>license-check</id>
-			<!-- defined in parent/pom.xml -->
-		</profile>
-		<profile>
-			<id>public</id>
-			<!-- defined in parent/pom.xml -->
-		</profile>
-	</profiles>
+    <profiles>
+        <profile>
+            <id>license-check</id>
+            <!-- defined in parent/pom.xml -->
+        </profile>
+        <profile>
+            <id>public</id>
+            <!-- defined in parent/pom.xml -->
+        </profile>
+    </profiles>
 
 </project>
