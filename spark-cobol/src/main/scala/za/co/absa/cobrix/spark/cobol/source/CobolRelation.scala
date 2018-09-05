@@ -30,21 +30,21 @@ import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 /**
-  * Represents a file attached to an order.
-  */
-private[source] case class FileWithOrder(filePath: String, order: Int)
-
-/**
   * This class implements an actual Spark relation.
   *
   * It currently supports both, fixed and variable-length records.
   *
-  * Its constructor is expected to change after the hierarchy of [[Reader]] is put in place.
+  * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
 class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
   with TableScan {
+
+  /**
+    * Represents a file attached to an order.
+    */
+  private[source] case class FileWithOrder(filePath: String, order: Int)
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -86,7 +86,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
     * as their order.
     *
-    * The RDD contains [[za.co.absa.cobrix.spark.cobol.source.FileWithOrder]] instances.
+    * The RDD contains [[za.co.absa.cobrix.spark.cobol.source.CobolRelation.FileWithOrder]] instances.
     */
   private def getParallelizedFilesWithOrder(sourceDir: String): RDD[FileWithOrder] = {
     val files = FileUtils

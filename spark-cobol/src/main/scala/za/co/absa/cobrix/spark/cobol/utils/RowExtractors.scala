@@ -38,7 +38,7 @@ object RowExtractors {
     * @param generateRecordId If true a record id field will be added as the first field of the record.
     * @param recordId         The record id to be saved to the record id field
     *
-    * @return                 A Spark [[Row]] object corresponding to the record schema
+    * @return                 A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
     */
   @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST,

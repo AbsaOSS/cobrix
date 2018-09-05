@@ -36,5 +36,7 @@ case class CobolParameters(
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],
                             generateRecordId:      Boolean,
-                            schemaRetentionPolicy: SchemaRetentionPolicy
+                            schemaRetentionPolicy: SchemaRetentionPolicy,
+                            searchSignatureField:  Option[String],
+                            searchSignatureValue:  Option[String]
                           )
