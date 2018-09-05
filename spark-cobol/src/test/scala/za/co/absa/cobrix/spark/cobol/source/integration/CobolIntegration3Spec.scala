@@ -42,8 +42,8 @@ class CobolIntegration3Spec extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
       .option("generate_record_id", "true")
-      .option("search_signature_field", "SIGNATURE")
-      .option("search_signature_value", "S9276511")
+      .option("segment_field", "SIGNATURE")
+      .option("segment_filter", "S9276511")
       .load(inpudDataPath)
 
     // This is to print the actual output

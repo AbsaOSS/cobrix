@@ -36,8 +36,8 @@ object CobolParametersParser {
   val PARAM_RECORD_END_OFFSET        = "record_end_offset"
   val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY  = "schema_retention_policy"
-  val PARAM_SEARCH_SIGNATURE_FIELD   = "search_signature_field"
-  val PARAM_SEARCH_SIGNATURE_VALUE   = "search_signature_value"
+  val PARAM_SEGMENT_FIELD            = "segment_field"
+  val PARAM_SEGMENT_FILTER           = "segment_filter"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -57,8 +57,8 @@ object CobolParametersParser {
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
       policy.get,
-      getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
-      getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params)
+      getParameter(PARAM_SEGMENT_FIELD, params),
+      getParameter(PARAM_SEGMENT_FILTER, params)
     )
   }
 
