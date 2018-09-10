@@ -120,9 +120,15 @@ object CopybookParser {
 
     val schema: MutableCopybook = new MutableCopybook()
     forest.foreach { fields =>
+      val rootElement = fields.head
+      if (rootElement.modifiers.keys.toList.contains(PIC)) {
+        throw new SyntaxErrorException(rootElement.lineNumber, "", s"Error in '${rootElement.name}' field definition. All top level fields need to be GROUPs. " +
+          s"Non-group elements at the top level are not supported.")
+      }
+
       val root = Group(1,
-        fields.head.name,
-        fields.head.lineNumber,
+        rootElement.name,
+        rootElement.lineNumber,
         mutable.ArrayBuffer(),
         redefines = None)(None)
       val trees = fields
