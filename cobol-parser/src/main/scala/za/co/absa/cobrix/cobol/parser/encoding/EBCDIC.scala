@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.encoding
 
 import za.co.absa.cobrix.cobol.parser.position.Position
 import scodec.Codec
-import scodec.codecs.{float, floatL, int16, int32, int64, uint, uint16, uint32, uint4, uint8}
+import scodec.codecs.{float, floatL, int16, int32, int64, int8, uint, uint16, uint32, uint4, uint8}
 
 /**
   * EBCDIC() type abstraction
@@ -32,8 +32,10 @@ case class EBCDIC() extends Encoding {
         x match {
           case bin if bin == 0 || bin == 4 =>
             precision match { //if native binary follow IBM guide to digit binary length
-              case a if a >= 1 && a <= 4 =>
-                if (signPosition.getOrElse(None) != None) int16 else uint16
+              case a if a == 1 =>
+                if (signPosition.getOrElse(None) != None) int8 else uint8
+              case a if a >= 2 && a <= 4 =>
+              if (signPosition.getOrElse(None) != None) int16 else uint16
               case b if b >= 5 && b <= 9 =>
                 if (signPosition.getOrElse(None) != None) int32 else uint32
               case c if c >= 10 && c <= 18 =>

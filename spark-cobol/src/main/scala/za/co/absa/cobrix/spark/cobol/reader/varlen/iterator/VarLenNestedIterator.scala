@@ -72,14 +72,17 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
-    val binaryData = dataStream.next(startOffset + copyBookRecordSize)
 
-    if (binaryData.length < startOffset + copyBookRecordSize) {
+    val lengthFieldBlock = lengthField.get.binaryProperties.offset/8 + lengthField.get.binaryProperties.actualSize/8
+
+    val binaryData = dataStream.next(startOffset + lengthFieldBlock)
+
+    if (binaryData.length < startOffset + lengthFieldBlock) {
       cachedValue = None
       return
     }
 
-    val recordLength = if (lengthField.isDefined) {
+    var recordLength = if (lengthField.isDefined) {
       cobolSchema.extractPrimitiveField(lengthField.get, binaryData, startOffset) match {
         case i: Int => i
         case l: Long => l.toInt
@@ -90,15 +93,19 @@ class VarLenNestedIterator(cobolSchema: Copybook,
       copyBookRecordSize
     }
 
-    // Drop out of the record values
-    val dropLength = recordLength - copyBookRecordSize + endOffset
-    if (dropLength > 0)
-      dataStream.next(dropLength)
+    val restOfDataLength = recordLength - lengthFieldBlock + endOffset
 
-    val dataBits = BitVector(binaryData)
+    val binaryDataFull = if (restOfDataLength>0) {
+      binaryData ++ dataStream.next(restOfDataLength)
+    } else {
+      binaryData
+    }
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, policy, fileId, recordIndex) )
+    val dataBits = BitVector(binaryDataFull)
 
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, policy, fileId, recordIndex ))
+
+    byteIndex += binaryDataFull.length
     recordIndex = recordIndex + 1
   }
 
