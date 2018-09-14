@@ -49,4 +49,24 @@ class RulesFacadeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     rules.foreach(rule => assert(rule.eval(fieldsValues)))
   }
+
+  it should "extract rules from parameters" in {
+
+    val testData = Map(
+      "rule10: whatever" -> "first rule here",
+      "copybook" -> "/home/me/copybook.cb",
+      "rule   9   : some rule here " -> "rule with messed up spaces",
+      "rule 2 : " -> "no rule, but don't break the others",
+      "rule 1 : field(a) == field(b)" -> "decent rule spec",
+      "path" -> "/etc/repo/data"
+    )
+
+    val expected = Seq(
+      RuleExpression("field(a) == field(b)", "decent rule spec"),
+      RuleExpression("some rule here", "rule with messed up spaces"),
+      RuleExpression("whatever", "first rule here")
+    )
+
+    assert(expected == RulesFacade.extractRules(testData))
+  }
 }

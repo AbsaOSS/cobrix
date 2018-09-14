@@ -22,7 +22,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.evaluation.RuleEvaluator
 /**
   * This class implements a rule evaluator based on Oracle's Nashorn.
   */
-class NashornRuleEvaluator extends RuleEvaluator {
+private[rules] class NashornRuleEvaluator extends RuleEvaluator {
 
   private val evaluator = new ScriptEngineManager().getEngineByMimeType("text/javascript")
 

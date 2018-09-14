@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.evaluation.RuleEvaluator
   * @param expression [[RuleExpression]] containing the full expression and the expected result in case the expression is true.
   * @param evaluator [[RuleEvaluator]] wrapping the evaluation engine.
   */
-class SimpleNashornRule(fields: Seq[String], expression: RuleExpression, evaluator: RuleEvaluator) extends Rule {
+private[rules] class SimpleNashornRule(fields: Seq[String], expression: RuleExpression, evaluator: RuleEvaluator) extends Rule {
 
   override def getFields(): Seq[String] = fields
 

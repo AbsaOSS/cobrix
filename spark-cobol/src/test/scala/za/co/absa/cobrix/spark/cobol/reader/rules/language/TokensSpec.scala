@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.rules.language
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import za.co.absa.cobrix.spark.cobol.reader.rules.RuleExpression
 
 class TokensSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
@@ -48,5 +49,23 @@ class TokensSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val expression = s"field${expectedResult}"
 
     assert(Tokens.getParenthesesContent(expression) == expectedResult)
+  }
+
+  it should "extract the rules in order" in {
+    val testData = Map(
+      "rule10: whatever" -> "first rule here",
+      "this is not a rule" -> "any value",
+      "rule   9   : some rule here " -> "rule with messed up spaces",
+      "rule 2 : " -> "no rule, but don't break the others",
+      "rule 1 : field(a) == field(b)" -> "decent rule spec"
+    )
+
+    val expected = Seq(
+      RuleExpression("field(a) == field(b)", "decent rule spec"),
+      RuleExpression("some rule here", "rule with messed up spaces"),
+      RuleExpression("whatever", "first rule here")
+    )
+
+    assert(expected == Tokens.extractSortedRules(testData))
   }
 }

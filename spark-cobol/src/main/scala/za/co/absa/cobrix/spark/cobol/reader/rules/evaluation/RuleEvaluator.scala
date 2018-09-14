@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.rules.evaluation
 /**
   * Trait for string expressions evaluators.
   */
-trait RuleEvaluator {
+private[rules] trait RuleEvaluator {
 
   def eval(expression: String): Boolean
 }

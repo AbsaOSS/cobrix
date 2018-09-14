@@ -21,7 +21,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.{Rule, RuleExpression}
 /**
   * Base class for rules parsers.
   */
-abstract class RulesParserTemplate {
+private[rules] abstract class RulesParserTemplate {
 
   def parse(rulesExpressions: Seq[RuleExpression]): Seq[Rule] = {
 

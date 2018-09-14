@@ -21,7 +21,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.evaluation.impl.{JaninoRuleEva
 /**
   * Factory method implementation for expression evaluators.
   */
-object RuleEvaluatorFactory {
+private[rules] object RuleEvaluatorFactory {
 
   def buildNashornEvaluator(): RuleEvaluator = new NashornRuleEvaluator
 

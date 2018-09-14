@@ -23,7 +23,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.parsing.impl.{JaninoRulesParse
   *
   * The parses are based on different evaluation engines.
   */
-object RuleParserAbstractFactory {
+private[rules] object RuleParserAbstractFactory {
 
   def buildJaninoParser(): RulesParserTemplate = new JaninoRulesParser()
 

@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.rules
 
 import org.apache.log4j.Logger
+import za.co.absa.cobrix.spark.cobol.reader.rules.language.Tokens
 import za.co.absa.cobrix.spark.cobol.reader.rules.parsing.RuleParserAbstractFactory
 
 /**
@@ -25,6 +26,10 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.parsing.RuleParserAbstractFact
 object RulesFacade {
 
   private val logger = Logger.getLogger(RulesFacade.getClass.getSimpleName)
+
+  def extractRules(parameters: Map[String,String]): Seq[RuleExpression] = {
+    Tokens.extractSortedRules(parameters)
+  }
 
   def getRules(expressions: Seq[RuleExpression]): Seq[Rule] = {
     expressions match {

@@ -21,7 +21,7 @@ import za.co.absa.cobrix.spark.cobol.reader.rules.evaluation.RuleEvaluator
 /**
   * String expression evaluator that uses Janino as evaluation engine.
   */
-class JaninoRuleEvaluator extends RuleEvaluator {
+private[rules] class JaninoRuleEvaluator extends RuleEvaluator {
 
   override def eval(expression: String): Boolean = ???
 }
