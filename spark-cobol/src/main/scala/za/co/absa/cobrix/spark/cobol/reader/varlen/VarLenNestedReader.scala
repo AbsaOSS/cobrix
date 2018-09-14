@@ -21,29 +21,20 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.spark.cobol.reader.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
 /**
   *  The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
   *
   * @param copybookContents      The contents of a copybook.
-  * @param lengthFieldName       A name of a field that contains record length. Optional. If not set the copybook record length will be used.
-  * @param startOffset           An offset to the start of the record in each binary data block.
-  * @param endOffset             An offset from the end of the record to the end of the binary data block.
-  * @param generateRecordId      If true, a record id field will be prepended to each record.
-  * @param policy                Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param readerProperties      Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
 class VarLenNestedReader(copybookContents: String,
-                         lengthFieldName: Option[String],
-                         startOffset: Int = 0,
-                         endOffset: Int = 0,
-                         generateRecordId: Boolean = false,
-                         policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal) extends VarLenReader {
+                         readerProperties: ReaderParameters) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -54,24 +45,24 @@ class VarLenNestedReader(copybookContents: String,
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
   override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, lengthFieldName, startOffset, endOffset, generateRecordId, policy, fileNumber, 0)
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, 0)
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, generateRecordId, policy)
+    new CobolSchema(schema, readerProperties.generateRecordId, readerProperties.policy)
   }
 
-  override def getRecordStartOffset: Int = startOffset
+  override def getRecordStartOffset: Int = readerProperties.startOffset
 
-  override def getRecordEndOffset: Int = endOffset
+  override def getRecordEndOffset: Int = readerProperties.endOffset
 
   @throws(classOf[IllegalArgumentException])
   private def checkInputArgumentsValidity(): Unit = {
-    if (startOffset < 0) {
-      throw new IllegalArgumentException(s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
+    if (readerProperties.startOffset < 0) {
+      throw new IllegalArgumentException(s"Invalid record start offset = ${readerProperties.startOffset}. A record start offset cannot be negative.")
     }
-    if (endOffset < 0) {
-      throw new IllegalArgumentException(s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
+    if (readerProperties.endOffset < 0) {
+      throw new IllegalArgumentException(s"Invalid record end offset = ${readerProperties.endOffset}. A record end offset cannot be negative.")
     }
   }
 
