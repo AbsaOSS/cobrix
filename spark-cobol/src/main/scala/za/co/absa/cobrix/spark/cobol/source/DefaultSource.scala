@@ -20,9 +20,9 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.{Reader, ReaderParameters}
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
-import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenSearchReader, VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader, VarLenSearchReader}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
@@ -65,7 +65,7 @@ class DefaultSource
 
     val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
 
-    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature) {
+    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature && !cobolParameters.isXCOM) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -111,11 +111,13 @@ class DefaultSource
     } else {
       new VarLenNestedReader(
         copybookContent,
-        recordLengthField,
-        parameters.recordStartOffset,
-        parameters.recordEndOffset,
-        parameters.generateRecordId,
-        parameters.schemaRetentionPolicy
+        ReaderParameters(lengthFieldName = recordLengthField,
+          isXCOM = parameters.isXCOM,
+          startOffset = parameters.recordStartOffset,
+          endOffset = parameters.recordEndOffset,
+          generateRecordId = parameters.generateRecordId,
+          policy = parameters.schemaRetentionPolicy
+         )
       )
     }
   }

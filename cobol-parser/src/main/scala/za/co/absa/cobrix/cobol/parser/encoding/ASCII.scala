@@ -31,7 +31,7 @@ case class ASCII() extends Encoding {
     val cd = comp match {
       case Some(x) if x.isInstanceOf[Int] =>
         x match {
-          case bin if bin == 0 || bin == 4 =>
+          case bin if bin == 0 || bin == 4 || bin == 5 =>
             precision match { //if native binary follow IBM guide to digit binary length
               case a if a == 1 =>
                 if (signPosition.getOrElse(None) != None) int8 else uint8

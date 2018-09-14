@@ -29,6 +29,7 @@ object CobolParametersParser {
   val PARAM_COPYBOOK_PATH            = "copybook"
   val PARAM_COPYBOOK_CONTENTS        = "copybook_contents"
   val PARAM_SOURCE_PATH              = "path"
+  val PARAM_IS_XCOM                  = "is_xcom"
   val PARAM_RECORD_LENGTH            = "record_length_field"
   val PARAM_RECORD_LENGTH_MIN        = "record_length_min"
   val PARAM_RECORD_LENGTH_MAX        = "record_length_max"
@@ -52,6 +53,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_PATH, params),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
+      params.getOrElse(PARAM_IS_XCOM, "false").toBoolean,
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),

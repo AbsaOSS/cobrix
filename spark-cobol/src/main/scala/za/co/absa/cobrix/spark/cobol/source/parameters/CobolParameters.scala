@@ -32,6 +32,7 @@ case class CobolParameters(
                             copybookPath:          Option[String],
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
+                            isXCOM:                Boolean,
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],
