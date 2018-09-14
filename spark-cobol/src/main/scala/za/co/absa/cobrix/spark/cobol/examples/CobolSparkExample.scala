@@ -34,10 +34,12 @@ object CobolSparkExample {
     val df = spark
       .read
       .format("cobol")
-      .option("copybook", "data/test2_copybook.cob")
+      //.option("copybook", "data/test2_copybook.cob")
+      .option("copybook", "C:\\Users\\melofeli\\Desktop\\CobrixDemoData\\TRAN.cpy")
       //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       //.option("schema_retention_policy", "collapse_root")   // Collapses the root group returning it's field on the top level of the schema
-      .load("data/test2_data")
+      //.load("data/test2_data")
+      .load("C:\\Users\\melofeli\\Desktop\\CobrixDemoData\\data")
 
     df.printSchema
     println(df.count)
