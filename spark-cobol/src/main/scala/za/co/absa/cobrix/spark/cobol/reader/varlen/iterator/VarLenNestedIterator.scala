@@ -65,18 +65,45 @@ class VarLenNestedIterator(cobolSchema: Copybook,
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
 
+    val binaryData = if (readerProperties.isXCOM) {
+      fetchRecordUsingXcomHeaders()
+    } else {
+      fetchRecordUsingRecordLengthField()
+    }
+
+    binaryData match {
+      case None =>
+        cachedValue = None
+      case Some(data) =>
+        cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
+          BitVector(data),
+          readerProperties.startOffset * 8,
+          readerProperties.generateRecordId,
+          readerProperties.policy,
+          fileId,
+          recordIndex))
+
+        byteIndex += data.length
+        recordIndex = recordIndex + 1
+    }
+  }
+
+  private def fetchRecordUsingRecordLengthField(): Option[Array[Byte]] = {
+    if (lengthField.isEmpty) {
+      throw new IllegalStateException(s"For variable length reader either XCOM headers or record length field should be provided.")
+    }
+
     val lengthFieldBlock = lengthField.get.binaryProperties.offset / 8 + lengthField.get.binaryProperties.actualSize / 8
 
-    val binaryData = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
+    val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
 
-    if (binaryData.length < readerProperties.startOffset + lengthFieldBlock) {
-      cachedValue = None
-      return
+    if (binaryDataStart.length < readerProperties.startOffset + lengthFieldBlock) {
+      return None
     }
 
     var recordLength = lengthField match {
       case Some(lengthAST) =>
-        cobolSchema.extractPrimitiveField(lengthAST, binaryData, readerProperties.startOffset) match {
+        cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
           case i: Int => i
           case l: Long => l.toInt
           case s: String => s.toInt
@@ -87,18 +114,29 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
     val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
 
-    val binaryDataFull = if (restOfDataLength > 0) {
-      binaryData ++ dataStream.next(restOfDataLength)
+    if (restOfDataLength > 0) {
+      Some(binaryDataStart ++ dataStream.next(restOfDataLength))
     } else {
-      binaryData
+      Some(binaryDataStart)
+    }
+  }
+
+  private def fetchRecordUsingXcomHeaders(): Option[Array[Byte]] = {
+    val xcomHeaderBlock = 4
+
+    val binaryDataStart = dataStream.next(xcomHeaderBlock)
+
+    if (binaryDataStart.length < xcomHeaderBlock) {
+      return None
     }
 
-    val dataBits = BitVector(binaryDataFull)
+    var recordLength = (binaryDataStart(2) & 0xFF) + 256*(binaryDataStart(3) & 0xFF)
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, readerProperties.startOffset * 8, readerProperties
-      .generateRecordId, readerProperties.policy, fileId, recordIndex))
-
-    byteIndex += binaryDataFull.length
-    recordIndex = recordIndex + 1
+    if (recordLength > 0) {
+      Some(dataStream.next(recordLength))
+    } else {
+      val xcomHeaders = binaryDataStart.map(_ & 0xFF).mkString(",")
+      throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
+    }
   }
 }

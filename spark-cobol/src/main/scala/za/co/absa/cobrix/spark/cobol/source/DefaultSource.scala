@@ -65,7 +65,7 @@ class DefaultSource
 
     val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
 
-    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature) {
+    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature && !cobolParameters.isXCOM) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
