@@ -76,22 +76,27 @@ Among the motivations for this project, it is possible to highlight:
 Below is an example whose full version can be found at ```za.co.absa.cobrix.spark.cobol.examples.SampleApp``` and ```za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample```
 
 ```scala
-    val config = new SparkConf().setAppName("CobolParser")        
-    val sqlContext = new SQLContext(new SparkContext(config))
+    val sparkBuilder = SparkSession.builder().appName("Example")
+    val spark = sparkBuilder
+      .getOrCreate()
 
-    val cobolDataframe = sqlContext
+    val cobolDataframe = spark
       .read
-      .format("cobol")      
-      .option("copybook", "path_to_copybook_file") // Use "file://somefile" to use the local file system and not HDFS
-      .load("path_to_directory_containing_the_binary_files") // can point to both, local and HDFS
-      
+      .format("cobol")
+      .option("copybook", "data/test1_copybook.cob")
+      .load("data/test2_data")
+
     cobolDataframe
-    	.filter("RECORD_LENGTH % 2 = 0") // filter the even values of the nested field 'RECORD_LENGTH'
+    	.filter("RECORD.ID % 2 = 0") // filter the even values of the nested field 'RECORD_LENGTH'
     	.take(10)
     	.foreach(v => println(v))
 ```
 
-Alternatively, you can use `.option("copybook_contents", contents)` to provide copybook contents directly. 
+The full example is available [here](https://github.com/AbsaOSS/cobrix/blob/master/spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample.scala)
+
+In some scenarios Spark is unable to find "cobol" data source by it's short name. In that case you can use the full path to the source class instead: `.format("za.co.absa.cobrix.spark.cobol.source")`
+
+For an alternative copybook specification you can use `.option("copybook_contents", contents)` to provide copybook contents directly. 
 
 ### Streaming Cobol binary files from a directory
 
