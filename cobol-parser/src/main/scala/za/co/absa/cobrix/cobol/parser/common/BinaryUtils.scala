@@ -323,6 +323,9 @@ object BinaryUtils {
       case Some(4) =>
         // COMP aka BINARY encoded number
         Some(decodeBinaryNumber(bytes, bigEndian = true, signed = signed, scale))
+      case Some(5) =>
+        // COMP aka BINARY encoded number
+        Some(decodeBinaryNumber(bytes, bigEndian = false, signed = signed, scale))
       case _ =>
         throw new IllegalStateException(s"Unknown compression format ($compact).")
     }
