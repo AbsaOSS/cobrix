@@ -39,5 +39,7 @@ case class CobolParameters(
                             generateRecordId:      Boolean,
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             searchSignatureField:  Option[String],
-                            searchSignatureValue:  Option[String]
+                            searchSignatureValue:  Option[String],
+                            segmentIdField:        Option[String],
+                            segmentIdFilter:        Option[String]
                           )

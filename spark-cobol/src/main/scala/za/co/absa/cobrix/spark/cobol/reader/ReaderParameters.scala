@@ -34,5 +34,7 @@ case class ReaderParameters(
                               startOffset: Int = 0,
                               endOffset: Int = 0,
                               generateRecordId: Boolean = false,
-                              policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal
+                              policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                              segmentIdField: Option[String] = None,
+                              segmentIdFilter: Option[String] = None
                             )
