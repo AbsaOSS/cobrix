@@ -84,12 +84,10 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     }
 
     def pathBeginsWithRoot(ast: CopybookAST, fieldPath: Array[String]): Boolean = {
-      if (ast.lengthCompare(1) == 0 && fieldPath.length>0) {
-        val rootFieldName = CopybookParser.transformIdentifier(fieldPath.head)
-        ast.head.name.equalsIgnoreCase(rootFieldName)
-      } else {
-        false
-      }
+      val rootFieldName = CopybookParser.transformIdentifier(fieldPath.head)
+      ast.foldLeft(false)( (b: Boolean, grp: Group) => {
+        grp.name.equalsIgnoreCase(rootFieldName)
+      } )
     }
 
     def getFielByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
@@ -139,8 +137,9 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     */
   @throws(classOf[Exception])
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
-    val bits = BitVector(bytes)
-    field.decodeTypeValue( field.binaryProperties.offset + startOffset*8, bits)
+    val slicedBytes = bytes.slice(field.binaryProperties.offset/8 + startOffset, field.binaryProperties.offset/8 + startOffset + field.binaryProperties.actualSize/8)
+    val bits = BitVector(slicedBytes)
+    field.decodeTypeValue(0, bits)
   }
 
   /**

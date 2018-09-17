@@ -45,7 +45,10 @@ class VarLenNestedIterator(cobolSchema: Copybook,
   private var byteIndex = 0L
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
-  private val lengthField = ReaderParametersValidator.getLengthField(readerProperties, cobolSchema)
+  private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
+  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.segmentIdField, cobolSchema)
+  private val segmentIdFilter = readerProperties.segmentIdFilter.getOrElse("").trim
+  private val isFilteredBySegment = segmentIdField.isDefined && readerProperties.segmentIdFilter.isDefined
 
   fetchNext()
 
@@ -64,27 +67,33 @@ class VarLenNestedIterator(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
+    var recordFetched = false
+    while (!recordFetched) {
+      val binaryData = if (readerProperties.isXCOM) {
+        fetchRecordUsingXcomHeaders()
+      } else {
+        fetchRecordUsingRecordLengthField()
+      }
 
-    val binaryData = if (readerProperties.isXCOM) {
-      fetchRecordUsingXcomHeaders()
-    } else {
-      fetchRecordUsingRecordLengthField()
-    }
+      binaryData match {
+        case None =>
+          cachedValue = None
+          recordFetched = true
+        case Some(data) =>
+          if (isSegmentMatchesTheFilter(data)) {
+            cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
+              BitVector(data),
+              readerProperties.startOffset * 8,
+              readerProperties.generateRecordId,
+              readerProperties.policy,
+              fileId,
+              recordIndex))
 
-    binaryData match {
-      case None =>
-        cachedValue = None
-      case Some(data) =>
-        cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
-          BitVector(data),
-          readerProperties.startOffset * 8,
-          readerProperties.generateRecordId,
-          readerProperties.policy,
-          fileId,
-          recordIndex))
-
-        byteIndex += data.length
-        recordIndex = recordIndex + 1
+            byteIndex += data.length
+            recordIndex = recordIndex + 1
+            recordFetched = true
+          }
+      }
     }
   }
 
@@ -138,5 +147,9 @@ class VarLenNestedIterator(cobolSchema: Copybook,
       val xcomHeaders = binaryDataStart.map(_ & 0xFF).mkString(",")
       throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
     }
+  }
+
+  private def isSegmentMatchesTheFilter(data: Array[Byte]): Boolean = {
+    !isFilteredBySegment || cobolSchema.extractPrimitiveField(segmentIdField.get, data, readerProperties.startOffset).toString.trim == segmentIdFilter
   }
 }

@@ -116,7 +116,9 @@ class DefaultSource
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
-          policy = parameters.schemaRetentionPolicy
+          policy = parameters.schemaRetentionPolicy,
+          segmentIdField = parameters.segmentIdField,
+          segmentIdFilter = parameters.segmentIdFilter
          )
       )
     }

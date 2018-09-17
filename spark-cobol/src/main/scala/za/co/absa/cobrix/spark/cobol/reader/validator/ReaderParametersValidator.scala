@@ -18,22 +18,41 @@ package za.co.absa.cobrix.spark.cobol.reader.validator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.spark.cobol.reader.ReaderParameters
 
 object ReaderParametersValidator {
 
   @throws(classOf[IllegalStateException])
-  def getLengthField(readerProperties: ReaderParameters, cobolSchema: Copybook): Option[Primitive] = {
-    readerProperties.lengthFieldName.flatMap(fieldName => {
+  def getLengthField(recordLengthFieldName: Option[String], cobolSchema: Copybook): Option[Primitive] = {
+    recordLengthFieldName.flatMap(fieldName => {
       val field = cobolSchema.getFieldByName(fieldName)
       val astNode = field match {
         case s: Primitive =>
           if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
             throw new IllegalStateException(s"The record length field $fieldName must be an integral type.")
           }
+          if (s.occurs.isDefined && s.occurs.get > 1) {
+            throw new IllegalStateException(s"The record length field '$fieldName' cannot be an array.")
+          }
           s
         case _ =>
-          throw new IllegalStateException(s"The record length field $fieldName must be an primitive integral type.")
+          throw new IllegalStateException(s"The record length field $fieldName must have an primitive integral type.")
+      }
+      Some(astNode)
+    })
+  }
+
+  @throws(classOf[IllegalStateException])
+  def getSegmentIdField(segmentIdFieldName: Option[String], cobolSchema: Copybook): Option[Primitive] = {
+    segmentIdFieldName.flatMap(fieldName => {
+      val field = cobolSchema.getFieldByName(fieldName)
+      val astNode = field match {
+        case s: Primitive =>
+          if (s.occurs.isDefined && s.occurs.get > 1) {
+            throw new IllegalStateException(s"The segment Id field '$fieldName' cannot be an array.")
+          }
+          s
+        case _ =>
+          throw new IllegalStateException(s"The segment Id field $fieldName must have a primitive type.")
       }
       Some(astNode)
     })

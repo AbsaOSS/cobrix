@@ -29,16 +29,24 @@ object CobolParametersParser {
   val PARAM_COPYBOOK_PATH            = "copybook"
   val PARAM_COPYBOOK_CONTENTS        = "copybook_contents"
   val PARAM_SOURCE_PATH              = "path"
-  val PARAM_IS_XCOM                  = "is_xcom"
   val PARAM_RECORD_LENGTH            = "record_length_field"
   val PARAM_RECORD_LENGTH_MIN        = "record_length_min"
   val PARAM_RECORD_LENGTH_MAX        = "record_length_max"
   val PARAM_RECORD_START_OFFSET      = "record_start_offset"
   val PARAM_RECORD_END_OFFSET        = "record_end_offset"
+
+  // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY  = "schema_retention_policy"
+
+  // Parameters for multisegment XCOM files
+  val PARAM_IS_XCOM                  = "is_xcom"
   val PARAM_SEGMENT_FIELD            = "segment_field"
   val PARAM_SEGMENT_FILTER           = "segment_filter"
+
+  // Parameters for signature search reader
+  val PARAM_SEARCH_SIGNATURE_FIELD   = "search_field_name"
+  val PARAM_SEARCH_SIGNATURE_VALUE   = "search_field_value"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -59,6 +67,8 @@ object CobolParametersParser {
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
       policy.get,
+      getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
+      getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       getParameter(PARAM_SEGMENT_FIELD, params),
       getParameter(PARAM_SEGMENT_FILTER, params)
     )
