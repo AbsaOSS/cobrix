@@ -57,7 +57,7 @@ Among the motivations for this project, it is possible to highlight:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.5</version>
+      <version>0.2.6</version>
 </dependency>
 ```
 
@@ -231,6 +231,51 @@ root
 ```
 
 Currently this feature may inpact performance and scaling, please use it with caution.  
+
+### XCOM headers support
+
+As you may already know file in mainframe world does not mean the same as in PC world.
+On PCs we think of a file as a stream of bytes that we can open, read/write and close.
+On mainframes a file can be a set of records that we can query. Record is a blob of bytes,
+can have different size. Mainframe's 'filesystem' handles the mapping between logical
+records and physical location of data.
+
+> _Details are available at this [Wikipedia article](https://en.wikipedia.org/wiki/MVS) (look for MVS filesystem)._ 
+
+So usually a file cannot simply be 'copied' from a mainframe. When files are transferred
+using tools like XCOM each record is prepended with an additional header. This header
+allows readers of a file in PC to restore the 'set of records' nature of the file.
+
+Mainframe files coming from IMS and copied through XCOM contain records (the payload)
+having schema of DBs copybook warped with DB export tool headers wrapped with XCOM headers.
+Like this:
+
+XCOM_HEADERS ( TOOL_HEADERS ( PAYLOAD ) )
+
+> _Similar to Internet's IP protocol   IP_HEADERS ( TCP_HEADERS ( PAYLOAD ) )._
+
+TOOL_HEADERS are application dependent. Often it contains the length of the payload. But this length is sometime
+not very reliable. XCOM_HEADERS contain the record length (including TOOL_HEADERS length) and are proved to be reliable.
+
+For fixed record length files XCOM files can be ignored since we already know the record length. But for variable record
+length files and for multisegment files XCOM headers can be considered the most reliable single point of truth about record length.
+
+You can instruct the reader to use XCOM headers to extract records from a mainframe file.
+
+```
+.option("is_xcom", "true")
+```
+
+This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
+copybook it is very convenient to extract segments one by one by combining 'is_xcom' option with segment filter option.
+
+```
+.option("segment_field", "SEG-ID")
+.option("segment_filter", "1122334")
+```
+
+In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will
+read all segments, but will parse only ones that have `SEG-ID = "1122334"`.
 
 ## Performance
 
