@@ -33,9 +33,9 @@ case class ASCII() extends Encoding {
         x match {
           case bin if bin == 0 || bin == 4 || bin == 5 =>
             precision match { //if native binary follow IBM guide to digit binary length
-              case a if a == 1 =>
+              case a if a >= 1 && a <= 2 && bin == 5 =>
                 if (signPosition.getOrElse(None) != None) int8 else uint8
-              case a if a >= 2 && a <= 4 =>
+              case a if a >= 1 && a <= 4 =>
                 if (signPosition.getOrElse(None) != None) int16 else uint16
               case b if b >= 5 && b <= 9 =>
                 if (signPosition.getOrElse(None) != None) int32 else uint32
