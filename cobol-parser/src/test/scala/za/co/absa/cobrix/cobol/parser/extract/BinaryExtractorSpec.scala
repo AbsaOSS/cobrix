@@ -2,9 +2,9 @@ package za.co.absa.cobrix.cobol.parser.extract
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
-import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 
 class BinaryExtractorSpec extends FunSuite {
 
@@ -121,14 +121,31 @@ class BinaryExtractorSpec extends FunSuite {
       }
     }
 
-    // check extracted values
+    // check extracted values in the map
     traverseAst(copybook.ast.head)
     assert(extractedData("ID").asInstanceOf[Int] === 6)
     assert(extractedData("SHORT_NAME").asInstanceOf[String] === "EXAMPLE4")
     assert(extractedData("NUMBER_OF_ACCTS").asInstanceOf[Int] === 3)
     assert(extractedData.size === 10)
 
-    // TODO: test custom Primitive
+    // Test custom Primitive
+    val level: Int = 10
+    val name: String = "SHORT-NAME"
+    val lineNumber: Int = 4
+    val dataType: CobolType = AlphaNumeric(10, None, Some(EBCDIC()))
+    val redefines: Option[String] = None
+    val isRedefined: Boolean = false
+    val occurs: Option[Int] = None
+    val to: Option[Int] = None
+    val dependingOn: Option[String] = None
+    val isDependee: Boolean = false
+    val binaryProperties: BinaryProperties = BinaryProperties(2*8, 10*8, 10*8)
+
+    val primitive: Primitive = new Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
+      occurs, to, dependingOn, isDependee, binaryProperties)(None)
+    val result2: Any = copybook.extractPrimitiveField(primitive, bytes, startOffset)
+    assert(result2.asInstanceOf[String] === "EXAMPLE4")
+
   }
 
   test("Test get field value by name"){
