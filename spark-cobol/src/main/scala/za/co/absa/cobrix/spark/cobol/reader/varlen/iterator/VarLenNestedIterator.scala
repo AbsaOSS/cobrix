@@ -71,8 +71,10 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     while (!recordFetched) {
       val binaryData = if (readerProperties.isXCOM) {
         fetchRecordUsingXcomHeaders()
-      } else {
+      } else if (lengthField.isDefined){
         fetchRecordUsingRecordLengthField()
+      } else {
+        fetchRecordUsingCopybookRecordLength()
       }
 
       binaryData match {
@@ -146,6 +148,18 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     } else {
       val xcomHeaders = binaryDataStart.map(_ & 0xFF).mkString(",")
       throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
+    }
+  }
+
+  private def fetchRecordUsingCopybookRecordLength(): Option[Array[Byte]] = {
+    val recordLength = cobolSchema.getRecordSize
+
+    val bytes = dataStream.next(recordLength)
+
+    if (bytes.length < recordLength) {
+      None
+    } else {
+      Some(bytes)
     }
   }
 
