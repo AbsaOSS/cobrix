@@ -98,7 +98,6 @@ class BinaryExtractorSpec extends FunSuite {
   val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
   val startOffset: Int = 0
 
-
   test("Test extract primitive field") {
 
     // using getFieldByName
@@ -145,7 +144,6 @@ class BinaryExtractorSpec extends FunSuite {
       occurs, to, dependingOn, isDependee, binaryProperties)(None)
     val result2: Any = copybook.extractPrimitiveField(primitive, bytes, startOffset)
     assert(result2.asInstanceOf[String] === "EXAMPLE4")
-
   }
 
   test("Test get field value by name"){
@@ -179,17 +177,18 @@ class BinaryExtractorSpec extends FunSuite {
     val thrown3 = intercept[IllegalStateException] {
       val resultImpossible3: Any = copybook.getFieldValueByName(notPrimitiveName, bytes, startOffset)
     }
-    assert(thrown3.getMessage.contains("is not a primitive field")
-      === true)
+    assert(thrown3.getMessage.contains("is not a primitive field") === true)
 
     //  TODO
-//    val notPrimitiveName2: String = "METADATA.ACCOUNT"
-//    val thrown4 = intercept[IllegalStateException] {
-//      val resultImpossible4: Any = copybook.getFieldValueByName(notPrimitiveName2, bytes, startOffset)
-//    }
-//    assert(thrown4.getMessage === s"$notPrimitiveName2 is not a primitive field," +
-//      " cannot extract it's value.")
+    // Currently, if a filed name corresponding to a Group Statement (instead of a Primitive) is passed,
+    // 'Field not found in a copybook' exception is thrown. Should be 'Not a primitive field'
+
+    //    val notPrimitiveName2: String = "METADATA.ACCOUNT"
+    //    val thrown4 = intercept[IllegalStateException] {
+    //      val resultImpossible4: Any = copybook.getFieldValueByName(notPrimitiveName2, bytes, startOffset)
+    //    }
+    //    assert(thrown4.getMessage === s"$notPrimitiveName2 is not a primitive field," +
+    //      " cannot extract it's value.")
 
   }
-
 }

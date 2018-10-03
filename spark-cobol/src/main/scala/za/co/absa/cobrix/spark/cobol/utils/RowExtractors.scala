@@ -136,7 +136,7 @@ object RowExtractors {
     * <p>The following transofmations will currently be applied:
     * <ul>
     *   <li>If `generateRecordId == true` the record id field will be prepended to the row.</li>
-    *   <li>If the schema has only one root StructType element, the element will be expanded. The the resulting schema will contain only the children fields of
+    *   <li>If the schema has only one root StructType element, the element will be expanded. The resulting schema will contain only the children fields of
     *   the element.</li>
     * </ul>
     * Combinations of the listed transformations are supported.
