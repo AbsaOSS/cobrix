@@ -33,4 +33,13 @@ object ReservedWords {
   val REDEFINES = "REDEFINES"
   val SYNC = "SYNC"
   val TO = "TO"
+
+  // SIGN [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]
+  val SIGN = "SIGN"
+  val SIGN_SEP = "SIGN_SEP"
+  val IS = "IS"
+  val LEADING = "LEADING"
+  val TRAILING = "TRAILING"
+  val SEPARATE = "SEPARATE"
+  val CHARACTER = "CHARACTER"
 }

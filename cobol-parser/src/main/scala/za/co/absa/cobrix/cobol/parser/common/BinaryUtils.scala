@@ -306,11 +306,11 @@ object BinaryUtils {
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
     */
-  def decodeCobolNumber(enc: Encoding, bytes: Array[Byte], compact: Option[Int], precision: Int, scale: Int, explicitDecimal: Boolean, signed: Boolean): Option[String] = {
+  def decodeCobolNumber(enc: Encoding, bytes: Array[Byte], compact: Option[Int], precision: Int, scale: Int, explicitDecimal: Boolean, signed: Boolean, isSignSeparate: Boolean): Option[String] = {
     compact match {
       case None =>
         // DISPLAY format
-        decodeUncompressedNumber(enc, bytes, explicitDecimal, scale)
+        decodeUncompressedNumber(enc, bytes, explicitDecimal, scale, isSignSeparate)
       case Some(1) =>
         // COMP-1 aka 32-bit floating point number
         Some(decodeFloatingPointNumber(bytes, bigEndian = true))
@@ -335,9 +335,10 @@ object BinaryUtils {
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
     */
-  def decodeUncompressedNumber(enc: Encoding, bytes: Array[Byte], explicitDecimal: Boolean, scale: Int): Option[String] = {
+  def decodeUncompressedNumber(enc: Encoding, bytes: Array[Byte], explicitDecimal: Boolean, scale: Int, isSignSeparate: Boolean): Option[String] = {
     val chars: ListBuffer[Char] = new ListBuffer[Char]()
-    val decimalPointPosition = bytes.length - scale
+    val extendedScale = if (isSignSeparate) scale + 1 else scale
+    val decimalPointPosition = bytes.length - extendedScale
     var i = 0
     while (i < bytes.length) {
       if (i == decimalPointPosition && !explicitDecimal) {

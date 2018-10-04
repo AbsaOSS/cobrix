@@ -33,6 +33,7 @@ case class Decimal(
                     precision: Int,
                     explicitDecimal: Boolean = false,
                     signPosition: Option[Position] = None,
+                    isSignSeparate: Boolean = false,
                     wordAlligned: Option[Position] = None,
                     compact: Option[Int] = None,
                     enc: Option[Encoding] = None
