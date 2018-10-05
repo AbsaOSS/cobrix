@@ -429,7 +429,7 @@ object CopybookParser {
     catch {
       case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
     }
-    // ToDo Add leading sign support
+    // ToDo Add trailing sign support
     val isSignSeparate = modifiers.contains(SIGN_SEP)
 
     val sync = keywords.contains(SYNC)
@@ -579,7 +579,7 @@ object CopybookParser {
           mapAccumulator += COMP123 -> tokens(index).split('-')(1)
         } else if (tokens(index) == SYNC) {
           // Handle SYNC
-          mapAccumulator += tokens(index) -> "Right"
+          mapAccumulator += tokens(index) -> RIGHT
         } else if (tokens(index) == DEPENDING) {
           // Handle DEPENDING ON
           if (index >= tokens.length - 2 || tokens(index+1) != ON) {
@@ -603,9 +603,9 @@ object CopybookParser {
             throw new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by either LEADING or TRAILING")
           }
           if (tokens(index + 1) == LEADING) {
-            mapAccumulator += SIGN -> "Left"
+            mapAccumulator += SIGN -> LEFT
           } else {
-            mapAccumulator += SIGN -> "Right"
+            mapAccumulator += SIGN -> RIGHT
           }
           if (index < tokens.length - 2 && tokens(index + 2) == SEPARATE) {
             mapAccumulator += SIGN_SEP -> "true"

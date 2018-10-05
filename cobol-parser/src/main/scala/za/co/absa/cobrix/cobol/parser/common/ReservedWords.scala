@@ -34,6 +34,10 @@ object ReservedWords {
   val SYNC = "SYNC"
   val TO = "TO"
 
+  // Sync and sign positions
+  val LEFT = "LEFT"
+  val RIGHT = "RIGHT"
+
   // SIGN [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]
   val SIGN = "SIGN"
   val SIGN_SEP = "SIGN_SEP"
