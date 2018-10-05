@@ -34,13 +34,13 @@ class BinaryDecoderSpec extends FunSuite {
   }
 
   test("Test uncompressed number decoding") {
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "100200".toCharArray.map(_.toByte), explicitDecimal = false, 0).contains("100200"))
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002551".toCharArray.map(_.toByte), explicitDecimal = false, 3).contains("1002.551"))
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002.551".toCharArray.map(_.toByte), explicitDecimal = true, 0).contains("1002.551"))
+    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "100200".toCharArray.map(_.toByte), explicitDecimal = false, 0, isSignSeparate = false).contains("100200"))
+    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002551".toCharArray.map(_.toByte), explicitDecimal = false, 3, isSignSeparate = false).contains("1002.551"))
+    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002.551".toCharArray.map(_.toByte), explicitDecimal = true, 0, isSignSeparate = false).contains("1002.551"))
 
     // "1002551"
     val ebcdicNum = Array[Byte](0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF2.toByte, 0xF5.toByte, 0xF5.toByte, 0xF1.toByte)
-    assert(BinaryUtils.decodeUncompressedNumber(EBCDIC(), ebcdicNum, explicitDecimal = false, 2).contains("10025.51"))
+    assert(BinaryUtils.decodeUncompressedNumber(EBCDIC(), ebcdicNum, explicitDecimal = false, 2, isSignSeparate = false).contains("10025.51"))
   }
 
   test("Test positive COMP-3 format decoding") {

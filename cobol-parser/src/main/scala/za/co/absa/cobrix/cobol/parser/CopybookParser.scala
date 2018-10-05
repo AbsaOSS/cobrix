@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -429,6 +429,8 @@ object CopybookParser {
     catch {
       case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
     }
+    // ToDo Add trailing sign support
+    val isSignSeparate = modifiers.contains(SIGN_SEP)
 
     val sync = keywords.contains(SYNC)
     pic match {
@@ -443,6 +445,7 @@ object CopybookParser {
               integralDigits + fractureDigits,
               s.contains("."),
               if (s.startsWith("S")) Some(position.Left) else None,
+              isSignSeparate = isSignSeparate,
               if (sync) Some(position.Right) else None,
               comp,
               Some(enc))
@@ -451,6 +454,7 @@ object CopybookParser {
         Integral(
           precision = if (s.startsWith("S")) s.length-1 else s.length,
           signPosition = if (s.startsWith("S")) Some(position.Left) else None,
+          isSignSeparate = isSignSeparate,
           wordAlligned = if (sync) Some(position.Right) else None,
           comp,
           Some(enc)
@@ -575,13 +579,41 @@ object CopybookParser {
           mapAccumulator += COMP123 -> tokens(index).split('-')(1)
         } else if (tokens(index) == SYNC) {
           // Handle SYNC
-          mapAccumulator += tokens(index) -> "Right"
+          mapAccumulator += tokens(index) -> RIGHT
         } else if (tokens(index) == DEPENDING) {
           // Handle DEPENDING ON
           if (index >= tokens.length - 2 || tokens(index+1) != ON) {
             throw new SyntaxErrorException(lineNumber, "", s"Modifier DEPENDING should be followed by ON FIELD")
           }
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
+          index += 1
+        } else if (tokens(index) == SIGN) {
+          // SIGN [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]
+          val except = new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]")
+          if (index >= tokens.length - 1) {
+            throw except
+          }
+          if (tokens(index + 1) == IS) {
+            index += 1
+          }
+          if (index >= tokens.length - 1) {
+            throw except
+          }
+          if (tokens(index + 1) != LEADING && tokens(index + 1) != TRAILING) {
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by either LEADING or TRAILING")
+          }
+          if (tokens(index + 1) == LEADING) {
+            mapAccumulator += SIGN -> LEFT
+          } else {
+            mapAccumulator += SIGN -> RIGHT
+          }
+          if (index < tokens.length - 2 && tokens(index + 2) == SEPARATE) {
+            mapAccumulator += SIGN_SEP -> "true"
+            index += 1
+          }
+          if (index < tokens.length - 2 && tokens(index + 2) == CHARACTER) {
+            index += 1
+          }
         } else if (keywordsWithoutModifiers.contains(tokens(index))) {
           // Handle parameterless modifiers (COMP)
           mapAccumulator += tokens(index) -> ""

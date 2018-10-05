@@ -30,6 +30,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
 case class Integral(
                     precision: Int,
                     signPosition: Option[Position] = None,
+                    isSignSeparate: Boolean = false,
                     wordAlligned: Option[Position] = None,
                     compact: Option[Int] = None,
                     enc: Option[Encoding] = None

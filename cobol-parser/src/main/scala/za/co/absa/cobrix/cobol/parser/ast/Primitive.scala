@@ -80,16 +80,16 @@ case class Primitive(
       case a: AlphaNumeric =>
         // Each character is represented by a byte
         val codec = a.enc.getOrElse(EBCDIC()).codec(None, a.length, None)
-        getBitCount(codec, None, a.length) //count of entire word
+        getBitCount(codec, None, a.length, false) //count of entire word
       case d: Decimal =>
         val codec = d.enc.getOrElse(EBCDIC()).codec(d.compact, d.precision, d.signPosition)
         // Support explicit decimal point (aka REAL DECIMAL, PIC 999.99.)
         val precision = if (d.compact.isEmpty && d.explicitDecimal) d.precision + 1 else d.precision
-        getBitCount(codec, d.compact, precision)
+        getBitCount(codec, d.compact, precision, isSignSeparate = d.isSignSeparate)
       case i: Integral =>
         val codec = i.enc.getOrElse(EBCDIC()).codec(i.compact, i.precision, i.signPosition)
         // Hack around byte-alignment
-        getBitCount(codec, i.compact, i.precision)
+        getBitCount(codec, i.compact, i.precision, isSignSeparate = i.isSignSeparate)
     }
     // round size up to next byte
     ((size + 7)/8)*8
@@ -111,12 +111,12 @@ case class Primitive(
       case AlphaNumeric(length, wordAlligned, enc) =>
         val encoding = enc.getOrElse(EBCDIC())
         Some(decodeString(encoding, bytes, length))
-      case Decimal(scale, precision, explicitDecimal, signPosition, wordAlligned, compact, enc) =>
+      case Decimal(scale, precision, explicitDecimal, signPosition, isSignSeparate, wordAlligned, compact, enc) =>
         val encoding = enc.getOrElse(EBCDIC())
-        decodeCobolNumber(encoding, bytes, compact, precision, scale, explicitDecimal, signPosition.nonEmpty)
-      case Integral(precision, signPosition, wordAlligned, compact, enc) =>
+        decodeCobolNumber(encoding, bytes, compact, precision, scale, explicitDecimal, signPosition.nonEmpty, isSignSeparate)
+      case Integral(precision, signPosition, isSignSeparate, wordAlligned, compact, enc) =>
         val encoding = enc.getOrElse(EBCDIC())
-        decodeCobolNumber(encoding, bytes, compact, precision, 0, explicitDecimal = false, signPosition.nonEmpty)
+        decodeCobolNumber(encoding, bytes, compact, precision, 0, explicitDecimal = false, signPosition.nonEmpty, isSignSeparate)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     value
@@ -173,7 +173,7 @@ case class Primitive(
     * @param precision A precision that is the number of digits in a number
     *
     */
-  private def getBitCount(codec: Codec[_ <: AnyVal], comp: Option[Int], precision: Int): Int = {
+  private def getBitCount(codec: Codec[_ <: AnyVal], comp: Option[Int], precision: Int, isSignSeparate: Boolean): Int = {
     comp match {
       case Some(x) =>
         x match {
@@ -181,7 +181,9 @@ case class Primitive(
             (precision + 1) * codec.sizeBound.lowerBound.toInt //bcd
           case _ => codec.sizeBound.lowerBound.toInt // bin/float/floatL
         }
-      case None => precision * codec.sizeBound.lowerBound.toInt
+      case None =>
+        val signAdditionalBits = if (isSignSeparate) 8 else 0
+        precision * codec.sizeBound.lowerBound.toInt + signAdditionalBits
     }
   }
 
