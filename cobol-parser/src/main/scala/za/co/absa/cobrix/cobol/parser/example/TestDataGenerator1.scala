@@ -36,7 +36,7 @@ import scala.util.Random
 /**
   * This is a test data generator. The copybook for it is listed above.
   */
-object TestDataGenerator {
+object TestDataGenerator1 {
 
   case class Company (companyName: String, companyId: String )
 
