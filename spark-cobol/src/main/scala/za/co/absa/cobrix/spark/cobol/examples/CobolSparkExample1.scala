@@ -18,9 +18,10 @@ package za.co.absa.cobrix.spark.cobol.examples
 import org.apache.spark.sql.{SaveMode, SparkSession}
 
 // This is an example Spark Job that uses COBOL data source.
-// To run this locally change the scope of all Scala and Spark libraries from 'provided' to 'compile'
+// IMPORTANT! To run this locally change the scope of all Scala and Spark libraries from 'provided' to 'compile' in pom.xml
+//            But revert it to 'provided' to create an uber jar for running on a cluster
 
-object CobolSparkExample {
+object CobolSparkExample1 {
 
   def main(args: Array[String]): Unit = {
 
