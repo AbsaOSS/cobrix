@@ -38,7 +38,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStrea
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
   private val hdfsInputStream = fileSystem.open(getHDFSPath(filePath))
-  private var offset = 0
+  private var offset = 0L
 
   /**
     * Retrieves a given number of bytes.
