@@ -84,7 +84,7 @@
         <gpg.plugin.version>1.6</gpg.plugin.version>
 
         <!-- Frameworks and libraries -->
-        <scala.version>2.11.8</scala.version>
+        <scala.version>2.11.12</scala.version>
         <scala.compat.version>2.11</scala.compat.version>
         <spark.version>2.2.2</spark.version>
         <scalatest.version>3.0.1</scalatest.version>
