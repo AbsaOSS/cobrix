@@ -23,5 +23,6 @@ trait SparkTestBase {
     .master("local[*]")
     .appName("test")
     .config("spark.ui.enabled", "false")
+    .config("spark.driver.bindAddress","127.0.0.1")
     .getOrCreate()
 }
