@@ -29,6 +29,30 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
+import java.io.{ObjectInputStream, ObjectOutputStream, IOException}
+import org.apache.hadoop.conf.Configuration
+import scala.util.control.NonFatal
+
+class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
+  private def writeObject(out: ObjectOutputStream): Unit = 
+    try {
+       out.defaultWriteObject()
+       value.write(out)
+    } catch {
+      case NonFatal(e) =>
+        throw new IOException(e)
+    }
+
+  private def readObject(in: ObjectInputStream): Unit = 
+    try {
+    value = new Configuration(false)
+    value.readFields(in)
+    } catch {
+      case NonFatal(e) =>
+        throw new IOException(e)
+    }
+}
+
 /**
   * This class implements an actual Spark relation.
   *
@@ -64,12 +88,12 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
     val filesRDD = getParallelizedFilesWithOrder(sourceDir)
 
+    val conf = sqlContext.sparkContext.hadoopConfiguration
+    val sconf = new SerializableConfiguration(conf)
     filesRDD.mapPartitions(
       partition =>
       {
-        val conf = SparkSession.builder.getOrCreate().sparkContext.hadoopConfiguration
-        val fileSystem = FileSystem.get(conf)
-
+        val fileSystem = FileSystem.get(sconf.value)
         partition.flatMap(row =>
         {
           val filePath = row.filePath
