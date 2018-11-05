@@ -352,22 +352,22 @@ object BinaryUtils {
     * @return A string representation of the binary data
     */
   def decodeUncompressedNumber(enc: Encoding, bytes: Array[Byte], explicitDecimal: Boolean, scale: Int, isSignSeparate: Boolean): Option[String] = {
-    val chars: ListBuffer[Char] = new ListBuffer[Char]()
+    val chars = new StringBuffer(bytes.length + 1)
     val extendedScale = if (isSignSeparate) scale + 1 else scale
     val decimalPointPosition = bytes.length - extendedScale
     var i = 0
     while (i < bytes.length) {
       if (i == decimalPointPosition && !explicitDecimal) {
-        chars += '.'
+        chars.append('.')
       }
       enc match {
-        case _: EBCDIC => chars += ebcdic2ascii((bytes(i) + 256) % 256)
-        case _ => chars += bytes(i).toChar
+        case _: EBCDIC => chars.append(ebcdic2ascii((bytes(i) + 256) % 256))
+        case _ => chars.append(bytes(i).toChar)
       }
 
       i += 1
     }
-    validateAndFormatNumber(chars.mkString)
+    validateAndFormatNumber(chars.toString)
   }
 
   /** Decode a binary encoded decimal (BCD) aka COMP-3 format to a String
