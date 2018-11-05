@@ -3,7 +3,7 @@ package za.co.absa.cobrix.spark.cobol
 import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 

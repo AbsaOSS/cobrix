@@ -80,7 +80,7 @@ case class Primitive(
       case a: AlphaNumeric =>
         // Each character is represented by a byte
         val codec = a.enc.getOrElse(EBCDIC()).codec(None, a.length, None)
-        getBitCount(codec, None, a.length, false) //count of entire word
+        getBitCount(codec, None, a.length, isSignSeparate = false) //count of entire word
       case d: Decimal =>
         val codec = d.enc.getOrElse(EBCDIC()).codec(d.compact, d.precision, d.signPosition)
         // Support explicit decimal point (aka REAL DECIMAL, PIC 999.99.)

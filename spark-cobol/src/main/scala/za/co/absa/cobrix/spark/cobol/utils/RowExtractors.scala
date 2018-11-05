@@ -33,7 +33,7 @@ object RowExtractors {
     * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
     *
     * @param ast              The parsed copybook
-    * @param dataBits         The data bits containing the record
+    * @param data             The data bits containing the record
     * @param offsetBits       The offset to the beginning of the record (in bits)
     * @param generateRecordId If true a record id field will be added as the first field of the record.
     * @param recordId         The record id to be saved to the record id field
