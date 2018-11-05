@@ -6,6 +6,7 @@ syntax: glob
 *.bak
 #*.off
 *.old
+.DS_Store
 
 # eclipse conf file
 .settings
