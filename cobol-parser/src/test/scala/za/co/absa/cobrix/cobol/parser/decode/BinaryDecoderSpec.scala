@@ -94,6 +94,10 @@ class BinaryDecoderSpec extends FunSuite {
     val v1 = BinaryUtils.decodeSignedBCD(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 2)
     assert (v1.contains("-158.84"))
 
+    // A simple decimal number with an odd scale
+    val v3 = BinaryUtils.decodeSignedBCD(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 3)
+    assert (v3.contains("-15.884"))
+
     // A number the doesn't fit Double
     val byteArray = Array[Byte](0x92.toByte, 0x23.toByte, 0x37.toByte, 0x20.toByte, 0x36.toByte,
                                 0x85.toByte, 0x47.toByte, 0x75.toByte, 0x79.toByte, 0x8F.toByte)

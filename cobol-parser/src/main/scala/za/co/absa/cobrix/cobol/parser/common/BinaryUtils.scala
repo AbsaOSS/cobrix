@@ -378,43 +378,53 @@ object BinaryUtils {
     */
   def decodeSignedBCD(bytes: Array[Byte], scale: Int = 0): Option[String] = {
     if (scale < 0) {
-      throw new IllegalArgumentException(s"Invalid scele=$scale, should be greater or equal to zero.")
+      throw new IllegalArgumentException(s"Invalid scale=$scale, should be greater or equal to zero.")
     }
     if (bytes.length < 1) {
       return Some("0")
     }
-    val bits = BitVector(bytes)
     var i: Int = 0
     var sign = ""
-    val chars: ListBuffer[Char] = new ListBuffer[Char]()
-    val decimalPointPosition = bits.length - (scale + 1) * 4
-    while (i < bits.length) {
-      val nybble = bits.slice(i, i + 4).toByte(false)
-      if (i >= bits.length - 4) {
-        // The last nybble is a sign
-        sign = nybble match {
+    val chars = new StringBuffer(bytes.length * 2 + 2)
+    val decimalPointPosition = bytes.length*2 - (scale + 1)
+
+    while (i < bytes.length) {
+      val b = bytes(i)
+      val lowNibble = b & 0x0f
+      val highNibble = (b >> 4) & 0x0f
+      if (highNibble >= 0 && highNibble < 10) {
+        chars.append(('0'.toByte + highNibble).toChar)
+      }
+      else {
+        // invalid nibble encountered - the format is wrong
+        return None
+      }
+
+      if (i + 1 == bytes.length) {
+        // The last nibble is a sign
+        sign = lowNibble match {
           case 0x0C => "" // +, signed
           case 0x0D => "-"
           case 0x0F => "" // +, unsigned
           case _ =>
-            // invalid nybble encountered - the format is wrong
+            // invalid nibble encountered - the format is wrong
             return None
         }
-      } else {
-        if (nybble >= 0 && nybble < 10) {
-          if (i == decimalPointPosition) {
-            chars += '.'
-          }
-          chars += ('0'.toByte + nybble).toChar
+      }
+      else {
+        if (lowNibble >= 0 && lowNibble < 10) {
+          chars.append(('0'.toByte + lowNibble).toChar)
         }
         else {
-          // invalid nybble encountered - the format is wrong
-          return None
+          // invalid nibble encountered - the format is wrong
+         return None
         }
       }
-      i += 4
+      i = i + 1
     }
-    validateAndFormatNumber(sign + chars.mkString(""))
+    if (scale > 0) chars.insert(decimalPointPosition, '.')
+    chars.insert(0, sign)
+    validateAndFormatNumber(chars.toString)
   }
 
   /** Transforms a string representation of an integer to a string representation of decimal
