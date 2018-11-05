@@ -295,8 +295,24 @@ object BinaryUtils {
     */
   def decodeString(enc: Encoding, bytes: Array[Byte], length: Int): String = {
     val str = enc match {
-      case _: EBCDIC => bytes.take(length).map(byte => ebcdic2ascii((byte + 256) % 256)).mkString
-      case _ => bytes.take(length).map(_.toChar).mkString
+      case _: EBCDIC => {
+        var i = 0
+        val buf = new StringBuffer(length)
+        while (i < bytes.length && i < length) {
+          buf.append(ebcdic2ascii((bytes(i) + 256) % 256))
+          i = i + 1
+        }
+        buf.toString
+      }
+      case _ => {
+        var i = 0
+        val buf = new StringBuffer(length)
+        while (i < bytes.length && i < length) {
+          buf.append(bytes(i).toChar)
+          i = i + 1
+        }
+        buf.toString
+      }
     }
     str.trim
   }
