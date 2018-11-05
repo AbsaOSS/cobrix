@@ -63,5 +63,10 @@ class MalformedValuesSpec extends FunSuite {
     val data2 = Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0x93.toByte)
     val decodedValue2 = primitive.decodeTypeValue(0, data2)
     assert(decodedValue2 == null)
+
+    // Not enough data for PIC 9(5)V9(5), should return null
+    val data3 = Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte)
+    val decodedValue3 = primitive.decodeTypeValue(0, data3)
+    assert(decodedValue3 == null)
   }
 }

@@ -103,9 +103,12 @@ case class Primitive(
     */
   @throws(classOf[IllegalStateException])
   def decodeValue2(bitOffset: Long, record: Array[Byte]): Option[String] = {
-    val bitCount = binaryProperties.dataSize
-    val idx = bitOffset
-    val bytes = java.util.Arrays.copyOfRange(record, (idx/8).toInt, ((idx + bitCount)/8).toInt)
+    val bytesCount = binaryProperties.dataSize / 8
+    val idx = (bitOffset / 8).toInt
+    if (idx + bytesCount > record.length) {
+      return None
+    }
+    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
     val value = dataType match {
       case AlphaNumeric(length, wordAlligned, enc) =>
         val encoding = enc.getOrElse(EBCDIC())
