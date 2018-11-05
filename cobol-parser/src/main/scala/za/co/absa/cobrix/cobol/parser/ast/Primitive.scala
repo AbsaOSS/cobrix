@@ -102,11 +102,10 @@ case class Primitive(
     * @param record    A record in a binary format represented as a vector of bits
     */
   @throws(classOf[IllegalStateException])
-  def decodeValue2(bitOffset: Long, record: BitVector): Option[String] = {
+  def decodeValue2(bitOffset: Long, record: Array[Byte]): Option[String] = {
     val bitCount = binaryProperties.dataSize
     val idx = bitOffset
-    val bytes = record.slice(idx, idx + bitCount).toByteArray
-
+    val bytes = java.util.Arrays.copyOfRange(record, (idx/8).toInt, ((idx + bitCount)/8).toInt)
     val value = dataType match {
       case AlphaNumeric(length, wordAlligned, enc) =>
         val encoding = enc.getOrElse(EBCDIC())
@@ -129,7 +128,7 @@ case class Primitive(
     * @param record   A record in a binary format represented as a vector of bits
     */
   @throws(classOf[Exception])
-  def decodeTypeValue(itOffset: Long, record: BitVector): Any = {
+  def decodeTypeValue(itOffset: Long, record: Array[Byte]): Any = {
     val str = decodeValue2(itOffset, record)
     val value = try {
       str match {

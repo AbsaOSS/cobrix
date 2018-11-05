@@ -34,12 +34,11 @@ import scala.collection.mutable.ListBuffer
 @deprecated("This iterator was built for testing purposes only. Please use BinaryDataFlatRowIterator instead.")
 class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Map[String, Option[String]]] {
   private val logger = LoggerFactory.getLogger(this.getClass)
-  private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
   private var bitIndex = 0L
   private var currentRecord: Seq[(String, Option[String])] = _
 
-  override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
+  override def hasNext: Boolean = bitIndex + recordSize <= (binaryData.length * 8)
 
   override def next(): Map[String, Option[String]] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
@@ -72,7 +71,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
           for (i <- Range(from, arraySize)) yield {
             val useNullPath = isNullPath || i >= actualSize
             val value: Option[String] = if (useNullPath) None else {
-              val v = s.decodeTypeValue(offset, dataBits)
+              val v = s.decodeTypeValue(offset, binaryData)
               if (v==null) None else Some(v.toString)
             }
             val tpl = (s"$path${i+1}", value)
@@ -88,7 +87,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
         case grp: Group =>
           getGroupValues(useOffset, grp, s"$path${grp.name}_", isNullPath)
         case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, dataBits)
+          val value = st.decodeTypeValue(useOffset, binaryData)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {
               case v: Int => v
@@ -191,7 +190,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
         case group: Group => getGroupValues(group, s"$path${group.name}_")
         case s: Primitive =>
           val name = s"$path${s.name}"
-          val value = s.decodeValue2(bitIndex + s.binaryProperties.offset, dataBits)
+          val value = s.decodeValue2(bitIndex + s.binaryProperties.offset, binaryData)
           Map[String, Option[String]](name -> value)
       }
     }

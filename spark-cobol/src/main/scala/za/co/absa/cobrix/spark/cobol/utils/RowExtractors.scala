@@ -42,7 +42,7 @@ object RowExtractors {
     */
   @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST,
-                    dataBits: BitVector,
+                    data: Array[Byte],
                     offsetBits: Long = 0,
                     generateRecordId: Boolean = false,
                     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
@@ -74,7 +74,7 @@ object RowExtractors {
           groupValues
         case s: Primitive =>
           val values = for (_ <- Range(from, actualSize)) yield {
-            val value = s.decodeTypeValue(offset, dataBits)
+            val value = s.decodeTypeValue(offset, data)
             offset += s.binaryProperties.dataSize
             value
           }
@@ -87,7 +87,7 @@ object RowExtractors {
         case grp: Group =>
           getGroupValues(useOffset, grp)
         case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, dataBits)
+          val value = st.decodeTypeValue(useOffset, data)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {
               case v: Int => v

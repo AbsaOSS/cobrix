@@ -28,7 +28,6 @@ object DataExtractors {
   @throws(classOf[IllegalStateException])
   def extractValues(ast: CopybookAST, bytes: Array[Byte], offset: Int = 0): Seq[Any] = {
 
-    val dataBits: BitVector = BitVector(bytes)
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     // Todo Extract common features and combine with BinaryDataRowIterator as it does almost the same
@@ -57,7 +56,7 @@ object DataExtractors {
           groupValues
         case s: Primitive =>
           val values = for (_ <- Range(from, actualSize)) yield {
-            val value = s.decodeTypeValue(offset, dataBits)
+            val value = s.decodeTypeValue(offset, bytes)
             offset += s.binaryProperties.dataSize
             value
           }
@@ -70,7 +69,7 @@ object DataExtractors {
         case grp: Group =>
           getGroupValues(useOffset, grp)
         case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, dataBits)
+          val value = st.decodeTypeValue(useOffset, bytes)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {
               case v: Int => v

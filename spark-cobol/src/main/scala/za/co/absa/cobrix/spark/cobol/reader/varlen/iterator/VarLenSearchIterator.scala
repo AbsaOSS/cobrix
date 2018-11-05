@@ -140,9 +140,7 @@ class VarLenSearchIterator(cobolSchema: Copybook,
       advanceByteIndex(recordMarkStart, lengthFieldValue, isFound)
     }
 
-    val dataBits = BitVector(buffer)
-
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, dataBits, startOffset * 8, generateRecordId, policy, fileId,
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, generateRecordId, policy, fileId,
       /*recordMarkStart - signatureOffset)*/
       recordIndex))
     recordIndex += 1

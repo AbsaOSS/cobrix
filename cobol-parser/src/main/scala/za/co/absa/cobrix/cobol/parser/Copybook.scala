@@ -138,8 +138,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
   @throws(classOf[Exception])
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val slicedBytes = bytes.slice(field.binaryProperties.offset/8 + startOffset, field.binaryProperties.offset/8 + startOffset + field.binaryProperties.actualSize/8)
-    val bits = BitVector(slicedBytes)
-    field.decodeTypeValue(0, bits)
+    field.decodeTypeValue(0, slicedBytes)
   }
 
   /**

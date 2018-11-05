@@ -84,7 +84,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
         case Some(data) =>
           if (isSegmentMatchesTheFilter(data)) {
             cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
-              BitVector(data),
+              data,
               readerProperties.startOffset * 8,
               readerProperties.generateRecordId,
               readerProperties.policy,

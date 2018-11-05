@@ -95,12 +95,11 @@ class RowExtractorSpec extends FunSuite {
     0x00.toByte, 0x00.toByte, 0x2F.toByte
   )
 
-  val bitVector: BitVector = BitVector(bytes)
-  val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+  val copybook: Copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
   val startOffset: Int = 0
 
   test("Test row extractor") {
-    val row: Row = RowExtractors.extractRecord(copybook.ast, bitVector, startOffset)
+    val row: Row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset)
     // [[6,[EXAMPLE4,0,],[,,3,[Vector([000000000000002000400012,0,], [000000000000003000400102,1,], [000000005006001200301000,2,])]]]]
     val innerRow: Row = row(0).asInstanceOf[Row]
 

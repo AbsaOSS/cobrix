@@ -32,11 +32,10 @@ import scala.collection.mutable.ListBuffer
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
 class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
-  private val dataBits: BitVector = BitVector(binaryData)
   private val recordSize = cobolSchema.getRecordSize
   private var bitIndex = 0L
 
-  override def hasNext: Boolean = bitIndex + recordSize <= dataBits.size
+  override def hasNext: Boolean = bitIndex + recordSize <= (binaryData.length * 8)
 
   @throws(classOf[IllegalStateException])
   override def next(): Row = {
@@ -69,7 +68,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
         case s: Primitive =>
           val values = for (i <- Range(from, arraySize)) yield {
             val useNullPath = isNullPath || i >= actualSize
-            val value = s.decodeTypeValue(offset, dataBits)
+            val value = s.decodeTypeValue(offset, binaryData)
             offset += s.binaryProperties.dataSize
             if (useNullPath) null else value
           }
@@ -83,7 +82,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
         case grp: Group =>
           getGroupValues(useOffset, grp, isNullPath)
         case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, dataBits)
+          val value = st.decodeTypeValue(useOffset, binaryData)
           if (value != null && st.isDependee) {
             val intVal: Int = value match {
               case v: Int => v
