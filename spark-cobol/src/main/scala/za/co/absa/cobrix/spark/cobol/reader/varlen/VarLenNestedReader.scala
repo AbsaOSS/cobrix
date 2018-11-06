@@ -21,7 +21,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 

@@ -17,8 +17,12 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.source.parameters
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * This class provides methods for parsing the parameters set as Spark options.
@@ -43,6 +47,7 @@ object CobolParametersParser {
   val PARAM_IS_XCOM                  = "is_xcom"
   val PARAM_SEGMENT_FIELD            = "segment_field"
   val PARAM_SEGMENT_FILTER           = "segment_filter"
+  val PARAM_SEGMENT_ID_LEVEL_PREFIX  = "segment_id_level"
 
   // Parameters for signature search reader
   val PARAM_SEARCH_SIGNATURE_FIELD   = "search_field_name"
@@ -69,13 +74,11 @@ object CobolParametersParser {
       policy.get,
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
-      getParameter(PARAM_SEGMENT_FIELD, params),
-      getParameter(PARAM_SEGMENT_FILTER, params)
+      parseMultisegmentParameters(params)
     )
   }
 
   private def parseVariableLengthParameters(params: Map[String,String]): Option[VariableLengthParameters] = {
-
     if (params.contains(PARAM_RECORD_LENGTH)) {
       Some(VariableLengthParameters
       (
@@ -87,6 +90,65 @@ object CobolParametersParser {
     else {
       None
     }
+  }
+
+  /**
+    * Parses parameters for reading multisegment mainframe files
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a multisegment reader parameters
+    */
+  private def parseMultisegmentParameters(params: Map[String,String]): Option[MultisegmentParameters] = {
+    if (params.contains(PARAM_SEGMENT_FIELD)) {
+      val levels = parseSegmentLevels(params)
+      Some(MultisegmentParameters
+      (
+        params(PARAM_SEGMENT_FIELD),
+        params.get(PARAM_SEGMENT_FILTER),
+        levels
+      ))
+    }
+    else {
+      None
+    }
+  }
+
+  /**
+    * Parses the list of segment levels and it's corresponding segment ids.
+    *
+    * Example:
+    * For
+    * {{{
+    *   sprak.read
+    *     .option("segment_id_level0", "SEGID-ROOT")
+    *     .option("segment_id_level1", "SEGID-CHD1")
+    *     .option("segment_id_level2", "SEGID-CHD2")
+    * }}}
+    *
+    * The corresponding sequence will be like this:
+    *
+    * {{{
+    *    0 -> "SEGID-ROOT"
+    *    1 -> "SEGID-CHD1"
+    *    2 -> "SEGID-CHD2"
+    * }}}
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a sequence of segment ids on the order of hierarchy levels
+    */
+  private def parseSegmentLevels(params: Map[String,String]): Seq[String] = {
+    val levels = new ListBuffer[String]
+    var i = 0
+    while (true) {
+      val name = s"$PARAM_SEGMENT_ID_LEVEL_PREFIX$i"
+      if (params.contains(name)) {
+        levels += params(name)
+      } else {
+        return levels
+      }
+      i = i + 1
+    }
+    levels
   }
 
   private def getParameter(key: String, params: Map[String,String]): Option[String] = {

@@ -1,0 +1,1 @@
+{"type":"struct","fields":[{"name":"COMPANY_ID","type":"string","nullable":true,"metadata":{}},{"name":"CONTACT_PERSON","type":"string","nullable":true,"metadata":{}},{"name":"PHONE_NUMBER","type":"string","nullable":true,"metadata":{}}]}

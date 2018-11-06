@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.validator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 
 object ReaderParametersValidator {
 
@@ -42,17 +43,17 @@ object ReaderParametersValidator {
   }
 
   @throws(classOf[IllegalStateException])
-  def getSegmentIdField(segmentIdFieldName: Option[String], cobolSchema: Copybook): Option[Primitive] = {
-    segmentIdFieldName.flatMap(fieldName => {
-      val field = cobolSchema.getFieldByName(fieldName)
+  def getSegmentIdField(multisegment: Option[MultisegmentParameters], cobolSchema: Copybook): Option[Primitive] = {
+    multisegment.flatMap(params => {
+      val field = cobolSchema.getFieldByName(params.segmentIdField)
       val astNode = field match {
         case s: Primitive =>
           if (s.occurs.isDefined && s.occurs.get > 1) {
-            throw new IllegalStateException(s"The segment Id field '$fieldName' cannot be an array.")
+            throw new IllegalStateException(s"The segment Id field '${params.segmentIdField}' cannot be an array.")
           }
           s
         case _ =>
-          throw new IllegalStateException(s"The segment Id field $fieldName must have a primitive type.")
+          throw new IllegalStateException(s"The segment Id field ${params.segmentIdField} must have a primitive type.")
       }
       Some(astNode)
     })

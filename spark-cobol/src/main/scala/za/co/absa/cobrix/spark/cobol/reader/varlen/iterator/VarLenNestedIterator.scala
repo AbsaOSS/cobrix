@@ -21,7 +21,7 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
@@ -46,9 +46,8 @@ class VarLenNestedIterator(cobolSchema: Copybook,
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
-  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.segmentIdField, cobolSchema)
-  private val segmentIdFilter = readerProperties.segmentIdFilter.getOrElse("").trim
-  private val isFilteredBySegment = segmentIdField.isDefined && readerProperties.segmentIdFilter.isDefined
+  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
+  private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
 
   fetchNext()
 
@@ -164,6 +163,8 @@ class VarLenNestedIterator(cobolSchema: Copybook,
   }
 
   private def isSegmentMatchesTheFilter(data: Array[Byte]): Boolean = {
-    !isFilteredBySegment || cobolSchema.extractPrimitiveField(segmentIdField.get, data, readerProperties.startOffset).toString.trim == segmentIdFilter
+    segmentIdFilter
+      .forall(filter =>
+        cobolSchema.extractPrimitiveField(segmentIdField.get, data, readerProperties.startOffset).toString.trim == filter)
   }
 }
