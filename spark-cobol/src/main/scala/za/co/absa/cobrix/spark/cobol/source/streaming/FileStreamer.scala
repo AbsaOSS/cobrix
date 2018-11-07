@@ -56,7 +56,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStrea
 
     val buffer = new Array[Byte](numberOfBytes)
 
-    val readBytes = hdfsInputStream.read(offset, buffer, 0, numberOfBytes)
+    val readBytes = hdfsInputStream.read(buffer)
     offset = offset + readBytes
 
     if (readBytes == numberOfBytes) {
