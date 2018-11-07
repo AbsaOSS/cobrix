@@ -50,7 +50,7 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
     }
 
     var offset = bitIndex
-    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, binaryData, offset, generateRecordId = false, policy)
+    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, binaryData, offset, policy, generateRecordId = false)
 
     // Advance bit index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last

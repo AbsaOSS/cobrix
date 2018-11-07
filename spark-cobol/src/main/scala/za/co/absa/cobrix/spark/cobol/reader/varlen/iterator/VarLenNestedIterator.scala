@@ -25,6 +25,8 @@ import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+import scala.collection.mutable.ListBuffer
+
 /**
   * This iterator is used to variable length data sequentially using the [[SimpleStream]] interface.
   *
@@ -48,6 +50,8 @@ class VarLenNestedIterator(cobolSchema: Copybook,
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
+  private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, fileId*Int.MaxValue))
+  private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
 
   fetchNext()
 
@@ -70,7 +74,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     while (!recordFetched) {
       val binaryData = if (readerProperties.isXCOM) {
         fetchRecordUsingXcomHeaders()
-      } else if (lengthField.isDefined){
+      } else if (lengthField.isDefined) {
         fetchRecordUsingRecordLengthField()
       } else {
         fetchRecordUsingCopybookRecordLength()
@@ -81,12 +85,17 @@ class VarLenNestedIterator(cobolSchema: Copybook,
           cachedValue = None
           recordFetched = true
         case Some(data) =>
-          if (isSegmentMatchesTheFilter(data)) {
+          val segmentId = getSegmentId(data)
+          val segmentIdStr = segmentId.getOrElse("")
+          val segmentLevelIds = getSegmentLevelIds(segmentIdStr)
+
+          if (isSegmentMatchesTheFilter(segmentIdStr)) {
             cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
               data,
               readerProperties.startOffset * 8,
-              readerProperties.generateRecordId,
               readerProperties.policy,
+              readerProperties.generateRecordId,
+              segmentLevelIds,
               fileId,
               recordIndex))
 
@@ -140,7 +149,7 @@ class VarLenNestedIterator(cobolSchema: Copybook,
       return None
     }
 
-    var recordLength = (binaryDataStart(2) & 0xFF) + 256*(binaryDataStart(3) & 0xFF)
+    var recordLength = (binaryDataStart(2) & 0xFF) + 256 * (binaryDataStart(3) & 0xFF)
 
     if (recordLength > 0) {
       Some(dataStream.next(recordLength))
@@ -162,9 +171,30 @@ class VarLenNestedIterator(cobolSchema: Copybook,
     }
   }
 
-  private def isSegmentMatchesTheFilter(data: Array[Byte]): Boolean = {
+  // The gets all values for the helper fields for the current record having a specific segment id
+  // It is deliberately wtitten imperative style for performance
+  private def getSegmentLevelIds(segmentId: String): Seq[Any] = {
+    if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
+      val acc = segmentIdAccumulator.get
+      acc.acquiredSegmentId(segmentId)
+      val ids = new ListBuffer[Any]
+      var i = 0
+      while (i < segmentLevelIdsCount) {
+        ids += acc.getSegmentLevelId(i)
+        i += 1
+      }
+      ids
+    } else {
+      Nil
+    }
+  }
+
+  private def getSegmentId(data: Array[Byte]): Option[String] = {
+    segmentIdField.map(field => cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset).toString.trim)
+  }
+
+  private def isSegmentMatchesTheFilter(segmentId: String): Boolean = {
     segmentIdFilter
-      .forall(filter =>
-        cobolSchema.extractPrimitiveField(segmentIdField.get, data, readerProperties.startOffset).toString.trim == filter)
+      .forall(filter => segmentId == filter)
   }
 }

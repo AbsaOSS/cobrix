@@ -72,7 +72,7 @@ class FixedLenNestedReader(copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, false, policy)
+    new CobolSchema(schema, policy, false)
   }
 
   override def getRecordStartOffset: Int = startOffset

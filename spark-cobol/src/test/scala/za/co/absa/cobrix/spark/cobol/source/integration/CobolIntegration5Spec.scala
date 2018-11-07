@@ -44,12 +44,12 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("is_xcom", "true")
+      .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "S01L1")
       .option("segment_id_level1", "S01L2")
+      .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .load(inpudDataPath)
-      .filter($"SEGMENT_ID"==="S01L2")
-      .select($"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
 
     // This is to print the actual output
     println(df.schema.json)
@@ -70,8 +70,8 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
     }
 
     val actualDf = df
+      .orderBy("File_Id", "Record_Id")
       .toJSON
-      .orderBy("value")
       .take(60)
 
     val writer = new PrintWriter(actualResultsPath)

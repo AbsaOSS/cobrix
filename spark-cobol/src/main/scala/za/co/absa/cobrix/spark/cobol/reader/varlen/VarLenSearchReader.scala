@@ -72,7 +72,7 @@ class VarLenSearchReader(copybookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, generateRecordId, policy)
+    new CobolSchema(schema, policy, generateRecordId)
   }
 
   override def getRecordStartOffset: Int = startOffset

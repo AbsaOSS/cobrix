@@ -140,7 +140,7 @@ class VarLenSearchIterator(cobolSchema: Copybook,
       advanceByteIndex(recordMarkStart, lengthFieldValue, isFound)
     }
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, generateRecordId, policy, fileId,
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, policy, generateRecordId, Nil, fileId,
       /*recordMarkStart - signatureOffset)*/
       recordIndex))
     recordIndex += 1

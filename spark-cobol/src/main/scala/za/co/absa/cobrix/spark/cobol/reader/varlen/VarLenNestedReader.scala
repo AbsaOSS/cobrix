@@ -49,7 +49,8 @@ class VarLenNestedReader(copybookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, readerProperties.generateRecordId, readerProperties.policy)
+    val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
+    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount)
   }
 
   override def getRecordStartOffset: Int = readerProperties.startOffset

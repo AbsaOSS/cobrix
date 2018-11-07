@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Group
 
 import scala.collection.Seq
 
-class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(new Copybook(Seq[Group]()), false, SchemaRetentionPolicy.KeepOriginal) with Serializable {
+class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(new Copybook(Seq[Group]()), SchemaRetentionPolicy.KeepOriginal, false) with Serializable {
   override def getSparkSchema: StructType = sparkSchema
   override lazy val getRecordSize: Int = 40
 }
