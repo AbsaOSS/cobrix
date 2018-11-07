@@ -31,13 +31,13 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
   private val inputCopybookPath = "file://../data/test5_copybook.cob"
   private val inpudDataPath = "../data/test5_data"
 
-  private val expectedSchemaPath = "../data/test5_expected/test5_schema.json"
-  private val actualSchemaPath = "../data/test5_expected/test5_schema_actual.json"
-  private val expectedResultsPath = "../data/test5_expected/test5.txt"
-  private val actualResultsPath = "../data/test5_expected/test5_actual.txt"
-
-  test(s"Integration test on $exampleName data") {
+  test(s"Integration test on $exampleName - segment ids") {
     import spark.implicits._
+
+    val expectedSchemaPath = "../data/test5_expected/test5_schema.json"
+    val actualSchemaPath = "../data/test5_expected/test5_schema_actual.json"
+    val expectedResultsPath = "../data/test5_expected/test5.txt"
+    val actualResultsPath = "../data/test5_expected/test5_actual.txt"
 
     val df = spark
       .read
@@ -52,7 +52,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .load(inpudDataPath)
 
     // This is to print the actual output
-    println(df.schema.json)
+    //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -69,6 +69,74 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
+    val actualDf = df
+      .orderBy("File_Id", "Record_Id")
+      .toJSON
+      .take(60)
+
+    val writer = new PrintWriter(actualResultsPath)
+    try {
+      for (str <- actualDf) {
+        writer.write(str)
+        writer.write("\n")
+      }
+    } finally {
+      writer.close()
+    }
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+
+  }
+
+  test(s"Integration test on $exampleName - root segment id") {
+    import spark.implicits._
+
+    // In this test we check that if only one segment id is specified the root segment ids should
+    // still be correctly generated.
+
+    val expectedSchemaPath = "../data/test5_expected/test5a_schema.json"
+    val actualSchemaPath = "../data/test5_expected/test5a_schema_actual.json"
+    val expectedResultsPath = "../data/test5_expected/test5a.txt"
+    val actualResultsPath = "../data/test5_expected/test5a_actual.txt"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("is_xcom", "true")
+      .option("segment_field", "SEGMENT_ID")
+      .option("segment_id_level0", "S01L1")
+      .option("generate_record_id", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .load(inpudDataPath)
+
+    // This is to print the actual output
+    //println(df.schema.json)
+    //df.toJSON.take(60).foreach(println)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = df.schema.json
+
+    if (actualSchema != expectedSchema) {
+      val writer = new PrintWriter(actualSchemaPath)
+      try {
+        writer.write(actualSchema)
+      } finally {
+        writer.close()
+      }
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    //df.show(200)
     val actualDf = df
       .orderBy("File_Id", "Record_Id")
       .toJSON
