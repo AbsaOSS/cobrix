@@ -64,27 +64,27 @@ object CobolSparkExample2 {
 
     import spark.implicits._
 
-    val df2 = df.filter($"SEGMENT_ID"==="S01L1")
+    val dfCompanies = df.filter($"SEGMENT_ID"==="S01L1")
       .select($"Seg_Id0", $"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
         when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
           .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
 
-    df2.printSchema
+    dfCompanies.printSchema
     //println(df.count)
-    df2.show(50, truncate = false)
+    dfCompanies.show(50, truncate = false)
 
-    val df3 = df.filter($"SEGMENT_ID"==="S01L2")
+    val dfContacts = df.filter($"SEGMENT_ID"==="S01L2")
       .select($"Seg_Id0", $"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
 
-    df3.printSchema
+    dfContacts.printSchema
     //println(df.count)
-    df3.show(50, truncate = false)
+    dfContacts.show(50, truncate = false)
 
-    val df4 = df2.join(df3, "Seg_Id0")
+    val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
 
-    df4.printSchema
+    dfJoined.printSchema
     //println(df.count)
-    df4.show(20, truncate = false)
+    dfJoined.orderBy($"Seg_Id0").show(50, truncate = false)
   }
 
 }
