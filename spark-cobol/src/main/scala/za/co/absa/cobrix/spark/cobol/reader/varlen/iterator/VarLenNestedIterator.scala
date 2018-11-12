@@ -37,7 +37,7 @@ import scala.collection.mutable.ListBuffer
   * @param startRecordId    A starting record id value for this particular file/stream `dataStream`
   */
 @throws(classOf[IllegalStateException])
-class VarLenNestedIterator(cobolSchema: Copybook,
+final class VarLenNestedIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            readerProperties: ReaderParameters,
                            fileId: Int,

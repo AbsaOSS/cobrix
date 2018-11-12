@@ -33,7 +33,7 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   * @param readerProperties      Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenNestedReader(copybookContents: String,
+final class VarLenNestedReader(copybookContents: String,
                          readerProperties: ReaderParameters) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)

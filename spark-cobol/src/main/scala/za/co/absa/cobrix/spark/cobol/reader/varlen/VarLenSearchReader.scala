@@ -47,7 +47,7 @@ import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
   *                         copybook.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenSearchReader(copybookContents: String,
+final class VarLenSearchReader(copybookContents: String,
                          signatureFieldName: String,
                          signatureFieldValue: String,
                          lengthFieldName: Option[String],
