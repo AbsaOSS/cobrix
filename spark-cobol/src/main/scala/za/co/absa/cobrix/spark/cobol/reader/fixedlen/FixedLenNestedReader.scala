@@ -32,7 +32,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
   * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
-class FixedLenNestedReader(copyBookContents: String,
+final class FixedLenNestedReader(copyBookContents: String,
                            startOffset: Int = 0,
                            endOffset: Int = 0,
                            policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal)
@@ -72,7 +72,7 @@ class FixedLenNestedReader(copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, false, policy)
+    new CobolSchema(schema, policy, false)
   }
 
   override def getRecordStartOffset: Int = startOffset

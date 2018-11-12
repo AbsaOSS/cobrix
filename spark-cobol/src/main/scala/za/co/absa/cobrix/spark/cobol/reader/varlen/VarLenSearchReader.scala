@@ -47,7 +47,7 @@ import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
   *                         copybook.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenSearchReader(copybookContents: String,
+final class VarLenSearchReader(copybookContents: String,
                          signatureFieldName: String,
                          signatureFieldValue: String,
                          lengthFieldName: Option[String],
@@ -72,7 +72,7 @@ class VarLenSearchReader(copybookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, generateRecordId, policy)
+    new CobolSchema(schema, policy, generateRecordId)
   }
 
   override def getRecordStartOffset: Int = startOffset

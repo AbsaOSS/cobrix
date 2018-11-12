@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.source.base.impl
+package za.co.absa.cobrix.spark.cobol.reader.parameters
 
-import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
-import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Group
-
-import scala.collection.Seq
-
-class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(new Copybook(Seq[Group]()), SchemaRetentionPolicy.KeepOriginal, false) with Serializable {
-  override def getSparkSchema: StructType = sparkSchema
-  override lazy val getRecordSize: Int = 40
-}
+/**
+  * This class holds the parameters currently used for parsing variable-length records.
+  */
+case class MultisegmentParameters(
+                                   segmentIdField: String,
+                                   segmentIdFilter: Option[String],
+                                   segmentLevelIds: Seq[String]      // The list of segment id on corresponding levels
+                                 )

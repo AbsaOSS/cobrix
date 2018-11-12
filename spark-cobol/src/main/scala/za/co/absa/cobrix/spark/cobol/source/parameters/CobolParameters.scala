@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -40,6 +41,5 @@ case class CobolParameters(
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             searchSignatureField:  Option[String],
                             searchSignatureValue:  Option[String],
-                            segmentIdField:        Option[String],
-                            segmentIdFilter:        Option[String]
+                            multisegmentParams:    Option[MultisegmentParameters]
                           )

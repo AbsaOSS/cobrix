@@ -44,8 +44,9 @@ object RowExtractors {
   def extractRecord(ast: CopybookAST,
                     data: Array[Byte],
                     offsetBits: Long = 0,
-                    generateRecordId: Boolean = false,
                     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                    generateRecordId: Boolean = false,
+                    segmentLevelIds: Seq[Any] = Nil,
                     fileId: Int = 0,
                     recordId: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
@@ -127,7 +128,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, generateRecordId, policy, fileId, recordId)
+    applyRowPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId)
   }
 
   /**
@@ -152,8 +153,9 @@ object RowExtractors {
     */
   private def applyRowPostProcessing(ast: CopybookAST,
                                      records: Seq[Row],
-                                     generateRecordId: Boolean,
                                      policy: SchemaRetentionPolicy,
+                                     generateRecordId: Boolean,
+                                     segmentLevelIds: Seq[Any],
                                      fileId: Int,
                                      recordId: Long): Row = {
     if (generateRecordId) {
@@ -161,19 +163,19 @@ object RowExtractors {
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId
         val expandedRows = records.flatMap( record => record.toSeq )
-        Row.fromSeq(fileId +: recordId +: expandedRows)
+        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ expandedRows))
       } else {
         // Add recordId as the first field
-        Row.fromSeq(fileId +: recordId +: records)
+        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ records))
       }
     } else {
       // Addition of record index is not required
       if (policy == SchemaRetentionPolicy.CollapseRoot) {
         // If the policy for schema retention is root collapsing, expand root fields
-        Row.fromSeq(records.flatMap( record => record.toSeq ))
+        Row.fromSeq(segmentLevelIds ++ records.flatMap( record => record.toSeq ))
       } else {
         // Return rows as the original sequence of groups
-        Row.fromSeq(records)
+        Row.fromSeq(segmentLevelIds ++ records)
       }
     }
   }

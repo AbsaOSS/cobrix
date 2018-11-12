@@ -46,7 +46,7 @@ import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
   * @param policy  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 @throws(classOf[IllegalStateException])
-class VarLenSearchIterator(cobolSchema: Copybook,
+final class VarLenSearchIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            signatureFieldName: String,
                            signatureFieldValue: String,
@@ -140,7 +140,7 @@ class VarLenSearchIterator(cobolSchema: Copybook,
       advanceByteIndex(recordMarkStart, lengthFieldValue, isFound)
     }
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, generateRecordId, policy, fileId,
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, policy, generateRecordId, Nil, fileId,
       /*recordMarkStart - signatureOffset)*/
       recordIndex))
     recordIndex += 1

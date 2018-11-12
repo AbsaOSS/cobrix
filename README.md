@@ -277,9 +277,295 @@ copybook it is very convenient to extract segments one by one by combining 'is_x
 In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will
 read all segments, but will parse only ones that have `SEG-ID = "1122334"`.
 
+## Reading hierarchical data sets
+
+Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
+record type. The root record contains company info, addreess and a taxpayer number. The child segment contains a contact
+person for a company. Each company can have zero or more contact persons. So each root record can be followed by zero or
+more child records.
+
+To load such data in Spark the first thing you need to do is to create a copybook that contains all segment specific fields
+in redefined groups. Here is the copybook for our example:
+
+```
+        01  COMPANY-DETAILS.
+            05  SEGMENT-ID        PIC X(5).
+            05  COMPANY-ID        PIC X(10).
+            05  STATIC-DETAILS.
+               10  COMPANY-NAME      PIC X(15).
+               10  ADDRESS           PIC X(25).
+               10  TAXPAYER.
+                  15  TAXPAYER-TYPE  PIC X(1).
+                  15  TAXPAYER-STR   PIC X(8).
+                  15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
+                                     PIC 9(8) COMP.
+
+            05  CONTACTS REDEFINES STATIC-DETAILS.
+               10  PHONE-NUMBER      PIC X(17).
+               10  CONTACT-PERSON    PIC X(28).
+```
+
+The 'SEGMENT-ID' and 'COMPANY-ID' fields are present in all of the segments. The 'STATIC-DETAILS' group is present only in
+the root record. The 'CONTACTS' group is present only in child record. Notice that 'CONTACTS' redefine 'STATIC-DETAILS'.
+
+Because the records have different lengths the 'is_xcom' option should be set to 'true'.
+
+If you load this file as is you will get the schema and the data similar to this.
+
+#### Spark App:
+```scala
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", "/path/to/thecopybook")
+      .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
+      .option("is_xcom", "true")
+      .load("examples/multisegment_data")
+```
+
+#### Schema
+```
+    df.printSchema()
+    root
+     |-- SEGMENT_ID: string (nullable = true)
+     |-- COMPANY_ID: string (nullable = true)
+     |-- STATIC_DETAILS: struct (nullable = true)
+     |    |-- COMPANY_NAME: string (nullable = true)
+     |    |-- ADDRESS: string (nullable = true)
+     |    |-- TAXPAYER: struct (nullable = true)
+     |    |    |-- TAXPAYER_TYPE: string (nullable = true)
+     |    |    |-- TAXPAYER_STR: string (nullable = true)
+     |    |    |-- TAXPAYER_NUM: integer (nullable = true)
+     |-- CONTACTS: struct (nullable = true)
+     |    |-- PHONE_NUMBER: string (nullable = true)
+     |    |-- CONTACT_PERSON: string (nullable = true)
+```
+
+#### Data sample
+```
+    df.show(10)
+    +----------+----------+--------------------+--------------------+
+    |SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
+    +----------+----------+--------------------+--------------------+
+    |     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
+    |     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+    |     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
+    |     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
+    |     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
+    |     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+    |     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
+    |     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
+    |     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+    |     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
+    +----------+----------+--------------------+--------------------+
+```
+
+As you can see Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only
+one redefine is valid for every segment. So we need to split the data set into 2 datasets or tables. The distinguisher is
+the 'SEGMENT_ID' field. All company details will go into one data sets (segment id = 'S01L1'') while contacts will go in
+the second data set (segment id = 'S01L2'). While doing the split we can also collapse the groups so the table won't
+contain nested structures. This can be helpful to simplify the analysis of the data.
+
+While doing it you might notice that the taxpayer number field is actually a redefine. Depending on the 'TAXPAYER_TYPE'
+either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spark app as well. 
+
+#### Getting the first segment
+```scala
+    import spark.implicits._
+
+    val dfCompanies = df
+      // Filtering the first segment by segment id
+      .filter($"SEGMENT_ID"==="S01L1")
+      // Selecting fields that are only available in the first segment
+      .select($"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
+      // Resolving the taxpayer redefine
+        when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
+          .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
+```
+
+The sesulting table looks like this:
+```
+    dfCompanies.show(10, truncate = false)
+    +----------+-------------+-------------------------+--------+
+    |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
+    +----------+-------------+-------------------------+--------+
+    |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
+    |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
+    |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
+    |2193550322|Prime Bank   |1 Garden str., London    |37798023|
+    |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
+    |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
+    |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
+    |9665677039|Prime Bank   |1 Garden str., London    |79830357|
+    |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
+    |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
+    +----------+-------------+-------------------------+--------+
+```
+
+This looks like a valid and clean table containing the list of companies. Now let's do the same for the second segment.
+
+#### Getting the second segment
+```scala
+    val dfContacts = df
+      // Filtering the second segment by segment id
+      .filter($"SEGMENT_ID"==="S01L2")
+      // Selecting the fields only valid for the second segment
+      .select($"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
+```
+
+The resulting data loons like this:
+```
+    dfContacts.show(10, truncate = false)
+    +----------+----------------+----------------+
+    |COMPANY_ID|CONTACT_PERSON  |PHONE_NUMBER    |
+    +----------+----------------+----------------+
+    |7888716268|Lynell Flatt    |+(782) 772 45 69|
+    |4169179307|Mabelle Bourke  |+(589) 102 29 62|
+    |4007588657|Lynell Lepe     |+(406) 714 80 90|
+    |9665677039|Carrie Hisle    |+(115) 514 77 48|
+    |9665677039|Deshawn Shapiro |+(10) 945 77 74 |
+    |9665677039|Alona Boehme    |+(43) 922 55 37 |
+    |9665677039|Cassey Shapiro  |+(434) 242 37 43|
+    |4179823966|Beatrice Godfrey|+(339) 323 81 40|
+    |9081730154|Wilbert Winburn |+(139) 236 46 45|
+    |9081730154|Carrie Godfrey  |+(356) 451 77 64|
+    +----------+----------------+----------------+
+```
+
+This looks good as well. The table contains the list of contact persons for companies. This data set contains the
+'COMPANY_ID' field which we can use later to join the tables. But often there are no such fields in data imported from
+hierarchical databases. If that is the case Cobrix can help you craft such fields automatically. Use 'segment_field' to
+specify a field that contain the segment id. Use 'segment_id_level0' to ask Cobrix to generate ids for the particular
+segments. We can use 'segment_id_level1' to generate child ids as well. If children records can contain children of their
+own we can use 'segment_id_level2' etc.
+
+#### Generating segment ids
+
+```scala
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("schema_retention_policy", "collapse_root")
+      .option("is_xcom", "true")
+      .option("segment_field", "SEGMENT_ID")
+      .option("segment_id_level0", "S01L1")
+      .option("segment_id_level1", "S01L2")
+      .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The resulting table will look like this:
+```
+    +-------+-------+----------+----------+--------------------+--------------------+
+    |Seg_Id0|Seg_Id1|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
+    +-------+-------+----------+----------+--------------------+--------------------+
+    |      1|   null|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
+    |      2|   null|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+    |      2|      1|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
+    |      3|   null|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
+    |      4|   null|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
+    |      5|   null|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+    |      6|   null|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
+    |      6|      2|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
+    |      7|   null|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+    |      7|      3|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
+    +-------+-------+----------+----------+--------------------+--------------------+
+```
+
+The data now contain 2 additional fields: 'Seg_Id0' and 'Seg_Id1'. The 'Seg_Id0' is an autogenerated id for each root
+record. It is also unique for a root record. After splitting the segments you can use Seg_Id0 to join both tables.
+The 'Seg_Id1' field contains a unique child id. It is equal to 'null' for all root records but uniquely identifies
+child records.
+
+You can now split these 2 segments and join them by Seg_Id0. The full example is available at
+`spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
+
+To run it from an IDE you'll need to change Scala and Spark dependencies from 'provided' to 'compile' so the
+jar file would contain all the dependencies. This is because Cobrix is a library to be used in Spark job projects.
+Spark jobs uber jars should not contain Scala and Spark dependencies since Hadoop clusters have their Scala and Spark
+dependencies provided by 'spark-submit'.
+
+Here is the example output of the joined tables:
+
+##### Segment 1 (Companies)
+```
+    dfCompanies.show(11, truncate = false)
+    +-------+----------+-------------+-------------------------+--------+
+    |Seg_Id0|COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
+    +-------+----------+-------------+-------------------------+--------+
+    |1      |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
+    |2      |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
+    |3      |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
+    |4      |2193550322|Prime Bank   |1 Garden str., London    |37798023|
+    |5      |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
+    |6      |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
+    |7      |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
+    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|
+    |9      |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
+    |10     |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
+    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|
+    +-------+----------+-------------+-------------------------+--------+
+```
+
+##### Segment 2 (Contacts)
+```
+    dfContacts.show(12, truncate = false)
+    +-------+----------+-------------------+----------------+
+    |Seg_Id0|COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
+    +-------+----------+-------------------+----------------+
+    |2      |7888716268|Lynell Flatt       |+(782) 772 45 69|
+    |6      |4169179307|Mabelle Bourke     |+(589) 102 29 62|
+    |7      |4007588657|Lynell Lepe        |+(406) 714 80 90|
+    |8      |9665677039|Carrie Hisle       |+(115) 514 77 48|
+    |8      |9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
+    |8      |9665677039|Alona Boehme       |+(43) 922 55 37 |
+    |8      |9665677039|Cassey Shapiro     |+(434) 242 37 43|
+    |10     |4179823966|Beatrice Godfrey   |+(339) 323 81 40|
+    |11     |9081730154|Wilbert Winburn    |+(139) 236 46 45|
+    |11     |9081730154|Carrie Godfrey     |+(356) 451 77 64|
+    |11     |9081730154|Suk Wallingford    |+(57) 570 39 41 |
+    |11     |9081730154|Tyesha Debow       |+(258) 914 73 28|
+    +-------+----------+-------------------+----------------+
+
+```
+
+##### Joined datasets
+
+The join statement in Spark:
+```scala
+    val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
+```
+
+The joined data looks like this:
+
+```
+    dfJoined.show(12, truncate = false)
+    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
+    |Seg_Id0|COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|COMPANY_ID|CONTACT_PERSON   |PHONE_NUMBER    |
+    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
+    |2      |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|7888716268|Lynell Flatt     |+(782) 772 45 69|
+    |6      |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|4169179307|Mabelle Bourke   |+(589) 102 29 62|
+    |7      |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|4007588657|Lynell Lepe      |+(406) 714 80 90|
+    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Cassey Shapiro   |+(434) 242 37 43|
+    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Carrie Hisle     |+(115) 514 77 48|
+    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Alona Boehme     |+(43) 922 55 37 |
+    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Deshawn Shapiro  |+(10) 945 77 74 |
+    |10     |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|4179823966|Beatrice Godfrey |+(339) 323 81 40|
+    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Wilbert Winburn  |+(139) 236 46 45|
+    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Suk Wallingford  |+(57) 570 39 41 |
+    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Carrie Godfrey   |+(356) 451 77 64|
+    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Tyesha Debow     |+(258) 914 73 28|
+    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
+```
+
+Again, the full example is available at
+`spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
+
+
 ## Performance
 
 Tests were performed on a synthetic dataset. The setup and results are as follows.
+These results were obtained on fixed size record files. 
 
 ### Cluster setup
 

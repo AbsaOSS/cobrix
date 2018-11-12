@@ -21,7 +21,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -33,7 +33,7 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   * @param readerProperties      Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenNestedReader(copybookContents: String,
+final class VarLenNestedReader(copybookContents: String,
                          readerProperties: ReaderParameters) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
@@ -49,7 +49,8 @@ class VarLenNestedReader(copybookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
-    new CobolSchema(schema, readerProperties.generateRecordId, readerProperties.policy)
+    val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
+    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount)
   }
 
   override def getRecordStartOffset: Int = readerProperties.startOffset

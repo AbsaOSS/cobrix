@@ -30,7 +30,8 @@ object Constants {
   val maxDecimalPrecision = 38
   val maxDecimalScale = 18
 
-  // FThe fields that can be automatically generated
+  // The fields that can be automatically generated
+  val segmentIdField = "Seg_Id"
   val fileIdField = "File_Id"
   val recordIdField = "Record_Id"
 

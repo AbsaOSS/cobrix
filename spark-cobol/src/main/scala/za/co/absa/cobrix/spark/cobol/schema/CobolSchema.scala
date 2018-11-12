@@ -35,8 +35,9 @@ import scala.collection.mutable.ArrayBuffer
   * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 class CobolSchema(val copybook: Copybook,
+                  policy: SchemaRetentionPolicy,
                   generateRecordId: Boolean,
-                  policy: SchemaRetentionPolicy) extends Serializable {
+                  generateSegIdFieldsCnt: Int = 0) extends Serializable {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -54,11 +55,20 @@ class CobolSchema(val copybook: Copybook,
     } else {
       records.toArray
     }
-    val recordsWithRecordId = if (generateRecordId) {
-      StructField(Constants.fileIdField, IntegerType, nullable = false) +:
-        StructField(Constants.recordIdField, LongType, nullable = false) +: expandRecords
+
+    val recordsWithSegmentFields = if (generateSegIdFieldsCnt>0) {
+      val newFields = for ( level <- Range(0, generateSegIdFieldsCnt) )
+        yield StructField (s"${Constants.segmentIdField}$level", LongType, nullable = true)
+      newFields.toArray ++ expandRecords
     } else {
       expandRecords
+    }
+
+    val recordsWithRecordId = if (generateRecordId) {
+      StructField(Constants.fileIdField, IntegerType, nullable = false) +:
+        StructField(Constants.recordIdField, LongType, nullable = false) +: recordsWithSegmentFields
+    } else {
+      recordsWithSegmentFields
     }
     StructType(recordsWithRecordId)
   }

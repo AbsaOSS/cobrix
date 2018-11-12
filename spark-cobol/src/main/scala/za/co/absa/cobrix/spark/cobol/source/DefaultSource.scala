@@ -20,8 +20,9 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.{Reader, ReaderParameters}
+import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader, VarLenSearchReader}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
@@ -117,8 +118,7 @@ class DefaultSource
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
           policy = parameters.schemaRetentionPolicy,
-          segmentIdField = parameters.segmentIdField,
-          segmentIdFilter = parameters.segmentIdFilter
+          parameters.multisegmentParams
          )
       )
     }
