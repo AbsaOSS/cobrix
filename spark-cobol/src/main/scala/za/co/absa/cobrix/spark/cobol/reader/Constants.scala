@@ -31,6 +31,6 @@ object Constants {
   // Tuning parameters
 
   // Minimum number of records in each file split
-  val minSplitRecords = 100000
+  val minSplitRecords = 500000
 
 }

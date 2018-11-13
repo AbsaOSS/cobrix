@@ -34,16 +34,18 @@ import scala.collection.mutable.ListBuffer
   * @param readerProperties Additional properties for customizing the reader.
   * @param fileId           A FileId to put to the corresponding column
   * @param startRecordId    A starting record id value for this particular file/stream `dataStream`
+  * @param startingFileOffset  An offset of the file where parsing should be started
   */
 @throws(classOf[IllegalStateException])
 final class VarLenNestedIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            readerProperties: ReaderParameters,
                            fileId: Int,
-                           startRecordId: Long) extends Iterator[Row] {
+                           startRecordId: Long,
+                           startingFileOffset: Long) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
-  private var byteIndex = 0L
+  private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
@@ -144,7 +146,8 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
     val binaryDataStart = dataStream.next(xcomHeaderBlock)
 
-    val recordLength = BinaryUtils.extractXcomRecordSize(binaryDataStart)
+    val recordLength = BinaryUtils.extractXcomRecordSize(binaryDataStart, byteIndex)
+    byteIndex += binaryDataStart.length
 
     if (recordLength > 0) {
       Some(dataStream.next(recordLength))

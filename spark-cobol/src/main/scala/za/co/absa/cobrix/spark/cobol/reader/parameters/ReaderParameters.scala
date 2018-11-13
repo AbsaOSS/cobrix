@@ -31,6 +31,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
 case class ReaderParameters(
                              lengthFieldName: Option[String] = None,
                              isXCOM: Boolean = false,
+                             isIndexGenerationNeeded: Boolean = false,
                              startOffset: Int = 0,
                              endOffset: Int = 0,
                              generateRecordId: Boolean = false,

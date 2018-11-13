@@ -16,4 +16,4 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.index.entry
 
-case class SimpleIndexEntry(offsetFrom: Long, var offsetTo: Long, fileId: Int, recordIndex: Long)
+case class SimpleIndexEntry(offsetFrom: Long, offsetTo: Long, fileId: Int, recordIndex: Long)

@@ -21,9 +21,14 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -44,8 +49,30 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, 0)
+  override def isIndexGenerationNeeded: Boolean = readerProperties.isIndexGenerationNeeded
+
+  override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset)
+
+  /**
+    * Traverses the data sequentially as fast as possible to generate record index.
+    * This index will be used to distribute workload of the conversion.
+    *
+    * @param binaryData A stream of input binary data
+    * @param fileNumber A file number uniquely identified a particular file of the data set
+    * @return An index of the file
+    *
+    */
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
+    val copybook = cobolSchema.copybook
+    val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
+
+    segmentIdField match {
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, copybook, field)
+      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
+    }
+  }
+
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
@@ -66,5 +93,4 @@ final class VarLenNestedReader(copybookContents: String,
       throw new IllegalArgumentException(s"Invalid record end offset = ${readerProperties.endOffset}. A record end offset cannot be negative.")
     }
   }
-
 }

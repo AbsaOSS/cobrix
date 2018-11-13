@@ -33,12 +33,16 @@ import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
   *
   * @throws IllegalArgumentException in case the file is not found in the underlying file system.
   */
-class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStream {
+class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
   private val hdfsInputStream = fileSystem.open(getHDFSPath(filePath))
-  private var offset = 0L
+  private var offset = startOffset
+
+  if (startOffset>0) {
+    hdfsInputStream.seek(startOffset)
+  }
 
   /**
     * Retrieves a given number of bytes.
@@ -53,24 +57,27 @@ class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStrea
     * @return
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
+    if (maximumBytes > 0 && offset - startOffset >= maximumBytes) {
+      new Array[Byte](0)
+    } else {
+      val buffer = new Array[Byte](numberOfBytes)
 
-    val buffer = new Array[Byte](numberOfBytes)
+      val readBytes = hdfsInputStream.read(buffer)
+      offset = offset + readBytes
 
-    val readBytes = hdfsInputStream.read(buffer)
-    offset = offset + readBytes
-
-    if (readBytes == numberOfBytes) {
-      buffer
-    }
-    else {
-      logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
-      // resize buffer so that the consumer knows how many bytes are there
-      if (readBytes > 0) {
-        val shrunkBuffer = new Array[Byte](readBytes)
-        System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
-        shrunkBuffer
-      } else {
-        new Array[Byte](0)
+      if (readBytes == numberOfBytes) {
+        buffer
+      }
+      else {
+        logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
+        // resize buffer so that the consumer knows how many bytes are there
+        if (readBytes > 0) {
+          val shrunkBuffer = new Array[Byte](readBytes)
+          System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
+          shrunkBuffer
+        } else {
+          new Array[Byte](0)
+        }
       }
     }
   }

@@ -26,15 +26,13 @@ import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import scala.collection.mutable.ArrayBuffer
 
 object IndexGenerator {
-
-  private var byteIndex = 0L
   private val xcomHeaderBlock = 4
 
   def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream): ArrayBuffer[SimpleIndexEntry] = {
+    var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
     var recordsInChunk = 1
     var recordIndex = 0
-    byteIndex = 0
     var endOfFileReached = false
     while (!endOfFileReached) {
       val recordSize = getNextRecordSize(dataStream)
@@ -45,7 +43,7 @@ object IndexGenerator {
         if (record.length < recordSize) {
           endOfFileReached = true
         } else {
-          if (recordIndex > 0 && recordsInChunk >= Constants.minSplitRecords) {
+          if (recordIndex == 0 || recordsInChunk >= Constants.minSplitRecords) {
             val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
             index += indexEntry
             recordsInChunk = 1
@@ -61,7 +59,7 @@ object IndexGenerator {
     if (index.length > 1) {
       var i = 0
       while (i < index.length - 1) {
-        index(i).offsetTo = index(i + 1).offsetFrom
+        index(i) = index(i).copy(offsetTo = index(i + 1).offsetFrom)
         i += 1
       }
     }
@@ -70,12 +68,12 @@ object IndexGenerator {
   }
 
   def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream, copybook: Copybook, segmentField: Primitive): ArrayBuffer[SimpleIndexEntry] = {
+    var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
     var rootRecordId: String = ""
     var rootRecordSize = 0
     var recordsInChunk = 0
     var recordIndex = 0
-    byteIndex = 0
     var endOfFileReached = false
     while (!endOfFileReached) {
       val recordSize = getNextRecordSize(dataStream)
@@ -93,7 +91,7 @@ object IndexGenerator {
               throw new IllegalStateException(s"Root record segment id cannot be empty at $byteIndex.")
             }
           }
-          if (recordIndex > 0 && recordsInChunk >= Constants.minSplitRecords && recordSize == rootRecordSize) {
+          if (recordIndex == 0 || (recordsInChunk >= Constants.minSplitRecords && recordSize == rootRecordSize)) {
             if (rootRecordId == getSegmentId(copybook, segmentField, record)) {
               val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
               index += indexEntry
@@ -111,7 +109,7 @@ object IndexGenerator {
     if (index.length > 1) {
       var i = 0
       while (i < index.length - 1) {
-        index(i).offsetTo = index(i + 1).offsetFrom
+        index(i) = index(i).copy(offsetTo = index(i + 1).offsetFrom)
         i += 1
       }
     }

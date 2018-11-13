@@ -53,6 +53,9 @@ object CobolParametersParser {
   val PARAM_SEARCH_SIGNATURE_FIELD   = "search_field_name"
   val PARAM_SEARCH_SIGNATURE_VALUE   = "search_field_value"
 
+  // Indexed multisegment file processing
+  val PARAM_EXPERIMENTAL_INDEX       = "experimental_index"
+
   def parse(params: Map[String,String]): CobolParameters = {
 
     val policyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
@@ -67,6 +70,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       params.getOrElse(PARAM_IS_XCOM, "false").toBoolean,
+      params.getOrElse(PARAM_EXPERIMENTAL_INDEX, "false").toBoolean,
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),

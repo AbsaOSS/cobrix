@@ -21,9 +21,14 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.{VarLenSearchIterator, VarLenNestedIterator}
+import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
+import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.{VarLenNestedIterator, VarLenSearchIterator}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -66,10 +71,15 @@ final class VarLenSearchReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
+  override def isIndexGenerationNeeded: Boolean = false
+
+  override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
     new VarLenSearchIterator(cobolSchema.copybook, binaryData, signatureFieldName, signatureFieldValue, lengthFieldName, minimumLength,
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
+    IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
+  }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     new CobolSchema(schema, policy, generateRecordId)
@@ -91,7 +101,4 @@ final class VarLenSearchReader(copybookContents: String,
 
     maximumLength.foreach(v => if (v<0) throw new IllegalArgumentException(s"Invalid maximum length value = $v. It cannot be negative.") )
   }
-
-
-
 }

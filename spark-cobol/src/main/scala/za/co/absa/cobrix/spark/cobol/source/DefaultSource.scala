@@ -114,6 +114,7 @@ class DefaultSource
         copybookContent,
         ReaderParameters(lengthFieldName = recordLengthField,
           isXCOM = parameters.isXCOM,
+          isIndexGenerationNeeded = parameters.isUsingIndex,
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
