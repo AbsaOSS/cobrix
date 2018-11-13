@@ -17,9 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 import org.apache.spark.sql.Row
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
@@ -145,17 +144,12 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
     val binaryDataStart = dataStream.next(xcomHeaderBlock)
 
-    if (binaryDataStart.length < xcomHeaderBlock) {
-      return None
-    }
-
-    var recordLength = (binaryDataStart(2) & 0xFF) + 256 * (binaryDataStart(3) & 0xFF)
+    val recordLength = BinaryUtils.extractXcomRecordSize(binaryDataStart)
 
     if (recordLength > 0) {
       Some(dataStream.next(recordLength))
     } else {
-      val xcomHeaders = binaryDataStart.map(_ & 0xFF).mkString(",")
-      throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
+      None
     }
   }
 
