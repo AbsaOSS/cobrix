@@ -33,4 +33,6 @@ object Constants {
   // Minimum number of records in each file split
   val minSplitRecords = 500000
 
+  // Default number of partitions
+  val defaultNumPartitions = 200
 }

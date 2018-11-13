@@ -24,7 +24,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
-import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -112,7 +112,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
         )
       })
 
-    indexes.flatMap(indexEntry => {
+    indexes.repartition(Constants.defaultNumPartitions).flatMap(indexEntry => {
       val fileSystem = FileSystem.get(sconf.value)
       val fileName = filesMap(indexEntry.fileId)
       val numOfBytes = if (indexEntry.offsetTo > 0L) (indexEntry.offsetTo - indexEntry.offsetFrom).toInt else 0
