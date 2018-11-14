@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
@@ -101,11 +101,12 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
     indexes.repartition(Constants.defaultNumPartitions).flatMap(indexEntry => {
       val fileSystem = FileSystem.get(sconf.value)
-      val fileName = filesMap(indexEntry.fileId)
+      val filePathName = filesMap(indexEntry.fileId)
+      val fileName = new Path(filePathName).getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) (indexEntry.offsetTo - indexEntry.offsetFrom).toInt else 0
-      val numOfBytesMsg = if (numOfBytes>0) s"$numOfBytes bytes" else "until the end"
-      logger.info(s"Going to process bytes ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-      val dataStream =  new FileStreamer(fileName, fileSystem, indexEntry.offsetFrom, numOfBytes)
+      val numOfBytesMsg = if (numOfBytes>0) s"${numOfBytes/1048576} MB" else "until the end"
+      logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
+      val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
       reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }

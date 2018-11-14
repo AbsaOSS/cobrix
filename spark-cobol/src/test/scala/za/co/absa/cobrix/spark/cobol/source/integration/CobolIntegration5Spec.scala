@@ -49,6 +49,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .option("segment_id_level1", "S01L2")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
+      .option("segment_id_prefix", "A")
       .load(inpudDataPath)
 
     // This is to print the actual output
@@ -116,6 +117,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .option("segment_id_level0", "S01L1")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
+      .option("segment_id_prefix", "B")
       .load(inpudDataPath)
 
     // This is to print the actual output

@@ -52,7 +52,7 @@ final class VarLenNestedReader(copybookContents: String,
   override def isIndexGenerationNeeded: Boolean = readerProperties.isIndexGenerationNeeded
 
   override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset)
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.
@@ -77,7 +77,8 @@ final class VarLenNestedReader(copybookContents: String,
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
-    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount)
+    val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
+    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
   }
 
   override def getRecordStartOffset: Int = readerProperties.startOffset

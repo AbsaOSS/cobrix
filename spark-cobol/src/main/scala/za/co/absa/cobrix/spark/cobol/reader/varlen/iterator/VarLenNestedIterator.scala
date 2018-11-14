@@ -35,14 +35,16 @@ import scala.collection.mutable.ListBuffer
   * @param fileId           A FileId to put to the corresponding column
   * @param startRecordId    A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset  An offset of the file where parsing should be started
+  * @param segmentIdPrefix A prefix to be used for all segment ID generated fields
   */
 @throws(classOf[IllegalStateException])
 final class VarLenNestedIterator(cobolSchema: Copybook,
-                           dataStream: SimpleStream,
-                           readerProperties: ReaderParameters,
-                           fileId: Int,
-                           startRecordId: Long,
-                           startingFileOffset: Long) extends Iterator[Row] {
+                                 dataStream: SimpleStream,
+                                 readerProperties: ReaderParameters,
+                                 fileId: Int,
+                                 startRecordId: Long,
+                                 startingFileOffset: Long,
+                                 segmentIdPrefix: String) extends Iterator[Row] {
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = startingFileOffset
@@ -51,7 +53,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
-  private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, fileId*Int.MaxValue))
+  private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
 
   fetchNext()
@@ -173,7 +175,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def getSegmentLevelIds(segmentId: String): Seq[Any] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
-      acc.acquiredSegmentId(segmentId)
+      acc.acquiredSegmentId(segmentId, recordIndex)
       val ids = new ListBuffer[Any]
       var i = 0
       while (i < segmentLevelIdsCount) {

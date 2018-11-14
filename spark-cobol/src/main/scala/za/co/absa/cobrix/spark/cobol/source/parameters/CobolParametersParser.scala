@@ -55,6 +55,7 @@ object CobolParametersParser {
 
   // Indexed multisegment file processing
   val PARAM_EXPERIMENTAL_INDEX       = "experimental_index"
+  val PARAM_SEGMENT_ID_PREFIX        = "segment_id_prefix"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -109,7 +110,8 @@ object CobolParametersParser {
       (
         params(PARAM_SEGMENT_FIELD),
         params.get(PARAM_SEGMENT_FILTER),
-        levels
+        levels,
+        params.getOrElse(PARAM_SEGMENT_ID_PREFIX, "")
       ))
     }
     else {
