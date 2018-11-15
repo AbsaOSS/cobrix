@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 
@@ -28,19 +28,18 @@ import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
   * Instances of this class are not reusable, i.e. once the file is fully read it can neither be reopened nor can other
   * file be consumed.
   *
-  * @param filePath String contained the fully qualified path to the file.
+  * @param filePath   String contained the fully qualified path to the file.
   * @param fileSystem Underlying FileSystem point of access.
-  *
   * @throws IllegalArgumentException in case the file is not found in the underlying file system.
   */
-class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
+class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L, isIndex: Boolean = false) extends SimpleStream {
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
-  private val hdfsInputStream = fileSystem.open(getHDFSPath(filePath))
+  private val hdfsInputStream: FSDataInputStream = fileSystem.open(getHDFSPath(filePath))
   private var offset = startOffset
 
-  if (startOffset>0) {
+  if (startOffset > 0) {
     hdfsInputStream.seek(startOffset)
   }
 
@@ -57,13 +56,18 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     * @return
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
-    if (maximumBytes > 0 && offset - startOffset >= maximumBytes) {
+    if ((maximumBytes > 0 && offset - startOffset >= maximumBytes) || hdfsInputStream == null) {
+      close()
       new Array[Byte](0)
     } else {
+
       val buffer = new Array[Byte](numberOfBytes)
 
-      val readBytes = hdfsInputStream.read(buffer)
-      offset = offset + readBytes
+      var readBytes = readFully(hdfsInputStream, buffer, 0, numberOfBytes)
+
+      if (readBytes > 0) {
+        offset = offset + readBytes
+      }
 
       if (readBytes == numberOfBytes) {
         buffer
@@ -71,6 +75,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
       else {
         logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
         // resize buffer so that the consumer knows how many bytes are there
+        close()
         if (readBytes > 0) {
           val shrunkBuffer = new Array[Byte](readBytes)
           System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
@@ -87,12 +92,30 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
       hdfsInputStream.close()
   }
 
+  /** This is the fastest way to read the data from hdfs stream without doing seeks. */
+  private def readFully(in: FSDataInputStream, b: Array[Byte], off: Int, len: Int): Int = {
+    if (len <= 0) {
+      len
+    } else {
+      var n = 0
+      var count = 0
+      while (n < len && count >= 0) {
+        count = in.read(b, off + n, len - n)
+        if (count > 0) {
+          n += count
+        }
+      }
+      n
+    }
+  }
+
+
   /**
     * Gets an HDFS [[Path]] to the file.
     *
     * Throws IllegalArgumentException in case the file does not exist.
     */
-  private def getHDFSPath(path: String): Path = {
+  private def getHDFSPath(path: String) = {
 
     if (fileSystem == null) {
       throw new IllegalArgumentException("Null FileSystem instance.")

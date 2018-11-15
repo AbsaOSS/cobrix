@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 import org.apache.spark.sql.Row
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
@@ -45,6 +46,8 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
                                  startRecordId: Long,
                                  startingFileOffset: Long,
                                  segmentIdPrefix: String) extends Iterator[Row] {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = startingFileOffset
@@ -189,7 +192,16 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   }
 
   private def getSegmentId(data: Array[Byte]): Option[String] = {
-    segmentIdField.map(field => cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset).toString.trim)
+    segmentIdField.map(field => {
+      val fieldValue = cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset)
+      if (fieldValue == null) {
+        logger.error(s"An unexpected null encountered for segment id at $byteIndex")
+        ""
+      } else {
+        fieldValue.toString.trim
+      }
+    }
+    )
   }
 
   private def isSegmentMatchesTheFilter(segmentId: String): Boolean = {

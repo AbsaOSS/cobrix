@@ -76,7 +76,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val filesList = getListFilesWithOrder(sourceDir).toArray
+  private val filesList = getListFilesWithOrder(sourceDir)
 
   private lazy val indexes: RDD[SimpleIndexEntry] = buildIndex(filesList)
 
@@ -99,7 +99,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
 
-    indexes.repartition(Constants.defaultNumPartitions).flatMap(indexEntry => {
+    indexes.flatMap(indexEntry => {
       val fileSystem = FileSystem.get(sconf.value)
       val filePathName = filesMap(indexEntry.fileId)
       val fileName = new Path(filePathName).getName
@@ -189,11 +189,14 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
           val fileOrder = row.order
 
           logger.info(s"Going to generate index for the file: $filePath")
-          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem), fileOrder)
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0,true), fileOrder)
           index
         }
         )
-      })
-    indexes.repartition(Constants.defaultNumPartitions).cache()
+      }).cache
+    val indexCount = indexes.count()
+    val numPartitions = Math.min(indexCount, Constants.defaultNumPartitions).toInt
+    logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    indexes.repartition(numPartitions).cache()
   }
 }
