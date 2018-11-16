@@ -67,6 +67,7 @@ object RowExtractors {
       var offset = useOffset
       field match {
         case grp: Group =>
+          // ToDo: Create an array of fixed size and put the values there
           val groupValues = for (_ <- Range(from, actualSize)) yield {
             val value = getGroupValues(offset, grp)
             offset += grp.binaryProperties.dataSize
@@ -74,6 +75,7 @@ object RowExtractors {
           }
           groupValues
         case s: Primitive =>
+          // ToDo: Create an array of fixed size and put the values there
           val values = for (_ <- Range(from, actualSize)) yield {
             val value = s.decodeTypeValue(offset, data)
             offset += s.binaryProperties.dataSize
@@ -103,6 +105,8 @@ object RowExtractors {
 
     def getGroupValues(offset: Long, group: Group): Row = {
       var bitOffset = offset
+
+      // ToDo: Create an array of fixed size and put the values there
       val fields = new ArrayBuffer[Any]()
 
       for (field <- group.children) {
@@ -118,10 +122,13 @@ object RowExtractors {
           fields += fieldValue
         }
       }
+      // ToDo: Replace this with 'new GenericRow(array)'
       Row.fromSeq(fields)
     }
 
     var nextOffset = offsetBits
+
+    // ToDo: Create an array of fixed size and put the values there
     val records = for (record <- ast) yield {
       val values = getGroupValues(nextOffset, record)
       nextOffset += record.binaryProperties.actualSize
