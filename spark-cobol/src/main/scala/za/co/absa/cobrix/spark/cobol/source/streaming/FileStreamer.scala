@@ -36,7 +36,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
-  private val hdfsInputStream: FSDataInputStream = fileSystem.open(getHDFSPath(filePath))
+  private var hdfsInputStream: FSDataInputStream = fileSystem.open(getHDFSPath(filePath))
   private var offset = startOffset
 
   if (startOffset > 0) {
@@ -63,7 +63,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
       val buffer = new Array[Byte](numberOfBytes)
 
-      var readBytes = readFully(hdfsInputStream, buffer, 0, numberOfBytes)
+      var readBytes = readFully(buffer, 0, numberOfBytes)
 
       if (readBytes > 0) {
         offset = offset + readBytes
@@ -88,21 +88,26 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   }
 
   override def close(): Unit = {
-    if (hdfsInputStream != null)
+    if (hdfsInputStream != null) {
       hdfsInputStream.close()
+      hdfsInputStream = null
+    }
   }
 
   /** This is the fastest way to read the data from hdfs stream without doing seeks. */
-  private def readFully(in: FSDataInputStream, b: Array[Byte], off: Int, len: Int): Int = {
+  private def readFully(b: Array[Byte], off: Int, len: Int): Int = {
     if (len <= 0) {
       len
     } else {
       var n = 0
       var count = 0
       while (n < len && count >= 0) {
-        count = in.read(b, off + n, len - n)
-        if (count > 0) {
+        count = hdfsInputStream.read(b, off + n, len - n)
+        if (count >= 0) {
           n += count
+        } else {
+          hdfsInputStream.close()
+          hdfsInputStream = null
         }
       }
       n
