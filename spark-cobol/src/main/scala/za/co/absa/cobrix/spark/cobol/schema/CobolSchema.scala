@@ -104,7 +104,7 @@ class CobolSchema(val copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def parseGroup(group: Group): StructField = {
-    val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
+    val fields = for (field <- group.children if !field.isFiller) yield {
       field match {
         case group: Group =>
           parseGroup(group)
@@ -140,7 +140,7 @@ class CobolSchema(val copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
     val fields = new ArrayBuffer[StructField]()
-    for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) {
+    for (field <- group.children if !field.isFiller) {
       field match {
         case group: Group =>
           if (group.isArray) {

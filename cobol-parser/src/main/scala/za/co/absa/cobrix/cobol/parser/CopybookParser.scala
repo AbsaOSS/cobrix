@@ -141,14 +141,15 @@ object CopybookParser {
         val to = field.modifiers.get(TO).map(i => i.toInt)
         val dependingOn = field.modifiers.get(DEPENDING)
         val attachLevel = getMatchingGroup(element, field.level)
+        val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn)(None)
+          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller)(None)
         }
         else {
           val groupUsage = getUsageModifiers(field.modifiers)
-          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn, groupUsage)(None)
+          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
         }
 
         attachLevel.add(newElement)
@@ -368,7 +369,7 @@ object CopybookParser {
 
     def renameSubGroupFillers(group: Group): Group = {
       val newChildren = renameFillers(group.children)
-      var renamedGroup = if (group.name.toUpperCase == FILLER) {
+      var renamedGroup = if (group.isFiller) {
         lastFillerIndex += 1
         group.copy(name = s"${FILLER}_$lastFillerIndex")(group.parent)
       } else group

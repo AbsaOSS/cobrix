@@ -95,7 +95,7 @@ object DataExtractors {
         if (!field.isRedefined) {
           bitOffset += field.binaryProperties.actualSize
         }
-        if (field.name.toUpperCase != ReservedWords.FILLER) {
+        if (!field.isFiller) {
           fields += fieldValue
         }
       }

@@ -154,10 +154,11 @@ class BinaryExtractorSpec extends FunSuite {
     val to: Option[Int] = None
     val dependingOn: Option[String] = None
     val isDependee: Boolean = false
+    val isFiller: Boolean = false
     val binaryProperties: BinaryProperties = BinaryProperties(2*8, 10*8, 10*8)
 
     val primitive: Primitive = Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
-      occurs, to, dependingOn, isDependee, binaryProperties)(None)
+      occurs, to, dependingOn, isDependee, isFiller, binaryProperties)(None)
     val result2: Any = copybook.extractPrimitiveField(primitive, bytes, startOffset)
     assert(result2.asInstanceOf[String] === "EXAMPLE4")
   }

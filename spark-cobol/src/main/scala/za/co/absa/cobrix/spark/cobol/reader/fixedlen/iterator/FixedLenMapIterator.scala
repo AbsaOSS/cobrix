@@ -114,7 +114,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
           extractValue(field, bitOffset, path, isNullPath)
           }
 
-        if (field.name.toUpperCase != ReservedWords.FILLER) {
+        if (!field.isFiller) {
           fields ++= vals
         }
 
@@ -185,7 +185,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
 
 
   private def getGroupValues(group: Group, path: String): Map[String, Option[String]] = {
-    val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
+    val fields = for (field <- group.children if !field.isFiller) yield {
       field match {
         case group: Group => getGroupValues(group, s"$path${group.name}_")
         case s: Primitive =>
