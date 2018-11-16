@@ -21,6 +21,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
@@ -51,6 +52,8 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def isIndexGenerationNeeded: Boolean = readerProperties.isIndexGenerationNeeded
 
+  override def getRecordsPerIndexEntry: Int = readerProperties.minRecordsPerPartition.getOrElse(Constants.recordsPerIndexEntry)
+
   override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
     new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
 
@@ -69,7 +72,7 @@ final class VarLenNestedReader(copybookContents: String,
 
     segmentIdField match {
       case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, copybook, field)
-      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
+      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, getRecordsPerIndexEntry)
     }
   }
 

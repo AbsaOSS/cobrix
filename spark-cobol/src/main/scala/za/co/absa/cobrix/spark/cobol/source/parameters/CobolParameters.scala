@@ -35,6 +35,7 @@ case class CobolParameters(
                             sourcePath:            Option[String],
                             isXCOM:                Boolean,
                             isUsingIndex:          Boolean,
+                            minRecordPerPartition: Option[Int],
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],

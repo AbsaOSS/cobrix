@@ -32,6 +32,7 @@ case class ReaderParameters(
                              lengthFieldName: Option[String] = None,
                              isXCOM: Boolean = false,
                              isIndexGenerationNeeded: Boolean = false,
+                             minRecordsPerPartition: Option[Int] = None,
                              startOffset: Int = 0,
                              endOffset: Int = 0,
                              generateRecordId: Boolean = false,

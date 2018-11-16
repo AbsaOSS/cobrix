@@ -115,6 +115,7 @@ class DefaultSource
         ReaderParameters(lengthFieldName = recordLengthField,
           isXCOM = parameters.isXCOM,
           isIndexGenerationNeeded = parameters.isUsingIndex,
+          minRecordsPerPartition = parameters.minRecordPerPartition,
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,

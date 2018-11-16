@@ -28,7 +28,7 @@ import scala.collection.mutable.ArrayBuffer
 object IndexGenerator {
   private val xcomHeaderBlock = 4
 
-  def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream): ArrayBuffer[SimpleIndexEntry] = {
+  def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream, recordsPerIndexEntry: Int): ArrayBuffer[SimpleIndexEntry] = {
     var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
     var recordsInChunk = 1
@@ -43,7 +43,7 @@ object IndexGenerator {
         if (record.length < recordSize) {
           endOfFileReached = true
         } else {
-          if (recordIndex == 0 || recordsInChunk >= Constants.minSplitRecords) {
+          if (recordIndex == 0 || recordsInChunk >= recordsPerIndexEntry) {
             val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
             index += indexEntry
             recordsInChunk = 1
@@ -91,7 +91,7 @@ object IndexGenerator {
               throw new IllegalStateException(s"Root record segment id cannot be empty at $byteIndex.")
             }
           }
-          if (recordIndex == 0 || (recordsInChunk >= Constants.minSplitRecords && recordSize == rootRecordSize)) {
+          if (recordIndex == 0 || (recordsInChunk >= Constants.recordsPerIndexEntry && recordSize == rootRecordSize)) {
             if (rootRecordId == getSegmentId(copybook, segmentField, record)) {
               val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
               index += indexEntry

@@ -29,6 +29,9 @@ abstract class VarLenReader extends Reader with Serializable {
   /** Returns true of index generation is requested */
   def isIndexGenerationNeeded: Boolean
 
+  /** Returns the miniumum records per partition to be used by index builder */
+  def getRecordsPerIndexEntry: Int
+
   /**
     * Returns a file iterator between particular offsets. This is for faster traversal of big binary files
     *

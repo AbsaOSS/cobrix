@@ -29,33 +29,34 @@ import scala.collection.mutable.ListBuffer
   */
 object CobolParametersParser {
 
-  val SHORT_NAME                     = "cobol"
-  val PARAM_COPYBOOK_PATH            = "copybook"
-  val PARAM_COPYBOOK_CONTENTS        = "copybook_contents"
-  val PARAM_SOURCE_PATH              = "path"
-  val PARAM_RECORD_LENGTH            = "record_length_field"
-  val PARAM_RECORD_LENGTH_MIN        = "record_length_min"
-  val PARAM_RECORD_LENGTH_MAX        = "record_length_max"
-  val PARAM_RECORD_START_OFFSET      = "record_start_offset"
-  val PARAM_RECORD_END_OFFSET        = "record_end_offset"
+  val SHORT_NAME                      = "cobol"
+  val PARAM_COPYBOOK_PATH             = "copybook"
+  val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
+  val PARAM_SOURCE_PATH               = "path"
+  val PARAM_RECORD_LENGTH             = "record_length_field"
+  val PARAM_RECORD_LENGTH_MIN         = "record_length_min"
+  val PARAM_RECORD_LENGTH_MAX         = "record_length_max"
+  val PARAM_RECORD_START_OFFSET       = "record_start_offset"
+  val PARAM_RECORD_END_OFFSET         = "record_end_offset"
 
   // Schema transformation parameters
-  val PARAM_GENERATE_RECORD_ID       = "generate_record_id"
-  val PARAM_SCHEMA_RETENTION_POLICY  = "schema_retention_policy"
+  val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
+  val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
 
   // Parameters for multisegment XCOM files
-  val PARAM_IS_XCOM                  = "is_xcom"
-  val PARAM_SEGMENT_FIELD            = "segment_field"
-  val PARAM_SEGMENT_FILTER           = "segment_filter"
-  val PARAM_SEGMENT_ID_LEVEL_PREFIX  = "segment_id_level"
+  val PARAM_IS_XCOM                   = "is_xcom"
+  val PARAM_SEGMENT_FIELD             = "segment_field"
+  val PARAM_SEGMENT_FILTER            = "segment_filter"
+  val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
 
   // Parameters for signature search reader
-  val PARAM_SEARCH_SIGNATURE_FIELD   = "search_field_name"
-  val PARAM_SEARCH_SIGNATURE_VALUE   = "search_field_value"
+  val PARAM_SEARCH_SIGNATURE_FIELD    = "search_field_name"
+  val PARAM_SEARCH_SIGNATURE_VALUE    = "search_field_value"
 
   // Indexed multisegment file processing
-  val PARAM_EXPERIMENTAL_INDEX       = "experimental_index"
-  val PARAM_SEGMENT_ID_PREFIX        = "segment_id_prefix"
+  val PARAM_EXPERIMENTAL_INDEX        = "experimental_index"
+  val PARAM_MIN_RECORDS_PER_PARTITION = "min_records_per_partition"
+  val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -72,6 +73,7 @@ object CobolParametersParser {
       getParameter(PARAM_SOURCE_PATH, params),
       params.getOrElse(PARAM_IS_XCOM, "false").toBoolean,
       params.getOrElse(PARAM_EXPERIMENTAL_INDEX, "false").toBoolean,
+      params.get(PARAM_MIN_RECORDS_PER_PARTITION).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
