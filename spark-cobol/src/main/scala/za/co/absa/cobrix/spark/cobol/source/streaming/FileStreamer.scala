@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Constants
 
 /**
   * This class provides methods for streaming bytes from an HDFS file.
@@ -36,12 +37,10 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
-  private var hdfsInputStream: FSDataInputStream = fileSystem.open(getHDFSPath(filePath))
   private var offset = startOffset
 
-  if (startOffset > 0) {
-    hdfsInputStream.seek(startOffset)
-  }
+  // Use a buffer to read the data from HDFS in big chunks
+  private var buferredStream = new BufferedFSDataInputStream(getHDFSPath(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
 
   /**
     * Retrieves a given number of bytes.
@@ -56,14 +55,14 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     * @return
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
-    if ((maximumBytes > 0 && offset - startOffset >= maximumBytes) || hdfsInputStream == null) {
+    if ((maximumBytes > 0 && offset - startOffset >= maximumBytes) || buferredStream.isClosed) {
       close()
       new Array[Byte](0)
     } else {
 
       val buffer = new Array[Byte](numberOfBytes)
 
-      var readBytes = readFully(buffer, 0, numberOfBytes)
+      var readBytes = buferredStream.readFully(buffer, 0, numberOfBytes)
 
       if (readBytes > 0) {
         offset = offset + readBytes
@@ -88,32 +87,11 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   }
 
   override def close(): Unit = {
-    if (hdfsInputStream != null) {
-      hdfsInputStream.close()
-      hdfsInputStream = null
+    if (!buferredStream.isClosed) {
+      buferredStream.close()
+      buferredStream = null
     }
   }
-
-  /** This is the fastest way to read the data from hdfs stream without doing seeks. */
-  private def readFully(b: Array[Byte], off: Int, len: Int): Int = {
-    if (len <= 0) {
-      len
-    } else {
-      var n = 0
-      var count = 0
-      while (n < len && count >= 0) {
-        count = hdfsInputStream.read(b, off + n, len - n)
-        if (count >= 0) {
-          n += count
-        } else {
-          hdfsInputStream.close()
-          hdfsInputStream = null
-        }
-      }
-      n
-    }
-  }
-
 
   /**
     * Gets an HDFS [[Path]] to the file.

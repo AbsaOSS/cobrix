@@ -27,7 +27,6 @@ object Constants {
   // having 2^32-1 records.
   val defaultFileRecordIdIncrement = 4294967296L  // 2^32
 
-
   // Tuning parameters
 
   // Minimum number of records in each file split
@@ -35,4 +34,7 @@ object Constants {
 
   // Default number of partitions
   val defaultNumPartitions = 200
+
+  // Default number of partitions
+  val defaultStreamBufferInMB = 100
 }
