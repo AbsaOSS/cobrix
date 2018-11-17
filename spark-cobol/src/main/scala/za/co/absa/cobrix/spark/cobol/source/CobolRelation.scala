@@ -104,7 +104,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
       val filePathName = filesMap(indexEntry.fileId)
       val fileName = new Path(filePathName).getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) ((indexEntry.offsetTo - indexEntry.offsetFrom)/1048576).toInt else 0
-      val numOfBytesMsg = if (numOfBytes>0) s"numOfBytes MB" else "until the end"
+      val numOfBytesMsg = if (numOfBytes>0) s"$numOfBytes MB" else "until the end"
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
       val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
       reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)

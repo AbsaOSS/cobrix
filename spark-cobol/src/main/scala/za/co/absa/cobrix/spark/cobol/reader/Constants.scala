@@ -33,7 +33,7 @@ object Constants {
   val recordsPerIndexEntry = 100000
 
   // Default number of partitions
-  val defaultNumPartitions = 200
+  val defaultNumPartitions = 1000
 
   // Default number of partitions
   val defaultStreamBufferInMB = 100
