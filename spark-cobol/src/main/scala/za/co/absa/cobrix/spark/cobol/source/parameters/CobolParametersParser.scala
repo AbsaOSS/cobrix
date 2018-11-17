@@ -55,7 +55,8 @@ object CobolParametersParser {
 
   // Indexed multisegment file processing
   val PARAM_EXPERIMENTAL_INDEX        = "experimental_index"
-  val PARAM_MIN_RECORDS_PER_PARTITION = "min_records_per_partition"
+  val PARAM_RECORDS_PER_PARTITION     = "records_per_partition"
+  val PARAM_PARTITION_SIZE_MB         = "partition_size_mb"
   val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
 
   def parse(params: Map[String,String]): CobolParameters = {
@@ -73,7 +74,8 @@ object CobolParametersParser {
       getParameter(PARAM_SOURCE_PATH, params),
       params.getOrElse(PARAM_IS_XCOM, "false").toBoolean,
       params.getOrElse(PARAM_EXPERIMENTAL_INDEX, "false").toBoolean,
-      params.get(PARAM_MIN_RECORDS_PER_PARTITION).map(v => v.toInt),
+      params.get(PARAM_RECORDS_PER_PARTITION).map(v => v.toInt),
+      params.get(PARAM_PARTITION_SIZE_MB).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
