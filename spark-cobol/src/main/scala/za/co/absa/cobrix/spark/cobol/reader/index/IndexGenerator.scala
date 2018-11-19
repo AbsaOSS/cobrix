@@ -31,7 +31,7 @@ object IndexGenerator {
   def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream, recordsPerIndexEntry: Int): ArrayBuffer[SimpleIndexEntry] = {
     var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
-    var recordsInChunk = 1
+    var recordsInChunk = 0
     var recordIndex = 0
     var endOfFileReached = false
     while (!endOfFileReached) {
@@ -46,7 +46,7 @@ object IndexGenerator {
           if (recordIndex == 0 || recordsInChunk >= recordsPerIndexEntry) {
             val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
             index += indexEntry
-            recordsInChunk = 1
+            recordsInChunk = 0
           }
         }
       }
