@@ -371,7 +371,7 @@ object CopybookParser {
       val newChildren = renameFillers(group.children)
       var renamedGroup = if (group.isFiller) {
         lastFillerIndex += 1
-        group.copy(name = s"${FILLER}_$lastFillerIndex")(group.parent)
+        group.copy(name = s"${FILLER}_$lastFillerIndex", isFiller = false)(group.parent)
       } else group
       renamedGroup.copy(children = newChildren)(renamedGroup.parent)
     }
