@@ -67,7 +67,7 @@ object IndexGenerator {
     index
   }
 
-  def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream, copybook: Copybook, segmentField: Primitive): ArrayBuffer[SimpleIndexEntry] = {
+  def simpleIndexGenerator(fileId: Int, dataStream: SimpleStream, copybook: Copybook, segmentField: Primitive, recordsPerIndexEntry: Int): ArrayBuffer[SimpleIndexEntry] = {
     var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
     var rootRecordId: String = ""
@@ -91,7 +91,7 @@ object IndexGenerator {
               throw new IllegalStateException(s"Root record segment id cannot be empty at $byteIndex.")
             }
           }
-          if (recordIndex == 0 || (recordsInChunk >= Constants.recordsPerIndexEntry && recordSize == rootRecordSize)) {
+          if (recordIndex == 0 || (recordsInChunk >= recordsPerIndexEntry && recordSize == rootRecordSize)) {
             if (rootRecordId == getSegmentId(copybook, segmentField, record)) {
               val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
               index += indexEntry

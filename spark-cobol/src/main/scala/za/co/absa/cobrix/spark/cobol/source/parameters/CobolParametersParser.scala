@@ -54,7 +54,7 @@ object CobolParametersParser {
   val PARAM_SEARCH_SIGNATURE_VALUE    = "search_field_value"
 
   // Indexed multisegment file processing
-  val PARAM_EXPERIMENTAL_INDEX        = "experimental_index"
+  val PARAM_ALLOW_INDEXING            = "allow_indexing"
   val PARAM_RECORDS_PER_PARTITION     = "records_per_partition"
   val PARAM_PARTITION_SIZE_MB         = "partition_size_mb"
   val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
@@ -73,7 +73,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       params.getOrElse(PARAM_IS_XCOM, "false").toBoolean,
-      params.getOrElse(PARAM_EXPERIMENTAL_INDEX, "false").toBoolean,
+      params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
       params.get(PARAM_RECORDS_PER_PARTITION).map(v => v.toInt),
       params.get(PARAM_PARTITION_SIZE_MB).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
