@@ -16,9 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Constants
 
 /**
   * This class provides methods for streaming bytes from an HDFS file.
@@ -28,17 +29,18 @@ import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
   * Instances of this class are not reusable, i.e. once the file is fully read it can neither be reopened nor can other
   * file be consumed.
   *
-  * @param filePath String contained the fully qualified path to the file.
+  * @param filePath   String contained the fully qualified path to the file.
   * @param fileSystem Underlying FileSystem point of access.
-  *
   * @throws IllegalArgumentException in case the file is not found in the underlying file system.
   */
-class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStream {
+class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L, isIndex: Boolean = false) extends SimpleStream {
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
-  private val hdfsInputStream = fileSystem.open(getHDFSPath(filePath))
-  private var offset = 0L
+  private var offset = startOffset
+
+  // Use a buffer to read the data from HDFS in big chunks
+  private var buferredStream = new BufferedFSDataInputStream(getHDFSPath(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
 
   /**
     * Retrieves a given number of bytes.
@@ -53,31 +55,42 @@ class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStrea
     * @return
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
+    if ((maximumBytes > 0 && offset - startOffset >= maximumBytes) || buferredStream.isClosed) {
+      close()
+      new Array[Byte](0)
+    } else {
 
-    val buffer = new Array[Byte](numberOfBytes)
+      val buffer = new Array[Byte](numberOfBytes)
 
-    val readBytes = hdfsInputStream.read(buffer)
-    offset = offset + readBytes
+      var readBytes = buferredStream.readFully(buffer, 0, numberOfBytes)
 
-    if (readBytes == numberOfBytes) {
-      buffer
-    }
-    else {
-      logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
-      // resize buffer so that the consumer knows how many bytes are there
       if (readBytes > 0) {
-        val shrunkBuffer = new Array[Byte](readBytes)
-        System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
-        shrunkBuffer
-      } else {
-        new Array[Byte](0)
+        offset = offset + readBytes
+      }
+
+      if (readBytes == numberOfBytes) {
+        buffer
+      }
+      else {
+        logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
+        // resize buffer so that the consumer knows how many bytes are there
+        close()
+        if (readBytes > 0) {
+          val shrunkBuffer = new Array[Byte](readBytes)
+          System.arraycopy(buffer, 0, shrunkBuffer, 0, readBytes)
+          shrunkBuffer
+        } else {
+          new Array[Byte](0)
+        }
       }
     }
   }
 
   override def close(): Unit = {
-    if (hdfsInputStream != null)
-      hdfsInputStream.close()
+    if (!buferredStream.isClosed) {
+      buferredStream.close()
+      buferredStream = null
+    }
   }
 
   /**
@@ -85,7 +98,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem) extends SimpleStrea
     *
     * Throws IllegalArgumentException in case the file does not exist.
     */
-  private def getHDFSPath(path: String): Path = {
+  private def getHDFSPath(path: String) = {
 
     if (fileSystem == null) {
       throw new IllegalArgumentException("Null FileSystem instance.")

@@ -48,6 +48,7 @@ case class Primitive(
                       to: Option[Int] = None,
                       dependingOn: Option[String] = None,
                       isDependee: Boolean = false,
+                      isFiller: Boolean = false,
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                     )
                     (val parent: Option[Group] = None)

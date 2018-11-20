@@ -18,12 +18,19 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+
+import scala.collection.mutable.ArrayBuffer
 
 
 /**
@@ -36,6 +43,8 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 final class VarLenNestedReader(copybookContents: String,
                          readerProperties: ReaderParameters) extends VarLenReader {
 
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
   checkInputArgumentsValidity()
@@ -44,13 +53,56 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, 0)
+  override def isIndexGenerationNeeded: Boolean = readerProperties.isXCOM && readerProperties.isIndexGenerationNeeded
+
+  override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+
+  /**
+    * Traverses the data sequentially as fast as possible to generate record index.
+    * This index will be used to distribute workload of the conversion.
+    *
+    * @param binaryData A stream of input binary data
+    * @param fileNumber A file number uniquely identified a particular file of the data set
+    * @return An index of the file
+    *
+    */
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
+
+    var recordSize = cobolSchema.getRecordSize
+    val recordsPerIndexEntry: Int = if (readerProperties.partitionSizeMB.isDefined) {
+      var requestedPartitionSizeMB = readerProperties.partitionSizeMB.get.toLong
+      if (requestedPartitionSizeMB < 1 || requestedPartitionSizeMB > 2000) {
+        throw new IllegalArgumentException(s"Invalid requested partition size of $requestedPartitionSizeMB MB.")
+      }
+      val numOfRecords = requestedPartitionSizeMB * Constants.megabyte / recordSize
+      if (numOfRecords > Int.MaxValue && numOfRecords < 1) {
+        throw new IllegalArgumentException(s"Invalid requested partition size of $requestedPartitionSizeMB MB. Number of records per partition = $numOfRecords.")
+      }
+      numOfRecords.toInt
+    } else {
+      readerProperties.recordsPerPartition.getOrElse(Constants.recordsPerIndexEntry)
+    }
+
+    val partitionSizeMB = (recordSize.toLong*recordsPerIndexEntry)/Constants.megabyte
+
+    logger.warn(s"Records per partition = $recordsPerIndexEntry (partition size is approx. $partitionSizeMB MB)")
+
+    val copybook = cobolSchema.copybook
+    val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
+
+    segmentIdField match {
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, copybook, field, recordsPerIndexEntry)
+      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry)
+    }
+  }
+
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
-    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount)
+    val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
+    new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
   }
 
   override def getRecordStartOffset: Int = readerProperties.startOffset
@@ -66,5 +118,4 @@ final class VarLenNestedReader(copybookContents: String,
       throw new IllegalArgumentException(s"Invalid record end offset = ${readerProperties.endOffset}. A record end offset cannot be negative.")
     }
   }
-
 }

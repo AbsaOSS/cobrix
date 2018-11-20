@@ -17,12 +17,42 @@
 package za.co.absa.cobrix.spark.cobol.reader.varlen
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 
-/** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records)*/
+import scala.collection.mutable.ArrayBuffer
+
+/** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records) */
 abstract class VarLenReader extends Reader with Serializable {
-  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream, fileNumber: Int): Iterator[Row]
+
+  /** Returns true of index generation is requested */
+  def isIndexGenerationNeeded: Boolean
+
+  /**
+    * Returns a file iterator between particular offsets. This is for faster traversal of big binary files
+    *
+    * @param binaryData          A stream positioned at the beginning of the intended file portion to read
+    * @param startingFileOffset  An offset of the file where parsing should be started
+    * @param fileNumber          A file number uniquely identified a particular file of the data set
+    * @param startingRecordIndex A starting record index of the data
+    * @return An iterator of Spark Row objects
+    *
+    */
+  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream,
+                                                 startingFileOffset: Long,
+                                                 fileNumber: Int,
+                                                 startingRecordIndex: Long): Iterator[Row]
+
+  /**
+    * Traverses the data sequentially as fast as possible to generate record index.
+    * This index will be used to distribute workload of the conversion.
+    *
+    * @param binaryData A stream of input binary data
+    * @param fileNumber A file number uniquely identified a particular file of the data set
+    * @return An index of the file
+    *
+    */
+  @throws(classOf[Exception]) def generateIndex(binaryData: SimpleStream,
+                                                fileNumber: Int): ArrayBuffer[SimpleIndexEntry]
 }

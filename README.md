@@ -20,6 +20,37 @@ Seamlessly query your COBOL/EBCDIC binary files as Spark Dataframes and streams.
 
 Add mainframe as a source to your data engineering strategy.
 
+## Changelog
+
+- #### 0.2.9 released 21 Nov 2018
+  - Added an index generation for multisegment variable record size files to make the reader scalable.
+    - It is turned on by default, you can restore old behaviour using .option("allow_indexing", "false")
+  - Added options to control index generation (first table below).
+  - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split the dataset into individual segments and then join them.
+    The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets below](#ims).
+  - Fixed many performance issues that should make reading mainframe files several times faster. The actual performance depends on concrete copybooks.
+
+##### Multisegment indexing options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("is_xcom", "true")                 | Indexing is supported only on files having XCOM headers at the moment.        |
+| .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
+| .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
+| .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. (This option is **experimental**) |
+| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
+     
+##### Helper fields generation options    
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:---------------------------------------------------------------------------- |
+| .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.         |
+| .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments. |
+| .option("segment_id_level0", "SEGID-ROOT") | Specifies segment id value for root level records. When this option is specified the Seg_Id0 field will be generated for each root record |
+| .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
+| .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
+| .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+   
 
 ## Motivation
 
@@ -76,20 +107,20 @@ Among the motivations for this project, it is possible to highlight:
 Below is an example whose full version can be found at ```za.co.absa.cobrix.spark.cobol.examples.SampleApp``` and ```za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample```
 
 ```scala
-    val sparkBuilder = SparkSession.builder().appName("Example")
-    val spark = sparkBuilder
-      .getOrCreate()
+val sparkBuilder = SparkSession.builder().appName("Example")
+val spark = sparkBuilder
+  .getOrCreate()
 
-    val cobolDataframe = spark
-      .read
-      .format("cobol")
-      .option("copybook", "data/test1_copybook.cob")
-      .load("data/test2_data")
+val cobolDataframe = spark
+  .read
+  .format("cobol")
+  .option("copybook", "data/test1_copybook.cob")
+  .load("data/test2_data")
 
-    cobolDataframe
-    	.filter("RECORD.ID % 2 = 0") // filter the even values of the nested field 'RECORD_LENGTH'
-    	.take(10)
-    	.foreach(v => println(v))
+cobolDataframe
+    .filter("RECORD.ID % 2 = 0") // filter the even values of the nested field 'RECORD_LENGTH'
+    .take(10)
+    .foreach(v => println(v))
 ```
 
 The full example is available [here](https://github.com/AbsaOSS/cobrix/blob/master/spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample.scala)
@@ -113,27 +144,27 @@ For an alternative copybook specification you can use `.option("copybook_content
 Below is an example whose full version can be found at ```za.co.absa.cobrix.spark.cobol.examples.StreamingExample```
 
 ```scala
-    val spark = SparkSession
-      .builder()
-      .appName("CobolParser")
-      .master("local[2]")
-      .config("duration", 2)
-      .config("copybook", "path_to_the_copybook")
-      .config("path", "path_to_source_directory") // could be both, local or HDFS
-      .getOrCreate()          
-          
-    val streamingContext = new StreamingContext(spark.sparkContext, Seconds(3))         
-        
-    import za.co.absa.spark.cobol.source.streaming.CobolStreamer._ // imports the Cobol streams manager
+val spark = SparkSession
+  .builder()
+  .appName("CobolParser")
+  .master("local[2]")
+  .config("duration", 2)
+  .config("copybook", "path_to_the_copybook")
+  .config("path", "path_to_source_directory") // could be both, local or HDFS
+  .getOrCreate()          
+      
+val streamingContext = new StreamingContext(spark.sparkContext, Seconds(3))         
     
-    val stream = streamingContext.cobolStream() // streams the binary files into the application    
-    
-	stream
-		.filter(row => row.getAs[Integer]("NUMERIC_FLD") % 2 == 0) // filters the even values of the nested field 'NUMERIC_FLD'
-		.print(10)		
-    
-    streamingContext.start()
-    streamingContext.awaitTermination()
+import za.co.absa.spark.cobol.source.streaming.CobolStreamer._ // imports the Cobol streams manager
+
+val stream = streamingContext.cobolStream() // streams the binary files into the application    
+
+stream
+    .filter(row => row.getAs[Integer]("NUMERIC_FLD") % 2 == 0) // filters the even values of the nested field 'NUMERIC_FLD'
+    .print(10)		
+
+streamingContext.start()
+streamingContext.awaitTermination()
 ```
 
 ## Other Features
@@ -144,21 +175,21 @@ This library also provides convenient methods to extract Spark SQL schemas and C
 If you want to extract a Spark SQL schema from a copybook: 
 
 ```scala
-    import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenFlatReader
-    
-    val reader = new FixedLenFlatReader("...copybook_contents...")
-    val sparkSchema = reader.getSparkSchema
-    println(sparkSchema)
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenFlatReader
+
+val reader = new FixedLenFlatReader("...copybook_contents...")
+val sparkSchema = reader.getSparkSchema
+println(sparkSchema)
 ```
 
 If you want to check the layout of the copybook: 
 
 ```scala
-    import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenNestedReader
-    
-    val reader = new FixedLenNestedReader("...copybook_contents...")
-    val cobolSchema = reader.getCobolSchema
-    println(cobolSchema.generateRecordLayoutPositions())
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenNestedReader
+
+val reader = new FixedLenNestedReader("...copybook_contents...")
+val cobolSchema = reader.getCobolSchema
+println(cobolSchema.generateRecordLayoutPositions())
 ```
 
 ### Varialble length records support
@@ -178,7 +209,7 @@ Cobrix allows to collapse the GROUP and expand it's records. To turn this on use
 
 ```
 .option("schema_retention_policy", "collapse_root")
-``` 
+```
 
 Let's loot at an example. Let's say we have a copybook that looks like this:
 ```
@@ -221,7 +252,7 @@ a directory is specified as the source for data. Record_Id is a unique sequentia
 Turn this feature on use
 ```
 .option("generate_record_id", true)
-``` 
+```
 
 The following fields will be added to the top of the schema:
 ```
@@ -277,7 +308,7 @@ copybook it is very convenient to extract segments one by one by combining 'is_x
 In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will
 read all segments, but will parse only ones that have `SEG-ID = "1122334"`.
 
-## Reading hierarchical data sets
+## <a id="ims"/>Reading hierarchical data sets
 
 Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
 record type. The root record contains company info, addreess and a taxpayer number. The child segment contains a contact
@@ -314,50 +345,50 @@ If you load this file as is you will get the schema and the data similar to this
 
 #### Spark App:
 ```scala
-    val df = spark
-      .read
-      .format("cobol")
-      .option("copybook", "/path/to/thecopybook")
-      .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-      .option("is_xcom", "true")
-      .load("examples/multisegment_data")
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook", "/path/to/thecopybook")
+  .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
+  .option("is_xcom", "true")
+  .load("examples/multisegment_data")
 ```
 
 #### Schema
 ```
-    df.printSchema()
-    root
-     |-- SEGMENT_ID: string (nullable = true)
-     |-- COMPANY_ID: string (nullable = true)
-     |-- STATIC_DETAILS: struct (nullable = true)
-     |    |-- COMPANY_NAME: string (nullable = true)
-     |    |-- ADDRESS: string (nullable = true)
-     |    |-- TAXPAYER: struct (nullable = true)
-     |    |    |-- TAXPAYER_TYPE: string (nullable = true)
-     |    |    |-- TAXPAYER_STR: string (nullable = true)
-     |    |    |-- TAXPAYER_NUM: integer (nullable = true)
-     |-- CONTACTS: struct (nullable = true)
-     |    |-- PHONE_NUMBER: string (nullable = true)
-     |    |-- CONTACT_PERSON: string (nullable = true)
+df.printSchema()
+root
+ |-- SEGMENT_ID: string (nullable = true)
+ |-- COMPANY_ID: string (nullable = true)
+ |-- STATIC_DETAILS: struct (nullable = true)
+ |    |-- COMPANY_NAME: string (nullable = true)
+ |    |-- ADDRESS: string (nullable = true)
+ |    |-- TAXPAYER: struct (nullable = true)
+ |    |    |-- TAXPAYER_TYPE: string (nullable = true)
+ |    |    |-- TAXPAYER_STR: string (nullable = true)
+ |    |    |-- TAXPAYER_NUM: integer (nullable = true)
+ |-- CONTACTS: struct (nullable = true)
+ |    |-- PHONE_NUMBER: string (nullable = true)
+ |    |-- CONTACT_PERSON: string (nullable = true)
 ```
 
 #### Data sample
 ```
-    df.show(10)
-    +----------+----------+--------------------+--------------------+
-    |SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
-    +----------+----------+--------------------+--------------------+
-    |     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
-    |     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-    |     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
-    |     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
-    |     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
-    |     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
-    |     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
-    |     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
-    |     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-    |     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
-    +----------+----------+--------------------+--------------------+
+df.show(10)
++----------+----------+--------------------+--------------------+
+|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
++----------+----------+--------------------+--------------------+
+|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
+|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
+|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
+|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
+|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
+|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
+|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
++----------+----------+--------------------+--------------------+
 ```
 
 As you can see Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only
@@ -371,35 +402,35 @@ either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spar
 
 #### Getting the first segment
 ```scala
-    import spark.implicits._
+import spark.implicits._
 
-    val dfCompanies = df
-      // Filtering the first segment by segment id
-      .filter($"SEGMENT_ID"==="S01L1")
-      // Selecting fields that are only available in the first segment
-      .select($"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
-      // Resolving the taxpayer redefine
-        when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
-          .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
+val dfCompanies = df
+  // Filtering the first segment by segment id
+  .filter($"SEGMENT_ID"==="S01L1")
+  // Selecting fields that are only available in the first segment
+  .select($"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
+  // Resolving the taxpayer redefine
+    when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
+      .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
 ```
 
 The sesulting table looks like this:
 ```
-    dfCompanies.show(10, truncate = false)
-    +----------+-------------+-------------------------+--------+
-    |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
-    +----------+-------------+-------------------------+--------+
-    |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
-    |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
-    |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
-    |2193550322|Prime Bank   |1 Garden str., London    |37798023|
-    |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
-    |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
-    |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
-    |9665677039|Prime Bank   |1 Garden str., London    |79830357|
-    |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
-    |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
-    +----------+-------------+-------------------------+--------+
+dfCompanies.show(10, truncate = false)
++----------+-------------+-------------------------+--------+
+|COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
++----------+-------------+-------------------------+--------+
+|2998421316|ECRONO       |123/B Prome str., Denver |40098248|
+|7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
+|7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
+|2193550322|Prime Bank   |1 Garden str., London    |37798023|
+|5830860727|ZjkLPj       |5574, Tokyo              |17017107|
+|4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
+|4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
+|9665677039|Prime Bank   |1 Garden str., London    |79830357|
+|8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
+|4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
++----------+-------------+-------------------------+--------+
 ```
 
 This looks like a valid and clean table containing the list of companies. Now let's do the same for the second segment.
@@ -415,21 +446,21 @@ This looks like a valid and clean table containing the list of companies. Now le
 
 The resulting data loons like this:
 ```
-    dfContacts.show(10, truncate = false)
-    +----------+----------------+----------------+
-    |COMPANY_ID|CONTACT_PERSON  |PHONE_NUMBER    |
-    +----------+----------------+----------------+
-    |7888716268|Lynell Flatt    |+(782) 772 45 69|
-    |4169179307|Mabelle Bourke  |+(589) 102 29 62|
-    |4007588657|Lynell Lepe     |+(406) 714 80 90|
-    |9665677039|Carrie Hisle    |+(115) 514 77 48|
-    |9665677039|Deshawn Shapiro |+(10) 945 77 74 |
-    |9665677039|Alona Boehme    |+(43) 922 55 37 |
-    |9665677039|Cassey Shapiro  |+(434) 242 37 43|
-    |4179823966|Beatrice Godfrey|+(339) 323 81 40|
-    |9081730154|Wilbert Winburn |+(139) 236 46 45|
-    |9081730154|Carrie Godfrey  |+(356) 451 77 64|
-    +----------+----------------+----------------+
+dfContacts.show(10, truncate = false)
++----------+----------------+----------------+
+|COMPANY_ID|CONTACT_PERSON  |PHONE_NUMBER    |
++----------+----------------+----------------+
+|7888716268|Lynell Flatt    |+(782) 772 45 69|
+|4169179307|Mabelle Bourke  |+(589) 102 29 62|
+|4007588657|Lynell Lepe     |+(406) 714 80 90|
+|9665677039|Carrie Hisle    |+(115) 514 77 48|
+|9665677039|Deshawn Shapiro |+(10) 945 77 74 |
+|9665677039|Alona Boehme    |+(43) 922 55 37 |
+|9665677039|Cassey Shapiro  |+(434) 242 37 43|
+|4179823966|Beatrice Godfrey|+(339) 323 81 40|
+|9081730154|Wilbert Winburn |+(139) 236 46 45|
+|9081730154|Carrie Godfrey  |+(356) 451 77 64|
++----------+----------------+----------------+
 ```
 
 This looks good as well. The table contains the list of contact persons for companies. This data set contains the
@@ -442,34 +473,35 @@ own we can use 'segment_id_level2' etc.
 #### Generating segment ids
 
 ```scala
-    val df = spark
-      .read
-      .format("cobol")
-      .option("copybook_contents", copybook)
-      .option("schema_retention_policy", "collapse_root")
-      .option("is_xcom", "true")
-      .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "S01L1")
-      .option("segment_id_level1", "S01L2")
-      .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("schema_retention_policy", "collapse_root")
+  .option("is_xcom", "true")
+  .option("segment_field", "SEGMENT_ID")
+  .option("segment_id_level0", "S01L1")
+  .option("segment_id_level1", "S01L2")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
 The resulting table will look like this:
 ```
-    +-------+-------+----------+----------+--------------------+--------------------+
-    |Seg_Id0|Seg_Id1|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
-    +-------+-------+----------+----------+--------------------+--------------------+
-    |      1|   null|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
-    |      2|   null|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-    |      2|      1|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
-    |      3|   null|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
-    |      4|   null|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
-    |      5|   null|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
-    |      6|   null|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
-    |      6|      2|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
-    |      7|   null|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-    |      7|      3|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
-    +-------+-------+----------+----------+--------------------+--------------------+
+df.show(10)
++------------------+--------------------+----------+----------+--------------------+--------------------+
+|           Seg_Id0|             Seg_Id1|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
++------------------+--------------------+----------+----------+--------------------+--------------------+
+|20181119145226_0_0|                null|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
+|20181119145226_0_1|                null|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+|20181119145226_0_1|20181119145226_0_...|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
+|20181119145226_0_3|                null|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
+|20181119145226_0_4|                null|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
+|20181119145226_0_5|                null|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+|20181119145226_0_6|                null|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
+|20181119145226_0_6|20181119145226_0_...|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
+|20181119145226_0_8|                null|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
+|20181119145226_0_8|20181119145226_0_...|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
++------------------+--------------------+----------+----------+--------------------+--------------------+
 ```
 
 The data now contain 2 additional fields: 'Seg_Id0' and 'Seg_Id1'. The 'Seg_Id0' is an autogenerated id for each root
@@ -489,43 +521,43 @@ Here is the example output of the joined tables:
 
 ##### Segment 1 (Companies)
 ```
-    dfCompanies.show(11, truncate = false)
-    +-------+----------+-------------+-------------------------+--------+
-    |Seg_Id0|COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
-    +-------+----------+-------------+-------------------------+--------+
-    |1      |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
-    |2      |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
-    |3      |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
-    |4      |2193550322|Prime Bank   |1 Garden str., London    |37798023|
-    |5      |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
-    |6      |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
-    |7      |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
-    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|
-    |9      |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
-    |10     |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
-    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|
-    +-------+----------+-------------+-------------------------+--------+
+dfCompanies.show(11, truncate = false)
++--------------------+----------+-------------+-------------------------+--------+
+|Seg_Id0             |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
++--------------------+----------+-------------+-------------------------+--------+
+|20181119145346_0_0  |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
+|20181119145346_0_1  |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
+|20181119145346_0_3  |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
+|20181119145346_0_4  |2193550322|Prime Bank   |1 Garden str., London    |37798023|
+|20181119145346_0_5  |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
+|20181119145346_0_6  |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
+|20181119145346_0_8  |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
+|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|
+|20181119145346_0_15 |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
+|20181119145346_0_16 |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
+|20181119145346_0_18 |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|
++--------------------+----------+-------------+-------------------------+--------+
 ```
 
 ##### Segment 2 (Contacts)
 ```
-    dfContacts.show(12, truncate = false)
-    +-------+----------+-------------------+----------------+
-    |Seg_Id0|COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
-    +-------+----------+-------------------+----------------+
-    |2      |7888716268|Lynell Flatt       |+(782) 772 45 69|
-    |6      |4169179307|Mabelle Bourke     |+(589) 102 29 62|
-    |7      |4007588657|Lynell Lepe        |+(406) 714 80 90|
-    |8      |9665677039|Carrie Hisle       |+(115) 514 77 48|
-    |8      |9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
-    |8      |9665677039|Alona Boehme       |+(43) 922 55 37 |
-    |8      |9665677039|Cassey Shapiro     |+(434) 242 37 43|
-    |10     |4179823966|Beatrice Godfrey   |+(339) 323 81 40|
-    |11     |9081730154|Wilbert Winburn    |+(139) 236 46 45|
-    |11     |9081730154|Carrie Godfrey     |+(356) 451 77 64|
-    |11     |9081730154|Suk Wallingford    |+(57) 570 39 41 |
-    |11     |9081730154|Tyesha Debow       |+(258) 914 73 28|
-    +-------+----------+-------------------+----------------+
+dfContacts.show(12, truncate = false)
++-------------------+----------+-------------------+----------------+
+|Seg_Id0            |COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
++-------------------+----------+-------------------+----------------+
+|20181119145346_0_1 |7888716268|Lynell Flatt       |+(782) 772 45 69|
+|20181119145346_0_6 |4169179307|Mabelle Bourke     |+(589) 102 29 62|
+|20181119145346_0_8 |4007588657|Lynell Lepe        |+(406) 714 80 90|
+|20181119145346_0_10|9665677039|Carrie Hisle       |+(115) 514 77 48|
+|20181119145346_0_10|9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
+|20181119145346_0_10|9665677039|Alona Boehme       |+(43) 922 55 37 |
+|20181119145346_0_10|9665677039|Cassey Shapiro     |+(434) 242 37 43|
+|20181119145346_0_16|4179823966|Beatrice Godfrey   |+(339) 323 81 40|
+|20181119145346_0_18|9081730154|Wilbert Winburn    |+(139) 236 46 45|
+|20181119145346_0_18|9081730154|Carrie Godfrey     |+(356) 451 77 64|
+|20181119145346_0_18|9081730154|Suk Wallingford    |+(57) 570 39 41 |
+|20181119145346_0_18|9081730154|Tyesha Debow       |+(258) 914 73 28|
++-------------------+----------+-------------------+----------------+
 
 ```
 
@@ -533,29 +565,29 @@ Here is the example output of the joined tables:
 
 The join statement in Spark:
 ```scala
-    val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
+val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
 ```
 
 The joined data looks like this:
 
 ```
-    dfJoined.show(12, truncate = false)
-    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
-    |Seg_Id0|COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|COMPANY_ID|CONTACT_PERSON   |PHONE_NUMBER    |
-    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
-    |2      |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|7888716268|Lynell Flatt     |+(782) 772 45 69|
-    |6      |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|4169179307|Mabelle Bourke   |+(589) 102 29 62|
-    |7      |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|4007588657|Lynell Lepe      |+(406) 714 80 90|
-    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Cassey Shapiro   |+(434) 242 37 43|
-    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Carrie Hisle     |+(115) 514 77 48|
-    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Alona Boehme     |+(43) 922 55 37 |
-    |8      |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Deshawn Shapiro  |+(10) 945 77 74 |
-    |10     |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|4179823966|Beatrice Godfrey |+(339) 323 81 40|
-    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Wilbert Winburn  |+(139) 236 46 45|
-    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Suk Wallingford  |+(57) 570 39 41 |
-    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Carrie Godfrey   |+(356) 451 77 64|
-    |11     |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|9081730154|Tyesha Debow     |+(258) 914 73 28|
-    +-------+----------+-------------+-------------------------+--------+----------+-----------------+----------------+
+dfJoined.show(12, truncate = false)
++--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
+|Seg_Id0             |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
++--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
+|20181119145346_0_1  |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|7888716268|Lynell Flatt       |+(782) 772 45 69|
+|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Carrie Hisle       |+(115) 514 77 48|
+|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Cassey Shapiro     |+(434) 242 37 43|
+|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
+|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Alona Boehme       |+(43) 922 55 37 |
+|20181119145346_0_102|2631415894|Pear GMBH.   |107 Labe str., Berlin    |59705976|2631415894|Maya Bourke        |+(311) 260 97 83|
+|20181119145346_0_102|2631415894|Pear GMBH.   |107 Labe str., Berlin    |59705976|2631415894|Estelle Godfrey    |+(563) 491 37 73|
+|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Maya Boehme        |+(754) 274 56 63|
+|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Starr Benally      |+(303) 750 91 27|
+|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Wilbert Concannon  |+(344) 192 14 38|
+|20181119145346_0_110|9825971915|Beierbauh.   |901 Ztt, Munich          |87008159|9825971915|Tyson Brandis      |+(598) 710 69 45|
+|20181119145346_0_110|9825971915|Beierbauh.   |901 Ztt, Munich          |87008159|9825971915|Tyesha Deveau      |+(68) 759 48 98 |
++--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
 ```
 
 Again, the full example is available at

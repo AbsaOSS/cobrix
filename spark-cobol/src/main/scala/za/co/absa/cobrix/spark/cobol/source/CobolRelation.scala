@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
@@ -24,13 +24,17 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
-import za.co.absa.cobrix.spark.cobol.reader.Reader
+import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
-import java.io.{ObjectInputStream, ObjectOutputStream, IOException}
 import org.apache.hadoop.conf.Configuration
+import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+
+import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
 
 class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
@@ -72,6 +76,10 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  private val filesList = getListFilesWithOrder(sourceDir)
+
+  private lazy val indexes: RDD[SimpleIndexEntry] = buildIndex(filesList)
+
   override def schema: StructType = {
     cobolReader.getSparkSchema
   }
@@ -80,13 +88,31 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
     cobolReader match {
       case blockReader: FixedLenReader => buildScanForFixedLength(blockReader)
+      case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded => buildScanForVarLenIndex(streamReader)
       case streamReader: VarLenReader => buildScanForVariableLength(streamReader)
       case _ => throw new IllegalStateException("Invalid reader object $cobolReader.")
     }
   }
 
+  private def buildScanForVarLenIndex(reader: VarLenReader): RDD[Row] = {
+    val filesMap = filesList.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap
+    val conf = sqlContext.sparkContext.hadoopConfiguration
+    val sconf = new SerializableConfiguration(conf)
+
+    indexes.flatMap(indexEntry => {
+      val fileSystem = FileSystem.get(sconf.value)
+      val filePathName = filesMap(indexEntry.fileId)
+      val fileName = new Path(filePathName).getName
+      val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
+      val numOfBytesMsg = if (numOfBytes>0) s"${numOfBytes/Constants.megabyte} MB" else "until the end"
+      logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
+      val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
+      reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
+    })
+  }
+
   private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
-    val filesRDD = getParallelizedFilesWithOrder(sourceDir)
+    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
 
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
@@ -100,7 +126,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
           val fileOrder = row.order
 
           logger.info(s"Going to parse file: $filePath")
-          reader.getRowIterator(new FileStreamer(filePath, fileSystem), fileOrder)
+          reader.getRowIterator(new FileStreamer(filePath, fileSystem), 0L, fileOrder, 0L)
         }
         )
       })
@@ -110,16 +136,14 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
     * as their order.
     *
-    * The RDD contains [[za.co.absa.cobrix.spark.cobol.source.CobolRelation.FileWithOrder]] instances.
+    * The List contains [[za.co.absa.cobrix.spark.cobol.source.CobolRelation.FileWithOrder]] instances.
     */
-  private def getParallelizedFilesWithOrder(sourceDir: String): RDD[FileWithOrder] = {
-    val files = FileUtils
+  private def getListFilesWithOrder(sourceDir: String): Array[FileWithOrder] = {
+    FileUtils
       .getAllFilesInDirectory(sourceDir, sqlContext.sparkContext.hadoopConfiguration)
       .zipWithIndex
       .map(file => FileWithOrder(file._1, file._2))
-
-    import sqlContext.implicits._
-    sqlContext.sparkContext.parallelize(files, files.size)
+      .toArray
   }
 
   private def buildScanForFixedLength(reader: FixedLenReader): RDD[Row] = {
@@ -143,5 +167,36 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
         parsedRecord
       }
     })
+  }
+
+  def buildIndex(filesList: Array[FileWithOrder]): RDD[SimpleIndexEntry] = {
+    cobolReader match {
+      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReader(filesList, reader)
+      case _ => null
+    }
+  }
+
+  def buildIndexForVarLenReader(filesList: Array[FileWithOrder], reader: VarLenReader): RDD[SimpleIndexEntry] = {
+    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
+    val conf = sqlContext.sparkContext.hadoopConfiguration
+    val sconf = new SerializableConfiguration(conf)
+
+    val indexes = filesRDD.mapPartitions(
+      partition => {
+        val fileSystem = FileSystem.get(sconf.value)
+        partition.flatMap(row => {
+          val filePath = row.filePath
+          val fileOrder = row.order
+
+          logger.info(s"Going to generate index for the file: $filePath")
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0,true), fileOrder)
+          index
+        }
+        )
+      }).cache
+    val indexCount = indexes.count()
+    val numPartitions = Math.min(indexCount, Constants.defaultNumPartitions).toInt
+    logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    indexes.repartition(numPartitions).cache()
   }
 }

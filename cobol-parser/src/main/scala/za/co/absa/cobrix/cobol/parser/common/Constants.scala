@@ -22,6 +22,7 @@ object Constants {
   val maxIntegerPrecision = 9
   // Max picture size of a Copybook field
   val maxFieldLength = 100000
+  val maxXcomRecordSize: Int = 100*1024*1024
 
   // Max COMP/BINARY format precision
   val maxBinIntPrecision = 18

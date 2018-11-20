@@ -17,9 +17,9 @@
 package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 import org.apache.spark.sql.Row
-import scodec.bits.BitVector
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
@@ -35,22 +35,28 @@ import scala.collection.mutable.ListBuffer
   * @param readerProperties Additional properties for customizing the reader.
   * @param fileId           A FileId to put to the corresponding column
   * @param startRecordId    A starting record id value for this particular file/stream `dataStream`
+  * @param startingFileOffset  An offset of the file where parsing should be started
+  * @param segmentIdPrefix A prefix to be used for all segment ID generated fields
   */
 @throws(classOf[IllegalStateException])
 final class VarLenNestedIterator(cobolSchema: Copybook,
-                           dataStream: SimpleStream,
-                           readerProperties: ReaderParameters,
-                           fileId: Int,
-                           startRecordId: Long) extends Iterator[Row] {
+                                 dataStream: SimpleStream,
+                                 readerProperties: ReaderParameters,
+                                 fileId: Int,
+                                 startRecordId: Long,
+                                 startingFileOffset: Long,
+                                 segmentIdPrefix: String) extends Iterator[Row] {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
-  private var byteIndex = 0L
+  private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
-  private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, fileId*Int.MaxValue))
+  private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
 
   fetchNext()
@@ -145,17 +151,13 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
     val binaryDataStart = dataStream.next(xcomHeaderBlock)
 
-    if (binaryDataStart.length < xcomHeaderBlock) {
-      return None
-    }
-
-    var recordLength = (binaryDataStart(2) & 0xFF) + 256 * (binaryDataStart(3) & 0xFF)
+    val recordLength = BinaryUtils.extractXcomRecordSize(binaryDataStart, byteIndex)
+    byteIndex += binaryDataStart.length
 
     if (recordLength > 0) {
       Some(dataStream.next(recordLength))
     } else {
-      val xcomHeaders = binaryDataStart.map(_ & 0xFF).mkString(",")
-      throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
+      None
     }
   }
 
@@ -176,7 +178,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def getSegmentLevelIds(segmentId: String): Seq[Any] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
-      acc.acquiredSegmentId(segmentId)
+      acc.acquiredSegmentId(segmentId, recordIndex)
       val ids = new ListBuffer[Any]
       var i = 0
       while (i < segmentLevelIdsCount) {
@@ -190,7 +192,16 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   }
 
   private def getSegmentId(data: Array[Byte]): Option[String] = {
-    segmentIdField.map(field => cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset).toString.trim)
+    segmentIdField.map(field => {
+      val fieldValue = cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset)
+      if (fieldValue == null) {
+        logger.error(s"An unexpected null encountered for segment id at $byteIndex")
+        ""
+      } else {
+        fieldValue.toString.trim
+      }
+    }
+    )
   }
 
   private def isSegmentMatchesTheFilter(segmentId: String): Boolean = {

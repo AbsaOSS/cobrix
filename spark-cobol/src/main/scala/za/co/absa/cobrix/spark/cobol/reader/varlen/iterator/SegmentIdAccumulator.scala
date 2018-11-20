@@ -16,11 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
-final class SegmentIdAccumulator (segmentIds: Seq[String], startingId: Long = 0) {
+final class SegmentIdAccumulator (segmentIds: Seq[String], segmentIdPrefix: String, val fileId: Int) {
   private val segmentIdsArr = segmentIds.toArray
   private val segmentIdCount = segmentIds.size
   private val segmentIdAccumulator = new Array[Long](segmentIdCount + 1)
   private var currentLevel = -1
+  private var currentRootId: String = ""
 
   segmentIdAccumulator.map(v => 0)
 
@@ -30,14 +31,16 @@ final class SegmentIdAccumulator (segmentIds: Seq[String], startingId: Long = 0)
     *
     * @param segmentId The segment id of the record
     */
-  def acquiredSegmentId(segmentId: String): Unit = {
+  def acquiredSegmentId(segmentId: String, recordIndex: Long): Unit = {
     if (segmentIdCount == 0) return
     val level = getLevel(segmentId)
-    level match {
-      case Some(l) =>
-        currentLevel = l
+    if (level.isDefined) {
+      currentLevel = level.get
+      if (currentLevel == 0) {
+        updateRootSegment(recordIndex)
+      } else {
         segmentIdAccumulator(currentLevel) += 1
-      case None => // do nothing
+      }
     }
   }
 
@@ -50,9 +53,23 @@ final class SegmentIdAccumulator (segmentIds: Seq[String], startingId: Long = 0)
     */
   def getSegmentLevelId(level: Int): Any = {
     if (level>=0 && level<=currentLevel) {
-      segmentIdAccumulator(level)
+      if (level==0) {
+        currentRootId
+      } else {
+        val levelId = segmentIdAccumulator(level)
+        s"${currentRootId}_L${level}_$levelId"
+      }
     } else
       null
+  }
+
+  def updateRootSegment(recordIndex: Long): Unit = {
+    currentRootId = s"${segmentIdPrefix}_${fileId}_$recordIndex"
+    var i = 0
+    while (i < segmentIdAccumulator.length) {
+      segmentIdAccumulator(i) = 0
+      i += 1
+    }
   }
 
   /** Gets the segment level by a segment id  */

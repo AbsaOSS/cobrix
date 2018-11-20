@@ -19,10 +19,11 @@ package za.co.absa.cobrix.spark.cobol.source.base
 import org.apache.spark.sql.SparkSession
 
 trait SparkTestBase {
-  implicit val spark = SparkSession.builder()
-    .master("local[*]")
+  implicit val spark: SparkSession = SparkSession.builder()
+    .master("local[2]")
     .appName("test")
     .config("spark.ui.enabled", "false")
     .config("spark.driver.bindAddress","127.0.0.1")
+    .config("spark.driver.host", "127.0.0.1")
     .getOrCreate()
 }

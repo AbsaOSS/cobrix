@@ -40,6 +40,7 @@ case class Group(
                   occurs: Option[Int] = None,
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
+                  isFiller: Boolean = false,
                   groupUsage: Map[String, String] = Map[String, String](), // Group usage modifiers (e.g. COMP-1) to be applied to all subitems of the group
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )

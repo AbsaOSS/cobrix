@@ -14,14 +14,6 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader.parameters
+package za.co.absa.cobrix.spark.cobol.reader.index.entry
 
-/**
-  * This class holds the parameters currently used for parsing variable-length records.
-  */
-case class MultisegmentParameters(
-                                   segmentIdField: String,
-                                   segmentIdFilter: Option[String],
-                                   segmentLevelIds: Seq[String],    // The list of segment id on corresponding levels
-                                   segmentIdPrefix: String          // A prefix that will be added to all segment id fields
-                                 )
+case class SimpleIndexEntry(offsetFrom: Long, offsetTo: Long, fileId: Int, recordIndex: Long)

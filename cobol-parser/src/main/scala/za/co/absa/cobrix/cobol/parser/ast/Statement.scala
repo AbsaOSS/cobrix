@@ -74,6 +74,9 @@ trait Statement {
   /** Returns true if this field is redefined by some other field */
   def isRedefined: Boolean
 
+  /** Returns true if the field is a filler */
+  def isFiller: Boolean
+
   /** A binary properties of a field */
   val binaryProperties: BinaryProperties
 

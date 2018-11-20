@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.schema
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
@@ -27,19 +29,24 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
 import scala.collection.mutable.ArrayBuffer
 
 /**
-  *  This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class
-  *  provides the corresponding Spark schema and also other properties for the Spark data source.
+  * This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class
+  * provides the corresponding Spark schema and also other properties for the Spark data source.
   *
-  * @param copybook            A parsed copybook.
-  * @param generateRecordId    If true, a record id field will be prepended to to the begginning of the schema.
-  * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param copybook         A parsed copybook.
+  * @param policy           Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param generateRecordId If true, a record id field will be prepended to to the begginning of the schema.
+  * @param generateSegIdFieldsCnt   A number of segment ID levels to generate
+  * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
   */
 class CobolSchema(val copybook: Copybook,
                   policy: SchemaRetentionPolicy,
                   generateRecordId: Boolean,
-                  generateSegIdFieldsCnt: Int = 0) extends Serializable {
+                  generateSegIdFieldsCnt: Int = 0,
+                  segmentIdProvidedPrefix: String = "") extends Serializable {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 
   def getCobolSchema: Copybook = copybook
 
@@ -51,14 +58,14 @@ class CobolSchema(val copybook: Copybook,
     }
     val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot) {
       // Expand root group fields
-      records.toArray.flatMap( group => group.dataType.asInstanceOf[StructType].fields )
+      records.toArray.flatMap(group => group.dataType.asInstanceOf[StructType].fields)
     } else {
       records.toArray
     }
 
-    val recordsWithSegmentFields = if (generateSegIdFieldsCnt>0) {
-      val newFields = for ( level <- Range(0, generateSegIdFieldsCnt) )
-        yield StructField (s"${Constants.segmentIdField}$level", LongType, nullable = true)
+    val recordsWithSegmentFields = if (generateSegIdFieldsCnt > 0) {
+      val newFields = for (level <- Range(0, generateSegIdFieldsCnt))
+        yield StructField(s"${Constants.segmentIdField}$level", StringType, nullable = true)
       newFields.toArray ++ expandRecords
     } else {
       expandRecords
@@ -97,7 +104,7 @@ class CobolSchema(val copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def parseGroup(group: Group): StructField = {
-    val fields = for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) yield {
+    val fields = for (field <- group.children if !field.isFiller) yield {
       field match {
         case group: Group =>
           parseGroup(group)
@@ -133,7 +140,7 @@ class CobolSchema(val copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
     val fields = new ArrayBuffer[StructField]()
-    for (field <- group.children if field.name.toUpperCase != ReservedWords.FILLER) {
+    for (field <- group.children if !field.isFiller) {
       field match {
         case group: Group =>
           if (group.isArray) {
@@ -158,7 +165,7 @@ class CobolSchema(val copybook: Copybook,
               }
             case _ => throw new IllegalStateException("Unknown AST object")
           }
-          val path = s"$structPath"//${group.name}_"
+          val path = s"$structPath" //${group.name}_"
           if (s.isArray) {
             for (i <- Range(1, s.arrayMaxSize + 1)) {
               fields += StructField(s"$path{s.name}_$i", ArrayType(dataType), nullable = true)
@@ -170,6 +177,12 @@ class CobolSchema(val copybook: Copybook,
     }
 
     fields
+  }
+
+  private def getDefaultSegmentIdPrefix: String = {
+    val timestampFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
+    val now = ZonedDateTime.now()
+    timestampFormat.format(now)
   }
 
 }
