@@ -22,7 +22,7 @@
     <groupId>za.co.absa.cobrix</groupId>
     <artifactId>cobrix-parent</artifactId>
 
-    <version>0.2.9</version>
+    <version>0.2.10-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -35,7 +35,7 @@
         <connection>scm:git:git://github.com/AbsaOSS/cobrix.git</connection>
         <developerConnection>scm:git:ssh://github.com:AbsaOSS/cobrix.git</developerConnection>
         <url>http://github.com/AbsaOSS/cobrix/tree/master</url>
-        <tag>v0.2.9</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
