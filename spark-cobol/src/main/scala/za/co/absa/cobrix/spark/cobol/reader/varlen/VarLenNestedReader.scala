@@ -68,32 +68,30 @@ final class VarLenNestedReader(copybookContents: String,
     *
     */
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
-
     var recordSize = cobolSchema.getRecordSize
-    val recordsPerIndexEntry: Int = if (readerProperties.partitionSizeMB.isDefined) {
-      var requestedPartitionSizeMB = readerProperties.partitionSizeMB.get.toLong
-      if (requestedPartitionSizeMB < 1 || requestedPartitionSizeMB > 2000) {
-        throw new IllegalArgumentException(s"Invalid requested partition size of $requestedPartitionSizeMB MB.")
+    val recordsPerIndexEntry: Option[Int] = readerProperties.recordsPerPartition
+    val indexEntryMinSize: Option[Int] = readerProperties.partitionSizeMB
+
+    if (recordsPerIndexEntry.isDefined) {
+      if (recordsPerIndexEntry.get < 1 || recordsPerIndexEntry.get > 1000000000) {
+        throw new IllegalArgumentException(s"Invalid number of records per partition of ${recordsPerIndexEntry.get} MB.")
       }
-      val numOfRecords = requestedPartitionSizeMB * Constants.megabyte / recordSize
-      if (numOfRecords > Int.MaxValue && numOfRecords < 1) {
-        throw new IllegalArgumentException(s"Invalid requested partition size of $requestedPartitionSizeMB MB. Number of records per partition = $numOfRecords.")
-      }
-      numOfRecords.toInt
+      logger.warn(s"Minimum records per partition = ${recordsPerIndexEntry.get} MB")
     } else {
-      readerProperties.recordsPerPartition.getOrElse(Constants.recordsPerIndexEntry)
+      if (indexEntryMinSize.nonEmpty) {
+        if (indexEntryMinSize.get < 1 || indexEntryMinSize.get > 2000) {
+          throw new IllegalArgumentException(s"Invalid requested partition size of ${indexEntryMinSize.get} MB.")
+        }
+        logger.warn(s"Minimum size per partition = ${indexEntryMinSize.get} MB")
+      }
     }
-
-    val partitionSizeMB = (recordSize.toLong*recordsPerIndexEntry)/Constants.megabyte
-
-    logger.warn(s"Records per partition = $recordsPerIndexEntry (partition size is approx. $partitionSizeMB MB)")
 
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, Some(copybook), Some(field))
-      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry)
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, indexEntryMinSize, Some(copybook), Some(field))
+      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, indexEntryMinSize)
     }
   }
 

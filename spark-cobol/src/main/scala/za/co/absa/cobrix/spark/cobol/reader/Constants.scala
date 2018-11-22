@@ -33,9 +33,12 @@ object Constants {
   // Minimum number of records in each file split
   val recordsPerIndexEntry = 50000
 
-  // Default number of partitions
-  val defaultNumPartitions = 1000
+  // Default index entry size in MB
+  val defaultIndexEntrySizeMB = 100
+
+  // The maximum number of partitions for splitting a multisegment file
+  val maxNumPartitions = 2048
 
   // Default number of partitions
-  val defaultStreamBufferInMB = 100
+  val defaultStreamBufferInMB = 30
 }

@@ -195,7 +195,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
         )
       }).cache
     val indexCount = indexes.count()
-    val numPartitions = Math.min(indexCount, Constants.defaultNumPartitions).toInt
+    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
     logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexes.repartition(numPartitions).cache()
   }
