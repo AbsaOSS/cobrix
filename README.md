@@ -615,8 +615,8 @@ These results were obtained on fixed size record files.
   - Added an index generation for multisegment variable record size files to make the reader scalable.
     - It is turned on by default, you can restore old behaviour using .option("allow_indexing", "false")
   - Added options to control index generation (first table below).
-  - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split the dataset into individual segments and then join them.
-    The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets below](#ims).
+  - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split a dataset into individual segments and then join them.
+    The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets above](#ims).
   - Fixed many performance issues that should make reading mainframe files several times faster. The actual performance depends on concrete copybooks.
 
 ##### Multisegment indexing options
