@@ -92,7 +92,7 @@ final class VarLenNestedReader(copybookContents: String,
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, copybook, field, recordsPerIndexEntry)
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, Some(copybook), Some(field))
       case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry)
     }
   }
