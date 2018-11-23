@@ -53,6 +53,7 @@ import scala.collection.mutable.ArrayBuffer
   *                         copybook.
   */
 @throws(classOf[IllegalArgumentException])
+@deprecated("This class is deprecated. It will beremoved in the future versions")
 final class VarLenSearchReader(copybookContents: String,
                          signatureFieldName: String,
                          signatureFieldValue: String,

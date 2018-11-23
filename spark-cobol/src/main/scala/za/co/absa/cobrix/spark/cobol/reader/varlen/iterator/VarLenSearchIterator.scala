@@ -46,6 +46,7 @@ import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
   * @param policy  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 @throws(classOf[IllegalStateException])
+@deprecated("This class is deprecated. It will beremoved in the future versions")
 final class VarLenSearchIterator(cobolSchema: Copybook,
                            dataStream: SimpleStream,
                            signatureFieldName: String,

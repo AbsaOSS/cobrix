@@ -24,6 +24,7 @@ import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.{FixedLenFlatRowIt
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 /** The Cobol data reader that provides output using flattened schema */
+@deprecated("This class is deprecated. Use SparkUtils.flattenSchema() on a nested dataframe instead.")
 class FixedLenFlatReader(val copyBookContents: String,
                          startOffset: Int = 0,
                          endOffset: Int = 0) extends FixedLenReader with Serializable {

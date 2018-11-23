@@ -69,20 +69,20 @@ final class VarLenNestedReader(copybookContents: String,
     */
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
     var recordSize = cobolSchema.getRecordSize
-    val recordsPerIndexEntry: Option[Int] = readerProperties.recordsPerPartition
-    val indexEntryMinSize: Option[Int] = readerProperties.partitionSizeMB
+    val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
+    val inputSplitSizeMB: Option[Int] = readerProperties.inputSplitSizeMB
 
-    if (recordsPerIndexEntry.isDefined) {
-      if (recordsPerIndexEntry.get < 1 || recordsPerIndexEntry.get > 1000000000) {
-        throw new IllegalArgumentException(s"Invalid number of records per partition of ${recordsPerIndexEntry.get} MB.")
+    if (inputSplitSizeRecords.isDefined) {
+      if (inputSplitSizeRecords.get < 1 || inputSplitSizeRecords.get > 1000000000) {
+        throw new IllegalArgumentException(s"Invalid input split size. The requested number of records is ${inputSplitSizeRecords.get}.")
       }
-      logger.warn(s"Minimum records per partition = ${recordsPerIndexEntry.get} MB")
+      logger.warn(s"Input split size = ${inputSplitSizeRecords.get} records")
     } else {
-      if (indexEntryMinSize.nonEmpty) {
-        if (indexEntryMinSize.get < 1 || indexEntryMinSize.get > 2000) {
-          throw new IllegalArgumentException(s"Invalid requested partition size of ${indexEntryMinSize.get} MB.")
+      if (inputSplitSizeMB.nonEmpty) {
+        if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > 2000) {
+          throw new IllegalArgumentException(s"Invalid input split size of ${inputSplitSizeMB.get} MB.")
         }
-        logger.warn(s"Minimum size per partition = ${indexEntryMinSize.get} MB")
+        logger.warn(s"Input split size = ${inputSplitSizeMB.get} MB")
       }
     }
 
@@ -90,8 +90,8 @@ final class VarLenNestedReader(copybookContents: String,
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, indexEntryMinSize, Some(copybook), Some(field))
-      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, recordsPerIndexEntry, indexEntryMinSize)
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field))
+      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB)
     }
   }
 
