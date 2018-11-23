@@ -189,14 +189,14 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
           val fileOrder = row.order
 
           logger.info(s"Going to generate index for the file: $filePath")
-          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0,true), fileOrder)
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
           index
         }
         )
       }).cache
     val indexCount = indexes.count()
-    val numPartitions = Math.min(indexCount, Constants.defaultNumPartitions).toInt
-    logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
+    logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexes.repartition(numPartitions).cache()
   }
 }

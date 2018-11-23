@@ -32,21 +32,6 @@ import scala.util.control.NonFatal
 object BinaryUtils {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  // Binary number format codecs (big endian and little endian)
-  lazy val int8B: Codec[Int] = scodec.codecs.int8
-  lazy val int8L: Codec[Int] = scodec.codecs.int8L
-  lazy val int16B: Codec[Int] = scodec.codecs.int16
-  lazy val int16L: Codec[Int] = scodec.codecs.int16L
-  lazy val int32B: Codec[Int] = scodec.codecs.int32
-  lazy val int32L: Codec[Int] = scodec.codecs.int32L
-  lazy val int64B: Codec[Long] = scodec.codecs.int64
-  lazy val int64L: Codec[Long] = scodec.codecs.int64L
-  lazy val uint8B: Codec[Int] = scodec.codecs.uint8
-  lazy val uint8L: Codec[Int] = scodec.codecs.uint8L
-  lazy val uint16B: Codec[Int] = scodec.codecs.uint16
-  lazy val uint16L: Codec[Int] = scodec.codecs.uint16L
-  lazy val uint32B: Codec[Long] = scodec.codecs.uint32
-  lazy val uint32L: Codec[Long] = scodec.codecs.uint32L
   lazy val floatB: Codec[Float] = scodec.codecs.float
   lazy val floatL: Codec[Float] = scodec.codecs.floatL
   lazy val doubleB: Codec[Double] = scodec.codecs.double
@@ -470,22 +455,21 @@ object BinaryUtils {
       return "0"
     }
 
-    val bits = BitVector(bytes)
     val value = (signed, bigEndian, bytes.length) match {
-      case (true, true, 1) => int8B.decode(bits).require.value
-      case (true, true, 2) => int16B.decode(bits).require.value
-      case (true, true, 4) => int32B.decode(bits).require.value
-      case (true, true, 8) => int64B.decode(bits).require.value
-      case (true, false, 1) => int8L.decode(bits).require.value
-      case (true, false, 2) => int16L.decode(bits).require.value
-      case (true, false, 4) => int32L.decode(bits).require.value
-      case (true, false, 8) => int64L.decode(bits).require.value
-      case (false, true, 1) => uint8B.decode(bits).require.value
-      case (false, true, 2) => uint16B.decode(bits).require.value
-      case (false, true, 4) => uint32B.decode(bits).require.value
-      case (false, false, 1) => uint8L.decode(bits).require.value
-      case (false, false, 2) => uint16L.decode(bits).require.value
-      case (false, false, 4) => uint32L.decode(bits).require.value
+      case (true, true, 1) => (bytes(0) & 255).toByte
+      case (true, true, 2) => ((bytes(0) << 8) | (bytes(1) & 255)).toShort
+      case (true, true, 4) => (bytes(0) << 24) | ((bytes(1) & 255) << 16) | ((bytes(2) & 255) << 8) | (bytes(3) & 255)
+      case (true, true, 8) => ((bytes(0) & 255L) << 56) | ((bytes(1) & 255L) << 48) | ((bytes(2) & 255L) << 40) | ((bytes(3) & 255L) << 32) | ((bytes(4) & 255L) << 24) | ((bytes(5) & 255L) << 16) | ((bytes(6) & 255L) << 8) | (bytes(7) & 255L)
+      case (true, false, 1) => (bytes(0) & 255).toByte
+      case (true, false, 2) => ((bytes(1) << 8) | (bytes(0) & 255)).toShort
+      case (true, false, 4) => (bytes(3) << 24) | ((bytes(2) & 255) << 16) | ((bytes(1) & 255) << 8) | (bytes(0) & 255)
+      case (true, false, 8) => ((bytes(7) & 255L) << 56) | ((bytes(6) & 255L) << 48) | ((bytes(5) & 255L) << 40) | ((bytes(4) & 255L) << 32) | ((bytes(3) & 255L) << 24) | ((bytes(2) & 255L) << 16) | ((bytes(1) & 255L) << 8) | (bytes(0) & 255L)
+      case (false, true, 1) => (bytes(0) & 255).toShort
+      case (false, true, 2) => ((bytes(0) & 255) << 8) | (bytes(1) & 255)
+      case (false, true, 4) => ((bytes(0) & 255L) << 24L) | ((bytes(1) & 255L) << 16L) | ((bytes(2) & 255L) << 8L) | (bytes(3) & 255L)
+      case (false, false, 1) => (bytes(0) & 255).toShort
+      case (false, false, 2) => ((bytes(1) & 255) << 8) | (bytes(0) & 255)
+      case (false, false, 4) => ((bytes(3) & 255L) << 24L) | ((bytes(2) & 255L) << 16L) | ((bytes(1) & 255L) << 8L) | (bytes(0) & 255L)
       case _ =>
         // Generic arbitrary precision decoder
         val bigInt = (bigEndian, signed) match {

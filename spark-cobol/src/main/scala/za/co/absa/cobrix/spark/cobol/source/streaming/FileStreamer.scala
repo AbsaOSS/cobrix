@@ -33,7 +33,7 @@ import za.co.absa.cobrix.spark.cobol.reader.Constants
   * @param fileSystem Underlying FileSystem point of access.
   * @throws IllegalArgumentException in case the file is not found in the underlying file system.
   */
-class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L, isIndex: Boolean = false) extends SimpleStream {
+class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 

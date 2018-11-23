@@ -53,6 +53,7 @@ import scala.collection.mutable.ArrayBuffer
   *                         copybook.
   */
 @throws(classOf[IllegalArgumentException])
+@deprecated("This class is deprecated. It will beremoved in the future versions")
 final class VarLenSearchReader(copybookContents: String,
                          signatureFieldName: String,
                          signatureFieldValue: String,
@@ -79,7 +80,7 @@ final class VarLenSearchReader(copybookContents: String,
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
-    IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, Constants.recordsPerIndexEntry)
+    IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)

@@ -22,18 +22,22 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
 /**
   * These are properties for customizing mainframe binary data reader.
   *
-  * @param lengthFieldName   A name of a field that contains record length. Optional. If not set the copybook record length will be used.
-  * @param startOffset       An offset to the start of the record in each binary data block.
-  * @param endOffset         An offset from the end of the record to the end of the binary data block.
-  * @param generateRecordId  If true, a record id field will be prepended to each record.
-  * @param policy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param isXCOM                   Is XCOM or equivalent 4 byte header present in input file(s)
+  * @param isIndexGenerationNeeded  Is indexing input file before processing is requested
+  * @param inputSplitSizeMB         A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
+  * @param inputSplitRecords        The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
+  * @param startOffset              An offset to the start of the record in each binary data block.
+  * @param endOffset                An offset from the end of the record to the end of the binary data block.
+  * @param generateRecordId         If true, a record id field will be prepended to each record.
+  * @param policy                   Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 case class ReaderParameters(
                              lengthFieldName: Option[String] = None,
                              isXCOM: Boolean = false,
                              isIndexGenerationNeeded: Boolean = false,
-                             recordsPerPartition: Option[Int] = None,
-                             partitionSizeMB: Option[Int] = None,
+                             inputSplitRecords: Option[Int] = None,
+                             inputSplitSizeMB: Option[Int] = None,
                              startOffset: Int = 0,
                              endOffset: Int = 0,
                              generateRecordId: Boolean = false,
