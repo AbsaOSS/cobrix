@@ -18,10 +18,9 @@ package za.co.absa.cobrix.spark.cobol.source
 
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.encoders.RowEncoder
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SparkSession}
+import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
@@ -31,10 +30,9 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
 import org.apache.hadoop.conf.Configuration
-import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import org.apache.hadoop.mapred.FileInputFormat
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
 
 class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
@@ -139,11 +137,20 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     * The List contains [[za.co.absa.cobrix.spark.cobol.source.CobolRelation.FileWithOrder]] instances.
     */
   private def getListFilesWithOrder(sourceDir: String): Array[FileWithOrder] = {
+
     FileUtils
-      .getAllFilesInDirectory(sourceDir, sqlContext.sparkContext.hadoopConfiguration)
+      .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
       .zipWithIndex
       .map(file => FileWithOrder(file._1, file._2))
       .toArray
+  }
+
+  /**
+    * Checks if the recursive file retrieval flat is set
+    */
+  private def isRecursiveRetrieval: Boolean = {
+    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+    hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
   }
 
   private def buildScanForFixedLength(reader: FixedLenReader): RDD[Row] = {

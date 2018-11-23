@@ -18,17 +18,76 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.apache.hadoop.fs.PathFilter
+import org.apache.hadoop.mapred.FileInputFormat
 
+/**
+  * Retrieves files from a given file system.
+  *
+  * Supports glob patterns and recursive retrieval.
+  *
+  * Applies the same filter as Hadoop's FileInputFormat, which excludes files starting with '.' or '_'.
+  */
 object FileUtils {
 
-  def getAllFilesInDirectory(dir: String, hadoopConf: Configuration): List[String] = {
-    getAllFilesInDirectory(dir, FileSystem.get(hadoopConf))
+  private val hiddenFileFilter = new PathFilter() {
+    def accept(p: Path): Boolean = {
+      val name = p.getName
+      !name.startsWith("_") && !name.startsWith(".")
+    }
   }
 
-  def getAllFilesInDirectory(dir: String, fs: FileSystem): List[String] = {
+  /**
+    * Retrieves files from a directory, recursively or not.
+    *
+    * The directory may be informed through a glob pattern.
+    */
+  def getFiles(dir: String, hadoopConf: Configuration, recursive: Boolean = false): List[String] = {
+    getFiles(dir, FileSystem.get(hadoopConf), recursive)
+  }
+
+  /**
+    * Retrieves files from a directory, recursively or not.
+    *
+    * The directory may be informed through a glob pattern.
+    */
+  def getFiles(dir: String, fileSystem: FileSystem, recursive: Boolean): List[String] = {
+
     val dirPath = new Path(dir)
-    val files: Array[FileStatus] = fs.listStatus(dirPath)
-    val allFiles = for (file <- files if fs.isFile(file.getPath)) yield file
+    val stats: Array[FileStatus] = fileSystem.globStatus(dirPath, hiddenFileFilter)
+
+    if (stats == null) {
+      throw new IllegalArgumentException(s"Input path does not exist: $dir")
+    }
+
+    val allFiles = stats.flatMap(stat => {
+      if (stat.isDirectory) {
+        if (recursive) {
+          getAllFiles(stat.getPath, fileSystem)
+        }
+        else {
+          fileSystem.listStatus(stat.getPath, hiddenFileFilter).filter(!_.isDirectory)
+        }
+      }
+      else {
+        List(stat)
+      }
+    })
+
     allFiles.map(_.getPath.toUri.getRawPath).toList
+  }
+
+  /**
+    * Recursively retrieves all files from the directory tree.
+    */
+  private def getAllFiles(dir: Path, fileSystem: FileSystem): Seq[FileStatus] = {
+    fileSystem.listStatus(dir, hiddenFileFilter).flatMap(stat => {
+      if (stat.isDirectory) {
+        getAllFiles(stat.getPath, fileSystem)
+      }
+      else {
+        Seq(stat)
+      }
+    })
   }
 }
