@@ -55,7 +55,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.9</version>
+      <version>0.2.10</version>
 </dependency>
 ```
 
@@ -610,6 +610,19 @@ These results were obtained on fixed size record files.
 - Execution time: 4 minutes
 
 ## Changelog
+
+- #### 0.2.10 released 26 Nov 2018
+  - Fixed file retrieval by complying with HDFS patterns and supporting glob patterns.
+  - Increased performance of BINARY/COMP formatted numbers by rewriting binary number decoders.
+  - Made partition split by size more accurate, make it the default split type
+  - Aligned input split terminology according to other Spark data sources (see the table below)
+    - When both split options are specified 'input_split_records' is used
+    - When none split of the split options are specified the default is split by size of 100 MB
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("input_split_records", 50000)      | Specifies how many records will be allocated to each split/partition. It will be processed by Spark tasks. (The default is 50K records) |
+| .option("input_split_size_mb", 100)        | Specify how many megabytes to allocate to each partition/split. (The default is 100 MB) |
 
 - #### 0.2.9 released 21 Nov 2018
   - Added an index generation for multisegment variable record size files to make the reader scalable.
