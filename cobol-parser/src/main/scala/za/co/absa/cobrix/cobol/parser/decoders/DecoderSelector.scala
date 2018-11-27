@@ -47,15 +47,49 @@ object DecoderSelector {
   def getDecimalDecoder(decimalType: Decimal): Decoder = {
     val encoding = decimalType.enc.getOrElse(EBCDIC())
     // ToDo optimize this
-    bytes: Array[Byte] => decodeCobolNumber(encoding, bytes, decimalType.compact, decimalType.precision, decimalType.scale, decimalType.explicitDecimal, decimalType.signPosition.nonEmpty, decimalType.isSignSeparate)
+    bytes: Array[Byte] =>
+      val decoded = decodeCobolNumber(encoding, bytes, decimalType.compact, decimalType.precision, decimalType.scale, decimalType.explicitDecimal, decimalType.signPosition.nonEmpty, decimalType.isSignSeparate)
+      if (decoded.isDefined) {
+        BigDecimal(decoded.get)
+      } else {
+        null
+      }
   }
 
   def getIntegralDecoder(integralType: Integral): Decoder = {
     val encoding = integralType.enc.getOrElse(EBCDIC())
+    // ToDo add support for trailing sign
     integralType.compact match {
       case None =>
-        // ToDo add support for trailing sign
-        (bytes: Array[Byte]) => BinaryUtils.decodeUncompressedNumber(encoding, bytes, explicitDecimal = false, 0, isSignSeparate = integralType.isSignSeparate)
+        // ToDo optimize this
+        if (integralType.precision <= Constants.maxIntegerPrecision) {
+          bytes: Array[Byte] => {
+            val str = BinaryUtils.decodeUncompressedNumber(encoding, bytes, explicitDecimal = false, 0, isSignSeparate = integralType.isSignSeparate)
+            if (str.isDefined) {
+              str.get.toInt
+            } else {
+              null
+            }
+          }
+        } else if (integralType.precision <= Constants.maxLongPrecision) {
+          bytes: Array[Byte] => {
+            val str = BinaryUtils.decodeUncompressedNumber(encoding, bytes, explicitDecimal = false, 0, isSignSeparate = integralType.isSignSeparate)
+            if (str.isDefined) {
+              str.get.toLong
+            } else {
+              null
+            }
+          }
+        } else {
+          bytes: Array[Byte] => {
+            val str = BinaryUtils.decodeUncompressedNumber(encoding, bytes, explicitDecimal = false, 0, isSignSeparate = integralType.isSignSeparate)
+            if (str.isDefined) {
+              BigInt(str.get)
+            } else {
+              null
+            }
+          }
+        }
       case Some(0) =>
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, integralType.isSignSeparate, isBigEndian = true)
@@ -77,7 +111,6 @@ object DecoderSelector {
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (COMP-${integralType.compact}).")
     }
-    null
   }
 
   def getBinaryEncodedIntegralDecoder(compact: Option[Int], precision: Int, signPosition: Option[Position] = None, isSignSeparate: Boolean = false, isBigEndian: Boolean): Decoder = {
@@ -112,13 +145,15 @@ object DecoderSelector {
         case (false, true, 1) => BinaryNumberDecoders.decodeUnsignedByte _
         case (false, true, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortBigEndian _
         case (false, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndian _
+        case (false, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndian _
         case (false, false, 1) => BinaryNumberDecoders.decodeUnsignedByte _
         case (false, false, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortLittleEndian _
         case (false, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndian _
+        case (false, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndian _
         case _ =>
           (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
       }
-      decoder
+      decoder// 999 999 999
     }
   }
 
@@ -129,7 +164,7 @@ object DecoderSelector {
         a: Array[Byte] => {
           val num = BCDNumberDecoders.decodeBCDIntegralNumber(a, isSignSeparate, isSignLeading = true)
           if (num != null) {
-            num.asInstanceOf[Long].toByte
+            num.asInstanceOf[Long].toInt
           } else {
             null
           }

@@ -135,7 +135,17 @@ case class Primitive(
     */
   @throws(classOf[Exception])
   def decodeTypeValue(itOffset: Long, record: Array[Byte]): Any = {
-    val str = decodeValue2(itOffset, record)
+
+    val bytesCount = binaryProperties.dataSize / 8
+    val idx = (itOffset / 8).toInt
+    if (idx + bytesCount > record.length) {
+      return null
+    }
+    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
+
+    decode(bytes)
+
+    /*val str = decodeValue2(itOffset, record)
     val value = try {
       str match {
         case None => null
@@ -167,7 +177,7 @@ case class Primitive(
         null
       case NonFatal(e) => throw e
     }
-    value
+    value*/
   }
 
 
