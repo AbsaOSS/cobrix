@@ -133,6 +133,34 @@ object BinaryUtils {
     }
   }
 
+  def getBytesCount(comp: Option[Int], precision: Int, isSigned: Boolean, isSignSeparate: Boolean): Int = {
+    val isRealSigned = if (isSignSeparate) false else isSigned
+    val bytes = comp match {
+      case Some(x) if x == 0 || x == 4 || x == 5 =>
+        // if native binary follow IBM guide to digit binary length
+        precision match {
+          case a if a >= 1 && a <= 2 && x == 5 => 1 // byte
+          case a if a >= 1 && a <= 4 => 2           // short
+          case b if b >= 5 && b <= 9 => 4           // int
+          case c if c >= 10 && c <= 18 => 8         // long
+          case c =>                                 // bigint
+            val signBit = if (isRealSigned) 1 else 0
+            val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + signBit)/8
+            math.ceil(numberOfBytes).toInt
+        }
+      case Some(x) if x == 1 => 4 // float
+      case Some(x) if x == 2 => 8 // double
+      case Some(x) if x == 3 =>   // bcd
+        if (precision % 2 == 0)
+          precision / 2 + 1
+        else
+          precision / 2
+      case Some(x) => throw new IllegalArgumentException(s"Illegal clause COMP-$x.")
+      case None => precision
+    }
+    if (isSignSeparate) bytes + 1 else bytes
+  }
+
   /** Decode the bits that are located in a binary file to actual human readable information
     *
     * @param codec        scodec codec
@@ -456,11 +484,11 @@ object BinaryUtils {
     }
 
     val value = (signed, bigEndian, bytes.length) match {
-      case (true, true, 1) => (bytes(0) & 255).toByte
+      case (true, true, 1) => bytes(0)
       case (true, true, 2) => ((bytes(0) << 8) | (bytes(1) & 255)).toShort
       case (true, true, 4) => (bytes(0) << 24) | ((bytes(1) & 255) << 16) | ((bytes(2) & 255) << 8) | (bytes(3) & 255)
       case (true, true, 8) => ((bytes(0) & 255L) << 56) | ((bytes(1) & 255L) << 48) | ((bytes(2) & 255L) << 40) | ((bytes(3) & 255L) << 32) | ((bytes(4) & 255L) << 24) | ((bytes(5) & 255L) << 16) | ((bytes(6) & 255L) << 8) | (bytes(7) & 255L)
-      case (true, false, 1) => (bytes(0) & 255).toByte
+      case (true, false, 1) => bytes(0)
       case (true, false, 2) => ((bytes(1) << 8) | (bytes(0) & 255)).toShort
       case (true, false, 4) => (bytes(3) << 24) | ((bytes(2) & 255) << 16) | ((bytes(1) & 255) << 8) | (bytes(0) & 255)
       case (true, false, 8) => ((bytes(7) & 255L) << 56) | ((bytes(6) & 255L) << 48) | ((bytes(5) & 255L) << 40) | ((bytes(4) & 255L) << 32) | ((bytes(3) & 255L) << 24) | ((bytes(2) & 255L) << 16) | ((bytes(1) & 255L) << 8) | (bytes(0) & 255L)

@@ -21,6 +21,7 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.common.BinaryUtils._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -49,6 +50,7 @@ case class Primitive(
                       dependingOn: Option[String] = None,
                       isDependee: Boolean = false,
                       isFiller: Boolean = false,
+                      decode: DecoderSelector.Decoder,
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                     )
                     (val parent: Option[Group] = None)

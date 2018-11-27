@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 
 class BinaryExtractorSpec extends FunSuite {
 
@@ -158,7 +159,7 @@ class BinaryExtractorSpec extends FunSuite {
     val binaryProperties: BinaryProperties = BinaryProperties(2*8, 10*8, 10*8)
 
     val primitive: Primitive = Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
-      occurs, to, dependingOn, isDependee, isFiller, binaryProperties)(None)
+      occurs, to, dependingOn, isDependee, isFiller, DecoderSelector.getDecoder(dataType), binaryProperties)(None)
     val result2: Any = copybook.extractPrimitiveField(primitive, bytes, startOffset)
     assert(result2.asInstanceOf[String] === "EXAMPLE4")
   }
