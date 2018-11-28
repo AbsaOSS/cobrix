@@ -380,7 +380,7 @@ object BinaryUtils {
 
       i += 1
     }
-    validateAndFormatNumber(chars.toString)
+    validateAndFormatNumber(chars.toString.trim)
   }
 
   /** Decode a binary encoded decimal (BCD) aka COMP-3 format to a String

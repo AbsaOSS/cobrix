@@ -20,8 +20,13 @@ package za.co.absa.cobrix.cobol.parser.common
 object Constants {
 
   // The '-' character in different encodings
-  val minusCharEBCIDIC = 96
-  val minusCharASCII = 45
+  val minusCharEBCIDIC: Byte = 96
+  val minusCharASCII: Byte = 45
+  val plusCharEBCIDIC: Byte = 78
+  val plusCharASCII: Byte = 43
+
+  // Max integer precision after the number is considered Int
+  val maxShortPrecision = 4
 
   // Max integer precision after the number is considered Long
   val maxIntegerPrecision = 9

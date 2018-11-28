@@ -35,10 +35,6 @@ import scala.util.Random
                   15  TAXPAYER-STR   PIC X(8).
                   15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
                                      PIC 9(8) COMP.
-               10  STRATEGY.
-                 15  STRATEGY_DETAIL OCCURS 2000.
-                   25  NUM1 PIC 9(7) COMP.
-                   25  NUM2 PIC 9(7) COMP-3.
 
             05  CONTACTS REDEFINES STATIC-DETAILS.
                10  PHONE-NUMBER      PIC X(17).
@@ -48,7 +44,7 @@ import scala.util.Random
 /**
   * This is a test data generator. The copybook for it is listed above.
   */
-object TestDataGenerator3 {
+object TestDataGen2Accounts {
 
   case class Company(companyName: String, companyId: String, address: String)
 
@@ -83,27 +79,6 @@ object TestDataGenerator3 {
     }
   }
 
-  def putComp3ToArrayS8(bytes: Array[Byte], number: Int, index0: Int, index1: Int): Unit = {
-    var num = number
-
-    val startNibble = num % 10
-    num /= 10
-
-    bytes(index0 + 3) = (12 + startNibble*16).toByte
-
-    var i = 0
-    while (i < 3) {
-      val lowNibble = num % 10
-      num /= 10
-      val highNibble = num % 10
-      num /= 10
-      bytes(index0 + 2 - i) = (lowNibble + highNibble*16).toByte
-
-      i += 1
-    }
-
-  }
-
   def putShortToArray(bytes: Array[Byte], number: Short, index0: Int, index1: Int): Unit = {
     val coded = scodec.codecs.int16L.encode(number)
 
@@ -124,6 +99,7 @@ object TestDataGenerator3 {
   }
 
   def putDecimalToArray(bytes: Array[Byte], intpart: Long, fractPart: Int, index0: Int, index1: Int): Unit = {
+
     val lng = intpart.toLong * 100 + fractPart
 
     val coded = scodec.codecs.int64.encode(lng)
@@ -142,6 +118,7 @@ object TestDataGenerator3 {
           i += 1
         }
     }
+
   }
 
   val segments = Seq("S01L1", "S01L2")
@@ -235,10 +212,10 @@ object TestDataGenerator3 {
 
     val rand = new Random()
 
-    val byteArray1: Array[Byte] = new Array[Byte](16068)
+    val byteArray1: Array[Byte] = new Array[Byte](68)
     val byteArray2: Array[Byte] = new Array[Byte](64)
 
-    val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.OCT30.DATA.dat"))
+    val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.SEP30.DATA.dat"))
     var i = 0
     while (i < numberOfrecodsToGenerate) {
 
@@ -252,7 +229,7 @@ object TestDataGenerator3 {
       // XCOM header
       byteArray1(0) = 0
       byteArray1(1) = 0
-      putShortToArray(byteArray1, 16064, 2, 3) // record size = 16064
+      putShortToArray(byteArray1, 64, 2, 3) // record size = 64
 
       // Common values
       putStringToArray(byteArray1, segments(0), 4, 8) // 5
@@ -279,19 +256,10 @@ object TestDataGenerator3 {
         byteArray1(67) = 0
       }
 
-      var k = 68
-      for (i <- Range(0, 2000)) {
-        val strategy = rand.nextInt(9999999)
-        putIntToArray(byteArray1, strategy, k, k + 3) // 4
-        k += 4
-        putComp3ToArrayS8(byteArray1, strategy, k, k + 3) // 4
-        k += 4
-      }
-
       bos.write(byteArray1)
       i += 1
 
-      // SEGMENT 2 (child)
+      // SEGMENT 1 (child)
 
       val numOfContacts = rand.nextInt(5)
 
