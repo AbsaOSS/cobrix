@@ -72,7 +72,11 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
   behavior of FileUtils.getClass.getName
 
   it should "retrieve specific file" in {
-    val file = new File(innerTestDir3, testFiles(innerTestDir3.getName)(0)).getAbsolutePath
+    var file = new File(innerTestDir3, testFiles(innerTestDir3.getName)(0)).getAbsolutePath
+      .replaceAll("\\\\", "/") // Workaround for Windows '\' path separator
+    // Workaround for Windows absolute paths that ctart with C:\...
+    if (!file.startsWith("/"))
+      file = "/" + file
     val paths = FileUtils.getFiles(file, fileSystem, recursive = false)
     assert(paths.size == 1)
     assert(paths.head == file)

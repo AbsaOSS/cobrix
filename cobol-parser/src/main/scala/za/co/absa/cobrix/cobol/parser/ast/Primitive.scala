@@ -21,6 +21,7 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.common.BinaryUtils._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -49,6 +50,7 @@ case class Primitive(
                       dependingOn: Option[String] = None,
                       isDependee: Boolean = false,
                       isFiller: Boolean = false,
+                      decode: DecoderSelector.Decoder,
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                     )
                     (val parent: Option[Group] = None)
@@ -133,6 +135,17 @@ case class Primitive(
     */
   @throws(classOf[Exception])
   def decodeTypeValue(itOffset: Long, record: Array[Byte]): Any = {
+    // Uncomment when when decoders based extractors are finished
+    /*
+    val bytesCount = binaryProperties.dataSize / 8
+    val idx = (itOffset / 8).toInt
+    if (idx + bytesCount > record.length) {
+      return null
+    }
+    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
+
+    decode(bytes)*/
+
     val str = decodeValue2(itOffset, record)
     val value = try {
       str match {
@@ -147,14 +160,17 @@ case class Primitive(
               // Here the explicit converters to boxed types are used.
               // This is because Scala tries to generalize output and will
               // produce java.lang.Long for both str.get.toLong and str.get.toInt
-                if (dt.precision > Constants.maxIntegerPrecision) {
-                  val longValue: java.lang.Long = strValue.toLong
-                  longValue
-                }
-                else {
-                  val intValue: java.lang.Integer = strValue.toInt
-                  intValue
-                }
+              if (dt.precision > Constants.maxLongPrecision) {
+                val bigInt = BigDecimal(strValue)
+                bigInt
+              } else if (dt.precision > Constants.maxIntegerPrecision) {
+                val longValue: java.lang.Long = strValue.toLong
+                longValue
+              }
+              else {
+                val intValue: java.lang.Integer = strValue.toInt
+                intValue
+              }
             case _ => throw new IllegalStateException("Unknown AST object")
           }
           value

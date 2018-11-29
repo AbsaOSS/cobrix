@@ -113,7 +113,9 @@ class CobolSchema(val copybook: Copybook,
             case Decimal(scale, precision, _, _, _, _, _, _) => DecimalType(precision, scale)
             case _: AlphaNumeric => StringType
             case dt: Integral =>
-              if (dt.precision > Constants.maxIntegerPrecision) {
+              if (dt.precision > Constants.maxLongPrecision) {
+                DecimalType(precision = dt.precision, scale = 0)
+              } else if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }
               else {

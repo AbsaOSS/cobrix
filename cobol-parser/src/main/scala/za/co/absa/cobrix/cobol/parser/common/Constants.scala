@@ -18,8 +18,22 @@ package za.co.absa.cobrix.cobol.parser.common
 
 /** The object contains various constants related to the Cobol copybook parser */
 object Constants {
+
+  // The '-' character in different encodings
+  val minusCharEBCIDIC: Byte = 96
+  val minusCharASCII: Byte = 45
+  val plusCharEBCIDIC: Byte = 78
+  val plusCharASCII: Byte = 43
+
+  // Max integer precision after the number is considered Int
+  val maxShortPrecision = 4
+
   // Max integer precision after the number is considered Long
   val maxIntegerPrecision = 9
+
+  // Max long precision after the number is considered BigInt
+  val maxLongPrecision = 18
+
   // Max picture size of a Copybook field
   val maxFieldLength = 100000
   val maxXcomRecordSize: Int = 100*1024*1024

@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -145,7 +146,8 @@ object CopybookParser {
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller)(None)
+          val decode = DecoderSelector.getDecoder(dataType)
+          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller, decode = decode)(None)
         }
         else {
           val groupUsage = getUsageModifiers(field.modifiers)

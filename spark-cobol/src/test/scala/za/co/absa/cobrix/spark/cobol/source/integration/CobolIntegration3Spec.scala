@@ -22,6 +22,7 @@ import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 //noinspection NameBooleanParameters
 class CobolIntegration3Spec extends FunSuite with SparkTestBase {
@@ -53,12 +54,7 @@ class CobolIntegration3Spec extends FunSuite with SparkTestBase {
     val actualSchema = df.schema.json
 
     if (actualSchema != expectedSchema) {
-      val writer = new PrintWriter(actualSchemaPath)
-      try {
-        writer.write(actualSchema)
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
       assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
         s"$actualSchemaPath for details.")
     }
@@ -67,15 +63,7 @@ class CobolIntegration3Spec extends FunSuite with SparkTestBase {
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
     if (!actual.sameElements(expected)) {
-      val writer = new PrintWriter(actualResultsPath)
-      try {
-        for (str <- actual) {
-          writer.write(str)
-          writer.write("\n")
-        }
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringsToFile(actual, actualResultsPath)
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
     }
   }

@@ -37,9 +37,9 @@ class MalformedValuesSpec extends FunSuite {
     // Encoded 8405184 is OK for Int32 and PIC 9(7)
     val data1 = Array(0x00.toByte, 0x80.toByte, 0x40.toByte, 0xC0.toByte)
     val decodedValue1 = primitive.decodeTypeValue(0, data1)
-    assert(decodedValue1 == 8405184)
+    assert(decodedValue1.asInstanceOf[Int] == 8405184)
 
-    // Encoded 3263185088 is bigger than Int32 and PIC 9(7), should return null
+    // Encoded 3263185088 is bigger than Int32 and it is invalid 9(7) since the number of digits is 10, not 7. Should return null
     val data2 = Array(0xC2.toByte, 0x80.toByte, 0x40.toByte, 0xC0.toByte)
     val decodedValue2 = primitive.decodeTypeValue(0, data2)
     assert(decodedValue2 == null)
