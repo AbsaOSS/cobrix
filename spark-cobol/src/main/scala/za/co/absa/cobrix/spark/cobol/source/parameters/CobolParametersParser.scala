@@ -46,6 +46,7 @@ object CobolParametersParser {
   // Parameters for multisegment XCOM files
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_SEGMENT_FIELD             = "segment_field"
+  val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
 
@@ -153,6 +154,8 @@ object CobolParametersParser {
       val name = s"$PARAM_SEGMENT_ID_LEVEL_PREFIX$i"
       if (params.contains(name)) {
         levels += params(name)
+      } else if (i==0 && params.contains(PARAM_SEGMENT_ID_ROOT)){
+        levels += params(PARAM_SEGMENT_ID_ROOT)
       } else {
         return levels
       }

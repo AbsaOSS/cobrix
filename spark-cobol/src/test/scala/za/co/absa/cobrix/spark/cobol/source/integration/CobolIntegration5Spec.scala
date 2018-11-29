@@ -20,8 +20,14 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
 import org.scalatest.FunSuite
+import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import scala.collection.JavaConversions._
@@ -102,8 +108,9 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("is_xcom", "true")
+      .option("input_split_records", "100")
       .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "S01L1")
+      .option("segment_id_root", "S01L1")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .option("segment_id_prefix", "B")
@@ -140,6 +147,19 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
     }
     Files.delete(Paths.get(actualResultsPath))
 
+  }
+
+  test(s"Index generator test on $exampleName - root segment id") {
+    val copybookContents = Files.readAllLines(Paths.get("../data/test5_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val copybook = CopybookParser.parseTree(copybookContents)
+    val segmentIdField = copybook.getFieldByName("SEGMENT_ID").asInstanceOf[Primitive]
+    val segmentIdRootValue = "S01L1"
+
+
+    val stream = new FileStreamer("../data/test5b_data/COMPANIES.dat", FileSystem.get(new Configuration()))
+
+    val indexes = IndexGenerator.simpleIndexGenerator(0, stream, Some(10), None, Some(copybook), Some(segmentIdField), segmentIdRootValue)
+    assert(indexes.length == 89)
   }
 
 }

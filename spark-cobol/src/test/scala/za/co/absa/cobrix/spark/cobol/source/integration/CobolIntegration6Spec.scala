@@ -45,9 +45,9 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
     val actualSchemaPath = "../data/test6_expected/test6_schema_actual.json"
     val actualLayoutPath = "../data/test6_expected/test6_layout_actual.txt"
     //val expectedResultsPath = "../data/test6_expected/test6.csv"
-    val expectedResultsPath = "../data/test6_expected/test6.json"
+    val expectedResultsPath = "../data/test6_expected/test6.txt"
     //val actualResultsPath1 = "../data/test6_expected/test6"
-    val actualResultsPath = "../data/test6_expected/test6_actual.json"
+    val actualResultsPath = "../data/test6_expected/test6_actual.txt"
     //val actualResultsPathCrc = "../data/test6_expected/.test6_actual.csv.crc"
 
     // Comparing layout
