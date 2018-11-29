@@ -1,6 +1,6 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-RECORD                                                       1    947    947
+RECORD                                                       1   1112   1112
   10 ID                                               1      1      4      4
   10 STRING_VAL                                       2      5     14     10
   10 NUM_STR_INT01                                    3     15     15      1
@@ -95,28 +95,52 @@ RECORD                                                       1    947    947
   10 NUM_BCD_INT12                                   92    764    773     10
   10 NUM_BCD_INT13                                   93    774    784     11
   10 NUM_BCD_INT14                                   94    785    803     19
-  10 NUM_BCD_DEC01                                   95    804    805      2
-  10 NUM_BCD_DEC02                                   96    806    808      3
-  10 NUM_BCD_DEC03                                   97    809    811      3
-  10 NUM_BCD_DEC04                                   98    812    816      5
-  10 NUM_BCD_DEC05                                   99    817    821      5
-  10 NUM_BCD_DEC06                                  100    822    827      6
-  10 NUM_BCD_DEC07                                  101    828    836      9
-  10 NUM_BCD_DEC08                                  102    837    846     10
-  10 NUM_BCD_DEC09                                  103    847    856     10
-  10 NUM_BCD_DEC10                                  104    857    866     10
-  10 NUM_SL_STR_INT01                               105    867    876     10
-  10 NUM_SL_STR_DEC01                               106    877    881      5
-  10 COMMON_8_BIN                                   107    882    885      4
-  10 COMMON_S3_BIN                                  108    886    887      2
-  10 COMMON_S94COMP                                 109    888    889      2
-  10 COMMON_S8_BIN                                  110    890    893      4
-  10 COMMON_DDC97_BIN                               111    894    897      4
-  10 COMMON_97COMP3                                 112    898    901      4
-  10 COMMON_915COMP3                                113    902    909      8
-  10 COMMON_S95COMP3                                114    910    912      3
-  10 COMMON_S999DCCOMP3                             115    913    918      6
-  10 COMMON_S913COMP3                               116    919    925      7
-  10 COMMON_S913DCCOMP3                             117    926    933      8
-  10 COMMON_S911DCC2                                118    934    940      7
-  10 COMMON_S910DCC3                                119    941    947      7
+  10 NUM_BCD_SINT01                                  95    804    804      1
+  10 NUM_BCD_SINT02                                  96    805    806      2
+  10 NUM_BCD_SINT03                                  97    807    808      2
+  10 NUM_BCD_SINT04                                  98    809    811      3
+  10 NUM_BCD_SINT05                                  99    812    814      3
+  10 NUM_BCD_SINT06                                 100    815    819      5
+  10 NUM_BCD_SINT07                                 101    820    824      5
+  10 NUM_BCD_SINT08                                 102    825    830      6
+  10 NUM_BCD_SINT09                                 103    831    836      6
+  10 NUM_BCD_SINT10                                 104    837    845      9
+  10 NUM_BCD_SINT11                                 105    846    855     10
+  10 NUM_BCD_SINT12                                 106    856    865     10
+  10 NUM_BCD_SINT13                                 107    866    876     11
+  10 NUM_BCD_SINT14                                 108    877    895     19
+  10 NUM_BCD_DEC01                                  109    896    897      2
+  10 NUM_BCD_DEC02                                  110    898    900      3
+  10 NUM_BCD_DEC03                                  111    901    903      3
+  10 NUM_BCD_DEC04                                  112    904    908      5
+  10 NUM_BCD_DEC05                                  113    909    913      5
+  10 NUM_BCD_DEC06                                  114    914    919      6
+  10 NUM_BCD_DEC07                                  115    920    928      9
+  10 NUM_BCD_DEC08                                  116    929    938     10
+  10 NUM_BCD_DEC09                                  117    939    948     10
+  10 NUM_BCD_DEC10                                  118    949    963     15
+  10 NUM_BCD_SDEC01                                 119    964    965      2
+  10 NUM_BCD_SDEC02                                 120    966    968      3
+  10 NUM_BCD_SDEC03                                 121    969    971      3
+  10 NUM_BCD_SDEC04                                 122    972    976      5
+  10 NUM_BCD_SDEC05                                 123    977    981      5
+  10 NUM_BCD_SDEC06                                 124    982    987      6
+  10 NUM_BCD_SDEC07                                 125    988    996      9
+  10 NUM_BCD_SDEC08                                 126    997   1006     10
+  10 NUM_BCD_SDEC09                                 127   1007   1016     10
+  10 NUM_BCD_SDEC10                                 128   1017   1031     15
+  10 NUM_SL_STR_INT01                               129   1032   1041     10
+  10 NUM_SL_STR_DEC01                               130   1042   1046      5
+  10 COMMON_8_BIN                                   131   1047   1050      4
+  10 COMMON_S3_BIN                                  132   1051   1052      2
+  10 COMMON_S94COMP                                 133   1053   1054      2
+  10 COMMON_S8_BIN                                  134   1055   1058      4
+  10 COMMON_DDC97_BIN                               135   1059   1062      4
+  10 COMMON_97COMP3                                 136   1063   1066      4
+  10 COMMON_915COMP3                                137   1067   1074      8
+  10 COMMON_S95COMP3                                138   1075   1077      3
+  10 COMMON_S999DCCOMP3                             139   1078   1083      6
+  10 COMMON_S913COMP3                               140   1084   1090      7
+  10 COMMON_S913DCCOMP3                             141   1091   1098      8
+  10 COMMON_S911DCC2                                142   1099   1105      7
+  10 COMMON_S910DCC3                                143   1106   1112      7

@@ -96,13 +96,13 @@ import scala.util.Random
 ********** 10  NUM-STR-EDEC06      PIC S9(5).9(5).
 
 ********** Binary formatted integral numbers
-          10  NUM-BIN-INT01       PIC 9(1)        COMP.
-          10  NUM-BIN-INT02       PIC 9(2)        COMP.
-          10  NUM-BIN-INT03       PIC 9(3)        COMP.
-          10  NUM-BIN-INT04       PIC 9(4)        COMP.
-          10  NUM-BIN-INT05       PIC 9(5)        COMP.
-          10  NUM-BIN-INT06       PIC 9(8)        BINARY.
-          10  NUM-BIN-INT07       PIC 9(9)        BINARY.
+          10  NUM-BIN-INT01       PIC 9(1)         COMP.
+          10  NUM-BIN-INT02       PIC 9(2)         COMP.
+          10  NUM-BIN-INT03       PIC 9(3)         COMP.
+          10  NUM-BIN-INT04       PIC 9(4)         COMP.
+          10  NUM-BIN-INT05       PIC 9(5)         COMP.
+          10  NUM-BIN-INT06       PIC 9(8)         BINARY.
+          10  NUM-BIN-INT07       PIC 9(9)         BINARY.
 ************* These types are currently not supported, added for the future
 ************* 10  NUM-BIN-INT08       PIC 9(10)       BINARY.
 ************* 10  NUM-BIN-INT09       PIC 9(11)       BINARY.
@@ -111,73 +111,98 @@ import scala.util.Random
 ************* 10  NUM-BIN-INT12       PIC 9(19)       BINARY.
 ************* 10  NUM-BIN-INT13       PIC 9(20)       BINARY.
 ************* 10  NUM-BIN-INT14       PIC 9(37)       BINARY.
-          10  NUM-SBIN-SINT01     PIC S9(1)       COMP.
-          10  NUM-SBIN-SINT02     PIC S9(2)       COMP.
-          10  NUM-SBIN-SINT03     PIC S9(3)       COMP.
-          10  NUM-SBIN-SINT04     PIC S9(4)       COMP.
-          10  NUM-SBIN-SINT05     PIC S9(5)       COMP.
-          10  NUM-SBIN-SINT06     PIC S9(8)       BINARY.
-          10  NUM-SBIN-SINT07     PIC S9(9)       BINARY.
-          10  NUM-SBIN-SINT08     PIC S9(10)      BINARY.
-          10  NUM-SBIN-SINT09     PIC S9(11)      BINARY.
-          10  NUM-SBIN-SINT10     PIC S9(17)      BINARY.
-          10  NUM-SBIN-SINT11     PIC S9(18)      BINARY.
+          10  NUM-SBIN-SINT01     PIC S9(1)        COMP.
+          10  NUM-SBIN-SINT02     PIC S9(2)        COMP.
+          10  NUM-SBIN-SINT03     PIC S9(3)        COMP.
+          10  NUM-SBIN-SINT04     PIC S9(4)        COMP.
+          10  NUM-SBIN-SINT05     PIC S9(5)        COMP.
+          10  NUM-SBIN-SINT06     PIC S9(8)        BINARY.
+          10  NUM-SBIN-SINT07     PIC S9(9)        BINARY.
+          10  NUM-SBIN-SINT08     PIC S9(10)       BINARY.
+          10  NUM-SBIN-SINT09     PIC S9(11)       BINARY.
+          10  NUM-SBIN-SINT10     PIC S9(17)       BINARY.
+          10  NUM-SBIN-SINT11     PIC S9(18)       BINARY.
 ************* These types are currently not supported, added for the future
 ************* 10  NUM-SBIN-SINT12     PIC S9(19)      BINARY.
 ************* 10  NUM-SBIN-SINT13     PIC S9(20)      BINARY.
 ************* 10  NUM-SBIN-SINT14     PIC S9(37)      BINARY.
 
 ********** Binary formatted decimal numbers
-          10  NUM-BIN-DEC01       PIC 99V9        COMP.
-          10  NUM-BIN-DEC02       PIC 99V99       COMP.
-          10  NUM-BIN-DEC03       PIC 9(3)V99     COMP.
-          10  NUM-BIN-DEC04       PIC 9(4)V9(4)   COMP.
-          10  NUM-BIN-DEC05       PIC 9(5)V9(4)   COMP.
+          10  NUM-BIN-DEC01       PIC 99V9         COMP.
+          10  NUM-BIN-DEC02       PIC 99V99        COMP.
+          10  NUM-BIN-DEC03       PIC 9(3)V99      COMP.
+          10  NUM-BIN-DEC04       PIC 9(4)V9(4)    COMP.
+          10  NUM-BIN-DEC05       PIC 9(5)V9(4)    COMP.
 ************* These types are currently not supported, added for the future
 ************* 10  NUM-BIN-DEC06       PIC 9(5)V9(5)   COMP.
 ************* 10  NUM-BIN-DEC07       PIC 9(15)V99    COMP.
 ************* 10  NUM-BIN-DEC08       PIC 9(16)V99    COMP.
 ************* 10  NUM-BIN-DEC09       PIC 9(17)V99    COMP.
 ************* 10  NUM-BIN-DEC10       PIC 9(18)V(10)  COMP.
-          10  NUM-SBIN-DEC01      PIC S99V9       COMP.
-          10  NUM-SBIN-DEC02      PIC S99V99      COMP.
-          10  NUM-SBIN-DEC03      PIC S9(3)V99    COMP.
-          10  NUM-SBIN-DEC04      PIC S9(4)V9(4)  COMP.
-          10  NUM-SBIN-DEC05      PIC S9(5)V9(4)  COMP.
-          10  NUM-SBIN-DEC06      PIC S9(5)V9(5)  COMP.
-          10  NUM-SBIN-DEC07      PIC S9(15)V99   COMP.
-          10  NUM-SBIN-DEC08      PIC S9(16)V99   COMP.
+          10  NUM-SBIN-DEC01      PIC S99V9        COMP.
+          10  NUM-SBIN-DEC02      PIC S99V99       COMP.
+          10  NUM-SBIN-DEC03      PIC S9(3)V99     COMP.
+          10  NUM-SBIN-DEC04      PIC S9(4)V9(4)   COMP.
+          10  NUM-SBIN-DEC05      PIC S9(5)V9(4)   COMP.
+          10  NUM-SBIN-DEC06      PIC S9(5)V9(5)   COMP.
+          10  NUM-SBIN-DEC07      PIC S9(15)V99    COMP.
+          10  NUM-SBIN-DEC08      PIC S9(16)V99    COMP.
 ************* These types are currently not supported, added for the future
 ************* 10  NUM-SBIN-DEC09      PIC S9(17)V99   COMP.
 ************* 10  NUM-SBIN-DEC10      PIC S9(18)V(10) COMP.
 
 ********** BCD formatted integral numbers
-          10  NUM-BCD-INT01       PIC 9(1)       COMP-3.
-          10  NUM-BCD-INT02       PIC 9(2)       COMP-3.
-          10  NUM-BCD-INT03       PIC 9(3)       COMP-3.
-          10  NUM-BCD-INT04       PIC 9(4)       COMP-3.
-          10  NUM-BCD-INT05       PIC 9(5)       COMP-3.
-          10  NUM-BCD-INT06       PIC 9(8)       COMP-3.
-          10  NUM-BCD-INT07       PIC 9(9)       COMP-3.
-          10  NUM-BCD-INT08       PIC 9(10)      COMP-3.
-          10  NUM-BCD-INT09       PIC 9(11)      COMP-3.
-          10  NUM-BCD-INT10       PIC 9(17)      COMP-3.
-          10  NUM-BCD-INT11       PIC 9(18)      COMP-3.
-          10  NUM-BCD-INT12       PIC 9(19)      COMP-3.
-          10  NUM-BCD-INT13       PIC 9(20)      COMP-3.
-          10  NUM-BCD-INT14       PIC 9(37)      COMP-3.
+          10  NUM-BCD-INT01       PIC 9(1)        COMP-3.
+          10  NUM-BCD-INT02       PIC 9(2)        COMP-3.
+          10  NUM-BCD-INT03       PIC 9(3)        COMP-3.
+          10  NUM-BCD-INT04       PIC 9(4)        COMP-3.
+          10  NUM-BCD-INT05       PIC 9(5)        COMP-3.
+          10  NUM-BCD-INT06       PIC 9(8)        COMP-3.
+          10  NUM-BCD-INT07       PIC 9(9)        COMP-3.
+          10  NUM-BCD-INT08       PIC 9(10)       COMP-3.
+          10  NUM-BCD-INT09       PIC 9(11)       COMP-3.
+          10  NUM-BCD-INT10       PIC 9(17)       COMP-3.
+          10  NUM-BCD-INT11       PIC 9(18)       COMP-3.
+          10  NUM-BCD-INT12       PIC 9(19)       COMP-3.
+          10  NUM-BCD-INT13       PIC 9(20)       COMP-3.
+          10  NUM-BCD-INT14       PIC 9(37)       COMP-3.
+
+          10  NUM-BCD-SINT01      PIC S9(1)       COMP-3.
+          10  NUM-BCD-SINT02      PIC S9(2)       COMP-3.
+          10  NUM-BCD-SINT03      PIC S9(3)       COMP-3.
+          10  NUM-BCD-SINT04      PIC S9(4)       COMP-3.
+          10  NUM-BCD-SINT05      PIC S9(5)       COMP-3.
+          10  NUM-BCD-SINT06      PIC S9(8)       COMP-3.
+          10  NUM-BCD-SINT07      PIC S9(9)       COMP-3.
+          10  NUM-BCD-SINT08      PIC S9(10)      COMP-3.
+          10  NUM-BCD-SINT09      PIC S9(11)      COMP-3.
+          10  NUM-BCD-SINT10      PIC S9(17)      COMP-3.
+          10  NUM-BCD-SINT11      PIC S9(18)      COMP-3.
+          10  NUM-BCD-SINT12      PIC S9(19)      COMP-3.
+          10  NUM-BCD-SINT13      PIC S9(20)      COMP-3.
+          10  NUM-BCD-SINT14      PIC S9(37)      COMP-3.
 
 ********** BCD formatted decimal numbers
-          10  NUM-BCD-DEC01       PIC 99V9       COMP-3.
-          10  NUM-BCD-DEC02       PIC 99V99      COMP-3.
-          10  NUM-BCD-DEC03       PIC 9(3)V99    COMP-3.
-          10  NUM-BCD-DEC04       PIC 9(4)V9(4)  COMP-3.
-          10  NUM-BCD-DEC05       PIC 9(5)V9(4)  COMP-3.
-          10  NUM-BCD-DEC06       PIC 9(5)V9(5)  COMP-3.
-          10  NUM-BCD-DEC07       PIC 9(15)V99   COMP-3.
-          10  NUM-BCD-DEC08       PIC 9(16)V99   COMP-3.
-          10  NUM-BCD-DEC09       PIC 9(17)V99   COMP-3.
-          10  NUM-BCD-DEC10       PIC 9(18)V(10) COMP-3.
+          10  NUM-BCD-DEC01       PIC 99V9        COMP-3.
+          10  NUM-BCD-DEC02       PIC 99V99       COMP-3.
+          10  NUM-BCD-DEC03       PIC 9(3)V99     COMP-3.
+          10  NUM-BCD-DEC04       PIC 9(4)V9(4)   COMP-3.
+          10  NUM-BCD-DEC05       PIC 9(5)V9(4)   COMP-3.
+          10  NUM-BCD-DEC06       PIC 9(5)V9(5)   COMP-3.
+          10  NUM-BCD-DEC07       PIC 9(15)V99    COMP-3.
+          10  NUM-BCD-DEC08       PIC 9(16)V99    COMP-3.
+          10  NUM-BCD-DEC09       PIC 9(17)V99    COMP-3.
+          10  NUM-BCD-DEC10       PIC 9(18)V9(10) COMP-3.
+          10  NUM-BCD-SDEC01      PIC S99V9       COMP-3.
+          10  NUM-BCD-SDEC02      PIC S99V99      COMP-3.
+          10  NUM-BCD-SDEC03      PIC S9(3)V99    COMP-3.
+          10  NUM-BCD-SDEC04      PIC S9(4)V9(4)  COMP-3.
+          10  NUM-BCD-SDEC05      PIC S9(5)V9(4)  COMP-3.
+          10  NUM-BCD-SDEC06      PIC S9(5)V9(5)  COMP-3.
+          10  NUM-BCD-SDEC07      PIC S9(15)V99   COMP-3.
+          10  NUM-BCD-SDEC08      PIC S9(16)V99   COMP-3.
+          10  NUM-BCD-SDEC09      PIC S9(17)V99   COMP-3.
+          10  NUM-BCD-SDEC10      PIC S9(18)V9(10) COMP-3.
 
 ********** sign trailing numbers
           10  NUM-SL-STR-INT01    PIC S9(9) SIGN IS
@@ -231,64 +256,6 @@ object TestDataGen4Integration {
     index0 + length
   }
 
-  /*def putNumStrToArray(fieldName: String,
-                       bytes: Array[Byte],
-                       bigNumber: String,
-                       index0: Int,
-                       length: Int,
-                       signed: Boolean,
-                       isNegative: Boolean = false,
-                       isSignalSeparate: Boolean = false,
-                       isSignLeading: Boolean = false,
-                       explicitDecimalPosition: Int = -1): Int = {
-
-    val explicitSignChars = if (explicitDecimalPosition >= 0) 1 else 0
-    val numLen = if (isSignalSeparate) {
-      length + explicitSignChars
-    } else {
-      if (signed) length + explicitSignChars - 1 else length + explicitSignChars
-    }
-
-    var str = bigNumber.take(numLen)
-    if (!isSignalSeparate) {
-      if (isNegative) str = "-" + str
-    }
-
-    if (debugPrint) {
-      println(s"Putting number $fieldName <- '$str' to offsets $index0 .. ${index0 + length - 1}. New offset = ${index0 + length}")
-    }
-
-    var i = index0
-    if (isSignLeading) {
-      if (isNegative)
-        bytes(i) = Constants.minusCharEBCIDIC
-      else
-        bytes(i) = Constants.plusCharEBCIDIC
-      i += 1
-    } else {
-      if (isNegative)
-        bytes(index0 + length - 1) = Constants.minusCharEBCIDIC
-      else
-        bytes(index0 + length - 1) = Constants.plusCharEBCIDIC
-    }
-
-    var j = 0
-    while (i < index0 + length) {
-      if (i == explicitDecimalPosition) {
-        bytes(i) = '.'
-        i += 1
-      }
-      if (j < str.length)
-        bytes(i) = BinaryUtils.asciiToEbcdic(str.charAt(j))
-      else bytes(i) = 0
-      i += 1
-      j += 1
-    }
-
-    index0 + length
-  }
-*/
-
   def putIntToArray(bytes: Array[Byte], number: Int, index0: Int): Int = {
     val coded = scodec.codecs.int32.encode(number)
 
@@ -318,20 +285,20 @@ object TestDataGen4Integration {
                                length: Int,
                                signed: Boolean,
                                isNegative: Boolean = false,
-                               isSignalSeparate: Boolean = false,
-                               isSignLeading: Boolean = false,
+                               isSignSeparate: Boolean = false,
+                               isSignLeading: Boolean = true,
                                explicitDecimalPosition: Int = -1): Int = {
 
     val explicitDecimalChars = if (explicitDecimalPosition >= 0) 1 else 0
-    val explicitSignChars = if (isSignalSeparate) 1 else 0
-    val numLen = if (isSignalSeparate) {
+    val explicitSignChars = if (isSignSeparate) 1 else 0
+    val numLen = if (isSignSeparate) {
       length + explicitSignChars
     } else {
       if (signed) length + explicitSignChars - 1 else length + explicitSignChars
     }
 
     var str = bigNumber.take(length)
-    if (!isSignalSeparate) {
+    if (!isSignSeparate) {
       if (isNegative) str = "-" + str
     }
 
@@ -339,20 +306,22 @@ object TestDataGen4Integration {
     val binLength = encodedValue.length
 
     var i = index0
-    if (isSignLeading) {
-      if (isNegative)
-        bytes(i) = Constants.minusCharEBCIDIC
-      else
-        bytes(i) = Constants.plusCharEBCIDIC
-      i += 1
-    } else {
-      if (isNegative)
-        bytes(index0 + binLength) = Constants.minusCharEBCIDIC
-      else
-        bytes(index0 + binLength) = Constants.plusCharEBCIDIC
+    if (isSignSeparate) {
+      if (isSignLeading) {
+        if (isNegative)
+          bytes(i) = Constants.minusCharEBCIDIC
+        else
+          bytes(i) = Constants.plusCharEBCIDIC
+        i += 1
+      } else {
+        if (isNegative)
+          bytes(index0 + binLength) = Constants.minusCharEBCIDIC
+        else
+          bytes(index0 + binLength) = Constants.plusCharEBCIDIC
+      }
     }
     val index1 = i
-    val newOffset = index1 + binLength + explicitSignChars + explicitDecimalChars
+    val newOffset = index1 + binLength + explicitDecimalChars
 
     if (debugPrint) {
       println(s"Putting number $fieldName <- '$str' to offsets $index0 .. ${newOffset - 1}. New offset = $newOffset")
@@ -405,6 +374,36 @@ object TestDataGen4Integration {
     }
   }
 
+  def encodeBcd(numStr: String, isSigned: Boolean): Array[Byte] = {
+    val isNegative = numStr(0) == '-'
+    val str = if (isNegative) numStr.drop(1) else numStr
+    val outputArray = new Array[Byte](str.length / 2 + 1)
+    var i = 0
+    var j = 0
+    val signNibble: Byte = if (isSigned) {
+      if (isNegative) 13 else 12
+    } else 15
+    if (str.length % 2 == 0) {
+      val highNibble: Byte = (str(i).toByte - 48).toByte
+      outputArray(j) = highNibble
+      i += 1
+      j += 1
+    }
+    while (i < str.length) {
+      val highNibble: Byte = (str(i).toByte - 48).toByte
+      val lowNibble: Byte = if (i == str.length - 1) {
+        signNibble
+      } else {
+        (str(i + 1).toByte - 48).toByte
+      }
+      outputArray(j) = (highNibble * 16 + lowNibble).toByte
+      i += 2
+      j += 1
+    }
+    outputArray
+  }
+
+
   def putNumStrToArray(fieldName: String,
                        bytes: Array[Byte],
                        bigNumber: String,
@@ -412,53 +411,11 @@ object TestDataGen4Integration {
                        length: Int,
                        signed: Boolean,
                        isNegative: Boolean = false,
-                       isSignalSeparate: Boolean = false,
+                       isSignSeparate: Boolean = false,
                        isSignLeading: Boolean = false,
                        explicitDecimalPosition: Int = -1): Int = {
-    putEncodedNumStrToArray( (str: String) => encodeUncompressed(str, length),
-      fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignalSeparate, isSignLeading, explicitDecimalPosition)
-  }
-
-  def putComp3ToArrayS8(bytes: Array[Byte], number: Int, index0: Int, index1: Int): Unit = {
-    var num = number
-
-    val startNibble = num % 10
-    num /= 10
-
-    bytes(index0 + 3) = (12 + startNibble * 16).toByte
-
-    var i = 0
-    while (i < 3) {
-      val lowNibble = num % 10
-      num /= 10
-      val highNibble = num % 10
-      num /= 10
-      bytes(index0 + 2 - i) = (lowNibble + highNibble * 16).toByte
-
-      i += 1
-    }
-
-  }
-
-  def putDecimalToArray(bytes: Array[Byte], intpart: Long, fractPart: Int, index0: Int, index1: Int): Unit = {
-    val lng = intpart.toLong * 100 + fractPart
-
-    val coded = scodec.codecs.int64.encode(lng)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
+    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length),
+      fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, explicitDecimalPosition)
   }
 
   val strings = Seq(
@@ -507,11 +464,11 @@ object TestDataGen4Integration {
 
   def main(args: Array[String]): Unit = {
 
-    val numberOfrecodsToGenerate = 1000
+    val numberOfrecodsToGenerate = 100
 
     val rand: Random = new Random()
 
-    val byteArray: Array[Byte] = new Array[Byte](947)
+    val byteArray: Array[Byte] = new Array[Byte](1112)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -519,7 +476,7 @@ object TestDataGen4Integration {
       var offset = 0
 
       val bigNum = getVeryBigNumber(rand)
-      val isNegative = rand.nextBoolean()
+      val isNegative = i == 0 || rand.nextBoolean()
 
       offset = putIntToArray(byteArray, i + 1, offset)
 
@@ -614,6 +571,83 @@ object TestDataGen4Integration {
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC06", byteArray, bigNum, offset, 10, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC07", byteArray, bigNum, offset, 17, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC08", byteArray, bigNum, offset, 18, signed = true, isNegative)
+
+      // BCD formatted integral numbers
+      val encodeBcdSigned = (str: String) => encodeBcd(str, isSigned = true)
+      val encodeBcdUnsigned = (str: String) => encodeBcd(str, isSigned = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT01", byteArray, bigNum, offset, 1, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT02", byteArray, bigNum, offset, 2, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT03", byteArray, bigNum, offset, 3, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT04", byteArray, bigNum, offset, 4, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT05", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT06", byteArray, bigNum, offset, 8, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT07", byteArray, bigNum, offset, 9, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT08", byteArray, bigNum, offset, 10, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT09", byteArray, bigNum, offset, 11, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT10", byteArray, bigNum, offset, 17, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT11", byteArray, bigNum, offset, 18, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT12", byteArray, bigNum, offset, 19, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT13", byteArray, bigNum, offset, 20, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-INT14", byteArray, bigNum, offset, 37, signed = false)
+
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT01", byteArray, bigNum, offset, 1, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT02", byteArray, bigNum, offset, 2, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT03", byteArray, bigNum, offset, 3, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT04", byteArray, bigNum, offset, 4, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT05", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT06", byteArray, bigNum, offset, 8, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT07", byteArray, bigNum, offset, 9, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT08", byteArray, bigNum, offset, 10, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT09", byteArray, bigNum, offset, 11, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT10", byteArray, bigNum, offset, 17, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT11", byteArray, bigNum, offset, 18, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT12", byteArray, bigNum, offset, 19, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT13", byteArray, bigNum, offset, 20, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SINT14", byteArray, bigNum, offset, 37, signed = true, isNegative)
+
+      // BCD formatted decimal numbers
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC01", byteArray, bigNum, offset, 3, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC02", byteArray, bigNum, offset, 4, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC03", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC04", byteArray, bigNum, offset, 8, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC05", byteArray, bigNum, offset, 9, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC06", byteArray, bigNum, offset, 10, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC07", byteArray, bigNum, offset, 17, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC08", byteArray, bigNum, offset, 18, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC09", byteArray, bigNum, offset, 19, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "NUM-BCD-DEC10", byteArray, bigNum, offset, 28, signed = false)
+
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC01", byteArray, bigNum, offset, 3, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC02", byteArray, bigNum, offset, 4, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC03", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC04", byteArray, bigNum, offset, 8, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC05", byteArray, bigNum, offset, 9, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC06", byteArray, bigNum, offset, 10, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC07", byteArray, bigNum, offset, 17, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC08", byteArray, bigNum, offset, 18, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
+
+      // Sign separate numbers
+      offset = putNumStrToArray("NUM-SL-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+      offset = putNumStrToArray("NUM-SL-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+
+      // Common types
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "COMMON-8-BIN", byteArray, bigNum, offset, 8, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-S3-BIN", byteArray, bigNum, offset, 3, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-S94COMP", byteArray, bigNum, offset, 4, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-S8-BIN", byteArray, bigNum, offset, 8, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-DDC97-BIN", byteArray, bigNum, offset, 8, signed = true)
+
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "COMMON-97COMP3", byteArray, bigNum, offset, 7, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdUnsigned, "COMMON-915COMP3", byteArray, bigNum, offset, 15, signed = false)
+
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S95COMP3", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S999DCCOMP3", byteArray, bigNum, offset, 11, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S913COMP3", byteArray, bigNum, offset, 13, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S913DCCOMP3", byteArray, bigNum, offset, 15, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S911DCC2", byteArray, bigNum, offset, 13, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S910DCC3", byteArray, bigNum, offset, 13, signed = true, isNegative)
 
       bos.write(byteArray)
       i += 1

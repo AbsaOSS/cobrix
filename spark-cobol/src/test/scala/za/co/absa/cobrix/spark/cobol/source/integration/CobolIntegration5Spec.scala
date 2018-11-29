@@ -22,6 +22,8 @@ import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+
 import scala.collection.JavaConversions._
 
 //noinspection NameBooleanParameters
@@ -60,12 +62,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
     val actualSchema = df.schema.json
 
     if (actualSchema != expectedSchema) {
-      val writer = new PrintWriter(actualSchemaPath)
-      try {
-        writer.write(actualSchema)
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
       assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
         s"$actualSchemaPath for details.")
     }
@@ -75,15 +72,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .toJSON
       .take(60)
 
-    val writer = new PrintWriter(actualResultsPath)
-    try {
-      for (str <- actualDf) {
-        writer.write(str)
-        writer.write("\n")
-      }
-    } finally {
-      writer.close()
-    }
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
@@ -128,12 +117,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
     val actualSchema = df.schema.json
 
     if (actualSchema != expectedSchema) {
-      val writer = new PrintWriter(actualSchemaPath)
-      try {
-        writer.write(actualSchema)
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
       assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
         s"$actualSchemaPath for details.")
     }
@@ -144,15 +128,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .toJSON
       .take(60)
 
-    val writer = new PrintWriter(actualResultsPath)
-    try {
-      for (str <- actualDf) {
-        writer.write(str)
-        writer.write("\n")
-      }
-    } finally {
-      writer.close()
-    }
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray

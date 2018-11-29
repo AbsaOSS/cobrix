@@ -160,14 +160,17 @@ case class Primitive(
               // Here the explicit converters to boxed types are used.
               // This is because Scala tries to generalize output and will
               // produce java.lang.Long for both str.get.toLong and str.get.toInt
-                if (dt.precision > Constants.maxIntegerPrecision) {
-                  val longValue: java.lang.Long = strValue.toLong
-                  longValue
-                }
-                else {
-                  val intValue: java.lang.Integer = strValue.toInt
-                  intValue
-                }
+              if (dt.precision > Constants.maxLongPrecision) {
+                val bigInt = BigDecimal(strValue)
+                bigInt
+              } else if (dt.precision > Constants.maxIntegerPrecision) {
+                val longValue: java.lang.Long = strValue.toLong
+                longValue
+              }
+              else {
+                val intValue: java.lang.Integer = strValue.toInt
+                intValue
+              }
             case _ => throw new IllegalStateException("Unknown AST object")
           }
           value

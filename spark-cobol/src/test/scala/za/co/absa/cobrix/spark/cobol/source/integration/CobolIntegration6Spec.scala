@@ -26,6 +26,7 @@ import org.apache.spark.sql.SaveMode
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import scala.collection.JavaConversions._
 
@@ -37,26 +38,17 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
   private val inputCopybookFSPath = "../data/test6_copybook.cob"
   private val inpudDataPath = "../data/test6_data"
 
-  def merge(srcPath: String, dstPath: String): Unit =  {
-    val hadoopConfig = new Configuration()
-    val hdfs = FileSystem.get(hadoopConfig)
-    val dstFioPath = Paths.get(dstPath)
-    if (Files.exists(dstFioPath)) {
-      Files.delete(dstFioPath)
-    }
-    FileUtil.copyMerge(hdfs, new Path(srcPath), hdfs, new Path(dstPath), true, hadoopConfig, null)
-  }
-
   test(s"Integration test on $exampleName - segment ids") {
 
     val expectedSchemaPath = "../data/test6_expected/test6_schema.json"
     val expectedLayoutPath = "../data/test6_expected/test6_layout.txt"
     val actualSchemaPath = "../data/test6_expected/test6_schema_actual.json"
     val actualLayoutPath = "../data/test6_expected/test6_layout_actual.txt"
-    val expectedResultsPath = "../data/test6_expected/test6.csv"
-    val actualResultsPath1 = "../data/test6_expected/test6"
-    val actualResultsPath = "../data/test6_expected/test6_actual.csv"
-    val actualResultsPathCrc = "../data/test6_expected/.test6_actual.csv.crc"
+    //val expectedResultsPath = "../data/test6_expected/test6.csv"
+    val expectedResultsPath = "../data/test6_expected/test6.json"
+    //val actualResultsPath1 = "../data/test6_expected/test6"
+    val actualResultsPath = "../data/test6_expected/test6_actual.json"
+    //val actualResultsPathCrc = "../data/test6_expected/.test6_actual.csv.crc"
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -65,12 +57,7 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
     if (actualLayout != expectedLayout) {
-      val writer = new PrintWriter(actualLayoutPath)
-      try {
-        writer.write(actualLayout)
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringToFile(actualLayout, actualLayoutPath)
       assert(false, s"The actual layout doesn't match what is expected for $exampleName example. Please compare contents of $expectedLayoutPath to " +
         s"$actualLayoutPath for details.")
     }
@@ -90,30 +77,31 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
     val actualSchema = df.schema.json
 
     if (actualSchema != expectedSchema) {
-      val writer = new PrintWriter(actualSchemaPath)
-      try {
-        writer.write(actualSchema)
-      } finally {
-        writer.close()
-      }
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
       assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
         s"$actualSchemaPath for details.")
     }
 
-    val actualDf = df
-      //.orderBy("File_Id", "Record_Id")
+    // Uncomment this to compare CSV instead of json
+    /*
+    df
       //.repartition(1)
-      //.limit(10)
+      //.orderBy("ID")
       .write.format("csv")
       .option("header", "true")
       .mode(SaveMode.Overwrite).save(actualResultsPath1)
 
     merge(actualResultsPath1, actualResultsPath)
     Files.delete(Paths.get(actualResultsPathCrc))
+    */
+
+    // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
+    val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
-    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
 
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
@@ -121,5 +109,4 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
     }
     Files.delete(Paths.get(actualResultsPath))
   }
-
 }

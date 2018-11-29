@@ -365,9 +365,9 @@ object BinaryUtils {
     * @return A string representation of the binary data
     */
   def decodeUncompressedNumber(enc: Encoding, bytes: Array[Byte], explicitDecimal: Boolean, scale: Int, isSignSeparate: Boolean): Option[String] = {
+    // ToDo Add leading signal support
     val chars = new StringBuffer(bytes.length + 1)
-    val extendedScale = if (isSignSeparate) scale + 1 else scale
-    val decimalPointPosition = bytes.length - extendedScale
+    val decimalPointPosition = bytes.length - scale
     var i = 0
     while (i < bytes.length) {
       if (i == decimalPointPosition && !explicitDecimal) {
