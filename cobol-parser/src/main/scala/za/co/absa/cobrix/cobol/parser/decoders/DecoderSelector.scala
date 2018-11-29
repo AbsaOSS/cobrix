@@ -84,7 +84,7 @@ object DecoderSelector {
           bytes: Array[Byte] => {
             val str = BinaryUtils.decodeUncompressedNumber(encoding, bytes, explicitDecimal = false, 0, isSignSeparate = integralType.isSignSeparate)
             if (str.isDefined) {
-              BigInt(str.get)
+              BigDecimal(str.get)
             } else {
               null
             }
@@ -153,14 +153,14 @@ object DecoderSelector {
         case _ =>
           (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
       }
-      decoder// 999 999 999
+      decoder // 999 999 999
     }
   }
 
   def getBCDIntegralDecoder(precision: Int, isSignSeparate: Boolean): Decoder = {
     // ToDo add support for trailing sign
     val decoder =
-      if (precision < 3) {
+      if (precision <= Constants.maxIntegerPrecision) {
         a: Array[Byte] => {
           val num = BCDNumberDecoders.decodeBCDIntegralNumber(a, isSignSeparate, isSignLeading = true)
           if (num != null) {
@@ -169,19 +169,10 @@ object DecoderSelector {
             null
           }
         }
-      } else if (precision < Constants.maxIntegerPrecision) {
-        a: Array[Byte] => {
-          val num = BCDNumberDecoders.decodeBCDIntegralNumber(a, isSignSeparate, isSignLeading = true)
-          if (num != null) {
-            num.asInstanceOf[Long].toInt
-          } else {
-            null
-          }
-        }
-      } else if (precision < Constants.maxLongPrecision) {
+      } else if (precision <= Constants.maxLongPrecision) {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a, isSignSeparate, isSignLeading = true)
       } else {
-        a: Array[Byte] => BigInt(BCDNumberDecoders.decodeBigBCDNumber(a, 0, isSignSeparate, isSignLeading = true))
+        a: Array[Byte] => BigDecimal(BCDNumberDecoders.decodeBigBCDNumber(a, 0, isSignSeparate, isSignLeading = true))
       }
     decoder
   }

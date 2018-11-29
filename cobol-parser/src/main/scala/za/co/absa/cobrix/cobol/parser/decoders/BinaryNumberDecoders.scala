@@ -122,15 +122,16 @@ object BinaryNumberDecoders {
     if (v < 0L) null else v
   }
 
-  def decodeBinaryAribtraryPrecision(bytes: Array[Byte], isBigEndian: Boolean, isSigned: Boolean): BigInt = {
+  def decodeBinaryAribtraryPrecision(bytes: Array[Byte], isBigEndian: Boolean, isSigned: Boolean): BigDecimal = {
     if (bytes.length == 0) {
       return null
     }
+    // BigInt is used co convert bytes to a big integer. BigDecimal is the type that Spark expects for such values
     val bigInt = (isBigEndian, isSigned) match {
-      case (false, false) => BigInt(1, bytes.reverse)
-      case (false, true) => BigInt(bytes.reverse)
-      case (true, false) => BigInt(1, bytes)
-      case (true, true) => BigInt(bytes)
+      case (false, false) => BigDecimal(BigInt(1, bytes.reverse).toString())
+      case (false, true) => BigDecimal(BigInt(bytes.reverse).toString())
+      case (true, false) => BigDecimal(BigInt(1, bytes).toString())
+      case (true, true) => BigDecimal(BigInt(bytes).toString())
     }
     bigInt
   }
@@ -175,15 +176,15 @@ object BinaryNumberDecoders {
     sign * ((binBytes(3) & 255L) << 24L) | ((binBytes(2) & 255L) << 16L) | ((binBytes(1) & 255L) << 8L) | (binBytes(0) & 255L)
   }
 
-  def decodeSignSeparatedAribtraryPrecision(bytes: Array[Byte], isBigEndian: Boolean, isLeading: Boolean): BigInt = {
+  def decodeSignSeparatedAribtraryPrecision(bytes: Array[Byte], isBigEndian: Boolean, isLeading: Boolean): BigDecimal = {
     if (bytes.length < 2) {
       return null
     }
     val (sign, binBytes) = getSignAndBytes(bytes, isLeading, bytes.length - 1)
     val bigInt = if (isBigEndian) {
-      BigInt(1, binBytes)
+      BigDecimal(BigInt(1, binBytes).toString())
     } else {
-      BigInt(1, binBytes.reverse)
+      BigDecimal(BigInt(1, binBytes.reverse).toString())
     }
     sign * bigInt
   }

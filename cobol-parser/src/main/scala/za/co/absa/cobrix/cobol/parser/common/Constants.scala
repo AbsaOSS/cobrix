@@ -25,14 +25,21 @@ object Constants {
   val plusCharEBCIDIC: Byte = 78
   val plusCharASCII: Byte = 43
 
-  // Max integer precision after the number is considered Int
+  // Min/max integer precision after the number is considered Int
+  val minShortPrecision = 1
   val maxShortPrecision = 4
+  val binaryShortSizeBytes = 2
 
-  // Max integer precision after the number is considered Long
+  // Min/max integer precision after the number is considered Long
+  val minIntegerPrecision = 5
   val maxIntegerPrecision = 9
+  val binaryIntSizeBytes = 4
 
-  // Max long precision after the number is considered BigInt
+  // Min/max long precision after the number is considered BigInt
+  val minLongPrecision = 10
   val maxLongPrecision = 18
+  val binaryLongSizeBytes = 8
+
 
   // Max picture size of a Copybook field
   val maxFieldLength = 100000
@@ -44,6 +51,17 @@ object Constants {
   // For Decimal types
   val maxDecimalPrecision = 38
   val maxDecimalScale = 18
+
+  val floatSize = 4
+  val doubleSize = 8
+
+  // COMPRESSION values
+  val compBinary1 = 0 // COMP
+  val compBinary2 = 4 // COMP-4
+  val compFloat = 1
+  val compDouble = 2
+  val compBCD = 3
+  val compBinaryCompilerSpecific= 5
 
   // The fields that can be automatically generated
   val segmentIdField = "Seg_Id"

@@ -85,7 +85,7 @@ object BCDNumberDecoders {
       }
       i = i + 1
     }
-    applySign * outputNumber
+    applySign * sign * outputNumber
   }
 
   /**

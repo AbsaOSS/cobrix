@@ -133,29 +133,30 @@ object BinaryUtils {
     }
   }
 
-  def getBytesCount(comp: Option[Int], precision: Int, isSigned: Boolean, isSignSeparate: Boolean): Int = {
+  def getBytesCount(compression: Option[Int], precision: Int, isSigned: Boolean, isSignSeparate: Boolean): Int = {
+    import Constants._
     val isRealSigned = if (isSignSeparate) false else isSigned
-    val bytes = comp match {
-      case Some(x) if x == 0 || x == 4 || x == 5 =>
+    val bytes = compression match {
+      case Some(comp) if comp == compBinary1 || comp == compBinary1 || comp == compBinary2 =>
         // if native binary follow IBM guide to digit binary length
         precision match {
-          case a if a >= 1 && a <= 2 && x == 5 => 1 // byte
-          case a if a >= 1 && a <= 4 => 2           // short
-          case b if b >= 5 && b <= 9 => 4           // int
-          case c if c >= 10 && c <= 18 => 8         // long
-          case c =>                                 // bigint
+          case p if p >= 1 && p <= 2 && comp == compBinaryCompilerSpecific => 1 // byte
+          case p if p >= minShortPrecision && p <= maxShortPrecision => binaryShortSizeBytes
+          case p if p >= minIntegerPrecision && p <= maxIntegerPrecision => binaryIntSizeBytes
+          case p if p >= minLongPrecision && p <= maxLongPrecision => binaryLongSizeBytes
+          case p => // bigint
             val signBit = if (isRealSigned) 1 else 0
             val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + signBit)/8
             math.ceil(numberOfBytes).toInt
         }
-      case Some(x) if x == 1 => 4 // float
-      case Some(x) if x == 2 => 8 // double
-      case Some(x) if x == 3 =>   // bcd
+      case Some(comp) if comp == compFloat => floatSize
+      case Some(comp) if comp == compDouble => doubleSize
+      case Some(comp) if comp == compBCD =>   // bcd
         if (precision % 2 == 0)
           precision / 2 + 1
         else
           precision / 2
-      case Some(x) => throw new IllegalArgumentException(s"Illegal clause COMP-$x.")
+      case Some(comp) => throw new IllegalArgumentException(s"Illegal clause COMP-$comp.")
       case None => precision
     }
     if (isSignSeparate) bytes + 1 else bytes
