@@ -25,6 +25,7 @@ import scala.util.Random
 
 // This is a test data generator for the big integration test.
 // The purpose of the data is to cover as much as possible the variety of primitive data types.
+// The generated file won't contain XCOM headers
 
 /*
         01  RECORD.
@@ -236,7 +237,7 @@ import scala.util.Random
 /**
   * This is a test data generator. The copybook for it is listed above.
   */
-object TestDataGen4Integration {
+object TestDataGen5Integration {
 
   var debugPrint = true
 

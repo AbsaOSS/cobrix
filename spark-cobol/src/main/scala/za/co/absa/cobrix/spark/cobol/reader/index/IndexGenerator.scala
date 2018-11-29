@@ -33,17 +33,22 @@ object IndexGenerator {
                            recordsPerIndexEntry: Option[Int] = None,
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
-                           segmentField: Option[Primitive] = None): ArrayBuffer[SimpleIndexEntry] = {
+                           segmentField: Option[Primitive] = None,
+                           rootSegmentId: String = ""): ArrayBuffer[SimpleIndexEntry] = {
     var byteIndex = 0L
     val index = new ArrayBuffer[SimpleIndexEntry]
     var rootRecordId: String = ""
-    var rootRecordSize = 0
+    var rootRecordSize = -1
     var recordsInChunk = 0
     var bytesInChunk = 0L
     var recordIndex = 0
     var isHierarchical = copybook.nonEmpty && segmentField.nonEmpty
 
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
+
+    // Add the first mandatory index entry
+    val indexEntry = SimpleIndexEntry(0, -1, fileId, recordIndex)
+    index += indexEntry
 
     var endOfFileReached = false
     while (!endOfFileReached) {
@@ -55,20 +60,19 @@ object IndexGenerator {
         if (record.length < recordSize) {
           endOfFileReached = true
         } else {
-          if (isHierarchical && recordIndex == 0) {
-            rootRecordSize = recordSize
-            rootRecordId = getSegmentId(copybook.get, segmentField.get, record)
-            if (rootRecordId.isEmpty) {
-              throw new IllegalStateException(s"Root record segment id cannot be empty at $byteIndex.")
+          if (isHierarchical && rootRecordId.isEmpty) {
+            val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
+            if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
+              || (rootSegmentId.nonEmpty && curSegmentId == rootSegmentId)) {
+              rootRecordSize = recordSize
+              rootRecordId = curSegmentId
             }
           }
-          if (recordIndex == 0 || needSplit(recordsInChunk, bytesInChunk)) {
+          if (needSplit(recordsInChunk, bytesInChunk)) {
             if (!isHierarchical || isSegmentGoodForSplit(rootRecordSize, rootRecordId, copybook.get, segmentField.get, record)) {
               val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
-              if (len > 0) {
-                index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
-              }
+              index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
               index += indexEntry
               recordsInChunk = 0
               bytesInChunk = 0L
@@ -81,7 +85,12 @@ object IndexGenerator {
       recordsInChunk += 1
       bytesInChunk += xcomHeaderBlock + recordSize
     }
-
+    if (isHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
+      throw new IllegalStateException(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
+    }
+    if (isHierarchical && rootRecordId.isEmpty) {
+      throw new IllegalStateException(s"Root segment ${segmentField.get.name} ie empty for every record in the data file.")
+    }
     index
   }
 

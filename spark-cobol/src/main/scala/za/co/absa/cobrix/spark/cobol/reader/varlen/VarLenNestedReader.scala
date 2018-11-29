@@ -88,9 +88,10 @@ final class VarLenNestedReader(copybookContents: String,
 
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
+    val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field))
+      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
       case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB)
     }
   }
