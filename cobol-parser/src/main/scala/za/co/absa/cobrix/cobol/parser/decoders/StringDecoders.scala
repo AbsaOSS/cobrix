@@ -61,18 +61,21 @@ object StringDecoders {
     */
   def decodeEbcdicNumber(bytes: Array[Byte]): String = {
     val buf = new StringBuffer(bytes.length + 1)
-    buf.append(' ')
+    var sign = ' '
     var i = 0
     while (i < bytes.length) {
       val char = BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256)
       if (char == '-' || char == '+') {
-        buf.setCharAt(0, char)
+        sign = char
       } else {
         buf.append(char)
       }
       i = i + 1
     }
-    buf.toString.trim
+    if (sign != ' ')
+      sign + buf.toString.trim
+    else
+      buf.toString.trim
   }
 
   /**
@@ -82,21 +85,23 @@ object StringDecoders {
     * @return A string representation of the binary data
     */
   def decodeAsciiNumber(bytes: Array[Byte]): String = {
-    val buf = new StringBuffer(bytes.length + 1)
-    buf.append(' ')
+    val buf = new StringBuffer(bytes.length)
+    var sign = ' '
     var i = 0
     while (i < bytes.length) {
       val char = bytes(i).toChar
       if (char == '-' || char == '+') {
-        buf.setCharAt(0, char)
+        sign = char
       } else {
         buf.append(char)
       }
       i = i + 1
     }
-    buf.toString.trim
+    if (sign != ' ')
+      sign + buf.toString.trim
+    else
+      buf.toString.trim
   }
-
 
   /**
     * Decode integral number from an EBCDIC string converting it to an integer

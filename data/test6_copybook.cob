@@ -198,6 +198,10 @@
 		                          LEADING SEPARATE.
           10  NUM-SL-STR-DEC01    PIC 99V99 SIGN IS
                          LEADING SEPARATE CHARACTER.
+          10  NUM-ST-STR-INT01    PIC S9(9) SIGN IS
+		                          TRAILING SEPARATE.
+          10  NUM-ST-STR-DEC01    PIC 99V99 SIGN
+                         TRAILING SEPARATE.
 
 ***********************************************************************
 *******                   COMMON TYPES

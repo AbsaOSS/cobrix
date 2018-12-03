@@ -210,6 +210,10 @@ import scala.util.Random
 		                          LEADING SEPARATE.
           10  NUM-SL-STR-DEC01    PIC 99V99 SIGN IS
                          LEADING SEPARATE CHARACTER.
+          10  NUM-ST-STR-INT01    PIC S9(9) SIGN IS
+		                          TRAILING SEPARATE.
+          10  NUM-ST-STR-DEC01    PIC 99V99 SIGN
+                         TRAILING SEPARATE.
 
 ***********************************************************************
 *******                   COMMON TYPES
@@ -292,6 +296,7 @@ object TestDataGen5Integration {
 
     val explicitDecimalChars = if (explicitDecimalPosition >= 0) 1 else 0
     val explicitSignChars = if (isSignSeparate) 1 else 0
+    val trailingSignChars = if (isSignSeparate && !isSignLeading) 1 else 0
     val numLen = if (isSignSeparate) {
       length + explicitSignChars
     } else {
@@ -322,7 +327,7 @@ object TestDataGen5Integration {
       }
     }
     val index1 = i
-    val newOffset = index1 + binLength + explicitDecimalChars
+    val newOffset = index1 + binLength + explicitDecimalChars + trailingSignChars
 
     if (debugPrint) {
       println(s"Putting number $fieldName <- '$str' to offsets $index0 .. ${newOffset - 1}. New offset = $newOffset")
@@ -467,9 +472,10 @@ object TestDataGen5Integration {
 
     val numberOfrecodsToGenerate = 100
 
-    val rand: Random = new Random()
+    // seed=100 is used for the integration test
+    val rand: Random = new Random(/*100*/)
 
-    val byteArray: Array[Byte] = new Array[Byte](1112)
+    val byteArray: Array[Byte] = new Array[Byte](1127)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -632,6 +638,8 @@ object TestDataGen5Integration {
       // Sign separate numbers
       offset = putNumStrToArray("NUM-SL-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-SL-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+      offset = putNumStrToArray("NUM-ST-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("NUM-ST-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
 
       // Common types
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "COMMON-8-BIN", byteArray, bigNum, offset, 8, signed = false)
