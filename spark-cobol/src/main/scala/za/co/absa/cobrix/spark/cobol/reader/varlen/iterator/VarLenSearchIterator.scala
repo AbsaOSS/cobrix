@@ -20,7 +20,7 @@ import org.apache.spark.sql.Row
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.{SimpleMemoryStream, SimpleStream}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors

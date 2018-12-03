@@ -18,7 +18,8 @@ package za.co.absa.cobrix.spark.cobol.reader.index
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.common.{BinaryUtils, DataExtractors}
+import za.co.absa.cobrix.cobol.parser.common.DataExtractors
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry

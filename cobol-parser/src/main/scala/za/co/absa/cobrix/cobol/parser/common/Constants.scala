@@ -46,7 +46,7 @@ object Constants {
   val maxXcomRecordSize: Int = 100*1024*1024
 
   // Max COMP/BINARY format precision
-  val maxBinIntPrecision = 18
+  val maxBinIntPrecision = 38
 
   // For Decimal types
   val maxDecimalPrecision = 38

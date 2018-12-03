@@ -17,15 +17,11 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import scodec.Codec
-import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
-
-import scala.util.control.NonFatal
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
@@ -95,36 +91,7 @@ case class Primitive(
         getBitCount(codec, i.compact, i.precision, isSignSeparate = i.isSignSeparate)
     }
     // round size up to next byte
-    ((size + 7)/8)*8
-  }
-
-  /** Returns the string representation of a field biven a binary data.
-    * Returns None if the contents of the field is empty.
-    *
-    * @param bitOffset An offset of the field inside the binary data
-    * @param record    A record in a binary format represented as a vector of bits
-    */
-  @throws(classOf[IllegalStateException])
-  def decodeValue2(bitOffset: Long, record: Array[Byte]): Option[String] = {
-    val bytesCount = binaryProperties.dataSize / 8
-    val idx = (bitOffset / 8).toInt
-    if (idx + bytesCount > record.length) {
-      return None
-    }
-    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
-    val value = dataType match {
-      case AlphaNumeric(length, wordAlligned, enc) =>
-        val encoding = enc.getOrElse(EBCDIC())
-        Some(decodeString(encoding, bytes, length))
-      case Decimal(scale, precision, explicitDecimal, signPosition, isSignSeparate, wordAlligned, compact, enc) =>
-        val encoding = enc.getOrElse(EBCDIC())
-        decodeCobolNumber(encoding, bytes, compact, precision, scale, explicitDecimal, signPosition.nonEmpty, isSignSeparate)
-      case Integral(precision, signPosition, isSignSeparate, wordAlligned, compact, enc) =>
-        val encoding = enc.getOrElse(EBCDIC())
-        decodeCobolNumber(encoding, bytes, compact, precision, 0, explicitDecimal = false, signPosition.nonEmpty, isSignSeparate)
-      case _ => throw new IllegalStateException("Unknown AST object")
-    }
-    value
+    ((size + 7) / 8) * 8
   }
 
   /** Returns a value of a field biven a binary data.
@@ -135,8 +102,6 @@ case class Primitive(
     */
   @throws(classOf[Exception])
   def decodeTypeValue(itOffset: Long, record: Array[Byte]): Any = {
-    // Uncomment when when decoders based extractors are finished
-
     val bytesCount = binaryProperties.dataSize / 8
     val idx = (itOffset / 8).toInt
     if (idx + bytesCount > record.length) {
@@ -145,43 +110,6 @@ case class Primitive(
     val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
 
     decode(bytes)
-
-    /*val str = decodeValue2(itOffset, record)
-    val value = try {
-      str match {
-        case None => null
-        case Some(strValue) =>
-          val value = dataType match {
-            case _: AlphaNumeric =>
-              strValue
-            case _: Decimal =>
-              BigDecimal(strValue)
-            case dt: Integral =>
-              // Here the explicit converters to boxed types are used.
-              // This is because Scala tries to generalize output and will
-              // produce java.lang.Long for both str.get.toLong and str.get.toInt
-              if (dt.precision > Constants.maxLongPrecision) {
-                val bigInt = BigDecimal(strValue)
-                bigInt
-              } else if (dt.precision > Constants.maxIntegerPrecision) {
-                val longValue: java.lang.Long = strValue.toLong
-                longValue
-              }
-              else {
-                val intValue: java.lang.Integer = strValue.toInt
-                intValue
-              }
-            case _ => throw new IllegalStateException("Unknown AST object")
-          }
-          value
-      }
-    } catch {
-      case e: java.lang.NumberFormatException =>
-        // Out of bound values are considered malformed, should be handled gracefully
-        null
-      case NonFatal(e) => throw e
-    }
-    value*/
   }
 
 
@@ -220,7 +148,7 @@ case class Primitive(
         }
       case i: Integral =>
         for (bin <- i.compact) {
-          if ((bin == 0 || bin == 4) && i.precision > Constants.maxBinIntPrecision) {
+          if (i.precision > Constants.maxBinIntPrecision) {
             throw new SyntaxErrorException(lineNumber, name,
               s"BINARY-encoded integers with precision bigger than ${Constants.maxBinIntPrecision} are not supported.")
           }

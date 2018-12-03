@@ -190,7 +190,8 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
         case group: Group => getGroupValues(group, s"$path${group.name}_")
         case s: Primitive =>
           val name = s"$path${s.name}"
-          val value = s.decodeValue2(bitIndex + s.binaryProperties.offset, binaryData)
+          val valueAny = s.decodeTypeValue(bitIndex + s.binaryProperties.offset, binaryData)
+          val value = if (valueAny == null) None else Some(valueAny.toString)
           Map[String, Option[String]](name -> value)
       }
     }

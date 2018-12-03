@@ -16,8 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
-
 import scala.util.control.NonFatal
 
 object StringDecoders {

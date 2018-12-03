@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
 

@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser.common
 
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
 

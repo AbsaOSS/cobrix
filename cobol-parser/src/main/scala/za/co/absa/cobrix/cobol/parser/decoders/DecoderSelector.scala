@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.{BinaryUtils, Constants}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.position.Position
 

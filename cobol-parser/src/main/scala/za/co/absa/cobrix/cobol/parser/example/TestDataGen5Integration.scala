@@ -19,7 +19,8 @@ package za.co.absa.cobrix.cobol.parser.example
 import java.io.{BufferedOutputStream, FileOutputStream}
 
 import scodec.Attempt.Successful
-import za.co.absa.cobrix.cobol.parser.common.{BinaryUtils, Constants}
+import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
 
