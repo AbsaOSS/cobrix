@@ -16,33 +16,17 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import za.co.absa.cobrix.cobol.parser.common.Constants
+import scala.util.control.NonFatal
 
 object BCDNumberDecoders {
 
   /**
     * Decode an integral binary encoded decimal (BCD) aka COMP-3 format to a String
     *
-    * @param binBytes A byte array that represents the binary data
-    * @param isSignSearate  if true the sign is contained in a separate byte
-    * @param isSignLeading  if true the sign is contained in a first byte, otherwise at the last byte. This is only used if isSignSearate is true
-    * @return A long representation of the binary data, null if the data is not properly formatted
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed long representation of the binary data, null if the data is not properly formatted
     */
-  def decodeBCDIntegralNumber(binBytes: Array[Byte], isSignSearate: Boolean, isSignLeading: Boolean): Any = {
-    if (binBytes.length < 1) {
-      return null
-    }
-
-    var applySign = 1
-    val bytes = if (!isSignSearate) {
-      binBytes
-    }
-    else {
-      val (sign, bytes) = getSignAndBytes(binBytes, isSignLeading)
-      applySign = sign
-      bytes
-    }
-
+  def decodeBCDIntegralNumber(bytes: Array[Byte]): java.lang.Long = {
     if (bytes.length < 1) {
       return null
     }
@@ -85,36 +69,20 @@ object BCDNumberDecoders {
       }
       i = i + 1
     }
-    applySign * sign * outputNumber
+    sign * outputNumber
   }
 
   /**
     * Decode a binary encoded decimal (BCD) aka COMP-3 format to a String
     *
-    * @param binBytes A byte array that represents the binary data
+    * @param bytes A byte array that represents the binary data
     * @param scale A decimal scale if a number is a decimal. Should be greater or equal to zero
-    * @param isSignSearate  if true the sign is contained in a separate byte
-    * @param isSignLeading  if true the sign is contained in a first byte, otherwise at the last byte. This is only used if isSignSearate is true
     * @return A string representation of the binary data, null if the data is not properly formatted
     */
-  def decodeBigBCDNumber(binBytes: Array[Byte], scale: Int, isSignSearate: Boolean, isSignLeading: Boolean): String = {
+  def decodeBigBCDNumber(bytes: Array[Byte], scale: Int): String = {
     if (scale < 0) {
       throw new IllegalArgumentException(s"Invalid scale=$scale, should be greater or equal to zero.")
     }
-    if (binBytes.length < 1) {
-      return null
-    }
-
-    var applySign = 1
-    val bytes = if (!isSignSearate) {
-      binBytes
-    }
-    else {
-      val (sign, bytes) = getSignAndBytes(binBytes, isSignLeading)
-      applySign = sign
-      bytes
-    }
-
     if (bytes.length < 1) {
       return null
     }
@@ -159,23 +127,16 @@ object BCDNumberDecoders {
       i = i + 1
     }
     if (scale > 0) chars.insert(decimalPointPosition, '.')
-    if (isSignSearate) {
-      if (applySign > 0)
-        sign = ""
-      else
-        sign = "-"
-    }
     chars.insert(0, sign)
     chars.toString
   }
 
-  private def getSignAndBytes(bytes: Array[Byte], isLeading: Boolean): (Byte, Array[Byte]) = {
-    val binBytes = if (isLeading)
-      java.util.Arrays.copyOfRange(bytes, 1, bytes.length)
-    else
-      java.util.Arrays.copyOfRange(bytes, 0, bytes.length - 1)
-    val signByte = if (isLeading) bytes(0) else bytes.last
-    val sign: Byte = if (signByte == Constants.minusCharEBCIDIC || signByte == Constants.minusCharASCII) -1 else 1
-    (sign, binBytes)
+  /** Malformed data does not cause exceptions in Spark. Null values are returned instead */
+  def decodeBigBCDDecimal(binBytes: Array[Byte], scale: Int): BigDecimal = {
+    try {
+      BigDecimal(decodeBigBCDNumber(binBytes, scale))
+    } catch {
+      case NonFatal(_) => null
+    }
   }
 }

@@ -432,8 +432,12 @@ object CopybookParser {
     catch {
       case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
     }
-    // ToDo Add trailing sign support
+    // Trailing sign is supported implicitly by smart uncompressed number converters
     val isSignSeparate = modifiers.contains(SIGN_SEP)
+
+    if (isSignSeparate && comp.isDefined) {
+      throw new SyntaxErrorException(lineNumber, fieldName, s"SIGN SEPARATE clause is not supported for COMP-${comp.get}. It is only supported for DISPLAY formatted fields.")
+    }
 
     val sync = keywords.contains(SYNC)
     pic match {

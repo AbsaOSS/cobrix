@@ -18,9 +18,12 @@ package za.co.absa.cobrix.cobol.parser.decoders
 
 import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
 
+import scala.util.control.NonFatal
+
 object StringDecoders {
 
-  /** A decoder for any EBCDIC string fields (alphabetical or any char)
+  /**
+    * A decoder for any EBCDIC string fields (alphabetical or any char)
     *
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
@@ -35,7 +38,8 @@ object StringDecoders {
     buf.toString.trim
   }
 
-  /** A decoder for any ASCII string fields (alphabetical or any char)
+  /**
+    * A decoder for any ASCII string fields (alphabetical or any char)
     *
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
@@ -48,6 +52,136 @@ object StringDecoders {
       i = i + 1
     }
     buf.toString.trim
+  }
+
+  /**
+    * A decoder for any EBCDIC uncompressed numbers supporting leading and trailing sign
+    * @param bytes A byte array that represents the binary data
+    * @return A string representation of the binary data
+    */
+  def decodeEbcdicNumber(bytes: Array[Byte]): String = {
+    val buf = new StringBuffer(bytes.length + 1)
+    buf.append(' ')
+    var i = 0
+    while (i < bytes.length) {
+      val char = BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256)
+      if (char == '-' || char == '+') {
+        buf.setCharAt(0, char)
+      } else {
+        buf.append(char)
+      }
+      i = i + 1
+    }
+    buf.toString.trim
+  }
+
+  /**
+    * A decoder for any ASCII uncompressed numbers supporting leading and trailing sign
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A string representation of the binary data
+    */
+  def decodeAsciiNumber(bytes: Array[Byte]): String = {
+    val buf = new StringBuffer(bytes.length + 1)
+    buf.append(' ')
+    var i = 0
+    while (i < bytes.length) {
+      val char = bytes(i).toChar
+      if (char == '-' || char == '+') {
+        buf.setCharAt(0, char)
+      } else {
+        buf.append(char)
+      }
+      i = i + 1
+    }
+    buf.toString.trim
+  }
+
+
+  /**
+    * Decode integral number from an EBCDIC string converting it to an integer
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed integer
+    */
+  def decodeEbcdicInt(bytes: Array[Byte]): Integer = {
+    try {
+      decodeEbcdicNumber(bytes).toInt
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode integral number from an ASCII string converting it to an integer
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed integer
+    */
+  def decodeAsciiInt(bytes: Array[Byte]): Integer = {
+    try {
+      decodeAsciiNumber(bytes).toInt
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode integral number from an EBCDIC string converting it to an long
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed long
+    */
+  def decodeEbcdicLong(bytes: Array[Byte]): java.lang.Long = {
+    try {
+      decodeEbcdicNumber(bytes).toLong
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode integral number from an ASCII string converting it to an long
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed long
+    */
+  def decodeAsciiLong(bytes: Array[Byte]): java.lang.Long = {
+    try {
+      decodeAsciiNumber(bytes).toLong
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode integral number from an EBCDIC string converting it to a big decimal
+    *
+    * @param bytes A byte array that represents the binary data
+    * @param scale A decimal scale in case decimal number with implicit decimal point is expected
+    * @return A big decimal containing a big integral number
+    */
+  def decodeEbcdicBigNumber(bytes: Array[Byte], scale: Int = 0): BigDecimal = {
+    try {
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes), scale))
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode integral number from an ASCII string converting it to a big decimal
+    *
+    * @param bytes A byte array that represents the binary data
+    * @param scale A decimal scale in case decimal number with implicit decimal point is expected
+    * @return A big decimal containing a big integral number
+    */
+  def decodeAsciiBigNumber(bytes: Array[Byte], scale: Int = 0): BigDecimal = {
+    try {
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes), scale))
+    } catch {
+      case NonFatal(_) => null
+    }
   }
 
 }
