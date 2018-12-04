@@ -16,11 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.ast
 
-import scodec.Codec
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
@@ -75,21 +73,16 @@ case class Primitive(
   /** Returns the binary size in bits for the field */
   def getBinarySizeBits: Int = {
     validateDataTypes()
+
     val size = dataType match {
       case a: AlphaNumeric =>
-        // Each character is represented by a byte
-        val codec = a.enc.getOrElse(EBCDIC()).codec(None, a.length, None)
-        getBitCount(codec, None, a.length, isSignSeparate = false) //count of entire word
+        a.length * 8
       case d: Decimal =>
-        val codec = d.enc.getOrElse(EBCDIC()).codec(d.compact, d.precision, d.signPosition)
-        // Support explicit decimal point (aka REAL DECIMAL, PIC 999.99.)
-        val precision = if (d.compact.isEmpty && d.explicitDecimal) d.precision + 1 else d.precision
-        getBitCount(codec, d.compact, precision, isSignSeparate = d.isSignSeparate)
+        BinaryUtils.getBytesCount(d.compact, d.precision, d.signPosition.isDefined, d.explicitDecimal, d.isSignSeparate) * 8
       case i: Integral =>
-        val codec = i.enc.getOrElse(EBCDIC()).codec(i.compact, i.precision, i.signPosition)
-        // Hack around byte-alignment
-        getBitCount(codec, i.compact, i.precision, isSignSeparate = i.isSignSeparate)
+        BinaryUtils.getBytesCount(i.compact, i.precision, i.signPosition.isDefined, isExplicitDecimalPt = false, isSignSeparate = i.isSignSeparate) * 8
     }
+
     // round size up to next byte
     ((size + 7) / 8) * 8
   }
@@ -110,28 +103,6 @@ case class Primitive(
     val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
 
     decode(bytes)
-  }
-
-
-  /** Returns the number of bits an integral value occupies given an encoding and a binary representation format.
-    *
-    * @param codec     A type of encoding (EBCDIC / ASCII)
-    * @param comp      A type of binary number representation format
-    * @param precision A precision that is the number of digits in a number
-    *
-    */
-  private def getBitCount(codec: Codec[_ <: AnyVal], comp: Option[Int], precision: Int, isSignSeparate: Boolean): Int = {
-    comp match {
-      case Some(x) =>
-        x match {
-          case a if a == 3 =>
-            (precision + 1) * codec.sizeBound.lowerBound.toInt //bcd
-          case _ => codec.sizeBound.lowerBound.toInt // bin/float/floatL
-        }
-      case None =>
-        val signAdditionalBits = if (isSignSeparate) 8 else 0
-        precision * codec.sizeBound.lowerBound.toInt + signAdditionalBits
-    }
   }
 
   @throws(classOf[SyntaxErrorException])

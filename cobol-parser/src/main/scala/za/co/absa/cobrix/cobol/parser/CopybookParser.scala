@@ -435,8 +435,12 @@ object CopybookParser {
     // Trailing sign is supported implicitly by smart uncompressed number converters
     val isSignSeparate = modifiers.contains(SIGN_SEP)
 
+    // ToDo Move this to validators
     if (isSignSeparate && comp.isDefined) {
       throw new SyntaxErrorException(lineNumber, fieldName, s"SIGN SEPARATE clause is not supported for COMP-${comp.get}. It is only supported for DISPLAY formatted fields.")
+    }
+    if (pic.contains(".") && comp.isDefined) {
+      throw new SyntaxErrorException(lineNumber, fieldName, s"Explicit decimal point in PIC $pic is not supported only for COMP-${comp.get}. It is only supported for DISPLAY formatted fields.")
     }
 
     val sync = keywords.contains(SYNC)

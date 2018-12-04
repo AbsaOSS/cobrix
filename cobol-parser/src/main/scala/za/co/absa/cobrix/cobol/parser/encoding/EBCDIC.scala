@@ -39,7 +39,7 @@ case class EBCDIC() extends Encoding {
               case b if b >= 5 && b <= 9 =>
                 if (signPosition.getOrElse(None) != None) int32 else uint32
               case c if c >= 10 && c <= 18 =>
-                if (signPosition.getOrElse(None) != None) int64 else uint(64)
+                if (signPosition.getOrElse(None) != None) int64 else int64
             }
           case spfloat if spfloat == 1 => float
           case dpfloat if dpfloat == 2 => floatL

@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.slf4j.LoggerFactory
@@ -103,7 +120,7 @@ object BinaryUtils {
     }
   }
 
-  def getBytesCount(compression: Option[Int], precision: Int, isSigned: Boolean, isSignSeparate: Boolean): Int = {
+  def getBytesCount(compression: Option[Int], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
     import Constants._
     val isRealSigned = if (isSignSeparate) false else isSigned
     val bytes = compression match {
@@ -115,21 +132,20 @@ object BinaryUtils {
           case p if p >= minIntegerPrecision && p <= maxIntegerPrecision => binaryIntSizeBytes
           case p if p >= minLongPrecision && p <= maxLongPrecision => binaryLongSizeBytes
           case p => // bigint
-            val signBit = if (isRealSigned) 1 else 0
-            val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + signBit)/8
+            val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
             math.ceil(numberOfBytes).toInt
         }
       case Some(comp) if comp == compFloat => floatSize
       case Some(comp) if comp == compDouble => doubleSize
-      case Some(comp) if comp == compBCD =>   // bcd
-        if (precision % 2 == 0)
-          precision / 2 + 1
-        else
-          precision / 2
+      case Some(comp) if comp == compBCD => precision / 2 + 1  // bcd
       case Some(comp) => throw new IllegalArgumentException(s"Illegal clause COMP-$comp.")
-      case None => precision
+      case None =>
+        var size = precision
+        if (isSignSeparate) size += 1
+        if (isExplicitDecimalPt) size += 1
+        size
     }
-    if (isSignSeparate) bytes + 1 else bytes
+    bytes
   }
 
   /** A decoder for any string fields (alphabetical or any char)

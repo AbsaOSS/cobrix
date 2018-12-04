@@ -151,7 +151,7 @@ object DecoderSelector {
     val isSigned = signPosition.nonEmpty
     val isSignLeft = signPosition.forall(sp => if (sp == za.co.absa.cobrix.cobol.parser.position.Left) true else false)
 
-    val numOfBytes = BinaryUtils.getBytesCount(compact, precision, isSigned, isSignSeparate = false)
+    val numOfBytes = BinaryUtils.getBytesCount(compact, precision, isSigned, isExplicitDecimalPt = false, isSignSeparate = false)
     val decoder = (isSigned, isBigEndian, numOfBytes) match {
       case (true, true, 1) => BinaryNumberDecoders.decodeSignedByte _
       case (true, true, 2) => BinaryNumberDecoders.decodeBinarySignedShortBigEndian _
@@ -190,7 +190,12 @@ object DecoderSelector {
       } else if (precision <= Constants.maxLongPrecision) {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a)
       } else {
-        a: Array[Byte] => BigDecimal(BCDNumberDecoders.decodeBigBCDNumber(a, 0))
+        a: Array[Byte] =>
+          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0)
+          if (bcdDecoded != null)
+            BigDecimal(bcdDecoded)
+          else
+            null
       }
     decoder
   }

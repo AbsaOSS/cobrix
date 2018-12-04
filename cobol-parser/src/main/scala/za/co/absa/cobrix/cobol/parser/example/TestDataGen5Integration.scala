@@ -331,7 +331,7 @@ object TestDataGen5Integration {
     val newOffset = index1 + binLength + explicitDecimalChars + trailingSignChars
 
     if (debugPrint) {
-      println(s"Putting number $fieldName <- '$str' to offsets $index0 .. ${newOffset - 1}. New offset = $newOffset")
+      println(s"Putting number $fieldName <- (size=${newOffset-index0}) '$str' to offsets $index0 .. ${newOffset - 1}. New offset = $newOffset")
     }
 
     var j = 0
@@ -365,8 +365,10 @@ object TestDataGen5Integration {
       scodec.codecs.int16.encode(numStr.toInt).require.toByteArray
     } else if (len <= Constants.maxIntegerPrecision) {
       scodec.codecs.int32.encode(numStr.toInt).require.toByteArray
-    } else {
+    } else if (len <= Constants.maxLongPrecision) {
       scodec.codecs.int64.encode(numStr.toLong).require.toByteArray
+    } else {
+      strToBigArray(numStr, isSigned = true)
     }
   }
 
@@ -376,9 +378,34 @@ object TestDataGen5Integration {
       scodec.codecs.uint16.encode(numStr.toInt).require.toByteArray
     } else if (len <= Constants.maxIntegerPrecision) {
       scodec.codecs.uint32.encode(numStr.toLong).require.toByteArray
-    } else {
+    } else if (len <= Constants.maxLongPrecision) {
       scodec.codecs.int64.encode(BigInt(numStr).toLong).require.toByteArray
+    } else {
+      strToBigArray(numStr, isSigned = false)
     }
+  }
+
+  def strToBigArray(numStr: String, isSigned: Boolean): Array[Byte] = {
+    val precision = if (numStr(0) == '-' || numStr(0) == '+') numStr.length-1 else numStr.length
+    val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
+    val expectedNumOfBytes = math.ceil(numberOfBytes).toInt
+
+    val bytes = new Array[Byte](expectedNumOfBytes)
+    val bigIntBytes = BigInt(numStr).toByteArray
+
+    var j = bigIntBytes.length-1
+    var i = bytes.length-1
+
+    while (i>=0 && j>=0) {
+      bytes(i) = bigIntBytes(j)
+      i -= 1
+      j -= 1
+    }
+    if (i>=0) {
+      if (numStr(0) == '-') bytes(0) = -1
+    }
+
+    bytes
   }
 
   def encodeBcd(numStr: String, isSigned: Boolean): Array[Byte] = {
@@ -476,7 +503,7 @@ object TestDataGen5Integration {
     // seed=100 is used for the integration test
     val rand: Random = new Random(/*100*/)
 
-    val byteArray: Array[Byte] = new Array[Byte](1127)
+    val byteArray: Array[Byte] = new Array[Byte](1293)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -552,6 +579,13 @@ object TestDataGen5Integration {
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT05", byteArray, bigNum, offset, 5, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT06", byteArray, bigNum, offset, 8, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT07", byteArray, bigNum, offset, 9, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT08", byteArray, bigNum, offset, 10, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT09", byteArray, bigNum, offset, 11, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT10", byteArray, bigNum, offset, 17, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT11", byteArray, bigNum, offset, 18, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT12", byteArray, bigNum, offset, 19, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT13", byteArray, bigNum, offset, 20, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT14", byteArray, bigNum, offset, 37, signed = false)
 
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT01", byteArray, bigNum, offset, 1, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT02", byteArray, bigNum, offset, 2, signed = true, isNegative)
@@ -564,12 +598,20 @@ object TestDataGen5Integration {
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT09", byteArray, bigNum, offset, 11, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT10", byteArray, bigNum, offset, 17, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT11", byteArray, bigNum, offset, 18, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT12", byteArray, bigNum, offset, 19, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT13", byteArray, bigNum, offset, 20, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-SINT14", byteArray, bigNum, offset, 37, signed = true, isNegative)
 
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC01", byteArray, bigNum, offset, 3, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC02", byteArray, bigNum, offset, 4, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC03", byteArray, bigNum, offset, 5, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC04", byteArray, bigNum, offset, 8, signed = false)
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC05", byteArray, bigNum, offset, 9, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC06", byteArray, bigNum, offset, 10, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC07", byteArray, bigNum, offset, 17, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC08", byteArray, bigNum, offset, 18, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC09", byteArray, bigNum, offset, 19, signed = false)
+      offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-DEC10", byteArray, bigNum, offset, 28, signed = false)
 
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC01", byteArray, bigNum, offset, 3, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC02", byteArray, bigNum, offset, 4, signed = true, isNegative)
@@ -579,6 +621,8 @@ object TestDataGen5Integration {
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC06", byteArray, bigNum, offset, 10, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC07", byteArray, bigNum, offset, 17, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC08", byteArray, bigNum, offset, 18, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "NUM-SBIN-DEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
 
       // BCD formatted integral numbers
       val encodeBcdSigned = (str: String) => encodeBcd(str, isSigned = true)

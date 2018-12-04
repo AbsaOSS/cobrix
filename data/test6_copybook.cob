@@ -92,14 +92,13 @@
           10  NUM-BIN-INT05       PIC 9(5)         COMP.
           10  NUM-BIN-INT06       PIC 9(8)         BINARY.
           10  NUM-BIN-INT07       PIC 9(9)         BINARY.
-************* These types are currently not supported, added for the future
-************* 10  NUM-BIN-INT08       PIC 9(10)       BINARY.
-************* 10  NUM-BIN-INT09       PIC 9(11)       BINARY.
-************* 10  NUM-BIN-INT10       PIC 9(17)       BINARY.
-************* 10  NUM-BIN-INT11       PIC 9(18)       BINARY.
-************* 10  NUM-BIN-INT12       PIC 9(19)       BINARY.
-************* 10  NUM-BIN-INT13       PIC 9(20)       BINARY.
-************* 10  NUM-BIN-INT14       PIC 9(37)       BINARY.
+          10  NUM-BIN-INT08       PIC 9(10)       BINARY.
+          10  NUM-BIN-INT09       PIC 9(11)       BINARY.
+          10  NUM-BIN-INT10       PIC 9(17)       BINARY.
+          10  NUM-BIN-INT11       PIC 9(18)       BINARY.
+          10  NUM-BIN-INT12       PIC 9(19)       BINARY.
+          10  NUM-BIN-INT13       PIC 9(20)       BINARY.
+          10  NUM-BIN-INT14       PIC 9(37)       BINARY.
           10  NUM-SBIN-SINT01     PIC S9(1)        COMP.
           10  NUM-SBIN-SINT02     PIC S9(2)        COMP.
           10  NUM-SBIN-SINT03     PIC S9(3)        COMP.
@@ -111,10 +110,9 @@
           10  NUM-SBIN-SINT09     PIC S9(11)       BINARY.
           10  NUM-SBIN-SINT10     PIC S9(17)       BINARY.
           10  NUM-SBIN-SINT11     PIC S9(18)       BINARY.
-************* These types are currently not supported, added for the future
-************* 10  NUM-SBIN-SINT12     PIC S9(19)      BINARY.
-************* 10  NUM-SBIN-SINT13     PIC S9(20)      BINARY.
-************* 10  NUM-SBIN-SINT14     PIC S9(37)      BINARY.
+          10  NUM-SBIN-SINT12     PIC S9(19)      BINARY.
+          10  NUM-SBIN-SINT13     PIC S9(20)      BINARY.
+          10  NUM-SBIN-SINT14     PIC S9(37)      BINARY.
 
 ********** Binary formatted decimal numbers
           10  NUM-BIN-DEC01       PIC 99V9         COMP.
@@ -122,12 +120,11 @@
           10  NUM-BIN-DEC03       PIC 9(3)V99      COMP.
           10  NUM-BIN-DEC04       PIC 9(4)V9(4)    COMP.
           10  NUM-BIN-DEC05       PIC 9(5)V9(4)    COMP.
-************* These types are currently not supported, added for the future
-************* 10  NUM-BIN-DEC06       PIC 9(5)V9(5)   COMP.
-************* 10  NUM-BIN-DEC07       PIC 9(15)V99    COMP.
-************* 10  NUM-BIN-DEC08       PIC 9(16)V99    COMP.
-************* 10  NUM-BIN-DEC09       PIC 9(17)V99    COMP.
-************* 10  NUM-BIN-DEC10       PIC 9(18)V(10)  COMP.
+          10  NUM-BIN-DEC06       PIC 9(5)V9(5)   COMP.
+          10  NUM-BIN-DEC07       PIC 9(15)V99    COMP.
+          10  NUM-BIN-DEC08       PIC 9(16)V99    COMP.
+          10  NUM-BIN-DEC09       PIC 9(17)V99    COMP.
+          10  NUM-BIN-DEC10       PIC 9(18)V9(10)  COMP.
           10  NUM-SBIN-DEC01      PIC S99V9        COMP.
           10  NUM-SBIN-DEC02      PIC S99V99       COMP.
           10  NUM-SBIN-DEC03      PIC S9(3)V99     COMP.
@@ -136,9 +133,8 @@
           10  NUM-SBIN-DEC06      PIC S9(5)V9(5)   COMP.
           10  NUM-SBIN-DEC07      PIC S9(15)V99    COMP.
           10  NUM-SBIN-DEC08      PIC S9(16)V99    COMP.
-************* These types are currently not supported, added for the future
-************* 10  NUM-SBIN-DEC09      PIC S9(17)V99   COMP.
-************* 10  NUM-SBIN-DEC10      PIC S9(18)V(10) COMP.
+          10  NUM-SBIN-DEC09      PIC S9(17)V99   COMP.
+          10  NUM-SBIN-DEC10      PIC S9(18)V9(10) COMP.
 
 ********** BCD formatted integral numbers
           10  NUM-BCD-INT01       PIC 9(1)        COMP-3.
