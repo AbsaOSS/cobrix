@@ -17,11 +17,11 @@
 package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.decoders.{BCDNumberDecoders, BinaryUtils, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 
 class BinaryDecoderSpec extends FunSuite {
-  import za.co.absa.cobrix.cobol.parser.common.BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
+  import BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
 
   test("Test string fields decoding") {
     assert(BinaryUtils.decodeString(ASCII(), "TestString".toCharArray.map(_.toByte), 4) == "Test")
@@ -33,21 +33,22 @@ class BinaryDecoderSpec extends FunSuite {
     assert(BinaryUtils.decodeString(EBCDIC(), ebcdicString, 10) == "TestString")
   }
 
+
   test("Test uncompressed number decoding") {
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "100200".toCharArray.map(_.toByte), explicitDecimal = false, 0, isSignSeparate = false).contains("100200"))
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002551".toCharArray.map(_.toByte), explicitDecimal = false, 3, isSignSeparate = false).contains("1002.551"))
-    assert(BinaryUtils.decodeUncompressedNumber(ASCII(), "1002.551".toCharArray.map(_.toByte), explicitDecimal = true, 0, isSignSeparate = false).contains("1002.551"))
+    assert(StringDecoders.decodeAsciiNumber("100200".toCharArray.map(_.toByte)).contains("100200"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002551".toCharArray.map(_.toByte), 3).toString.contains("1002.551"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002.551".toCharArray.map(_.toByte), 0).toString.contains("1002.551"))
 
     // "1002551"
     val ebcdicNum = Array[Byte](0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF2.toByte, 0xF5.toByte, 0xF5.toByte, 0xF1.toByte)
-    assert(BinaryUtils.decodeUncompressedNumber(EBCDIC(), ebcdicNum, explicitDecimal = false, 2, isSignSeparate = false).contains("10025.51"))
+    assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, 2).toString().contains("10025.51"))
   }
 
   test("Test positive COMP-3 format decoding") {
     val comp3BytesPositive = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4F.toByte)
     val comp3ValuePositive = "101144750000004"
 
-    val v = BinaryUtils.decodeSignedBCD(comp3BytesPositive)
+    val v = BCDNumberDecoders.decodeBigBCDNumber(comp3BytesPositive, 0)
     assert (v.contains(comp3ValuePositive))
   }
 
@@ -55,7 +56,7 @@ class BinaryDecoderSpec extends FunSuite {
     val comp3BytesNegative = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4D.toByte)
     val comp3ValueNegative = "-101144750000004"
 
-    val v = BinaryUtils.decodeSignedBCD(comp3BytesNegative)
+    val v = BCDNumberDecoders.decodeBigBCDNumber(comp3BytesNegative, 0)
     assert (v.contains(comp3ValueNegative))
   }
 
@@ -63,47 +64,69 @@ class BinaryDecoderSpec extends FunSuite {
     val comp3BytesUnsigned = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4C.toByte)
     val comp3ValueUnsigned = "101144750000004"
 
-    val v = BinaryUtils.decodeSignedBCD(comp3BytesUnsigned)
+    val v = BCDNumberDecoders.decodeBCDIntegralNumber(comp3BytesUnsigned).toString
     assert (v.contains(comp3ValueUnsigned))
   }
 
   test("Test COMP-3 wrong format cases") {
     // The low order nybble is >= 10
-    val v1 = BinaryUtils.decodeSignedBCD(Array[Byte](0x1A.toByte,0x11.toByte,0x4C.toByte))
-    assert (v1.isEmpty)
+    val v1 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x1A.toByte,0x11.toByte,0x4C.toByte))
+    assert (v1 == null)
 
     // The high order nybble is >= 10
-    val v2 = BinaryUtils.decodeSignedBCD(Array[Byte](0xA1.toByte,0x11.toByte,0x4F.toByte))
-    assert (v2.isEmpty)
+    val v2 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0xA1.toByte,0x11.toByte,0x4F.toByte))
+    assert (v2 == null)
 
     // The sign nybble is wrong
-    val v3 = BinaryUtils.decodeSignedBCD(Array[Byte](0x11.toByte,0x11.toByte,0x40.toByte))
-    assert (v3.isEmpty)
+    val v3 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x11.toByte,0x40.toByte))
+    assert (v3 == null)
 
     // This should be a normal number
-    val v4 = BinaryUtils.decodeSignedBCD(Array[Byte](0x11.toByte,0x22.toByte,0x4C.toByte))
-    assert (v4.nonEmpty)
+    val v4 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x22.toByte,0x4C.toByte))
+    assert (v4 != null)
 
-    // This should be zero
-    val v5 = BinaryUtils.decodeSignedBCD(Array[Byte]())
-    assert (v5.contains("0"))
+    // This should be null
+    val v5 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte]())
+    assert (v5 == null)
+
+    // Use string decoder
+    // The low order nybble is >= 10
+    val v6 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x1A.toByte,0x11.toByte,0x4C.toByte), 0)
+    assert (v6 == null)
+
+    // The high order nybble is >= 10
+    val v7 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0xA1.toByte,0x11.toByte,0x4F.toByte), 0)
+    assert (v7 == null)
+
+    // The sign nybble is wrong
+    val v8 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x11.toByte,0x11.toByte,0x40.toByte), 0)
+    assert (v8 == null)
+
+    // This should be a normal number
+    val v9 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x11.toByte,0x22.toByte,0x4C.toByte), 0)
+    assert (v9 != null)
+
+    // This should be null
+    val v10 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](), 0)
+    assert (v10 == null)
   }
 
   test("Test COMP-3 decimal cases") {
     // A simple decimal number
-    val v1 = BinaryUtils.decodeSignedBCD(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 2)
+    val v1 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 2)
     assert (v1.contains("-158.84"))
 
     // A simple decimal number with an odd scale
-    val v3 = BinaryUtils.decodeSignedBCD(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 3)
+    val v3 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x15.toByte,0x88.toByte,0x4D.toByte), 3)
     assert (v3.contains("-15.884"))
 
     // A number the doesn't fit Double
     val byteArray = Array[Byte](0x92.toByte, 0x23.toByte, 0x37.toByte, 0x20.toByte, 0x36.toByte,
                                 0x85.toByte, 0x47.toByte, 0x75.toByte, 0x79.toByte, 0x8F.toByte)
-    val v2 = BinaryUtils.decodeSignedBCD(byteArray, 2)
+    val v2 = BCDNumberDecoders.decodeBigBCDNumber(byteArray, 2)
     assert (v2.contains("92233720368547757.98"))
   }
+
 
   test("Test Integer to decimal conversion") {
     assert(addDecimalPoint("1238767", 10) == "0.0001238767")

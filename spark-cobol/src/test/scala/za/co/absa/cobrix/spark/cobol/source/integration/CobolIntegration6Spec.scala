@@ -69,6 +69,8 @@ class CobolIntegration6Spec extends FunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .load(inpudDataPath)
 
+    df.printSchema()
+
     // This is to print the actual output
     println(df.schema.json)
     //df.toJSON.take(60).foreach(println)

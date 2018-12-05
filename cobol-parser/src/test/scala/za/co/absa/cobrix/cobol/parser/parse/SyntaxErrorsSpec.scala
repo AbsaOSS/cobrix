@@ -99,4 +99,18 @@ class SyntaxErrorsSpec extends FunSuite {
     assert(syntaxErrorException.msg.contains("Unable to parse the value of LEVEL"))
   }
 
+  test("Test invalid placement of SIGN SEPARATE clause") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |          10  FIELD    PIC 9(38)V9(19) COMP-3
+        |          SIGN IS LEADING SEPARATE CHARACTER.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.msg.contains("SIGN SEPARATE clause is not supported for COMP-3"))
+  }
+
 }

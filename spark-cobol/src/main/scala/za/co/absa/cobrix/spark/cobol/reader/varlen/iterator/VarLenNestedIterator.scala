@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 import org.apache.spark.sql.Row
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.common.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator

@@ -1,11 +1,12 @@
 /*
- * Copyright 2018 ABSA Group Limited
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,18 +15,13 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.common
-
-import java.nio.ByteBuffer
+package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.slf4j.LoggerFactory
-import scodec._
+import scodec.Codec
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
-import za.co.absa.cobrix.cobol.parser.position
-
-import scala.collection.mutable.ListBuffer
-import scala.util.control.NonFatal
+import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
@@ -105,15 +101,6 @@ object BinaryUtils {
   /** Convert an ASCII character to EBCDIC */
   def asciiToEbcdic(char: Char): Byte = ascii2ebcdic(char.toByte)
 
-  def wordAlign(f: BitVector, wordSize: Int, align: position.Position): BitVector = {
-    require(f.size <= wordSize)
-    align match {
-      case position.Left if f.size != wordSize => f.padLeft(wordSize - f.size)
-      case position.Right if f.size != wordSize => f.padRight(wordSize - f.size)
-      case _ => f
-    }
-  }
-
   /** Get the bit count of a cobol data type
     *
     * @param codec     EBCDIC / ASCII
@@ -133,172 +120,32 @@ object BinaryUtils {
     }
   }
 
-  def getBytesCount(comp: Option[Int], precision: Int, isSigned: Boolean, isSignSeparate: Boolean): Int = {
+  def getBytesCount(compression: Option[Int], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
+    import Constants._
     val isRealSigned = if (isSignSeparate) false else isSigned
-    val bytes = comp match {
-      case Some(x) if x == 0 || x == 4 || x == 5 =>
+    val bytes = compression match {
+      case Some(comp) if comp == compBinary1 || comp == compBinary1 || comp == compBinary2 =>
         // if native binary follow IBM guide to digit binary length
         precision match {
-          case a if a >= 1 && a <= 2 && x == 5 => 1 // byte
-          case a if a >= 1 && a <= 4 => 2           // short
-          case b if b >= 5 && b <= 9 => 4           // int
-          case c if c >= 10 && c <= 18 => 8         // long
-          case c =>                                 // bigint
-            val signBit = if (isRealSigned) 1 else 0
-            val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + signBit)/8
+          case p if p >= 1 && p <= 2 && comp == compBinaryCompilerSpecific => 1 // byte
+          case p if p >= minShortPrecision && p <= maxShortPrecision => binaryShortSizeBytes
+          case p if p >= minIntegerPrecision && p <= maxIntegerPrecision => binaryIntSizeBytes
+          case p if p >= minLongPrecision && p <= maxLongPrecision => binaryLongSizeBytes
+          case p => // bigint
+            val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
             math.ceil(numberOfBytes).toInt
         }
-      case Some(x) if x == 1 => 4 // float
-      case Some(x) if x == 2 => 8 // double
-      case Some(x) if x == 3 =>   // bcd
-        if (precision % 2 == 0)
-          precision / 2 + 1
-        else
-          precision / 2
-      case Some(x) => throw new IllegalArgumentException(s"Illegal clause COMP-$x.")
-      case None => precision
-    }
-    if (isSignSeparate) bytes + 1 else bytes
-  }
-
-  /** Decode the bits that are located in a binary file to actual human readable information
-    *
-    * @param codec        scodec codec
-    * @param enc          encoding type
-    * @param scale        size of data stucture
-    * @param bits         bits that need to be decoded
-    * @param comp         compaction of the bits
-    * @param align        bits alignment
-    * @param signPosition sign position of a signed data type
-    * @return
-    */
-  def decode(codec: Codec[_ <: AnyVal], enc: Encoding, scale: Int, bits: BitVector, comp: Option[Int], align: Option[position.Position] = None,
-             signPosition: Option[position.Position]): Array[Byte] = {
-    val digitBitSize = codec.sizeBound.lowerBound.toInt
-    val bytes = enc match {
-      case _: ASCII => comp match {
-        case Some(compact) => compact match {
-          case a if a == 3 => { //bcd
-            val bte = for (x <- 0 until scale) yield {
-              val bts = wordAlign(bits.slice(x * digitBitSize, (x * digitBitSize) + digitBitSize), digitBitSize, align.getOrElse(position.Left))
-              Codec.decode(bts)(codec).require.value.asInstanceOf[Double].toByte
-            }
-            bte.toArray
-          }
-          case _ => { //bin
-            //            val bts = wordAlign(bits, digitBitSize, align.getOrElse(Left))
-            val bte = Codec.decode(bits)(codec).require.value.asInstanceOf[Double].toByte
-            (bte :: Nil).toArray
-          }
-        }
-        case None => { // display i.e. no comp
-          val bte = for (x <- 0 until scale) yield {
-            val bts = wordAlign(bits.slice(x * digitBitSize, (x * digitBitSize) + digitBitSize), digitBitSize, align.getOrElse(position.Left))
-            Codec.decode(bts)(codec).require.value.asInstanceOf[Double].toByte
-          }
-          bte.toArray
-        }
-      }
-      case _: EBCDIC => comp match {
-        case Some(compact) => compact match {
-          case a if a == 3 => { //bcd
-            logger.debug("BCD, bits : " + bits)
-            val bte = for (x <- 0 to scale) yield {
-              val bts = wordAlign(bits.slice(x * digitBitSize, (x * digitBitSize) + digitBitSize), digitBitSize, align.getOrElse(position.Left))
-              logger.debug("bts : " + bts.toBin)
-              logger.debug("codec : " + codec)
-              logger.debug("value : " + Codec.decode(bts)(codec).require.value.asInstanceOf[Number].doubleValue())
-              Codec.decode(bts)(codec).require.value.asInstanceOf[Number].doubleValue().toByte
-            }
-            bte.toArray
-          }
-          case _ => { //bin
-            //            val bts = wordAlign(bits, digitBitSize, align.getOrElse(Left))
-            logger.debug("bts : " + bits.toBin)
-            logger.debug("codec : " + codec)
-            val buf = ByteBuffer.allocate(8)
-            logger.debug("codec : " + codec.toString)
-            val decValue = Codec.decode(bits)(codec).require.value.asInstanceOf[Number].doubleValue()
-            logger.debug("decValue : " + decValue)
-            val byteArr = buf.putDouble(decValue).array()
-            logger.debug("byteArr : " + byteArr)
-            byteArr
-          }
-        }
-        case None => { // display i.e. no comp
-          val bte = for (x <- 0 until scale) yield {
-            val bts = wordAlign(bits.slice(x * digitBitSize, (x * digitBitSize) + digitBitSize), digitBitSize, align.getOrElse(position.Left))
-            logger.debug("bts : " + bts.toBin)
-            Codec.decode(bts)(codec).require.value.asInstanceOf[Number].doubleValue().toByte
-          }
-          bte.toArray
-        }
-      }
+      case Some(comp) if comp == compFloat => floatSize
+      case Some(comp) if comp == compDouble => doubleSize
+      case Some(comp) if comp == compBCD => precision / 2 + 1  // bcd
+      case Some(comp) => throw new IllegalArgumentException(s"Illegal clause COMP-$comp.")
+      case None =>
+        var size = precision
+        if (isSignSeparate) size += 1
+        if (isExplicitDecimalPt) size += 1
+        size
     }
     bytes
-  }
-
-  /** decode an array of bytes to actual characters that represent their binary counterparts.
-    *
-    * @param byteArr byte array that represents the binary data
-    * @param enc     encoding type
-    * @param comp    binary compaction type
-    * @return a string representation of the binary data
-    */
-  def charDecode(byteArr: Array[Byte], enc: Option[Encoding], comp: Option[Int]): String = {
-    val ans = enc match {
-      case Some(ASCII()) => byteArr.map(byte => {
-        byte.toInt
-      })
-      case Some(EBCDIC()) =>
-        val finalStringVal = comp match {
-          case Some(compact) => {
-            val compValue = compact match {
-              case a if a == 3 => { //bcd
-                val digitString = for {
-                  idx <- byteArr.indices
-                } yield {
-                  if (idx == byteArr.length - 1) { //last byte is sign
-                    byteArr(idx) match {
-                      case 0x0C => " " // was +
-                      case 0x0D => "-"
-                      case 0x0F => " " // was +, unsigned
-                      case _ =>
-                        // Todo Remove this
-                        println(s"Unknown singature nybble encountered! ${byteArr(idx).toString}")
-                        byteArr(idx).toString // No sign
-                    }
-                  }
-                  else {
-                    byteArr(idx).toString
-                  }
-                }
-                logger.debug("digitString : " + digitString)
-                s"${digitString.last}${digitString.head}${digitString.tail.dropRight(1).mkString("")}"
-              }
-              case _ => { //bin
-                val buf = ByteBuffer.wrap(byteArr)
-                // Todo Why Double??? Revis the logic
-                buf.getDouble.toString //returns number value as a string "1500"
-              }
-            }
-            compValue
-          }
-          case None => {
-            val digitString = for {
-              idx <- byteArr.indices
-            } yield {
-              val unsignedByte = (256 + byteArr(idx).toInt) % 256
-              ebcdic2ascii(unsignedByte)
-            }
-            digitString.mkString("")
-          }
-        }
-        finalStringVal
-
-      case _ => throw new Exception("No character set was defined for decoding")
-    }
-    ans.toString
   }
 
   /** A decoder for any string fields (alphabetical or any char)
@@ -328,116 +175,6 @@ object BinaryUtils {
       }
     }
     str.trim
-  }
-
-  /** A decoder for various numeric formats
-    *
-    * @param bytes A byte array that represents the binary data
-    * @return A string representation of the binary data
-    */
-  def decodeCobolNumber(enc: Encoding, bytes: Array[Byte], compact: Option[Int], precision: Int, scale: Int, explicitDecimal: Boolean, signed: Boolean, isSignSeparate: Boolean): Option[String] = {
-    compact match {
-      case None =>
-        // DISPLAY format
-        decodeUncompressedNumber(enc, bytes, explicitDecimal, scale, isSignSeparate)
-      case Some(1) =>
-        // COMP-1 aka 32-bit floating point number
-        Some(decodeFloatingPointNumber(bytes, bigEndian = true))
-      case Some(2) =>
-        // COMP-2 aka 64-bit floating point number
-        Some(decodeFloatingPointNumber(bytes, bigEndian = true))
-      case Some(3) =>
-        // COMP-3 aka BCD-encoded number
-        decodeSignedBCD(bytes, scale)
-      case Some(4) =>
-        // COMP aka BINARY encoded number
-        Some(decodeBinaryNumber(bytes, bigEndian = true, signed = signed, scale))
-      case Some(5) =>
-        // COMP aka BINARY encoded number
-        Some(decodeBinaryNumber(bytes, bigEndian = false, signed = signed, scale))
-      case _ =>
-        throw new IllegalStateException(s"Unknown compression format ($compact).")
-    }
-  }
-  /** A decoder for uncompressed (aka DISPLAY) binary numbers
-    *
-    * @param bytes A byte array that represents the binary data
-    * @return A string representation of the binary data
-    */
-  def decodeUncompressedNumber(enc: Encoding, bytes: Array[Byte], explicitDecimal: Boolean, scale: Int, isSignSeparate: Boolean): Option[String] = {
-    // ToDo Add leading signal support
-    val chars = new StringBuffer(bytes.length + 1)
-    val decimalPointPosition = bytes.length - scale
-    var i = 0
-    while (i < bytes.length) {
-      if (i == decimalPointPosition && !explicitDecimal) {
-        chars.append('.')
-      }
-      enc match {
-        case _: EBCDIC => chars.append(ebcdic2ascii((bytes(i) + 256) % 256))
-        case _ => chars.append(bytes(i).toChar)
-      }
-
-      i += 1
-    }
-    validateAndFormatNumber(chars.toString.trim)
-  }
-
-  /** Decode a binary encoded decimal (BCD) aka COMP-3 format to a String
-    *
-    * @param bytes A byte array that represents the binary data
-    * @param scale A decimal scale if a number is a decimal. Should be greater or equal to zero
-    * @return Some(str) - a string representation of the binary data, None if the data is not properly formatted
-    */
-  def decodeSignedBCD(bytes: Array[Byte], scale: Int = 0): Option[String] = {
-    if (scale < 0) {
-      throw new IllegalArgumentException(s"Invalid scale=$scale, should be greater or equal to zero.")
-    }
-    if (bytes.length < 1) {
-      return Some("0")
-    }
-    var i: Int = 0
-    var sign = ""
-    val chars = new StringBuffer(bytes.length * 2 + 2)
-    val decimalPointPosition = bytes.length*2 - (scale + 1)
-
-    while (i < bytes.length) {
-      val b = bytes(i)
-      val lowNibble = b & 0x0f
-      val highNibble = (b >> 4) & 0x0f
-      if (highNibble >= 0 && highNibble < 10) {
-        chars.append(('0'.toByte + highNibble).toChar)
-      }
-      else {
-        // invalid nibble encountered - the format is wrong
-        return None
-      }
-
-      if (i + 1 == bytes.length) {
-        // The last nibble is a sign
-        sign = lowNibble match {
-          case 0x0C => "" // +, signed
-          case 0x0D => "-"
-          case 0x0F => "" // +, unsigned
-          case _ =>
-            // invalid nibble encountered - the format is wrong
-            return None
-        }
-      }
-      else {
-        if (lowNibble >= 0 && lowNibble < 10) {
-          chars.append(('0'.toByte + lowNibble).toChar)
-        }
-        else {
-          // invalid nibble encountered - the format is wrong
-         return None
-        }
-      }
-      i = i + 1
-    }
-    if (scale > 0) chars.insert(decimalPointPosition, '.')
-    chars.insert(0, sign)
-    validateAndFormatNumber(chars.toString)
   }
 
   /** Transforms a string representation of an integer to a string representation of decimal
@@ -527,16 +264,6 @@ object BinaryUtils {
         s" type.")
     }
     value.toString
-  }
-
-  /** Formats and validates a string as a number. Returns None if the string doesn't pass the validation **/
-  private def validateAndFormatNumber(str: String): Option[String] = {
-    val value = try {
-      Some(BigDecimal(str).toString)
-    } catch {
-      case NonFatal(_) => None
-    }
-    value
   }
 
   /** Extracts record length from an XCOM 4 byte header.**/
