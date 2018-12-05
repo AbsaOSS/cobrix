@@ -26,12 +26,14 @@ import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HDFSUtils}
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.FileInputFormat
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanner
+import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 
 import scala.util.control.NonFatal
 
@@ -67,11 +69,6 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   with Serializable
   with TableScan {
 
-  /**
-    * Represents a file attached to an order.
-    */
-  private[source] case class FileWithOrder(filePath: String, order: Int)
-
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val filesList = getListFilesWithOrder(sourceDir)
@@ -85,56 +82,22 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   override def buildScan(): RDD[Row] = {
 
     cobolReader match {
-      case blockReader: FixedLenReader => buildScanForFixedLength(blockReader)
-      case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded => buildScanForVarLenIndex(streamReader)
-      case streamReader: VarLenReader => buildScanForVariableLength(streamReader)
+      case blockReader: FixedLenReader => CobolScanner.buildScanForFixedLength(blockReader, sourceDir, parseRecords, sqlContext)
+      case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded => CobolScanner.buildScanForVarLenIndex(streamReader, indexes, filesList, sqlContext)
+      case streamReader: VarLenReader => CobolScanner.buildScanForVariableLength(streamReader, filesList, sqlContext)
       case _ => throw new IllegalStateException("Invalid reader object $cobolReader.")
     }
   }
 
-  private def buildScanForVarLenIndex(reader: VarLenReader): RDD[Row] = {
-    val filesMap = filesList.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap
-    val conf = sqlContext.sparkContext.hadoopConfiguration
-    val sconf = new SerializableConfiguration(conf)
 
-    indexes.flatMap(indexEntry => {
-      val fileSystem = FileSystem.get(sconf.value)
-      val filePathName = filesMap(indexEntry.fileId)
-      val fileName = new Path(filePathName).getName
-      val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
-      val numOfBytesMsg = if (numOfBytes>0) s"${numOfBytes/Constants.megabyte} MB" else "until the end"
-      logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-      val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
-      reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
-    })
-  }
 
-  private def buildScanForVariableLength(reader: VarLenReader): RDD[Row] = {
-    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
 
-    val conf = sqlContext.sparkContext.hadoopConfiguration
-    val sconf = new SerializableConfiguration(conf)
-    filesRDD.mapPartitions(
-      partition =>
-      {
-        val fileSystem = FileSystem.get(sconf.value)
-        partition.flatMap(row =>
-        {
-          val filePath = row.filePath
-          val fileOrder = row.order
-
-          logger.info(s"Going to parse file: $filePath")
-          reader.getRowIterator(new FileStreamer(filePath, fileSystem), 0L, fileOrder, 0L)
-        }
-        )
-      })
-  }
 
   /**
     * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
     * as their order.
     *
-    * The List contains [[za.co.absa.cobrix.spark.cobol.source.CobolRelation.FileWithOrder]] instances.
+    * The List contains [[za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder]] instances.
     */
   private def getListFilesWithOrder(sourceDir: String): Array[FileWithOrder] = {
 
@@ -146,25 +109,11 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
   }
 
   /**
-    * Checks if the recursive file retrieval flat is set
+    * Checks if the recursive file retrieval flag is set
     */
   private def isRecursiveRetrieval: Boolean = {
     val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
     hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
-  }
-
-  private def buildScanForFixedLength(reader: FixedLenReader): RDD[Row] = {
-    // This reads whole text files as RDD[String]
-    // Todo For Cobol files need to use
-    // binaryRecords() for fixed size records
-    // binaryFiles() for varying size records
-    // https://spark.apache.org/docs/2.1.1/api/java/org/apache/spark/SparkContext.html#binaryFiles(java.lang.String,%20int)
-
-    val recordSize = reader.getCobolSchema.getRecordSize + reader.getRecordStartOffset + reader.getRecordEndOffset
-    val schema = reader.getSparkSchema
-
-    val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
-    parseRecords(reader, records)
   }
 
   private[source] def parseRecords(reader: FixedLenReader, records: RDD[Array[Byte]]) = {
@@ -178,7 +127,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
   def buildIndex(filesList: Array[FileWithOrder]): RDD[SimpleIndexEntry] = {
     cobolReader match {
-      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReader(filesList, reader)
+      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReaderWithFullLocality(filesList, reader)
       case _ => null
     }
   }
@@ -205,5 +154,98 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
     logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexes.repartition(numPartitions).cache()
+  }
+
+
+  def buildIndexForVarLenReaderWithLocality(filesList: Array[FileWithOrder], reader: VarLenReader): RDD[SimpleIndexEntry] = {
+
+    val conf = sqlContext.sparkContext.hadoopConfiguration
+
+    val filesRDD = toRDDWithLocality(filesList, conf)
+
+    val sconf = new SerializableConfiguration(conf)
+
+    val indexes = filesRDD.mapPartitions(
+      partition => {
+        val fileSystem = FileSystem.get(sconf.value)
+        partition.flatMap(row => {
+          val filePath = row.filePath
+          val fileOrder = row.order
+
+          // TODO remove comments
+          println("\nEXPECTED TO RUN IN EITHER OF THESE: ")
+          HDFSUtils.getBlocksLocations(new Path(filePath), fileSystem).foreach(println)
+          println("***********************************\n")
+
+          logger.info(s"Going to generate index for the file: $filePath")
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
+
+          index
+        }
+        )
+      }).cache
+
+    val indexCount = indexes.count()
+    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
+    logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    indexes.repartition(numPartitions).cache()
+  }
+
+  def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader): RDD[SimpleIndexEntry] = {
+
+    val conf = sqlContext.sparkContext.hadoopConfiguration
+
+    val filesRDD = toRDDWithLocality(filesList, conf)
+
+    val sconf = new SerializableConfiguration(conf)
+
+    val indexes = filesRDD.mapPartitions(
+      partition => {
+        val fileSystem = FileSystem.get(sconf.value)
+        partition.flatMap(row => {
+          val filePath = row.filePath
+          val fileOrder = row.order
+
+          // TODO remove comments
+          println("\nEXPECTED TO RUN IN EITHER OF THESE: ")
+          HDFSUtils.getBlocksLocations(new Path(filePath), fileSystem).foreach(println)
+          println("***********************************\n")
+
+          logger.info(s"Going to generate index for the file: $filePath")
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
+
+          index.map(entry => {
+            val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
+            val length = if (entry.offsetTo > 0) entry.offsetTo else Long.MaxValue
+            (entry, HDFSUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
+          })
+        }
+        )
+      })
+
+    val offsetsLocations = indexes.collect()
+    // TODO remove comments
+    println("\nRECORDS EXPECTED LOCATIONS")
+    offsetsLocations.foreach(println)
+    println("\n*********************")
+    sqlContext.sparkContext.makeRDD(offsetsLocations)
+  }
+
+  /**
+    * Converts the list of files into an RDD with preferred locations for the partitions.
+    */
+  private def toRDDWithLocality(filesList: Array[FileWithOrder], conf: Configuration): RDD[FileWithOrder] = {
+    val fileSystem = FileSystem.get(conf)
+
+    val filesWithPreferredLocations = filesList.map(file => {
+      (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
+    }).toSeq
+
+    // TODO remove comments
+    println("\n\tEXPECTED LOCALITY")
+    filesWithPreferredLocations.foreach(println)
+    println("***********************************")
+
+    sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
   }
 }
