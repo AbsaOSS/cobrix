@@ -26,6 +26,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
   * @param enc          An encoding
   */
 case class AlphaNumeric(
+                         pic: String,
                          length: Int,
                          wordAlligned: Option[Position] = None,
                          enc: Option[Encoding] = None

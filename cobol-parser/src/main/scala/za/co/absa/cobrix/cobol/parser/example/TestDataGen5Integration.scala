@@ -503,7 +503,7 @@ object TestDataGen5Integration {
     // seed=100 is used for the integration test
     val rand: Random = new Random(/*100*/)
 
-    val byteArray: Array[Byte] = new Array[Byte](1293)
+    val byteArray: Array[Byte] = new Array[Byte](1329)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -570,6 +570,11 @@ object TestDataGen5Integration {
       offset = putNumStrToArray("NUM-STR-SDEC08", byteArray, bigNum, offset, 18, signed = true, isNegative)
       offset = putNumStrToArray("NUM-STR-SDEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
       offset = putNumStrToArray("NUM-STR-SDEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
+
+      offset = putNumStrToArray("NUM-STR-EDEC03", byteArray, bigNum, offset, 5, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
+      offset = putNumStrToArray("NUM-STR-EDEC04", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
+      offset = putNumStrToArray("NUM-STR-EDEC05", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
+      offset = putNumStrToArray("NUM-STR-EDEC06", byteArray, bigNum, offset, 10, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
 
       // Binary formatted integral numbers
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "NUM-BIN-INT01", byteArray, bigNum, offset, 1, signed = false)

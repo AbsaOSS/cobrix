@@ -148,7 +148,7 @@ class BinaryExtractorSpec extends FunSuite {
     val level: Int = 10
     val name: String = "SHORT-NAME"
     val lineNumber: Int = 4
-    val dataType: CobolType = AlphaNumeric(10, None, Some(EBCDIC()))
+    val dataType: CobolType = AlphaNumeric("X(10)", 10, None, Some(EBCDIC()))
     val redefines: Option[String] = None
     val isRedefined: Boolean = false
     val occurs: Option[Int] = None

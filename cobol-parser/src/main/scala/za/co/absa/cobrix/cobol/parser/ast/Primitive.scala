@@ -72,8 +72,6 @@ case class Primitive(
 
   /** Returns the binary size in bits for the field */
   def getBinarySizeBits: Int = {
-    validateDataTypes()
-
     val size = dataType match {
       case a: AlphaNumeric =>
         a.length * 8
@@ -103,30 +101,6 @@ case class Primitive(
     val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
 
     decode(bytes)
-  }
-
-  @throws(classOf[SyntaxErrorException])
-  private def validateDataTypes(): Unit = {
-    dataType match {
-      case d: Decimal =>
-        if (d.precision - d.scale > Constants.maxDecimalPrecision) {
-          throw new SyntaxErrorException(lineNumber, name,
-            s"Decimal numbers with precision bigger than ${Constants.maxDecimalPrecision} are not supported.")
-        }
-        if (d.scale > Constants.maxDecimalScale) {
-          throw new SyntaxErrorException(lineNumber, name,
-            s"Decimal numbers with scale bigger than ${Constants.maxDecimalScale} are not supported.")
-        }
-      case i: Integral =>
-        for (bin <- i.compact) {
-          if (i.precision > Constants.maxBinIntPrecision) {
-            throw new SyntaxErrorException(lineNumber, name,
-              s"BINARY-encoded integers with precision bigger than ${Constants.maxBinIntPrecision} are not supported.")
-          }
-        }
-      case _ =>
-    }
-
   }
 
 }
