@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
+import za.co.absa.cobrix.cobol.parser.common.Constants
+
 import scala.util.control.NonFatal
 
 object StringDecoders {
@@ -53,27 +55,61 @@ object StringDecoders {
   }
 
   /**
-    * A decoder for any EBCDIC uncompressed numbers supporting leading and trailing sign
+    * A decoder for any EBCDIC uncompressed numbers supporting
+    * <ul>
+    * <li> Separate leading and trailing sign</li>
+    * <li> Sign punched into the number</li>
+    * <li> Explicit decimal point</li>
+    * </ul>
+    *
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
     */
   def decodeEbcdicNumber(bytes: Array[Byte]): String = {
+    import Constants._
     val buf = new StringBuffer(bytes.length + 1)
     var sign = ' '
+    var malformed = false
     var i = 0
     while (i < bytes.length) {
-      val char = BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256)
-      if (char == '-' || char == '+') {
-        sign = char
-      } else {
-        buf.append(char)
+      val b = bytes(i) & 0xFF
+      var ch = ' '
+      if (b >= 0xF0 && b <= 0xF9) {
+        ch = (b - 0xF0 + 0x30).toChar // unsigned
+      }
+      else if (b >= 0xC0 && b <= 0xC9) {
+        ch = (b - 0xC0 + 0x30).toChar // positive sign punched
+        sign = '+'
+      }
+      else if (b >= 0xD0 && b <= 0xD9) {
+        ch = (b - 0xD0 + 0x30).toChar // negative sign punched
+        sign = '-'
+      }
+      else if (b == minusCharEBCIDIC) {
+        sign = '-'
+      }
+      else if (b == plusCharEBCIDIC) {
+        sign = '+'
+      }
+      else if (b == dotCharEBCIDIC) {
+        ch = '.'
+      }
+      else if (b == spaceCharEBCIDIC || b == 0) {
+        ch = ' '
+      }
+      else
+        malformed = true
+      if (ch != ' ') {
+        buf.append(ch)
       }
       i = i + 1
     }
-    if (sign != ' ')
-      sign + buf.toString.trim
+    if (malformed)
+      null
+    else if (sign != ' ')
+      sign + buf.toString
     else
-      buf.toString.trim
+      buf.toString
   }
 
   /**
@@ -182,6 +218,36 @@ object StringDecoders {
   def decodeAsciiBigNumber(bytes: Array[Byte], scale: Int = 0): BigDecimal = {
     try {
       BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes), scale))
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode decimal number from an EBCDIC string converting it to a big decimal
+    * This decoder is used to convert decimal numbers with explicit decimal point
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A big decimal containing a big integral number
+    */
+  def decodeEbcdicBigDecimal(bytes: Array[Byte]): BigDecimal = {
+    try {
+      BigDecimal(decodeEbcdicNumber(bytes))
+    } catch {
+      case NonFatal(_) => null
+    }
+  }
+
+  /**
+    * Decode decimal number from an ASCII string converting it to a big decimal
+    * This decoder is used to convert decimal numbers with explicit decimal point
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A big decimal containing a big integral number
+    */
+  def decodeAsciiBigDecimal(bytes: Array[Byte]): BigDecimal = {
+    try {
+      BigDecimal(decodeAsciiNumber(bytes))
     } catch {
       case NonFatal(_) => null
     }

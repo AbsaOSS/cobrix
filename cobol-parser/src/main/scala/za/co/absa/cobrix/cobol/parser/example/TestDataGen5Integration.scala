@@ -298,11 +298,7 @@ object TestDataGen5Integration {
     val explicitDecimalChars = if (explicitDecimalPosition >= 0) 1 else 0
     val explicitSignChars = if (isSignSeparate) 1 else 0
     val trailingSignChars = if (isSignSeparate && !isSignLeading) 1 else 0
-    val numLen = if (isSignSeparate) {
-      length + explicitSignChars
-    } else {
-      if (signed) length + explicitSignChars - 1 else length + explicitSignChars
-    }
+    val numLen = length + explicitSignChars
 
     var str = bigNumber.take(length)
     if (!isSignSeparate) {
@@ -336,8 +332,8 @@ object TestDataGen5Integration {
 
     var j = 0
     while (j < binLength) {
-      if (i == explicitDecimalPosition) {
-        bytes(i) = '.'
+      if (j == explicitDecimalPosition) {
+        bytes(i) = Constants.dotCharEBCIDIC
         i += 1
       }
       bytes(i) = encodedValue(j)
@@ -347,12 +343,24 @@ object TestDataGen5Integration {
     newOffset
   }
 
-  def encodeUncompressed(numStr: String, targetLength: Int): Array[Byte] = {
+  def encodeUncompressed(numStr: String, targetLength: Int, isSigned: Boolean, signPunch: Boolean): Array[Byte] = {
+    val sign = if (isSigned && numStr(0) == '-') '-' else '+'
+    val str = if (numStr(0) == '-') numStr.drop(1) else numStr
     var j = 0
     val outputArray = new Array[Byte](targetLength)
     while (j < targetLength) {
-      if (j < numStr.length)
-        outputArray(j) = BinaryUtils.asciiToEbcdic(numStr.charAt(j))
+      if (j < str.length) {
+        var c = BinaryUtils.asciiToEbcdic(str.charAt(j))
+        if (j==str.length-1 && isSigned && signPunch) {
+          val num = if (sign == '-') {
+            str.charAt(j).toInt - 0x30 + 0xD0
+          } else {
+            str.charAt(j).toInt - 0x30 + 0xC0
+          }
+          c = num.toByte
+        }
+        outputArray(j) = c
+      }
       else outputArray(j) = 0
       j += 1
     }
@@ -448,7 +456,7 @@ object TestDataGen5Integration {
                        isSignSeparate: Boolean = false,
                        isSignLeading: Boolean = false,
                        explicitDecimalPosition: Int = -1): Int = {
-    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length),
+    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length, signed, !isSignSeparate),
       fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, explicitDecimalPosition)
   }
 
@@ -571,8 +579,8 @@ object TestDataGen5Integration {
       offset = putNumStrToArray("NUM-STR-SDEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
       offset = putNumStrToArray("NUM-STR-SDEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
 
-      offset = putNumStrToArray("NUM-STR-EDEC03", byteArray, bigNum, offset, 5, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
-      offset = putNumStrToArray("NUM-STR-EDEC04", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
+      offset = putNumStrToArray("NUM-STR-EDEC03", byteArray, bigNum, offset, 5, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 3)
+      offset = putNumStrToArray("NUM-STR-EDEC04", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 4)
       offset = putNumStrToArray("NUM-STR-EDEC05", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
       offset = putNumStrToArray("NUM-STR-EDEC06", byteArray, bigNum, offset, 10, signed = true, isNegative, isSignSeparate = false, isSignLeading = false, 5)
 
