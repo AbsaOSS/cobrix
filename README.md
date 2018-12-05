@@ -277,6 +277,13 @@ copybook it is very convenient to extract segments one by one by combining 'is_x
 In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will
 read all segments, but will parse only ones that have `SEG-ID = "1122334"`.
 
+If you want to parse multiple segments, set the option 'segment_filter' to a comma separated list of the segment values. For example:
+```
+.option("segment_field", "SEG-ID")
+.option("segment_filter", "1122334,1122335")
+```
+will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
+
 ## <a id="ims"/>Reading hierarchical data sets
 
 Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
