@@ -206,6 +206,6 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
   private def isSegmentMatchesTheFilter(segmentId: String): Boolean = {
     segmentIdFilter
-      .forall(filter => segmentId == filter)
+      .forall(filter => filter.contains(segmentId))
   }
 }
