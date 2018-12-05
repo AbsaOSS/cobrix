@@ -114,7 +114,7 @@ object CobolParametersParser {
       Some(MultisegmentParameters
       (
         params(PARAM_SEGMENT_FIELD),
-        params.get(PARAM_SEGMENT_FILTER),
+        params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, "")
       ))
