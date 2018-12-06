@@ -66,7 +66,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
     def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
       if (path.length == 0) {
-        Seq()
+        throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract it's value.")
       } else {
         group.children.flatMap(child => {
           child match {

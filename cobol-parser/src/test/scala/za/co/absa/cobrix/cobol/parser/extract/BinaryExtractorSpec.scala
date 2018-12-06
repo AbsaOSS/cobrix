@@ -93,24 +93,24 @@ class BinaryExtractorSpec extends FunSuite {
   //  00 1F F0 F0 F0 F0 F0 F0 F0 F0 F5 F0 F0 F6 F0 F0
   //  F1 F2 F0 F0 F3 F0 F1 F0 F0 F0 00 00 2F
 
-   val bytes: Array[Byte]  = Array[Byte](
-     0x00.toByte, 0x06.toByte, 0xC5.toByte, 0xE7.toByte, 0xC1.toByte, 0xD4.toByte, 0xD7.toByte, 0xD3.toByte,
-     0xC5.toByte, 0xF4.toByte, 0x40.toByte, 0x40.toByte, 0x00.toByte, 0x00.toByte, 0x0F.toByte, 0x40.toByte,
-     0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
-     0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
-     0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
-     0x00.toByte, 0x3F.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF2.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF4.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF1.toByte, 0xF2.toByte, 0x00.toByte, 0x00.toByte, 0x0F.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF3.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF4.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF1.toByte, 0xF0.toByte, 0xF2.toByte, 0x00.toByte, 0x00.toByte, 0x1F.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0xF5.toByte, 0xF0.toByte, 0xF0.toByte, 0xF6.toByte, 0xF0.toByte, 0xF0.toByte, 0xF1.toByte, 0xF2.toByte,
-     0xF0.toByte, 0xF0.toByte, 0xF3.toByte, 0xF0.toByte, 0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
-     0x00.toByte, 0x00.toByte, 0x2F.toByte
-   )
+  val bytes: Array[Byte] = Array[Byte](
+    0x00.toByte, 0x06.toByte, 0xC5.toByte, 0xE7.toByte, 0xC1.toByte, 0xD4.toByte, 0xD7.toByte, 0xD3.toByte,
+    0xC5.toByte, 0xF4.toByte, 0x40.toByte, 0x40.toByte, 0x00.toByte, 0x00.toByte, 0x0F.toByte, 0x40.toByte,
+    0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
+    0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
+    0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,
+    0x00.toByte, 0x3F.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF2.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF4.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF1.toByte, 0xF2.toByte, 0x00.toByte, 0x00.toByte, 0x0F.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF3.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF4.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF1.toByte, 0xF0.toByte, 0xF2.toByte, 0x00.toByte, 0x00.toByte, 0x1F.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0xF5.toByte, 0xF0.toByte, 0xF0.toByte, 0xF6.toByte, 0xF0.toByte, 0xF0.toByte, 0xF1.toByte, 0xF2.toByte,
+    0xF0.toByte, 0xF0.toByte, 0xF3.toByte, 0xF0.toByte, 0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF0.toByte,
+    0x00.toByte, 0x00.toByte, 0x2F.toByte
+  )
 
   val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
   val startOffset: Int = 0
@@ -124,7 +124,8 @@ class BinaryExtractorSpec extends FunSuite {
     assert(result.asInstanceOf[Int] === 6)
 
     // traverse AST and extract all primitives to map
-    var extractedData = scala.collection.mutable.Map[String,Any]()
+    var extractedData = scala.collection.mutable.Map[String, Any]()
+
     def traverseAst(group: Group): Unit = {
       for (child <- group.children) {
         if (child.isInstanceOf[Primitive]) {
@@ -156,7 +157,7 @@ class BinaryExtractorSpec extends FunSuite {
     val dependingOn: Option[String] = None
     val isDependee: Boolean = false
     val isFiller: Boolean = false
-    val binaryProperties: BinaryProperties = BinaryProperties(2*8, 10*8, 10*8)
+    val binaryProperties: BinaryProperties = BinaryProperties(2 * 8, 10 * 8, 10 * 8)
 
     val primitive: Primitive = Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
       occurs, to, dependingOn, isDependee, isFiller, DecoderSelector.getDecoder(dataType), binaryProperties)(None)
@@ -164,7 +165,7 @@ class BinaryExtractorSpec extends FunSuite {
     assert(result2.asInstanceOf[String] === "EXAMPLE4")
   }
 
-  test("Test get field value by name"){
+  test("Test get field value by name") {
     val fieldName0: String = "ID"
     val result0: Any = copybook.getFieldValueByName(fieldName0, bytes, startOffset)
     assert(result0.asInstanceOf[Int] === 6)
@@ -197,16 +198,10 @@ class BinaryExtractorSpec extends FunSuite {
     }
     assert(thrown3.getMessage.contains("is not a primitive field") === true)
 
-    //  TODO
-    // Currently, if a filed name corresponding to a Group Statement (instead of a Primitive) is passed,
-    // 'Field not found in a copybook' exception is thrown. Should be 'Not a primitive field'
-
-    //    val notPrimitiveName2: String = "METADATA.ACCOUNT"
-    //    val thrown4 = intercept[IllegalStateException] {
-    //      val resultImpossible4: Any = copybook.getFieldValueByName(notPrimitiveName2, bytes, startOffset)
-    //    }
-    //    assert(thrown4.getMessage === s"$notPrimitiveName2 is not a primitive field," +
-    //      " cannot extract it's value.")
-
+    val notPrimitiveName2: String = "METADATA.ACCOUNT"
+    val thrown4 = intercept[IllegalStateException] {
+      val resultImpossible4: Any = copybook.getFieldValueByName(notPrimitiveName2, bytes, startOffset)
+    }
+    assert(thrown4.getMessage === s"'$notPrimitiveName2' is a GROUP and not a primitive field. Cannot extract it's value.")
   }
 }
