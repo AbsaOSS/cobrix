@@ -17,11 +17,9 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.types.StructType
-import scodec.bits.BitVector
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -51,7 +49,7 @@ object RowExtractors {
                     recordId: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
+    def extractArray(field: Statement, useOffset: Long): Array[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -67,19 +65,27 @@ object RowExtractors {
       var offset = useOffset
       field match {
         case grp: Group =>
-          // ToDo: Create an array of fixed size and put the values there
-          val groupValues = for (_ <- Range(from, actualSize)) yield {
+          val groupValues = new Array[Any](actualSize-from)
+          var i = from
+          var j = 0
+          while (i < actualSize) {
             val value = getGroupValues(offset, grp)
             offset += grp.binaryProperties.dataSize
-            value
+            groupValues(j) = value
+            i += 1
+            j += 1
           }
           groupValues
         case s: Primitive =>
-          // ToDo: Create an array of fixed size and put the values there
-          val values = for (_ <- Range(from, actualSize)) yield {
+          val values = new Array[Any](actualSize-from)
+          var i = from
+          var j = 0
+          while (i < actualSize) {
             val value = s.decodeTypeValue(offset, data)
             offset += s.binaryProperties.dataSize
-            value
+            values(j) = value
+            i += 1
+            j += 1
           }
           values
       }
@@ -106,10 +112,12 @@ object RowExtractors {
     def getGroupValues(offset: Long, group: Group): Row = {
       var bitOffset = offset
 
-      // ToDo: Create an array of fixed size and put the values there
-      val fields = new ArrayBuffer[Any]()
+      val fields = new Array[Any](group.nonFillerSize)
 
-      for (field <- group.children) {
+      var j = 0
+      var i = 0
+      while (i < group.children.length) {
+        val field = group.children(i)
         val fieldValue = if (field.isArray) {
           extractArray(field, bitOffset)
         } else {
@@ -119,16 +127,16 @@ object RowExtractors {
           bitOffset += field.binaryProperties.actualSize
         }
         if (!field.isFiller) {
-          fields += fieldValue
+          fields(j) = fieldValue
+          j += 1
         }
+        i += 1
       }
-      // ToDo: Replace this with 'new GenericRow(array)'
-      Row.fromSeq(fields)
+      new GenericRow(fields)
     }
 
     var nextOffset = offsetBits
 
-    // ToDo: Create an array of fixed size and put the values there
     val records = for (record <- ast) yield {
       val values = getGroupValues(nextOffset, record)
       nextOffset += record.binaryProperties.actualSize

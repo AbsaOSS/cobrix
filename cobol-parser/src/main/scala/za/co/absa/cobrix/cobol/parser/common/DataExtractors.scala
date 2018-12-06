@@ -29,8 +29,6 @@ object DataExtractors {
 
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    // Todo Extract common features and combine with BinaryDataRowIterator as it does almost the same
-
     def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize

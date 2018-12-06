@@ -28,6 +28,10 @@ import scala.collection.mutable
   * @param occurs      The number of elements in an fixed size array / minimum items in variable-sized array
   * @param to          The maximum number of items in a variable size array
   * @param dependingOn A field which specifies size of the array in a record
+  * @param isFiller    Is the group a filler (unnamed block of data)
+  * @param groupUsage  A USAGE to be inherited by all the fields in the group
+  * @param nonFillerSize The number of non-filler children in the group
+  * @param binaryProperties Pre-calculated offsets and sizes of thebinary data of the group
   * @param parent      A parent node
   */
 case class Group(
@@ -42,6 +46,7 @@ case class Group(
                   dependingOn: Option[String] = None,
                   isFiller: Boolean = false,
                   groupUsage: Map[String, String] = Map[String, String](), // Group usage modifiers (e.g. COMP-1) to be applied to all subitems of the group
+                  nonFillerSize: Int = 0,
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )
                 (val parent: Option[Group] = None)

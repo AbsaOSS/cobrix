@@ -161,7 +161,7 @@ object CopybookParser {
       schema += root
     }
 
-    val newTrees = renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema)))
+    val newTrees = calculateNonFillerSizes(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
     new Copybook(ast)
   }
@@ -394,6 +394,43 @@ object CopybookParser {
     }
 
     renameFillers(originalSchema)
+  }
+
+  /**
+    * For each group calculates the number of non-filler items
+    *
+    * @param originalSchema An AST as a set of copybook records
+    * @return The same AST with non-filler size set for each group
+    */
+  private def calculateNonFillerSizes(originalSchema: MutableCopybook): MutableCopybook = {
+    var lastFillerIndex = 0
+
+    def calcSubGroupNonFillers(group: Group): Group = {
+      val newChildren = calcNonFillers(group.children)
+      var i = 0
+      var nonFillers = 0
+      while (i < group.children.length) {
+        if (!group.children(i).isFiller)
+          nonFillers += 1
+        i += 1
+      }
+      group.copy(nonFillerSize = nonFillers, children = newChildren)(group.parent)
+    }
+
+    def calcNonFillers(subSchema: MutableCopybook): MutableCopybook = {
+      val newSchema = ArrayBuffer[Statement]()
+      subSchema.foreach {
+        case grp: Group =>
+          val newGrp = calcSubGroupNonFillers(grp)
+          if (newGrp.children.nonEmpty) {
+            newSchema += newGrp
+          }
+        case st: Primitive => newSchema += st
+      }
+      newSchema
+    }
+
+    calcNonFillers(originalSchema)
   }
 
   /**

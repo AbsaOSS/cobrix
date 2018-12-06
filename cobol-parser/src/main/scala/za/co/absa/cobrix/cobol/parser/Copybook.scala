@@ -26,7 +26,6 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   def getCobolSchema: CopybookAST = ast
 
-  // ToDo This should throw an exception for variable-size records
   lazy val getRecordSize: Int = {
     val last = ast.last
     val sizeInBits = last.binaryProperties.offset + last.binaryProperties.actualSize
