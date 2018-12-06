@@ -26,9 +26,21 @@ import scala.util.Random
 
 // This is a test data generator for the big integration test.
 // The purpose of the data is to cover as much as possible the variety of primitive data types.
-// The generated file won't contain XCOM headers
+// The generated file won't contain 4 byte record headers
 
-/*
+/**
+  * This is a test data generator. The copybook for it is listed below.
+  */
+object TestDataGen5Integration {
+
+  val numberOfRecordsToGenerate = 100
+
+  // seed=100 is used for the integration test
+  val rand: Random = new Random(100)
+
+  /*
+******* This copybook is also available at data/test6_copybook.cob
+
         01  RECORD.
 
 ***********************************************************************
@@ -92,10 +104,10 @@ import scala.util.Random
           10  NUM-STR-SDEC09      PIC S9(17)V99.
           10  NUM-STR-SDEC10      PIC S9(18)V9(10).
 ********** These types are currently not supported, added for the future
-********** 10  NUM-STR-EDEC03      PIC S9(3).99.
-********** 10  NUM-STR-EDEC04      PIC S9(4).9(4).
-********** 10  NUM-STR-EDEC05      PIC S9(5).9(4).
-********** 10  NUM-STR-EDEC06      PIC S9(5).9(5).
+          10  NUM-STR-EDEC03      PIC S9(3).99.
+          10  NUM-STR-EDEC04      PIC S9(4).9(4).
+          10  NUM-STR-EDEC05      PIC S9(5).9(4).
+          10  NUM-STR-EDEC06      PIC S9(5).9(5).
 
 ********** Binary formatted integral numbers
           10  NUM-BIN-INT01       PIC 9(1)         COMP.
@@ -105,14 +117,13 @@ import scala.util.Random
           10  NUM-BIN-INT05       PIC 9(5)         COMP.
           10  NUM-BIN-INT06       PIC 9(8)         BINARY.
           10  NUM-BIN-INT07       PIC 9(9)         BINARY.
-************* These types are currently not supported, added for the future
-************* 10  NUM-BIN-INT08       PIC 9(10)       BINARY.
-************* 10  NUM-BIN-INT09       PIC 9(11)       BINARY.
-************* 10  NUM-BIN-INT10       PIC 9(17)       BINARY.
-************* 10  NUM-BIN-INT11       PIC 9(18)       BINARY.
-************* 10  NUM-BIN-INT12       PIC 9(19)       BINARY.
-************* 10  NUM-BIN-INT13       PIC 9(20)       BINARY.
-************* 10  NUM-BIN-INT14       PIC 9(37)       BINARY.
+          10  NUM-BIN-INT08       PIC 9(10)       BINARY.
+          10  NUM-BIN-INT09       PIC 9(11)       BINARY.
+          10  NUM-BIN-INT10       PIC 9(17)       BINARY.
+          10  NUM-BIN-INT11       PIC 9(18)       BINARY.
+          10  NUM-BIN-INT12       PIC 9(19)       BINARY.
+          10  NUM-BIN-INT13       PIC 9(20)       BINARY.
+          10  NUM-BIN-INT14       PIC 9(37)       BINARY.
           10  NUM-SBIN-SINT01     PIC S9(1)        COMP.
           10  NUM-SBIN-SINT02     PIC S9(2)        COMP.
           10  NUM-SBIN-SINT03     PIC S9(3)        COMP.
@@ -124,10 +135,9 @@ import scala.util.Random
           10  NUM-SBIN-SINT09     PIC S9(11)       BINARY.
           10  NUM-SBIN-SINT10     PIC S9(17)       BINARY.
           10  NUM-SBIN-SINT11     PIC S9(18)       BINARY.
-************* These types are currently not supported, added for the future
-************* 10  NUM-SBIN-SINT12     PIC S9(19)      BINARY.
-************* 10  NUM-SBIN-SINT13     PIC S9(20)      BINARY.
-************* 10  NUM-SBIN-SINT14     PIC S9(37)      BINARY.
+          10  NUM-SBIN-SINT12     PIC S9(19)      BINARY.
+          10  NUM-SBIN-SINT13     PIC S9(20)      BINARY.
+          10  NUM-SBIN-SINT14     PIC S9(37)      BINARY.
 
 ********** Binary formatted decimal numbers
           10  NUM-BIN-DEC01       PIC 99V9         COMP.
@@ -135,12 +145,11 @@ import scala.util.Random
           10  NUM-BIN-DEC03       PIC 9(3)V99      COMP.
           10  NUM-BIN-DEC04       PIC 9(4)V9(4)    COMP.
           10  NUM-BIN-DEC05       PIC 9(5)V9(4)    COMP.
-************* These types are currently not supported, added for the future
-************* 10  NUM-BIN-DEC06       PIC 9(5)V9(5)   COMP.
-************* 10  NUM-BIN-DEC07       PIC 9(15)V99    COMP.
-************* 10  NUM-BIN-DEC08       PIC 9(16)V99    COMP.
-************* 10  NUM-BIN-DEC09       PIC 9(17)V99    COMP.
-************* 10  NUM-BIN-DEC10       PIC 9(18)V(10)  COMP.
+          10  NUM-BIN-DEC06       PIC 9(5)V9(5)   COMP.
+          10  NUM-BIN-DEC07       PIC 9(15)V99    COMP.
+          10  NUM-BIN-DEC08       PIC 9(16)V99    COMP.
+          10  NUM-BIN-DEC09       PIC 9(17)V99    COMP.
+          10  NUM-BIN-DEC10       PIC 9(18)V9(10)  COMP.
           10  NUM-SBIN-DEC01      PIC S99V9        COMP.
           10  NUM-SBIN-DEC02      PIC S99V99       COMP.
           10  NUM-SBIN-DEC03      PIC S9(3)V99     COMP.
@@ -149,9 +158,8 @@ import scala.util.Random
           10  NUM-SBIN-DEC06      PIC S9(5)V9(5)   COMP.
           10  NUM-SBIN-DEC07      PIC S9(15)V99    COMP.
           10  NUM-SBIN-DEC08      PIC S9(16)V99    COMP.
-************* These types are currently not supported, added for the future
-************* 10  NUM-SBIN-DEC09      PIC S9(17)V99   COMP.
-************* 10  NUM-SBIN-DEC10      PIC S9(18)V(10) COMP.
+          10  NUM-SBIN-DEC09      PIC S9(17)V99   COMP.
+          10  NUM-SBIN-DEC10      PIC S9(18)V9(10) COMP.
 
 ********** BCD formatted integral numbers
           10  NUM-BCD-INT01       PIC 9(1)        COMP-3.
@@ -217,6 +225,13 @@ import scala.util.Random
                          TRAILING SEPARATE.
 
 ***********************************************************************
+*******               FLOATING POINT TYPES
+***********************************************************************
+
+          10  FLOAT-01           COMP-1.
+          10  DOUBLE-01          COMP-2.
+
+***********************************************************************
 *******                   COMMON TYPES
 ***********************************************************************
           10  COMMON-8-BIN        PIC 9(8)        BINARY.
@@ -237,12 +252,7 @@ import scala.util.Random
 *******            EXOTIC AND COMPILER SPECIFIC
 ***********************************************************************
 
- */
-
-/**
-  * This is a test data generator. The copybook for it is listed above.
-  */
-object TestDataGen5Integration {
+   */
 
   var debugPrint = true
 
@@ -393,6 +403,10 @@ object TestDataGen5Integration {
     }
   }
 
+  def encodeFloat(numStr: String): Array[Byte] = scodec.codecs.float.encode(numStr.toFloat).require.toByteArray
+
+  def encodeDouble(numStr: String): Array[Byte] = scodec.codecs.double.encode(numStr.toDouble).require.toByteArray
+
   def strToBigArray(numStr: String, isSigned: Boolean): Array[Byte] = {
     val precision = if (numStr(0) == '-' || numStr(0) == '+') numStr.length-1 else numStr.length
     val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
@@ -460,6 +474,19 @@ object TestDataGen5Integration {
       fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, explicitDecimalPosition)
   }
 
+  def putFloat(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
+    val floatNum: String = bigNumber.take(5) + "." + bigNumber.slice(5, 7)
+    putEncodedNumStrToArray((str: String) => encodeFloat(str),
+      fieldName, bytes, floatNum, index0, 9, true, isNegative)
+  }
+
+
+  def putDouble(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
+    val floatNum: String = bigNumber.take(10) + "." + bigNumber.slice(10, 14)
+    putEncodedNumStrToArray((str: String) => encodeDouble(str),
+      fieldName, bytes, floatNum, index0, 20, true, isNegative)
+  }
+
   val strings = Seq(
     "Jene",
     "Maya",
@@ -506,16 +533,11 @@ object TestDataGen5Integration {
 
   def main(args: Array[String]): Unit = {
 
-    val numberOfrecodsToGenerate = 100
-
-    // seed=100 is used for the integration test
-    val rand: Random = new Random(/*100*/)
-
-    val byteArray: Array[Byte] = new Array[Byte](1329)
+    val byteArray: Array[Byte] = new Array[Byte](1341)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
-    while (i < numberOfrecodsToGenerate) {
+    while (i < numberOfRecordsToGenerate) {
       var offset = 0
 
       val bigNum = getVeryBigNumber(rand)
@@ -698,6 +720,10 @@ object TestDataGen5Integration {
       offset = putNumStrToArray("NUM-SL-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-ST-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
       offset = putNumStrToArray("NUM-ST-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+
+      offset = putFloat("FLOAT-01", byteArray, bigNum, offset, isNegative)
+      offset = putDouble("DOUBLE-01", byteArray, bigNum, offset, isNegative)
+
 
       // Common types
       offset = putEncodedNumStrToArray(encodeBinUnsigned, "COMMON-8-BIN", byteArray, bigNum, offset, 8, signed = false)

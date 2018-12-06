@@ -86,10 +86,10 @@ object DecoderSelector {
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
       case Some(1) =>
         // COMP-1 aka 32-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true).toFloat
+        BinaryUtils.decodeFloat
       case Some(2) =>
         // COMP-2 aka 64-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true).toDouble
+        BinaryUtils.decodeDouble
       case Some(3) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale)
@@ -136,11 +136,9 @@ object DecoderSelector {
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, isBigEndian = true)
       case Some(1) =>
-        // COMP-1 aka 32-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true)
+        throw new IllegalStateException("Unexpected error. COMP-1 (float) is incorrect for an integral number.")
       case Some(2) =>
-        // COMP-2 aka 64-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true)
+        throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
       case Some(3) =>
         // COMP-3 aka BCD-encoded number
         getBCDIntegralDecoder(integralType.precision)

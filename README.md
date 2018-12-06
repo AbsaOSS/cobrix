@@ -55,7 +55,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.10</version>
+      <version>0.2.11</version>
 </dependency>
 ```
 
@@ -613,6 +613,7 @@ These results were obtained on fixed size record files.
 
 - #### 0.2.11 released XX Dec 2018
   - Parser decoders have been rewritten resulting in about 20% increase of performance
+  - Added support for IEEE-754 floating point numbers for COMP-1 and COMP-2
   - Added support for decimal numbers with explicit decimal point
   - Added support for DISPLAY-formatted numbers sign overpunching
   - Added support for DISPLAY-formatted numbers sign separate (both leading and trailing)

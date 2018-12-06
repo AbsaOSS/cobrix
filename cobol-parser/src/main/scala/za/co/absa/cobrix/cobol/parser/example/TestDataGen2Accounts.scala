@@ -23,28 +23,30 @@ import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
 
-/*
-        01  COMPANY-DETAILS.
-            05  SEGMENT-ID        PIC X(5).
-            05  COMPANY-ID        PIC X(10).
-            05  STATIC-DETAILS.
-               10  COMPANY-NAME      PIC X(15).
-               10  ADDRESS           PIC X(25).
-               10  TAXPAYER.
-                  15  TAXPAYER-TYPE  PIC X(1).
-                  15  TAXPAYER-STR   PIC X(8).
-                  15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
-                                     PIC 9(8) COMP.
-
-            05  CONTACTS REDEFINES STATIC-DETAILS.
-               10  PHONE-NUMBER      PIC X(17).
-               10  CONTACT-PERSON    PIC X(28).
- */
-
 /**
-  * This is a test data generator. The copybook for it is listed above.
+  * This is a test data generator. The copybook for it is listed below.
   */
 object TestDataGen2Accounts {
+
+  val numberOfRecordsToGenerate = 1000000
+
+  /*
+          01  COMPANY-DETAILS.
+              05  SEGMENT-ID        PIC X(5).
+              05  COMPANY-ID        PIC X(10).
+              05  STATIC-DETAILS.
+                 10  COMPANY-NAME      PIC X(15).
+                 10  ADDRESS           PIC X(25).
+                 10  TAXPAYER.
+                    15  TAXPAYER-TYPE  PIC X(1).
+                    15  TAXPAYER-STR   PIC X(8).
+                    15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
+                                       PIC 9(8) COMP.
+
+              05  CONTACTS REDEFINES STATIC-DETAILS.
+                 10  PHONE-NUMBER      PIC X(17).
+                 10  CONTACT-PERSON    PIC X(28).
+   */
 
   case class Company(companyName: String, companyId: String, address: String)
 
@@ -206,8 +208,6 @@ object TestDataGen2Accounts {
 
   def main(args: Array[String]): Unit = {
 
-    val numberOfrecodsToGenerate = 1000000
-
     val numOfCompanies = companies.size
 
     val rand = new Random()
@@ -217,7 +217,7 @@ object TestDataGen2Accounts {
 
     val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.SEP30.DATA.dat"))
     var i = 0
-    while (i < numberOfrecodsToGenerate) {
+    while (i < numberOfRecordsToGenerate) {
 
       // SEGMENT 1 (root)
 
@@ -265,7 +265,7 @@ object TestDataGen2Accounts {
 
       var j = 0
 
-      while (j < numOfContacts && i < numberOfrecodsToGenerate) {
+      while (j < numOfContacts && i < numberOfRecordsToGenerate) {
         // XCOM header
         byteArray2(0) = 0
         byteArray2(1) = 0

@@ -1,6 +1,6 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-RECORD                                                       1   1329   1329
+RECORD                                                       1   1341   1341
   10 ID                                               1      1      4      4
   10 STRING_VAL                                       2      5     14     10
   10 NUM_STR_INT01                                    3     15     15      1
@@ -154,16 +154,18 @@ RECORD                                                       1   1329   1329
   10 NUM_SL_STR_DEC01                               151   1244   1248      5
   10 NUM_ST_STR_INT01                               152   1249   1258     10
   10 NUM_ST_STR_DEC01                               153   1259   1263      5
-  10 COMMON_8_BIN                                   154   1264   1267      4
-  10 COMMON_S3_BIN                                  155   1268   1269      2
-  10 COMMON_S94COMP                                 156   1270   1271      2
-  10 COMMON_S8_BIN                                  157   1272   1275      4
-  10 COMMON_DDC97_BIN                               158   1276   1279      4
-  10 COMMON_97COMP3                                 159   1280   1283      4
-  10 COMMON_915COMP3                                160   1284   1291      8
-  10 COMMON_S95COMP3                                161   1292   1294      3
-  10 COMMON_S999DCCOMP3                             162   1295   1300      6
-  10 COMMON_S913COMP3                               163   1301   1307      7
-  10 COMMON_S913DCCOMP3                             164   1308   1315      8
-  10 COMMON_S911DCC2                                165   1316   1322      7
-  10 COMMON_S910DCC3                                166   1323   1329      7
+  10 FLOAT_01                                       154   1264   1267      4
+  10 DOUBLE_01                                      155   1268   1275      8
+  10 COMMON_8_BIN                                   156   1276   1279      4
+  10 COMMON_S3_BIN                                  157   1280   1281      2
+  10 COMMON_S94COMP                                 158   1282   1283      2
+  10 COMMON_S8_BIN                                  159   1284   1287      4
+  10 COMMON_DDC97_BIN                               160   1288   1291      4
+  10 COMMON_97COMP3                                 161   1292   1295      4
+  10 COMMON_915COMP3                                162   1296   1303      8
+  10 COMMON_S95COMP3                                163   1304   1306      3
+  10 COMMON_S999DCCOMP3                             164   1307   1312      6
+  10 COMMON_S913COMP3                               165   1313   1319      7
+  10 COMMON_S913DCCOMP3                             166   1320   1327      8
+  10 COMMON_S911DCC2                                167   1328   1334      7
+  10 COMMON_S910DCC3                                168   1335   1341      7

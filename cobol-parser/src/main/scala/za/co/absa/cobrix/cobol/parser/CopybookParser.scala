@@ -136,8 +136,9 @@ object CopybookParser {
       val trees = fields
         .drop(1) // root already added so drop first line
         .foldLeft[Statement](root)((element, field) => {
+        val comp = getComactLevel(field.modifiers).getOrElse(-1)
         val keywords = field.modifiers.keys.toList
-        val isLeaf = keywords.contains(PIC)
+        val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
         val redefines = field.modifiers.get(REDEFINES)
         val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
         val to = field.modifiers.get(TO).map(i => i.toInt)
@@ -427,14 +428,20 @@ object CopybookParser {
         Some(x)
     }
 
-    val pic = try {
-      modifiers(PIC)
-    }
-    catch {
-      case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
+    val computation = comp.getOrElse(-1)
+    val pic = if (computation == 1 || computation == 2) {
+      // Floating point numbers (COMP-1, COMP2) do not need PIC, so just replacing it with a dummy PIC that doesn't affect the actual format
+      "9(16)V9(16)"
+    } else {
+      try {
+        modifiers(PIC)
+      }
+      catch {
+        case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
+      }
     }
 
-    val picOrigin = modifiers("PIC_ORIGIN")
+    val picOrigin = modifiers.getOrElse("PIC_ORIGIN", pic)
 
     // Trailing sign is supported implicitly by smart uncompressed number converters
     val isSignSeparate = modifiers.contains(SIGN_SEP)
