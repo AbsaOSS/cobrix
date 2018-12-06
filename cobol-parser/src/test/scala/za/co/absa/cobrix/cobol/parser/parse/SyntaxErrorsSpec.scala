@@ -113,4 +113,17 @@ class SyntaxErrorsSpec extends FunSuite {
     assert(syntaxErrorException.msg.contains("SIGN SEPARATE clause is not supported for COMP-3"))
   }
 
+  test("Test invalid explicit decimal for COMP-3") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |          10  FIELD    PIC 9(8).9(9) COMP-3.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("Explicit decimal point in 'PIC 9(8).9(9)' is not supported for COMP-3."))
+  }
+
 }

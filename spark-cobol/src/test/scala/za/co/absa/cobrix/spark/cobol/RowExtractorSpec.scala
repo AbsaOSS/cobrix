@@ -23,6 +23,8 @@ import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+import scala.collection.mutable
+
 class RowExtractorSpec extends FunSuite {
   val copyBookContents: String =
     """       01  RECORD.
@@ -132,7 +134,7 @@ class RowExtractorSpec extends FunSuite {
     assert(innerRow(2).asInstanceOf[Row](2).asInstanceOf[Int] === 3)
 
     // account detail
-    val accounts: Vector[Any] = innerRow(2).asInstanceOf[Row](3).asInstanceOf[Row](0).asInstanceOf[Vector[Any]]
+    val accounts: Array[Any] = innerRow(2).asInstanceOf[Row](3).asInstanceOf[Row](0).asInstanceOf[Array[Any]]
     val account: Row = accounts(0).asInstanceOf[Row]
 
     // account number

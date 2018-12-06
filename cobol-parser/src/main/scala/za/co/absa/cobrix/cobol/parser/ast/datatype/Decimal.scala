@@ -29,6 +29,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
   * @param enc          An encoding
   */
 case class Decimal(
+                    pic: String,
                     scale: Int,
                     precision: Int,
                     explicitDecimal: Boolean = false,

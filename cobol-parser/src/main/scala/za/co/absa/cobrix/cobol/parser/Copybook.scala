@@ -26,7 +26,6 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   def getCobolSchema: CopybookAST = ast
 
-  // ToDo This should throw an exception for variable-size records
   lazy val getRecordSize: Int = {
     val last = ast.last
     val sizeInBits = last.binaryProperties.offset + last.binaryProperties.actualSize
@@ -66,7 +65,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
     def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
       if (path.length == 0) {
-        Seq()
+        throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract it's value.")
       } else {
         group.children.flatMap(child => {
           child match {

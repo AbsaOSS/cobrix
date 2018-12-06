@@ -23,20 +23,24 @@ import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
 
-/*
-        01  TRANSDATA.
-            05  CURRENCY          PIC X(3).
-            05  SIGNATURE         PIC X(8).
-            05  COMPANY-NAME      PIC X(15).
-            05  COMPIANY-ID       PIC X(10).
-            05  WEALTH-QFY        PIC 9(1).
-            05  AMOUNT            PIC S9(09)V99  BINARY.
- */
+// This is a single segment raw records data generator
 
 /**
-  * This is a test data generator. The copybook for it is listed above.
+  * This is a test data generator. The copybook for it is listed below.
   */
 object TestDataGen1Transactions {
+
+  val numberOfRecordsToGenerate = 10000
+
+  /*
+          01  TRANSDATA.
+              05  CURRENCY          PIC X(3).
+              05  SIGNATURE         PIC X(8).
+              05  COMPANY-NAME      PIC X(15).
+              05  COMPIANY-ID       PIC X(10).
+              05  WEALTH-QFY        PIC 9(1).
+              05  AMOUNT            PIC S9(09)V99  BINARY.
+   */
 
   case class Company (companyName: String, companyId: String )
 
@@ -95,8 +99,6 @@ object TestDataGen1Transactions {
 
   def main(args: Array[String]): Unit = {
 
-    val numberOfrecodsToGenerate = 10000
-
     val numOfCurrencies = currencies.size
     val numOfCompanies = companies.size
 
@@ -107,7 +109,7 @@ object TestDataGen1Transactions {
     val bos = new BufferedOutputStream(new FileOutputStream("TNAN.AUG31.DATA.dat"))
     var i = 0
     val sig = "S9276511"
-    while (i< numberOfrecodsToGenerate) {
+    while (i< numberOfRecordsToGenerate) {
       val currency = currencies(rand.nextInt(numOfCurrencies))
       val company = companies(rand.nextInt(numOfCompanies))
 
