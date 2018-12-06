@@ -24,11 +24,27 @@ import org.apache.hadoop.fs.{FileSystem, Path}
   */
 object HDFSUtils {
 
+  /**
+    * Retrieves distinct block locations for a given HDFS file.
+    *
+    * As now ofsets are informed, the locations for the whole file are returned.
+    *
+    * The locations are returned as hostnames.
+    */
   def getBlocksLocations(path: Path, fileSystem: FileSystem): Seq[String] = {
     getBlocksLocations(path, 0, Long.MaxValue, fileSystem)
   }
 
+  /**
+    * Retrieves distinct block locations for the chunk between start and length.
+    *
+    * The locations are returned as hostnames.
+    */
   def getBlocksLocations(path: Path, start: Long, length: Long, fileSystem: FileSystem): Seq[String] = {
+
+    if (start < 0 || length <= 0) {
+      throw new IllegalArgumentException(s"Invalid offset or length: offset = $start, length = $length")
+    }
 
     if (fileSystem.isDirectory(path)) {
       throw new IllegalArgumentException(s"Should be a file, not a directory: ${path.getName}")
@@ -37,5 +53,6 @@ object HDFSUtils {
     fileSystem.getFileBlockLocations(
       fileSystem.getFileStatus(path), start, length)
       .flatMap(_.getHosts)
+      .distinct
   }
 }

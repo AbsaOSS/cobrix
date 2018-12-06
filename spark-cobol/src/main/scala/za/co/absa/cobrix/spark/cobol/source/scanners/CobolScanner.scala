@@ -27,7 +27,6 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
-import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
 
 private [source] object CobolScanner {
 
@@ -44,14 +43,6 @@ private [source] object CobolScanner {
       val fileName = new Path(filePathName).getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
       val numOfBytesMsg = if (numOfBytes>0) s"${numOfBytes/Constants.megabyte} MB" else "until the end"
-
-      // TODO remove comments
-      println("\nEXPECTED TO RUN RECORD FROM EITHER OF THESE: ")
-      println(s"FILE: $filePathName, START: ${indexEntry.offsetFrom}, END: ${indexEntry.offsetTo}")
-
-      val length = if (indexEntry.offsetTo > 0) indexEntry.offsetTo else Long.MaxValue
-      HDFSUtils.getBlocksLocations(new Path(filePathName), indexEntry.offsetFrom, length, fileSystem).foreach(println)
-      println("***********************************\n")
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
       val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
@@ -84,7 +75,6 @@ private [source] object CobolScanner {
                                               recordParser: (FixedLenReader,RDD[Array[Byte]]) => RDD[Row],
                                               sqlContext: SQLContext): RDD[Row] = {
     // This reads whole text files as RDD[String]
-    // Todo For Cobol files need to use
     // binaryRecords() for fixed size records
     // binaryFiles() for varying size records
     // https://spark.apache.org/docs/2.1.1/api/java/org/apache/spark/SparkContext.html#binaryFiles(java.lang.String,%20int)
@@ -94,6 +84,5 @@ private [source] object CobolScanner {
 
     val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
     recordParser(reader, records)
-    //parseRecords(reader, records)
   }
 }

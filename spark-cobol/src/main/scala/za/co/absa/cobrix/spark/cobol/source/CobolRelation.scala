@@ -156,41 +156,6 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
     indexes.repartition(numPartitions).cache()
   }
 
-
-  def buildIndexForVarLenReaderWithLocality(filesList: Array[FileWithOrder], reader: VarLenReader): RDD[SimpleIndexEntry] = {
-
-    val conf = sqlContext.sparkContext.hadoopConfiguration
-
-    val filesRDD = toRDDWithLocality(filesList, conf)
-
-    val sconf = new SerializableConfiguration(conf)
-
-    val indexes = filesRDD.mapPartitions(
-      partition => {
-        val fileSystem = FileSystem.get(sconf.value)
-        partition.flatMap(row => {
-          val filePath = row.filePath
-          val fileOrder = row.order
-
-          // TODO remove comments
-          println("\nEXPECTED TO RUN IN EITHER OF THESE: ")
-          HDFSUtils.getBlocksLocations(new Path(filePath), fileSystem).foreach(println)
-          println("***********************************\n")
-
-          logger.info(s"Going to generate index for the file: $filePath")
-          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
-
-          index
-        }
-        )
-      }).cache
-
-    val indexCount = indexes.count()
-    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
-    logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
-    indexes.repartition(numPartitions).cache()
-  }
-
   def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader): RDD[SimpleIndexEntry] = {
 
     val conf = sqlContext.sparkContext.hadoopConfiguration
@@ -206,11 +171,6 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
           val filePath = row.filePath
           val fileOrder = row.order
 
-          // TODO remove comments
-          println("\nEXPECTED TO RUN IN EITHER OF THESE: ")
-          HDFSUtils.getBlocksLocations(new Path(filePath), fileSystem).foreach(println)
-          println("***********************************\n")
-
           logger.info(s"Going to generate index for the file: $filePath")
           val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
 
@@ -223,11 +183,10 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
         )
       })
 
+    logger.info("Going to collect located indexes into driver.")
     val offsetsLocations = indexes.collect()
-    // TODO remove comments
-    println("\nRECORDS EXPECTED LOCATIONS")
-    offsetsLocations.foreach(println)
-    println("\n*********************")
+
+    logger.info(s"Creating RDD for ${offsetsLocations.size} located indexes.")
     sqlContext.sparkContext.makeRDD(offsetsLocations)
   }
 
@@ -241,10 +200,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
       (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
     }).toSeq
 
-    // TODO remove comments
-    println("\n\tEXPECTED LOCALITY")
     filesWithPreferredLocations.foreach(println)
-    println("***********************************")
 
     sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
   }

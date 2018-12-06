@@ -25,9 +25,7 @@ import org.apache.hadoop.fs.FileSystem
 
 class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
 
-  private val tmpDir = if (System.getProperty("java.io.tmpdir") != null) System.getProperty("java.io.tmpdir") else ""
-
-  private val baseTestDir = new File(s"$tmpDir/${System.currentTimeMillis()}-test-dir/") // tmpDir/8377740/
+  private val baseTestDir = TempDir.getNew // tmpDir/8377740/
   private val innerTestDir1 = new File(s"$baseTestDir/inner1") // tmpDir/8377740/inner1
   private val innerTestDir2 = new File(s"$baseTestDir/inner2") // tmpDir/8377740/inner2
   private val innerTestDir3 = new File(s"$innerTestDir2/inner3") // tmpDir/8377740/inner2/inner3
@@ -44,8 +42,6 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
   private val fileSystem = FileSystem.get(new Configuration())
 
   override def beforeAll(): Unit = {
-
-    baseTestDir.mkdirs()
 
     if (baseTestDir.exists() && baseTestDir.isDirectory) {
       println(s"Created base test dir at ${baseTestDir.getAbsolutePath}")
