@@ -30,9 +30,11 @@ object DecoderSelector {
     * Gets a decoder function suitable for converting the specified COBOL data type
     * to a target type. The target type is determined based on Spark expectations.
     *
-    * <ul> Alphanumeric type is converted to String </ul>
-    * <ul> Decimal types are represented as BigDecimal </ul>
-    * <ul> Integral types are represented as boxed integers and longs. Larger integral numbers are represented as BigDecimal </ul>
+    * <ul>
+    * <li> Alphanumeric type is converted to String </li>
+    * <li> Decimal types are represented as BigDecimal </li>
+    * <li> Integral types are represented as boxed integers and longs. Larger integral numbers are represented as BigDecimal </li>
+    * </ul>
     *
     * @param dataType A daatype of a copybook field
     * @return A function that converts an array of bytes to the target data type.
@@ -68,19 +70,26 @@ object DecoderSelector {
 
     decimalType.compact match {
       case None =>
-        if (isEbcidic)
-          StringDecoders.decodeEbcdicBigNumber(_, decimalType.scale)
-        else
-          StringDecoders.decodeAsciiBigNumber(_, decimalType.scale)
+        if (decimalType.explicitDecimal) {
+          if (isEbcidic)
+            StringDecoders.decodeEbcdicBigDecimal
+          else
+            StringDecoders.decodeAsciiBigDecimal
+        } else {
+          if (isEbcidic)
+            StringDecoders.decodeEbcdicBigNumber(_, decimalType.scale)
+          else
+            StringDecoders.decodeAsciiBigNumber(_, decimalType.scale)
+        }
       case Some(0) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
       case Some(1) =>
         // COMP-1 aka 32-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true).toFloat
+        BinaryUtils.decodeFloat
       case Some(2) =>
         // COMP-2 aka 64-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true).toDouble
+        BinaryUtils.decodeDouble
       case Some(3) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale)
@@ -127,11 +136,9 @@ object DecoderSelector {
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, isBigEndian = true)
       case Some(1) =>
-        // COMP-1 aka 32-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true)
+        throw new IllegalStateException("Unexpected error. COMP-1 (float) is incorrect for an integral number.")
       case Some(2) =>
-        // COMP-2 aka 64-bit floating point number
-        (bytes: Array[Byte]) => BinaryUtils.decodeFloatingPointNumber(bytes, bigEndian = true)
+        throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
       case Some(3) =>
         // COMP-3 aka BCD-encoded number
         getBCDIntegralDecoder(integralType.precision)

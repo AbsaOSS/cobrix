@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
   * @param enc          An encoding
   */
 case class Integral(
+                    pic: String,
                     precision: Int,
                     signPosition: Option[Position] = None,
                     isSignSeparate: Boolean = false,

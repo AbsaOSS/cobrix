@@ -55,7 +55,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.10</version>
+      <version>0.2.11</version>
 </dependency>
 ```
 
@@ -232,7 +232,7 @@ root
 
 Currently this feature may inpact performance and scaling, please use it with caution.  
 
-### XCOM headers support
+### Record headers support
 
 As you may already know file in mainframe world does not mean the same as in PC world.
 On PCs we think of a file as a stream of bytes that we can open, read/write and close.
@@ -243,31 +243,31 @@ records and physical location of data.
 > _Details are available at this [Wikipedia article](https://en.wikipedia.org/wiki/MVS) (look for MVS filesystem)._ 
 
 So usually a file cannot simply be 'copied' from a mainframe. When files are transferred
-using tools like XCOM each record is prepended with an additional header. This header
+using tools like XCOM each record is prepended with an additional *record header*. This header
 allows readers of a file in PC to restore the 'set of records' nature of the file.
 
-Mainframe files coming from IMS and copied through XCOM contain records (the payload)
-having schema of DBs copybook warped with DB export tool headers wrapped with XCOM headers.
+Mainframe files coming from IMS and copied through specialized tools contain records (the payload)
+having schema of DBs copybook warped with DB export tool headers wrapped with record headers.
 Like this:
 
-XCOM_HEADERS ( TOOL_HEADERS ( PAYLOAD ) )
+RECORD_HEADERS ( TOOL_HEADERS ( PAYLOAD ) )
 
 > _Similar to Internet's IP protocol   IP_HEADERS ( TCP_HEADERS ( PAYLOAD ) )._
 
 TOOL_HEADERS are application dependent. Often it contains the length of the payload. But this length is sometime
-not very reliable. XCOM_HEADERS contain the record length (including TOOL_HEADERS length) and are proved to be reliable.
+not very reliable. RECORD_HEADERS contain the record length (including TOOL_HEADERS length) and are proved to be reliable.
 
-For fixed record length files XCOM files can be ignored since we already know the record length. But for variable record
-length files and for multisegment files XCOM headers can be considered the most reliable single point of truth about record length.
+For fixed record length files record headers can be ignored since we already know the record length. But for variable record
+length files and for multisegment files record headers can be considered the most reliable single point of truth about record length.
 
-You can instruct the reader to use XCOM headers to extract records from a mainframe file.
+You can instruct the reader to use 4 byte record headers to extract records from a mainframe file.
 
 ```
-.option("is_xcom", "true")
+.option("is_record_sequence", "true")
 ```
 
 This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
-copybook it is very convenient to extract segments one by one by combining 'is_xcom' option with segment filter option.
+copybook it is very convenient to extract segments one by one by combining 'is_record_sequence' option with segment filter option.
 
 ```
 .option("segment_field", "SEG-ID")
@@ -315,7 +315,7 @@ in redefined groups. Here is the copybook for our example:
 The 'SEGMENT-ID' and 'COMPANY-ID' fields are present in all of the segments. The 'STATIC-DETAILS' group is present only in
 the root record. The 'CONTACTS' group is present only in child record. Notice that 'CONTACTS' redefine 'STATIC-DETAILS'.
 
-Because the records have different lengths the 'is_xcom' option should be set to 'true'.
+Because the records have different lengths the 'is_record_sequence' option should be set to 'true'.
 
 If you load this file as is you will get the schema and the data similar to this.
 
@@ -326,7 +326,7 @@ val df = spark
   .format("cobol")
   .option("copybook", "/path/to/thecopybook")
   .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-  .option("is_xcom", "true")
+  .option("is_record_sequence", "true")
   .load("examples/multisegment_data")
 ```
 
@@ -454,7 +454,7 @@ val df = spark
   .format("cobol")
   .option("copybook_contents", copybook)
   .option("schema_retention_policy", "collapse_root")
-  .option("is_xcom", "true")
+  .option("is_record_sequence", "true")
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "S01L1")
   .option("segment_id_level1", "S01L2")
@@ -617,6 +617,22 @@ These results were obtained on fixed size record files.
 - Execution time: 4 minutes
 
 ## Changelog
+
+- #### 0.2.11 released XX Dec 2018
+  - Parser decoders have been rewritten resulting in about 20% increase of performance
+  - Added support for IEEE-754 floating point numbers for COMP-1 and COMP-2
+  - Added support for decimal numbers with explicit decimal point
+  - Added support for DISPLAY-formatted numbers sign overpunching
+  - Added support for DISPLAY-formatted numbers sign separate (both leading and trailing)
+  - Added support for very big numbers (when precision is bigger than 18)
+  - Added ability to filter by several segment ids in a multiple segment file (Thanks Peter Moon)
+  - Syntax check made more strict, added more diagnostic messages.
+  - The "is_xcom" option is renamed to "is_record_sequence" since other tools provide such a header as well. The old option remains for compatibility.
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:--------------------------------------------------------- |
+| .option("is_record_sequence", "true")      | Specifies that input files have byte record headers.      |
+
 
 - #### 0.2.10 released 26 Nov 2018
   - Fixed file retrieval by complying with HDFS patterns and supporting glob patterns.

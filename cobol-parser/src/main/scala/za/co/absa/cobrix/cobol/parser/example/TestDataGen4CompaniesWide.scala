@@ -24,34 +24,36 @@ import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import scala.util.Random
 
 // This is a multisegment data generator for data containing an array of 2000 elements
-// The generated file will contain XCOM headers
-
-/*
-        01  COMPANY-DETAILS.
-            05  SEGMENT-ID        PIC X(5).
-            05  COMPANY-ID        PIC X(10).
-            05  STATIC-DETAILS.
-               10  COMPANY-NAME      PIC X(15).
-               10  ADDRESS           PIC X(25).
-               10  TAXPAYER.
-                  15  TAXPAYER-TYPE  PIC X(1).
-                  15  TAXPAYER-STR   PIC X(8).
-                  15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
-                                     PIC 9(8) COMP.
-               10  STRATEGY.
-                 15  STRATEGY_DETAIL OCCURS 2000.
-                   25  NUM1 PIC 9(7) COMP.
-                   25  NUM2 PIC 9(7) COMP-3.
-
-            05  CONTACTS REDEFINES STATIC-DETAILS.
-               10  PHONE-NUMBER      PIC X(17).
-               10  CONTACT-PERSON    PIC X(28).
- */
+// The generated file will contain 4 byte record headers
 
 /**
-  * This is a test data generator. The copybook for it is listed above.
+  * This is a test data generator. The copybook for it is listed below.
   */
 object TestDataGen4CompaniesWide {
+
+  val numberOfRecordsToGenerate = 1000
+
+  /*
+          01  COMPANY-DETAILS.
+              05  SEGMENT-ID        PIC X(5).
+              05  COMPANY-ID        PIC X(10).
+              05  STATIC-DETAILS.
+                 10  COMPANY-NAME      PIC X(15).
+                 10  ADDRESS           PIC X(25).
+                 10  TAXPAYER.
+                    15  TAXPAYER-TYPE  PIC X(1).
+                    15  TAXPAYER-STR   PIC X(8).
+                    15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
+                                       PIC 9(8) COMP.
+                 10  STRATEGY.
+                   15  STRATEGY_DETAIL OCCURS 2000.
+                     25  NUM1 PIC 9(7) COMP.
+                     25  NUM2 PIC 9(7) COMP-3.
+
+              05  CONTACTS REDEFINES STATIC-DETAILS.
+                 10  PHONE-NUMBER      PIC X(17).
+                 10  CONTACT-PERSON    PIC X(28).
+   */
 
   case class Company(companyName: String, companyId: String, address: String)
 
@@ -232,8 +234,6 @@ object TestDataGen4CompaniesWide {
 
   def main(args: Array[String]): Unit = {
 
-    val numberOfrecodsToGenerate = 1000
-
     val numOfCompanies = companies.size
 
     val rand = new Random()
@@ -244,7 +244,7 @@ object TestDataGen4CompaniesWide {
     val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.OCT30.DATA.dat"))
 
     var i = 0
-    while (i < numberOfrecodsToGenerate) {
+    while (i < numberOfRecordsToGenerate) {
 
       // SEGMENT 1 (root)
 
@@ -301,7 +301,7 @@ object TestDataGen4CompaniesWide {
 
       var j = 0
 
-      while (j < numOfContacts && i < numberOfrecodsToGenerate) {
+      while (j < numOfContacts && i < numberOfRecordsToGenerate) {
         // XCOM header
         byteArray2(0) = 0
         byteArray2(1) = 0

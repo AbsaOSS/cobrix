@@ -23,6 +23,8 @@ import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 
+import scala.util.control.NonFatal
+
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
 object BinaryUtils {
@@ -248,22 +250,32 @@ object BinaryUtils {
     addDecimalPoint(value.toString, scale)
   }
 
-  /** A decoder for floating point numbers
+  /**
+    * A decoder for IEEE-754 big endian floats
     *
     * @param bytes A byte array that represents the binary data
-    * @return A string representation of the binary data
+    * @return A boxed float
     */
-  def decodeFloatingPointNumber(bytes: Array[Byte], bigEndian: Boolean): String = {
-    val bits = BitVector(bytes)
-    val value = (bigEndian, bytes.length) match {
-      case (true, 4) => floatB.decode(bits).require.value
-      case (true, 8) => doubleB.decode(bits).require.value
-      case (false, 4) => floatL.decode(bits).require.value
-      case (false, 8) => doubleL.decode(bits).require.value
-      case _ => throw new IllegalArgumentException(s"Illegal number of bytes to decode (${bytes.length}). Expected either 4 or 8 for floating point" +
-        s" type.")
+  def decodeFloat(bytes: Array[Byte]): java.lang.Float = {
+    try {
+      floatB.decode(BitVector(bytes)).require.value
+    } catch {
+      case NonFatal(_) => null
     }
-    value.toString
+  }
+
+  /**
+    * A decoder for IEEE-754 big endian doubles
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed double
+    */
+  def decodeDouble(bytes: Array[Byte]): java.lang.Double = {
+    try {
+      doubleB.decode(BitVector(bytes)).require.value
+    } catch {
+      case NonFatal(_) => null
+    }
   }
 
   /** Extracts record length from an XCOM 4 byte header.**/

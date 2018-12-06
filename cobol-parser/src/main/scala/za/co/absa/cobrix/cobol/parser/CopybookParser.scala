@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -135,8 +136,9 @@ object CopybookParser {
       val trees = fields
         .drop(1) // root already added so drop first line
         .foldLeft[Statement](root)((element, field) => {
+        val comp = getComactLevel(field.modifiers).getOrElse(-1)
         val keywords = field.modifiers.keys.toList
-        val isLeaf = keywords.contains(PIC)
+        val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
         val redefines = field.modifiers.get(REDEFINES)
         val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
         val to = field.modifiers.get(TO).map(i => i.toInt)
@@ -159,7 +161,7 @@ object CopybookParser {
       schema += root
     }
 
-    val newTrees = renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema)))
+    val newTrees = calculateNonFillerSizes(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
     new Copybook(ast)
   }
@@ -395,6 +397,43 @@ object CopybookParser {
   }
 
   /**
+    * For each group calculates the number of non-filler items
+    *
+    * @param originalSchema An AST as a set of copybook records
+    * @return The same AST with non-filler size set for each group
+    */
+  private def calculateNonFillerSizes(originalSchema: MutableCopybook): MutableCopybook = {
+    var lastFillerIndex = 0
+
+    def calcSubGroupNonFillers(group: Group): Group = {
+      val newChildren = calcNonFillers(group.children)
+      var i = 0
+      var nonFillers = 0
+      while (i < group.children.length) {
+        if (!group.children(i).isFiller)
+          nonFillers += 1
+        i += 1
+      }
+      group.copy(nonFillerSize = nonFillers, children = newChildren)(group.parent)
+    }
+
+    def calcNonFillers(subSchema: MutableCopybook): MutableCopybook = {
+      val newSchema = ArrayBuffer[Statement]()
+      subSchema.foreach {
+        case grp: Group =>
+          val newGrp = calcSubGroupNonFillers(grp)
+          if (newGrp.children.nonEmpty) {
+            newSchema += newGrp
+          }
+        case st: Primitive => newSchema += st
+      }
+      newSchema
+    }
+
+    calcNonFillers(originalSchema)
+  }
+
+  /**
     * Get the type and length from a cobol data structure.
     *
     * @param keywords Keywords of a Copybook statement
@@ -426,35 +465,39 @@ object CopybookParser {
         Some(x)
     }
 
-    val pic = try {
-      modifiers(PIC)
+    val computation = comp.getOrElse(-1)
+    val pic = if (computation == 1 || computation == 2) {
+      // Floating point numbers (COMP-1, COMP2) do not need PIC, so just replacing it with a dummy PIC that doesn't affect the actual format
+      "9(16)V9(16)"
+    } else {
+      try {
+        modifiers(PIC)
+      }
+      catch {
+        case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
+      }
     }
-    catch {
-      case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
-    }
+
+    val picOrigin = modifiers.getOrElse("PIC_ORIGIN", pic)
+
     // Trailing sign is supported implicitly by smart uncompressed number converters
     val isSignSeparate = modifiers.contains(SIGN_SEP)
 
-    // ToDo Move this to validators
-    if (isSignSeparate && comp.isDefined) {
-      throw new SyntaxErrorException(lineNumber, fieldName, s"SIGN SEPARATE clause is not supported for COMP-${comp.get}. It is only supported for DISPLAY formatted fields.")
-    }
-    if (pic.contains(".") && comp.isDefined) {
-      throw new SyntaxErrorException(lineNumber, fieldName, s"Explicit decimal point in PIC $pic is not supported only for COMP-${comp.get}. It is only supported for DISPLAY formatted fields.")
-    }
+    CobolValidators.validatePic(lineNumber, fieldName, picOrigin)
 
     val sync = keywords.contains(SYNC)
-    pic match {
-      case s if s.contains("X") || s.contains("A") =>
-        AlphaNumeric(s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
-      case s if s.contains("V") || s.contains(".") =>
+    val dataType = pic match {
+      case s if s.contains('X') || s.contains('A') =>
+        AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
+      case s if s.contains('V') || s.contains(',') =>
         CopybookParser.decimalLength(s) match {
           case (integralDigits, fractureDigits) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Decimal(
+              picOrigin,
               fractureDigits,
               integralDigits + fractureDigits,
-              s.contains("."),
+              s.contains(','),
               if (s.startsWith("S")) Some(position.Left) else None,
               isSignSeparate = isSignSeparate,
               if (sync) Some(position.Right) else None,
@@ -463,6 +506,7 @@ object CopybookParser {
         }
       case s if s.contains("9") =>
         Integral(
+          picOrigin,
           precision = if (s.startsWith("S")) s.length-1 else s.length,
           signPosition = if (s.startsWith("S")) Some(position.Left) else None,
           isSignSeparate = isSignSeparate,
@@ -471,6 +515,8 @@ object CopybookParser {
           Some(enc)
         )
     }
+    CobolValidators.validateDataType(lineNumber, fieldName, dataType)
+    dataType
   }
 
   /**
@@ -488,6 +534,10 @@ object CopybookParser {
             .slice(6, 72)
             // remove unnecessary white space
             .replaceAll("\\s\\s+", " ")
+            // the '.' sybmol inside a PIC meand an explicit decimal point
+            // but also '.' is a stetement separator.
+            // So here we replace '.' inside a PIC by ',' and thread ',' as an explicit decimal point instead
+            .replaceAll("\\.9", ",9")
             .trim()
       )
       .zipWithIndex
@@ -567,6 +617,7 @@ object CopybookParser {
           if (index >= tokens.length - 1) {
             throw new SyntaxErrorException(lineNumber, "", "PIC should be followed by a pattern")
           }
+          mapAccumulator += "PIC_ORIGIN" -> tokens(index + 1)
           // Expand PIC, e.g. S9(5) -> S99999
           mapAccumulator += tokens(index) -> expandPic(tokens(index + 1))
           index += 1
@@ -697,7 +748,7 @@ object CopybookParser {
     */
   def decimalLength(s: String): (Int, Int) = {
     var str = expandPic(s)
-    val separator = if (str.contains('V')) 'V' else '.'
+    val separator = if (str.contains('V')) 'V' else if (str.contains(',')) ',' else '.'
     val parts = str.split(separator)
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
