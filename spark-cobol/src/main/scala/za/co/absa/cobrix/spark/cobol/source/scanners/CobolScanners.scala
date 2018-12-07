@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 
-private [source] object CobolScanner {
+private [source] object CobolScanners {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
