@@ -1,100 +1,100 @@
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sulema"},"AMOUNT":0.18}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Jene"},"AMOUNT":0.79}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Edyth"},"AMOUNT":0.86}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":2.52}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":2.59}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":2.65}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":3.13}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":3.25}
-{"COMPANY_NAME":"Johnson & D","FILLER_1":{"STR1":"Johns","STR2":"on"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":3.60}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Wilber"},"AMOUNT":3.64}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":5.52}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Estell"},"AMOUNT":7.59}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":7.92}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":8.24}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":9.32}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deandr"},"AMOUNT":11.27}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":12.73}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":13.65}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":13.76}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyson"},"AMOUNT":13.92}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":14.18}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Wilber"},"AMOUNT":14.96}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Janiec"},"AMOUNT":15.68}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deandr"},"AMOUNT":16.83}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Estell"},"AMOUNT":17.46}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Suk"},"AMOUNT":19.74}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Cliff"},"AMOUNT":21.80}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":23.40}
-{"COMPANY_NAME":"Pear GMBH.","FILLER_1":{"STR1":"Pear","STR2":"GM"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Cassey"},"AMOUNT":24.40}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":24.80}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Cassey"},"AMOUNT":25.34}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mabell"},"AMOUNT":25.68}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Willis"},"AMOUNT":26.11}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":27.35}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Wilber"},"AMOUNT":28.55}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":29.87}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":30.78}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":30.93}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Suk"},"AMOUNT":31.77}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Wilber"},"AMOUNT":32.14}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Janiec"},"AMOUNT":35.24}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":36.42}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":39.16}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":39.21}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Estell"},"AMOUNT":39.98}
-{"COMPANY_NAME":"Johnson & D","FILLER_1":{"STR1":"Johns","STR2":"on"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Edyth"},"AMOUNT":40.05}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":40.40}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":40.92}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Inge"},"AMOUNT":41.89}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sunday"},"AMOUNT":44.53}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":44.54}
-{"COMPANY_NAME":"Johnson & D","FILLER_1":{"STR1":"Johns","STR2":"on"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Verdie"},"AMOUNT":45.55}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":45.60}
-{"COMPANY_NAME":"Johnson & D","FILLER_1":{"STR1":"Johns","STR2":"on"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":47.24}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Jene"},"AMOUNT":48.60}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sulema"},"AMOUNT":49.06}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Edyth"},"AMOUNT":50.12}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":50.56}
-{"COMPANY_NAME":"Johnson & D","FILLER_1":{"STR1":"Johns","STR2":"on"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Carrie"},"AMOUNT":52.49}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":52.73}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":54.39}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Estell"},"AMOUNT":59.21}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sulema"},"AMOUNT":61.58}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Suk"},"AMOUNT":62.01}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Willis"},"AMOUNT":62.44}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deandr"},"AMOUNT":63.18}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":65.20}
-{"COMPANY_NAME":"Pear GMBH.","FILLER_1":{"STR1":"Pear","STR2":"GM"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sunday"},"AMOUNT":65.28}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Edyth"},"AMOUNT":68.86}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyson"},"AMOUNT":69.20}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Cassey"},"AMOUNT":70.49}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Otelia"},"AMOUNT":72.17}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Timika"},"AMOUNT":73.75}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deshaw"},"AMOUNT":73.96}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":75.47}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Janiec"},"AMOUNT":81.31}
-{"COMPANY_NAME":"ZjkLPj","FILLER_1":{"STR1":"ZjkLP","STR2":"j"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Carrie"},"AMOUNT":81.52}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":84.69}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Sulema"},"AMOUNT":85.71}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":85.80}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":85.83}
-{"COMPANY_NAME":"Envision Inc.","FILLER_1":{"STR1":"Envis","STR2":"io"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Tyesha"},"AMOUNT":86.30}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":87.02}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deandr"},"AMOUNT":87.74}
-{"COMPANY_NAME":"ECRONO","FILLER_1":{"STR1":"ECRON","STR2":"O"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Cassey"},"AMOUNT":87.95}
-{"COMPANY_NAME":"Dobry Pivivar","FILLER_1":{"STR1":"Dobry","STR2":"P"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":88.82}
-{"COMPANY_NAME":"Xingzhoug","FILLER_1":{"STR1":"Xingz","STR2":"ho"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Estell"},"AMOUNT":90.99}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Alona"},"AMOUNT":92.04}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mabell"},"AMOUNT":95.17}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Maya"},"AMOUNT":95.29}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Mindy"},"AMOUNT":96.37}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Carrie"},"AMOUNT":96.92}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Suk"},"AMOUNT":97.98}
-{"COMPANY_NAME":"Roboco Inc.","FILLER_1":{"STR1":"Roboc","STR2":"o"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Willis"},"AMOUNT":98.15}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Maya"},"AMOUNT":98.50}
-{"COMPANY_NAME":"ABCD Ltd.","FILLER_1":{"STR1":"ABCD","STR2":"Lt"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":99.34}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Eliana"},"AMOUNT":99.55}
-{"COMPANY_NAME":"Beierbauh.","FILLER_1":{"STR1":"Beier","STR2":"ba"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Deshaw"},"AMOUNT":99.76}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Starr"},"AMOUNT":99.95}
-{"COMPANY_NAME":"Prime Bank","FILLER_1":{"STR1":"Prime","STR2":"B"},"FILL_FIELD":{},"FILL_REDEF":{"STR6":"Doreth"},"AMOUNT":101.05}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Sulema"},"AMOUNT":0.18}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Jene"},"AMOUNT":0.79}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Edyth"},"AMOUNT":0.86}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":2.52}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":2.59}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":2.65}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":3.13}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":3.25}
+{"COMPANY_NAME":"Johnson & D","ADDRESS":"10 Sandton, Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":3.60}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Wilber"},"AMOUNT":3.64}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":5.52}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Estell"},"AMOUNT":7.59}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":7.92}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":8.24}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":9.32}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Deandr"},"AMOUNT":11.27}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":12.73}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":13.65}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":13.76}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Tyson"},"AMOUNT":13.92}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":14.18}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Wilber"},"AMOUNT":14.96}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Janiec"},"AMOUNT":15.68}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Deandr"},"AMOUNT":16.83}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Estell"},"AMOUNT":17.46}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Suk"},"AMOUNT":19.74}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Cliff"},"AMOUNT":21.80}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":23.40}
+{"COMPANY_NAME":"Pear GMBH.","ADDRESS":"107 Labe str., Berlin","CONTACT_PERSON":{"FIRST_NAME":"Cassey"},"AMOUNT":24.40}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":24.80}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Cassey"},"AMOUNT":25.34}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Mabell"},"AMOUNT":25.68}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Willis"},"AMOUNT":26.11}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":27.35}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Wilber"},"AMOUNT":28.55}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":29.87}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":30.78}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":30.93}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Suk"},"AMOUNT":31.77}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Wilber"},"AMOUNT":32.14}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Janiec"},"AMOUNT":35.24}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":36.42}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":39.16}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":39.21}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Estell"},"AMOUNT":39.98}
+{"COMPANY_NAME":"Johnson & D","ADDRESS":"10 Sandton, Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Edyth"},"AMOUNT":40.05}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":40.40}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":40.92}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Inge"},"AMOUNT":41.89}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Sunday"},"AMOUNT":44.53}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":44.54}
+{"COMPANY_NAME":"Johnson & D","ADDRESS":"10 Sandton, Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Verdie"},"AMOUNT":45.55}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":45.60}
+{"COMPANY_NAME":"Johnson & D","ADDRESS":"10 Sandton, Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":47.24}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Jene"},"AMOUNT":48.60}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Sulema"},"AMOUNT":49.06}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Edyth"},"AMOUNT":50.12}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":50.56}
+{"COMPANY_NAME":"Johnson & D","ADDRESS":"10 Sandton, Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Carrie"},"AMOUNT":52.49}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":52.73}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":54.39}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Estell"},"AMOUNT":59.21}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Sulema"},"AMOUNT":61.58}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Suk"},"AMOUNT":62.01}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Willis"},"AMOUNT":62.44}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Deandr"},"AMOUNT":63.18}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":65.20}
+{"COMPANY_NAME":"Pear GMBH.","ADDRESS":"107 Labe str., Berlin","CONTACT_PERSON":{"FIRST_NAME":"Sunday"},"AMOUNT":65.28}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Edyth"},"AMOUNT":68.86}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Tyson"},"AMOUNT":69.20}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Cassey"},"AMOUNT":70.49}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Otelia"},"AMOUNT":72.17}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Timika"},"AMOUNT":73.75}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Deshaw"},"AMOUNT":73.96}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":75.47}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Janiec"},"AMOUNT":81.31}
+{"COMPANY_NAME":"ZjkLPj","ADDRESS":"5574, Tokyo","CONTACT_PERSON":{"FIRST_NAME":"Carrie"},"AMOUNT":81.52}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":84.69}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Sulema"},"AMOUNT":85.71}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":85.80}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":85.83}
+{"COMPANY_NAME":"Envision Inc.","ADDRESS":"871A Forest ave., Toronto","CONTACT_PERSON":{"FIRST_NAME":"Tyesha"},"AMOUNT":86.30}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":87.02}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Deandr"},"AMOUNT":87.74}
+{"COMPANY_NAME":"ECRONO","ADDRESS":"123/B Prome str., Denver","CONTACT_PERSON":{"FIRST_NAME":"Cassey"},"AMOUNT":87.95}
+{"COMPANY_NAME":"Dobry Pivivar","ADDRESS":"74 Staromestka., Prague","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":88.82}
+{"COMPANY_NAME":"Xingzhoug","ADDRESS":"74 Qing ave., Beijing","CONTACT_PERSON":{"FIRST_NAME":"Estell"},"AMOUNT":90.99}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Alona"},"AMOUNT":92.04}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Mabell"},"AMOUNT":95.17}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Maya"},"AMOUNT":95.29}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Mindy"},"AMOUNT":96.37}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Carrie"},"AMOUNT":96.92}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Suk"},"AMOUNT":97.98}
+{"COMPANY_NAME":"Roboco Inc.","ADDRESS":"2 Park ave., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Willis"},"AMOUNT":98.15}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Maya"},"AMOUNT":98.50}
+{"COMPANY_NAME":"ABCD Ltd.","ADDRESS":"74 Lawn ave., New York","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":99.34}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"2 G. str., Johannesburg","CONTACT_PERSON":{"FIRST_NAME":"Eliana"},"AMOUNT":99.55}
+{"COMPANY_NAME":"Beierbauh.","ADDRESS":"901 Ztt, Munich","CONTACT_PERSON":{"FIRST_NAME":"Deshaw"},"AMOUNT":99.76}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Starr"},"AMOUNT":99.95}
+{"COMPANY_NAME":"Prime Bank","ADDRESS":"1 Garden str., London","CONTACT_PERSON":{"FIRST_NAME":"Doreth"},"AMOUNT":101.05}

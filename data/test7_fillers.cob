@@ -17,14 +17,18 @@
       ****************************************************************************
 
         01  RECORD.
-            05  COMPANY_NAME      PIC X(15).
+            05  COMPANY_NAME     PIC X(15).
             05  FILLER REDEFINES COMPANY_NAME.
-               10   STR1      PIC X(5).
-               10   STR2      PIC X(2).
-               10   FILLER    PIC X(1).
+               10   STR1         PIC X(5).
+               10   STR2         PIC X(2).
+               10   FILLER       PIC X(1).
+            05  ADDRESS          PIC X(25).
+            05  FILLER REDEFINES ADDRESS.
+               10   STR4         PIC X(10).
+               10   FILLER       PIC X(20).
             05  FILL_FIELD.
-               10   FILLER    PIC X(5).
-               10   FILLER    PIC X(2).
-            05  FILL_REDEF REDEFINES FILL_FIELD.
-               10  STR6       PIC X(6).
+               10   FILLER       PIC X(5).
+               10   FILLER       PIC X(2).
+            05  CONTACT_PERSON REDEFINES FILL_FIELD.
+               10  FIRST_NAME    PIC X(6).
             05  AMOUNT            PIC S9(09)V99  BINARY.
