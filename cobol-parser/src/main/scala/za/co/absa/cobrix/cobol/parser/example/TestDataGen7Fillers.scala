@@ -34,18 +34,22 @@ object TestDataGen7Fillers {
 
   /*
         01  RECORD.
-            05  COMPANY_NAME      PIC X(15).
+            05  COMPANY_NAME     PIC X(15).
             05  FILLER REDEFINES COMPANY_NAME.
-               10   STR1      PIC X(5).
-               10   STR2      PIC X(2).
-               10   FILLER    PIC X(1).
+               10   STR1         PIC X(5).
+               10   STR2         PIC X(2).
+               10   FILLER       PIC X(1).
+            05  ADDRESS          PIC X(25).
+            05  FILLER REDEFINES ADDRESS.
+               10   STR4         PIC X(10).
+               10   FILLER       PIC X(20).
             05  FILL_FIELD.
-               10   FILLER    PIC X(5).
-               10   FILLER    PIC X(2).
-            05  FILL_REDEF REDEFINES FILL_FIELD.
-               10  STR6       PIC X(6).
+               10   FILLER       PIC X(5).
+               10   FILLER       PIC X(2).
+            05  CONTACT_PERSON REDEFINES FILL_FIELD.
+               10  FIRST_NAME    PIC X(6).
             05  AMOUNT            PIC S9(09)V99  BINARY.
-   */
+  */
 
   case class Company(companyName: String, companyId: String, address: String)
 
@@ -136,7 +140,7 @@ object TestDataGen7Fillers {
 
     val rand = new Random(200)
 
-    val byteArray: Array[Byte] = new Array[Byte](30)
+    val byteArray: Array[Byte] = new Array[Byte](60)
 
     val bos = new BufferedOutputStream(new FileOutputStream("TEST.FILLERS.DEC07.DATA.dat"))
     var i = 0
@@ -144,9 +148,10 @@ object TestDataGen7Fillers {
 
       val company = companies(rand.nextInt(numOfCompanies))
       putStringToArray(byteArray, company.companyName, 0, 14) // 15
+      putStringToArray(byteArray, company.address, 15, 44) // 30
 
       val name = names(rand.nextInt(numOfNames))
-      putStringToArray(byteArray, name, 15, 21) // 7
+      putStringToArray(byteArray, name, 45, 51) // 7
 
       val tp = rand.nextInt(100)
       val amountIntPart = if (tp<80){
@@ -159,7 +164,7 @@ object TestDataGen7Fillers {
 
       val amountFracPart = if (amountIntPart < 10000) rand.nextInt(100) else 0
 
-      putDecimalToArray(byteArray, amountIntPart, amountFracPart, 22, 29) // 8
+      putDecimalToArray(byteArray, amountIntPart, amountFracPart, 52, 59) // 8
 
       bos.write(byteArray)
       i += 1
