@@ -31,7 +31,7 @@ import scala.util.Random
 /**
   * This is a test data generator. The copybook for it is listed below.
   */
-object TestDataGen5Integration {
+object TestDataGen6TypeVariety {
 
   val numberOfRecordsToGenerate = 100
 

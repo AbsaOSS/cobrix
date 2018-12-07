@@ -24,17 +24,19 @@ import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
+// This test suite will be deprecated soon since search reader is deprecated
+
 //noinspection NameBooleanParameters
-class CobolIntegration1Spec extends FunSuite with SparkTestBase {
+class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test1"
-  private val inputCopybookPath = "file://../data/test1_copybook.cob"
-  private val inpudDataPath = "../data/test1_data"
+  private val exampleName = "Test3"
+  private val inputCopybookPath = "file://../data/test3_copybook.cob"
+  private val inpudDataPath = "../data/test3_data"
 
-  private val expectedSchemaPath = "../data/test1_expected/test1_schema.json"
-  private val actualSchemaPath = "../data/test1_expected/test1_schema_actual.json"
-  private val expectedResultsPath = "../data/test1_expected/test1.txt"
-  private val actualResultsPath = "../data/test1_expected/test1_actual.txt"
+  private val expectedSchemaPath = "../data/test3_expected/test3_schema.json"
+  private val actualSchemaPath = "../data/test3_expected/test3_schema_actual.json"
+  private val expectedResultsPath = "../data/test3_expected/test3.txt"
+  private val actualResultsPath = "../data/test3_expected/test3_actual.txt"
 
   test(s"Integration test on $exampleName data") {
     val df = spark
@@ -42,6 +44,8 @@ class CobolIntegration1Spec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
+      .option("segment_field", "SIGNATURE")
+      .option("segment_filter", "S9276511")
       .load(inpudDataPath)
 
     // This is to print the actual output
