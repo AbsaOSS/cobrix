@@ -33,7 +33,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 import scala.collection.JavaConversions._
 
 //noinspection NameBooleanParameters
-class CobolIntegration5Spec extends FunSuite with SparkTestBase {
+class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test5(multisegment)"
   private val inputCopybookPath = "file://../data/test5_copybook.cob"
@@ -51,7 +51,7 @@ class CobolIntegration5Spec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_xcom", "true")
+      .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "S01L1")
       .option("segment_id_level1", "S01L2")
