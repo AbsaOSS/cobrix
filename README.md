@@ -61,6 +61,13 @@ Coordinates for Maven POM dependency
 
 ## Usage
 
+## Quick start
+
+For a quick start example use `examples/spark-cobol-app` as a template for a Spark job application. Refer to README.md in that folder.
+
+When running `mvn clean package` in `examples/spark-cobol-app` an uber jar will be created. It can be used to run
+jobs via `spark-submit` or `spark-shell`. 
+
 ### Reading Cobol binary files from HDFS/local and querying them 
 
 1. Create a Spark ```SQLContext```
@@ -618,7 +625,8 @@ These results were obtained on fixed size record files.
 
 ## Changelog
 
-- #### 0.2.11 released XX Dec 2018
+- #### 0.2.11 released 10 Dec 2018
+  - Added partitioning at the record-level by leveraging HDFS locations. This makes Cobrix data locality aware data source.
   - Parser decoders have been rewritten resulting in about 20% increase of performance
   - Added support for IEEE-754 floating point numbers for COMP-1 and COMP-2
   - Added support for decimal numbers with explicit decimal point
