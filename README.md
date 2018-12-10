@@ -618,7 +618,8 @@ These results were obtained on fixed size record files.
 
 ## Changelog
 
-- #### 0.2.11 released XX Dec 2018
+- #### 0.2.11 released 10 Dec 2018
+  - Added partitioning at the record-level by leveraging HDFS locations. This makes Cobrix data locality aware data source.
   - Parser decoders have been rewritten resulting in about 20% increase of performance
   - Added support for IEEE-754 floating point numbers for COMP-1 and COMP-2
   - Added support for decimal numbers with explicit decimal point
