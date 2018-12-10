@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.index
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.slf4j.LoggerFactory
@@ -27,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
-import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
+import za.co.absa.cobrix.spark.cobol.utils.{HDFSUtils, SparkUtils}
 
 /**
   * Builds offsets indexes for distributed processing of variable-length records.
@@ -82,8 +83,21 @@ private [source] object IndexBuilder {
     logger.info("Going to collect located indexes into driver.")
     val offsetsLocations = indexes.collect()
 
+    val optimizedAllocation = optimizeDistribution(offsetsLocations, sqlContext.sparkContext)
+
     logger.info(s"Creating RDD for ${offsetsLocations.length} located indexes.")
-    sqlContext.sparkContext.makeRDD(offsetsLocations)
+    sqlContext.sparkContext.makeRDD(optimizedAllocation)
+  }
+
+  /**
+    * Tries to balance the allocation among unused executors.
+    */
+  private def optimizeDistribution(allocation: Seq[(SimpleIndexEntry,Seq[String])], sc: SparkContext): Seq[(SimpleIndexEntry,Seq[String])] = {
+    val availableExecutors = SparkUtils.currentActiveExecutors(sc)
+
+    logger.info(s"Trying to balance ${allocation.size} partitions among all available executors (${availableExecutors})")
+
+    LocationBalancer.balance(allocation, availableExecutors)
   }
 
   /**

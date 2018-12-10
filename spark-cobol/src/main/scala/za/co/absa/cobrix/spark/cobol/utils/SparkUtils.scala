@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions.{concat_ws, expr, max}
 import org.apache.spark.sql.types._
@@ -27,7 +28,20 @@ import scala.collection.mutable
   * This object contains common Spark tools used for easier processing of dataframes originated from mainframes.
   */
 object SparkUtils {
+
   private val logger = LoggerFactory.getLogger(this.getClass)
+
+  /**
+    * Retrieves all executors available for the current job.
+    */
+  def currentActiveExecutors(sc: SparkContext): Seq[String] = {
+    val allExecutors = sc.getExecutorMemoryStatus.map(_._1.split(":").head)
+    val driverHost: String = sc.getConf.get("spark.driver.host","localhost")
+
+    logger.info(s"Going to filter driver: driver host: $driverHost, retrieved executors: $allExecutors")
+
+    allExecutors.filter(!_.equals(driverHost)).toList
+  }
 
   /**
     * Given an instance of [[DataFrame]] returns a dataframe with flttened schema.
