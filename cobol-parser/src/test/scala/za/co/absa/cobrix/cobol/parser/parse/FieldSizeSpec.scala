@@ -55,13 +55,13 @@ class FieldSizeSpec extends FunSuite {
     val size_s9_long_sign_leading_separate = fieldsize(6, copybook)
     val size_s11_decimal_sign_leading_separate = fieldsize(7, copybook)
 
-    assert(size_s9_2_comp == 2 * 8)
-    assert(size_x10 == 10 * 8)
-    assert(size_s9_7_v_9_2_comp3 == 5 * 8)
-    assert(size_s9_4_v_9_2_comp3 == 4 * 8)
-    assert(size_s9_15_v_comp3 == 8 * 8)
-    assert(size_s9_11_v_binary == 64)
-    assert(size_s9_long_sign_leading_separate == 10 * 8)
-    assert(size_s11_decimal_sign_leading_separate == 12 * 8)
+    assert(size_s9_2_comp == 2)
+    assert(size_x10 == 10)
+    assert(size_s9_7_v_9_2_comp3 == 5)
+    assert(size_s9_4_v_9_2_comp3 == 4)
+    assert(size_s9_15_v_comp3 == 8)
+    assert(size_s9_11_v_binary == 8)
+    assert(size_s9_long_sign_leading_separate == 10)
+    assert(size_s11_decimal_sign_leading_separate == 12)
   }
 }

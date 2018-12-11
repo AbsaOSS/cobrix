@@ -211,7 +211,7 @@ object CopybookParser {
     }
 
     def calculatePrimitiveSize(originalPrimitive: Primitive): Primitive = {
-      val size = originalPrimitive.getBinarySizeBits
+      val size = originalPrimitive.getBinarySizeBytes
       val sizeAllOccurs = size*originalPrimitive.arrayMaxSize
       val binProps = BinaryProperties(originalPrimitive.binaryProperties.offset, size, sizeAllOccurs)
       originalPrimitive.withUpdatedBinaryProperties(binProps)

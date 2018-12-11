@@ -71,18 +71,15 @@ case class Primitive(
   }
 
   /** Returns the binary size in bits for the field */
-  def getBinarySizeBits: Int = {
-    val size = dataType match {
+  def getBinarySizeBytes: Int = {
+    dataType match {
       case a: AlphaNumeric =>
-        a.length * 8
+        a.length
       case d: Decimal =>
-        BinaryUtils.getBytesCount(d.compact, d.precision, d.signPosition.isDefined, d.explicitDecimal, d.isSignSeparate) * 8
+        BinaryUtils.getBytesCount(d.compact, d.precision, d.signPosition.isDefined, d.explicitDecimal, d.isSignSeparate)
       case i: Integral =>
-        BinaryUtils.getBytesCount(i.compact, i.precision, i.signPosition.isDefined, isExplicitDecimalPt = false, isSignSeparate = i.isSignSeparate) * 8
+        BinaryUtils.getBytesCount(i.compact, i.precision, i.signPosition.isDefined, isExplicitDecimalPt = false, isSignSeparate = i.isSignSeparate)
     }
-
-    // round size up to next byte
-    ((size + 7) / 8) * 8
   }
 
   /** Returns a value of a field biven a binary data.
@@ -92,9 +89,9 @@ case class Primitive(
     * @param record   A record in a binary format represented as a vector of bits
     */
   @throws(classOf[Exception])
-  def decodeTypeValue(itOffset: Long, record: Array[Byte]): Any = {
-    val bytesCount = binaryProperties.dataSize / 8
-    val idx = (itOffset / 8).toInt
+  def decodeTypeValue(itOffset: Int, record: Array[Byte]): Any = {
+    val bytesCount = binaryProperties.dataSize
+    val idx = itOffset
     if (idx + bytesCount > record.length) {
       return null
     }

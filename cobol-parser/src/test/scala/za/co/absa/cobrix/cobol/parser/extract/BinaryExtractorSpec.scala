@@ -157,7 +157,7 @@ class BinaryExtractorSpec extends FunSuite {
     val dependingOn: Option[String] = None
     val isDependee: Boolean = false
     val isFiller: Boolean = false
-    val binaryProperties: BinaryProperties = BinaryProperties(2 * 8, 10 * 8, 10 * 8)
+    val binaryProperties: BinaryProperties = BinaryProperties(2, 10, 10)
 
     val primitive: Primitive = Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
       occurs, to, dependingOn, isDependee, isFiller, DecoderSelector.getDecoder(dataType), binaryProperties)(None)

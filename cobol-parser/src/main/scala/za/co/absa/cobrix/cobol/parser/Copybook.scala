@@ -28,8 +28,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   lazy val getRecordSize: Int = {
     val last = ast.last
-    val sizeInBits = last.binaryProperties.offset + last.binaryProperties.actualSize
-    if (sizeInBits % 8 == 0) sizeInBits / 8 else (sizeInBits / 8) + 1
+    val sizeInBytes = last.binaryProperties.offset + last.binaryProperties.actualSize
+    sizeInBytes
   }
 
   def isRecordFixedSize: Boolean = true
@@ -136,7 +136,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     */
   @throws(classOf[Exception])
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
-    val slicedBytes = bytes.slice(field.binaryProperties.offset/8 + startOffset, field.binaryProperties.offset/8 + startOffset + field.binaryProperties.actualSize/8)
+    val slicedBytes = bytes.slice(field.binaryProperties.offset + startOffset, field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize)
     field.decodeTypeValue(0, slicedBytes)
   }
 
@@ -193,8 +193,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
           case grp: Group =>
             val modifiers = s"$isRedefinedByStr$isRedefines$isArray"
             val groupStr = generateGroupLayutPositions(grp, path + "  ")
-            val start = grp.binaryProperties.offset / 8 + 1
-            val length = grp.binaryProperties.actualSize / 8
+            val start = grp.binaryProperties.offset + 1
+            val length = grp.binaryProperties.actualSize
             val end = start + length - 1
             val namePart = alignLeft(s"$path${grp.level} ${grp.name}", 39)
             val picturePart = alignLeft(modifiers, 11)
@@ -207,8 +207,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
           case s: Primitive =>
             val isDependeeStr = if (s.isDependee) "D" else ""
             val modifiers = s"$isDependeeStr$isRedefinedByStr$isRedefines$isArray"
-            val start = s.binaryProperties.offset / 8 + 1
-            val length = s.binaryProperties.actualSize / 8
+            val start = s.binaryProperties.offset + 1
+            val length = s.binaryProperties.actualSize
             val end = start + length - 1
             val namePart = alignLeft(s"$path${s.level} ${s.name}", 39)
             val picturePart = alignLeft(modifiers, 11)
@@ -223,8 +223,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     }
 
     val strings = for (grp <- ast) yield {
-      val start = grp.binaryProperties.offset / 8 + 1
-      val length = grp.binaryProperties.actualSize / 8
+      val start = grp.binaryProperties.offset + 1
+      val length = grp.binaryProperties.actualSize
       val end = start + length - 1
       val groupStr = generateGroupLayutPositions(grp)
       val namePart = alignLeft(s"${grp.name}", 55)

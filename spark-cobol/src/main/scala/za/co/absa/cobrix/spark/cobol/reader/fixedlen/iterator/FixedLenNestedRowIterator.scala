@@ -39,9 +39,9 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
                                 startOffset: Int,
                                 endOffset: Int) extends Iterator[Row] {
   private val recordSize = cobolSchema.getRecordSize
-  private var bitIndex = startOffset.toLong * 8
+  private var byteIndex = startOffset
 
-  override def hasNext: Boolean = bitIndex + recordSize <= (binaryData.length * 8)
+  override def hasNext: Boolean = byteIndex + recordSize <= binaryData.length
 
   @throws(classOf[IllegalStateException])
   override def next(): Row = {
@@ -49,13 +49,13 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
       throw new NoSuchElementException()
     }
 
-    var offset = bitIndex
+    var offset = byteIndex
     val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, binaryData, offset, policy, generateRecordId = false)
 
-    // Advance bit index to the next record
+    // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    bitIndex += lastRecordActualSize + endOffset * 8
+    byteIndex += lastRecordActualSize + endOffset
 
     records
   }

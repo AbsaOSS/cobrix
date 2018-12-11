@@ -89,7 +89,7 @@ final class VarLenSearchIterator(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
-    val signatureOffset = signatureField.binaryProperties.offset / 8
+    val signatureOffset = signatureField.binaryProperties.offset
 
     def isLengthFieldValid(lengthFieldValue: Int): Boolean = {
       val lengthValid = for (minValue <- minimumLength;
@@ -141,7 +141,7 @@ final class VarLenSearchIterator(cobolSchema: Copybook,
       advanceByteIndex(recordMarkStart, lengthFieldValue, isFound)
     }
 
-    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset * 8, policy, generateRecordId, Nil, fileId,
+    cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema, buffer, startOffset, policy, generateRecordId, Nil, fileId,
       /*recordMarkStart - signatureOffset)*/
       recordIndex))
     recordIndex += 1
@@ -149,7 +149,7 @@ final class VarLenSearchIterator(cobolSchema: Copybook,
 
   private def getMinimumParsableNumOfBytes: Int = {
     lengthField match {
-      case Some(lengthFld) => lengthFld.binaryProperties.offset/8 + lengthFld.binaryProperties.actualSize/8
+      case Some(lengthFld) => lengthFld.binaryProperties.offset + lengthFld.binaryProperties.actualSize
       case None => copyBookRecordSize + startOffset + endOffset
     }
   }
