@@ -16,6 +16,7 @@
 package za.co.absa.cobrix.spark.cobol.examples
 
 import org.apache.spark.sql.{SaveMode, SparkSession}
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
 // This is an example Spark Job that uses COBOL data source.
 // IMPORTANT! To run this locally change the scope of all Scala and Spark libraries from 'provided' to 'compile' in pom.xml

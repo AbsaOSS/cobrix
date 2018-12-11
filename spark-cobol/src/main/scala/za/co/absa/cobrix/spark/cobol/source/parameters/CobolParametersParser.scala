@@ -60,6 +60,7 @@ object CobolParametersParser {
   val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
   val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
   val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
+  val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
 
   def parse(params: Map[String,String]): CobolParameters = {
 
@@ -85,7 +86,8 @@ object CobolParametersParser {
       policy.get,
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
-      parseMultisegmentParameters(params)
+      parseMultisegmentParameters(params),
+      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "true").toBoolean
     )
   }
 
