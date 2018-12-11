@@ -33,9 +33,9 @@ import org.apache.spark.sql.types.StringType
 object SparkCobolApp {
 
   /**
-    * <h2>This is the copybook for the data file.</h2>
-    * The file is a variable length multisegment record sequence extracted from a hierarchical database.
-    * It consists a common part (SEGMENT-ID, COMPANY-ID) and 2 segments:
+    * <h2>This is an example Cobrix Spark Job.</h2>
+    * The data file is a variable length multisegment record sequence extracted from a hierarchical database.
+    * It consists of a common part (SEGMENT-ID, COMPANY-ID) and 2 segments:
     * <ul><li>Company details: name and address</li>
     *     <li>Contact person for the company</li></ul>
     * A company can have no contact people or can have several of them.
@@ -66,6 +66,7 @@ object SparkCobolApp {
     * data frame. Then we join both segments by Seg_Id0 to get all the companies and corresponding contacts.
     */
   def main(args: Array[String]): Unit = {
+    // This is the copybook for the data file.
     val copybook =
       """        01  COMPANY-DETAILS.
         |            05  SEGMENT-ID           PIC X(5).

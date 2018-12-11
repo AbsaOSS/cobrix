@@ -63,7 +63,15 @@ Coordinates for Maven POM dependency
 
 ## Quick start
 
-For a quick start example use `examples/spark-cobol-app` as a template for a Spark job application. Refer to README.md in that folder.
+This repository contains 2 standalone examples in `examples` directory:
+* `spark-type-variety` is an example of a very simple mainframe file processing.
+   It is a fixed record length raw data file with a corresponding copybook. The copybook 
+   contains examples of various numeric data types Cobrix supports.
+* `spark-cobol-app` is an example of a Spark Job for handling multisegment variable record
+   length mainframe files.  
+
+Both of these examples can be used as a template for a Spark job application. Refer to README.md
+in each example folder for the detailed guide how to run the examples locally and on a cluster.
 
 When running `mvn clean package` in `examples/spark-cobol-app` an uber jar will be created. It can be used to run
 jobs via `spark-submit` or `spark-shell`. 
