@@ -44,27 +44,31 @@ object LocationBalancer {
     val executorSet = availableExecutors.toSet
     val allocationByExecutor = toDistributionByExecutor(currentDistribution)
 
-    // if there are unused executors, re-balancing is necessary
+    // if there are unused executors (executors that did not receive any partitions), re-balancing is necessary
     if (executorSet.nonEmpty && !executorSet.subsetOf(allocationByExecutor.keySet)) {
+
       val newExecutors: Set[String] = executorSet.diff(allocationByExecutor.keySet)
       val busiestExecutors: Seq[String] = findKBusiestExecutors(allocationByExecutor, newExecutors.size)
 
-      val reallocations = for (executorsPair <- toExecutorPairs(newExecutors.toSeq, busiestExecutors))
-        yield {
-        // assigns the first entry from busy executor to first idle executor
-        val relocatedEntry: SimpleIndexEntry = allocationByExecutor(executorsPair.busyExecutor).head
-        val currentExecutorAllocation: List[SimpleIndexEntry] = allocationByExecutor(executorsPair.busyExecutor)
+      val reallocations = for (executorsPair <- toExecutorPairs(newExecutors.toSeq, busiestExecutors)) yield {
+
+        val entryToRelocate: SimpleIndexEntry = allocationByExecutor(executorsPair.busyExecutor).head
+        val currentBusyExecutorAllocation: List[SimpleIndexEntry] = allocationByExecutor(executorsPair.busyExecutor)
 
         // if more than one entry, relocate, otherwise keep as is - otherwise locality might be damaged
-        if (currentExecutorAllocation.size > 1) {
-          allocationByExecutor(executorsPair.busyExecutor) = allocationByExecutor(executorsPair.busyExecutor).filter(_ != relocatedEntry)
-          (executorsPair.newExecutor, Seq(relocatedEntry))
+        if (currentBusyExecutorAllocation.size > 1) {
+          // removes the entry for the busy executor queue
+          allocationByExecutor(executorsPair.busyExecutor) = allocationByExecutor(executorsPair.busyExecutor).filter(_ != entryToRelocate)
+          // assigns the entry to a new idle executor
+          (executorsPair.newExecutor, Seq(entryToRelocate))
         }
         else {
-          (executorsPair.busyExecutor, currentExecutorAllocation)
+          // otherwise, keeps the allocation as it is
+          (executorsPair.busyExecutor, currentBusyExecutorAllocation)
         }
       }
 
+      // converts the reallocations to the same format they had before
       toItemsWithLocations(allocationByExecutor ++ reallocations)
     }
     else {
@@ -85,20 +89,23 @@ object LocationBalancer {
   private def findKBusiestExecutors(entriesByExecutor: collection.mutable.Map[String,List[SimpleIndexEntry]], k: Int): Seq[String] = {
     entriesByExecutor
       .toSeq
-      .sortWith(_._2.size > _._2.size)
-      .map(_._1)
-      .take(k)
+      .sortWith(_._2.size > _._2.size) // sort executors by number of entries assigned to it, in decreasing order
+      .map(_._1) // collect the executor addresses
+      .take(k) // and takes the first k
   }
 
   private def toItemsWithLocations(entriesByExecutors: collection.mutable.Map[String,Seq[SimpleIndexEntry]]): Seq[(SimpleIndexEntry,Seq[String])] = {
     entriesByExecutors
       .toSeq
-      .flatMap(entry => entry._2.map((_, entry._1)))
-      .groupBy(_._1)
-      .map(group => (group._1, group._2.map(_._2).toList))
+      .flatMap(entry => entry._2.map((_, entry._1))) // reverts the map(k,v): now, it will be map(v,k), or map(entry,executor)
+      .groupBy(_._1) // group by entry
+      .map(group => (group._1, group._2.map(_._2).toList)) // maps preferred executors to an entry
       .toList
   }
 
+  /**
+    * Performs a zip-like operation between differently sized sequences, wrapping the result into ExecutorPair instances.
+    */
   private def toExecutorPairs(newExecutor: Seq[String], busiestExecutors: Seq[String]): Seq[ExecutorPair] = {
     Seq.range(0, Math.min(newExecutor.size, busiestExecutors.size))
       .map(i => ExecutorPair(newExecutor(i), busiestExecutors(i)))

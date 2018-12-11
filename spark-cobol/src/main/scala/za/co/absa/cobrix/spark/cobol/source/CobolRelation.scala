@@ -63,7 +63,7 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
   *
   * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
-class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlContext: SQLContext)
+class CobolRelation(sourceDir: String, cobolReader: Reader, optimizeAllocations: Boolean = false)(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
   with TableScan {
@@ -72,7 +72,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader)(@transient val sqlCo
 
   private val filesList = getListFilesWithOrder(sourceDir)
 
-  private lazy val indexes: RDD[SimpleIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)
+  private lazy val indexes: RDD[SimpleIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(optimizeAllocations)
 
   override def schema: StructType = {
     cobolReader.getSparkSchema

@@ -24,7 +24,7 @@ import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader, VarLenSearchReader}
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
@@ -48,7 +48,11 @@ class DefaultSource
 
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
     CobolParametersValidator.validateOrThrow(parameters, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
-    new CobolRelation(parameters(PARAM_SOURCE_PATH), buildEitherReader(sqlContext.sparkSession, parameters))(sqlContext)
+
+    val cobolParameters = CobolParametersParser.parse(parameters)
+    CobolParametersValidator.checkSanity(cobolParameters)
+
+    new CobolRelation(parameters(PARAM_SOURCE_PATH), buildEitherReader(sqlContext.sparkSession, cobolParameters), cobolParameters.optimizeAllocation)(sqlContext)
   }
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
@@ -59,10 +63,7 @@ class DefaultSource
     *
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
-  private def buildEitherReader(spark: SparkSession, parameters: Map[String, String]): Reader = {
-
-    val cobolParameters = CobolParametersParser.parse(parameters)
-    CobolParametersValidator.checkSanity(cobolParameters)
+  private def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
 
     val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
 

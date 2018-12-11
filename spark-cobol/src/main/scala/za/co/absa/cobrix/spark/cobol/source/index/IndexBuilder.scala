@@ -42,9 +42,9 @@ private [source] object IndexBuilder {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext): RDD[SimpleIndexEntry] = {
+  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(optimizeAllocation: Boolean = false): RDD[SimpleIndexEntry] = {
     cobolReader match {
-      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext)
+      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext)(optimizeAllocation)
       case _ => null
     }
   }
@@ -53,7 +53,8 @@ private [source] object IndexBuilder {
     * Builds the indexes by querying HDFS about the records locations and then asking Spark to assign local executors
     * to those records in those locations.
     */
-  def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SimpleIndexEntry] = {
+  private def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext)
+                                               (optimizeAllocation: Boolean): RDD[SimpleIndexEntry] = {
 
     val conf = sqlContext.sparkContext.hadoopConfiguration
 
@@ -81,12 +82,21 @@ private [source] object IndexBuilder {
       })
 
     logger.info("Going to collect located indexes into driver.")
-    val offsetsLocations = indexes.collect()
-
-    val optimizedAllocation = optimizeDistribution(offsetsLocations, sqlContext.sparkContext)
+    val offsetsLocations: Seq[(SimpleIndexEntry,Seq[String])] = if (optimizeAllocation) {
+      optimizeDistribution(indexes.collect(), sqlContext.sparkContext)
+    }
+    else {
+      indexes.collect()
+    }
 
     logger.info(s"Creating RDD for ${offsetsLocations.length} located indexes.")
-    sqlContext.sparkContext.makeRDD(optimizedAllocation)
+
+    if (logger.isDebugEnabled) {
+      logger.debug("Preferred locations per index entry")
+      offsetsLocations.foreach(allocation => logger.debug(allocation.toString()))
+    }
+
+    sqlContext.sparkContext.makeRDD(offsetsLocations)
   }
 
   /**
@@ -94,9 +104,7 @@ private [source] object IndexBuilder {
     */
   private def optimizeDistribution(allocation: Seq[(SimpleIndexEntry,Seq[String])], sc: SparkContext): Seq[(SimpleIndexEntry,Seq[String])] = {
     val availableExecutors = SparkUtils.currentActiveExecutors(sc)
-
-    logger.info(s"Trying to balance ${allocation.size} partitions among all available executors (${availableExecutors})")
-
+    logger.info(s"Trying to balance ${allocation.size} partitions among all available executors ($availableExecutors)")
     LocationBalancer.balance(allocation, availableExecutors)
   }
 
