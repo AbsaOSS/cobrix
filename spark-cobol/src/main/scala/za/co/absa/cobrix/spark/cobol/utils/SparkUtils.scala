@@ -38,9 +38,9 @@ object SparkUtils {
     val allExecutors = sc.getExecutorMemoryStatus.map(_._1.split(":").head)
     val driverHost: String = sc.getConf.get("spark.driver.host","localhost")
 
-    logger.info(s"Going to filter driver: driver host: $driverHost, retrieved executors: $allExecutors")
+    logger.info(s"Going to filter driver from available executors: Driver host: $driverHost, Available executors: $allExecutors")
 
-    allExecutors.filter(!_.equals(driverHost)).toList
+    allExecutors.filter(!_.equals(driverHost)).toList.distinct
   }
 
   /**
