@@ -30,7 +30,7 @@ object CobolSparkExample1 {
     val spark = sparkBuilder
       .master("local[*]")
       .getOrCreate()
-println(SparkUtils.currentActiveExecutors(spark.sparkContext))
+
     // This is an example read from a mainframe data file.
     // You can turn on/off the 'generate_record_id' and 'schema_retention_policy' options to see what difference it makes.
     val df = spark
