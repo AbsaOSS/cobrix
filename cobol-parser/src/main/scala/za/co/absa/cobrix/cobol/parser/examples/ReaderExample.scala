@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.example
+package za.co.absa.cobrix.cobol.parser.examples
 
 import za.co.absa.cobrix.cobol.parser.reader.FSReader
 

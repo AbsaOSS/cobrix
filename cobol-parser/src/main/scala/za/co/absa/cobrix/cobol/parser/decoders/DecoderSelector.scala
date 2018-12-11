@@ -81,22 +81,25 @@ object DecoderSelector {
           else
             StringDecoders.decodeAsciiBigNumber(_, decimalType.scale)
         }
-      case Some(0) =>
+      case Some(Constants.compBinary1) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
-      case Some(1) =>
+      case Some(Constants.compFloat) =>
         // COMP-1 aka 32-bit floating point number
         BinaryUtils.decodeFloat
-      case Some(2) =>
+      case Some(Constants.compDouble) =>
         // COMP-2 aka 64-bit floating point number
         BinaryUtils.decodeDouble
-      case Some(3) =>
+      case Some(Constants.compBCD) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale)
-      case Some(4) =>
+      case Some(Constants.compBinary2) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
-      case Some(5) =>
+      case Some(Constants.compBinaryBinCutoff) =>
+        // COMP aka BINARY encoded number
+        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
+      case Some(Constants.compBinaryLittleEndian) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = false, signed = isSigned, decimalType.scale))
       case _ =>
@@ -132,22 +135,25 @@ object DecoderSelector {
           else
             StringDecoders.decodeAsciiBigNumber(_)
         }
-      case Some(0) =>
+      case Some(Constants.compBinary1) =>
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, isBigEndian = true)
-      case Some(1) =>
+      case Some(Constants.compFloat) =>
         throw new IllegalStateException("Unexpected error. COMP-1 (float) is incorrect for an integral number.")
-      case Some(2) =>
+      case Some(Constants.compDouble) =>
         throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
-      case Some(3) =>
+      case Some(Constants.compBCD) =>
         // COMP-3 aka BCD-encoded number
         getBCDIntegralDecoder(integralType.precision)
-      case Some(4) =>
+      case Some(Constants.compBinary2) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(4), integralType.precision, integralType.signPosition, isBigEndian = true)
-      case Some(5) =>
+        getBinaryEncodedIntegralDecoder(Some(Constants.compBinary2), integralType.precision, integralType.signPosition, isBigEndian = true)
+      case Some(Constants.compBinaryBinCutoff) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(5), integralType.precision, integralType.signPosition, isBigEndian = false)
+        getBinaryEncodedIntegralDecoder(Some(Constants.compBinaryBinCutoff), integralType.precision, integralType.signPosition, isBigEndian = true)
+      case Some(Constants.compBinaryLittleEndian) =>
+        // COMP aka BINARY encoded number
+        getBinaryEncodedIntegralDecoder(Some(Constants.compBinaryLittleEndian), integralType.precision, integralType.signPosition, isBigEndian = false)
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (COMP-${integralType.compact}).")
     }
