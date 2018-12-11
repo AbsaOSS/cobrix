@@ -161,7 +161,7 @@ object CopybookParser {
       schema += root
     }
 
-    val newTrees = calculateNonFillerSizes(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+    val newTrees = calculateNonFillerSizes(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
     new Copybook(ast)
   }
@@ -394,6 +394,51 @@ object CopybookParser {
     }
 
     renameFillers(originalSchema)
+  }
+
+  /**
+    * Process group fillers.
+    * <ul>
+    *   <li>Make fillers each group that contains only filler fields.</li>
+    *   <li>Remove all groups that don't have child nodes.</li>
+    * </ul>
+    *
+    * @param originalSchema An AST as a set of copybook records
+    * @return The same AST with group fillers processed
+    */
+  private def processGroupFillers(originalSchema: MutableCopybook): MutableCopybook = {
+    var lastFillerIndex = 0
+
+    def processSubGroupFillers(group: Group): Group = {
+      val (newChildren, hasNonFillers) = processFillers(group.children)
+      if (hasNonFillers)
+        group.copy(children = newChildren)(group.parent)
+      else
+        group.copy(children = newChildren, isFiller = true)(group.parent)
+    }
+
+    def processFillers(subSchema: MutableCopybook): (MutableCopybook, Boolean) = {
+      val newSchema = ArrayBuffer[Statement]()
+      var hasNonFillers = false
+      subSchema.foreach {
+        case grp: Group =>
+          val newGrp = processSubGroupFillers(grp)
+          if (newGrp.children.nonEmpty) {
+            newSchema += newGrp
+          }
+          if (!grp.isFiller) hasNonFillers = true
+        case st: Primitive =>
+          newSchema += st
+          if (!st.isFiller) hasNonFillers = true
+      }
+      (newSchema, hasNonFillers)
+    }
+
+    val (newSchema, hasNonFillers) = processFillers(originalSchema)
+    if (!hasNonFillers) {
+      throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
+    }
+    newSchema
   }
 
   /**
