@@ -83,4 +83,22 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
 
     assert(actual == expected)
   }
+
+  it should "accept more idle than allocated executors and rebalance correctly" in {
+    val currentDistribution = List[(SimpleIndexEntry,Seq[String])](
+      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec1")),
+      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1"))
+    )
+
+    val availableExecutors = Seq("exec2", "exec3", "exec4", "exec5")
+
+    val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
+
+    val expected = List[(Any,Seq[String])](
+      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1")),
+      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec2"))
+    )
+
+    assert(actual == expected)
+  }
 }
