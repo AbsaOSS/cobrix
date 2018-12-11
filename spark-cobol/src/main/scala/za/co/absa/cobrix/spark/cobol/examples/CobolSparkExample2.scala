@@ -57,10 +57,10 @@ object CobolSparkExample2 {
       .option("copybook_contents", copybook)
       //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-      .option("is_xcom", "true")
+      .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "S01L1")
-      .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+      .load("examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 
     import spark.implicits._
 

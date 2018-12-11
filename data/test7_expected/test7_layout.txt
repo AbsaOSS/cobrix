@@ -1,0 +1,18 @@
+-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+
+RECORD                                                       1     60     60
+  5 COMPANY_NAME                       r              1      1     15     15
+  5 FILLER                             R              5      1     15     15
+    10 STR1                                           3      1      5      5
+    10 STR2                                           4      6      7      2
+    10 FILLER                                         5      8      8      1
+  5 ADDRESS                            r              6     16     45     30
+  5 FILLER                             R              9     16     45     30
+    10 STR4                                           8     16     25     10
+    10 FILLER                                         9     26     45     20
+  5 FILL_FIELD                         r             12     46     52      7
+    10 FILLER                                        11     46     50      5
+    10 FILLER                                        12     51     52      2
+  5 CONTACT_PERSON                     R             14     46     52      7
+    10 FIRST_NAME                                    14     46     51      6
+  5 AMOUNT                                           15     53     60      8

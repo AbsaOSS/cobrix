@@ -31,7 +31,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 import scala.collection.JavaConversions._
 
 //noinspection NameBooleanParameters
-class CobolIntegration6Spec extends FunSuite with SparkTestBase {
+class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test6(type variety)"
   private val inputCopybookPath = "file://../data/test6_copybook.cob"

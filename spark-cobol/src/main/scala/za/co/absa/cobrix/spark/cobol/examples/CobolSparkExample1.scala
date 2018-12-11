@@ -36,10 +36,10 @@ println(SparkUtils.currentActiveExecutors(spark.sparkContext))
     val df = spark
       .read
       .format("cobol")
-      .option("copybook", "data/test2_copybook.cob")
+      .option("copybook", "examples/example_data/raw_file.cob")
       //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       //.option("schema_retention_policy", "collapse_root")   // Collapses the root group returning it's field on the top level of the schema
-      .load("data/test2_data")
+      .load("examples/example_data/raw_data")
 
     // If you get this exception:
     //   Class Not found exception java.lang.ClassNotFoundException: Failed to find data source: cobol.
