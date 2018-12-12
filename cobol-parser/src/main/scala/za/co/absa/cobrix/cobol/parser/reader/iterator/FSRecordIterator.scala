@@ -50,10 +50,10 @@ class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends I
 
     val records = DataExtractors.extractValues(cobolSchema.getCobolSchema, bytes)
 
-    // Advance bit index to the next record
+    // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    byteIndex += lastRecordActualSize / 8
+    byteIndex += lastRecordActualSize
 
     records
   }

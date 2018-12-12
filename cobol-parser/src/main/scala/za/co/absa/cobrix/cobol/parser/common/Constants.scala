@@ -63,7 +63,8 @@ object Constants {
   val compFloat = 1
   val compDouble = 2
   val compBCD = 3
-  val compBinaryCompilerSpecific= 5
+  val compBinaryBinCutoff= 5
+  val compBinaryLittleEndian= 9
 
   // The fields that can be automatically generated
   val segmentIdField = "Seg_Id"

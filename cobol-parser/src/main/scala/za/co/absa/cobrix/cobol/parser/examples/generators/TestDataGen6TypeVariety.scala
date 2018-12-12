@@ -1,20 +1,4 @@
-/*
- * Copyright 2018 Barclays Africa Group Limited
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package za.co.absa.cobrix.cobol.parser.example
+package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
@@ -23,10 +7,6 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
-
-// This is a test data generator for the big integration test.
-// The purpose of the data is to cover as much as possible the variety of primitive data types.
-// The generated file won't contain 4 byte record headers
 
 /**
   * This is a test data generator. The copybook for it is listed below.
@@ -112,9 +92,9 @@ object TestDataGen6TypeVariety {
 ********** Binary formatted integral numbers
           10  NUM-BIN-INT01       PIC 9(1)         COMP.
           10  NUM-BIN-INT02       PIC 9(2)         COMP.
-          10  NUM-BIN-INT03       PIC 9(3)         COMP.
-          10  NUM-BIN-INT04       PIC 9(4)         COMP.
-          10  NUM-BIN-INT05       PIC 9(5)         COMP.
+          10  NUM-BIN-INT03       PIC 9(3)         COMP-0.
+          10  NUM-BIN-INT04       PIC 9(4)         COMP-4.
+          10  NUM-BIN-INT05       PIC 9(5)         COMP-5.
           10  NUM-BIN-INT06       PIC 9(8)         BINARY.
           10  NUM-BIN-INT07       PIC 9(9)         BINARY.
           10  NUM-BIN-INT08       PIC 9(10)       BINARY.
@@ -477,14 +457,14 @@ object TestDataGen6TypeVariety {
   def putFloat(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
     val floatNum: String = bigNumber.take(5) + "." + bigNumber.slice(5, 7)
     putEncodedNumStrToArray((str: String) => encodeFloat(str),
-      fieldName, bytes, floatNum, index0, 9, true, isNegative)
+      fieldName, bytes, floatNum, index0, 9, signed = true, isNegative = isNegative)
   }
 
 
   def putDouble(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
     val floatNum: String = bigNumber.take(10) + "." + bigNumber.slice(10, 14)
     putEncodedNumStrToArray((str: String) => encodeDouble(str),
-      fieldName, bytes, floatNum, index0, 20, true, isNegative)
+      fieldName, bytes, floatNum, index0, 20, signed = true, isNegative = isNegative)
   }
 
   val strings = Seq(

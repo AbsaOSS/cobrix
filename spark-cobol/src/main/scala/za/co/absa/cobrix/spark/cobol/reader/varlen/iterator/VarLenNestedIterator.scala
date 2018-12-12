@@ -98,7 +98,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
           if (isSegmentMatchesTheFilter(segmentIdStr)) {
             cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
               data,
-              readerProperties.startOffset * 8,
+              readerProperties.startOffset,
               readerProperties.policy,
               readerProperties.generateRecordId,
               segmentLevelIds,
@@ -118,7 +118,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
       throw new IllegalStateException(s"For variable length reader either XCOM headers or record length field should be provided.")
     }
 
-    val lengthFieldBlock = lengthField.get.binaryProperties.offset / 8 + lengthField.get.binaryProperties.actualSize / 8
+    val lengthFieldBlock = lengthField.get.binaryProperties.offset + lengthField.get.binaryProperties.actualSize
 
     val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
 

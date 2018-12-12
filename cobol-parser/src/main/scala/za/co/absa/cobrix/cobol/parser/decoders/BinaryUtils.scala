@@ -126,10 +126,10 @@ object BinaryUtils {
     import Constants._
     val isRealSigned = if (isSignSeparate) false else isSigned
     val bytes = compression match {
-      case Some(comp) if comp == compBinary1 || comp == compBinary1 || comp == compBinary2 =>
+      case Some(comp) if comp == compBinary1 || comp == compBinary2 || comp == compBinaryBinCutoff || comp == compBinaryLittleEndian =>
         // if native binary follow IBM guide to digit binary length
         precision match {
-          case p if p >= 1 && p <= 2 && comp == compBinaryCompilerSpecific => 1 // byte
+          case p if p >= 1 && p <= 2 && comp == compBinaryLittleEndian => 1 // byte
           case p if p >= minShortPrecision && p <= maxShortPrecision => binaryShortSizeBytes
           case p if p >= minIntegerPrecision && p <= maxIntegerPrecision => binaryIntSizeBytes
           case p if p >= minLongPrecision && p <= maxLongPrecision => binaryLongSizeBytes
