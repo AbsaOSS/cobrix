@@ -247,7 +247,7 @@ root
 
 Currently this feature may inpact performance and scaling, please use it with caution.  
 
-### L0cality optimization of records parsing 
+### Locality optimization for variable-length records parsing
 
 When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse each record, i.e. the nodes where the record resides.
 
