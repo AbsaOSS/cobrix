@@ -247,6 +247,21 @@ root
 
 Currently this feature may inpact performance and scaling, please use it with caution.  
 
+### L0cality optimization of records parsing 
+
+When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse each record, i.e. the nodes where the record resides.
+
+This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the partition for that record in one of those locations.
+
+However, sometimes, new nodes can be added to the cluster after the Cobol file is stored, in which case those nodes would be ignored when processing the file since they do not contain any record.
+
+To overcome this issue, Cobrix also strives to re-balance the records among the new nodes at parsing time, as an attempt to maximize the utilization of the cluster. This is done through identifying the busiest nodes and sharing part of their burden with the new ones.
+
+This feature is enabled by default, and can be disabled from the configuration below:
+```
+.option("optimize_allocation", false)
+```
+
 ### Record headers support
 
 As you may already know file in mainframe world does not mean the same as in PC world.
