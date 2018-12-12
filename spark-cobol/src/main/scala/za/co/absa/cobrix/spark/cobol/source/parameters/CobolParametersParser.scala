@@ -87,7 +87,7 @@ object CobolParametersParser {
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),
-      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean
+      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "true").toBoolean
     )
   }
 
