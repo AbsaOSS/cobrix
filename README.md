@@ -196,7 +196,7 @@ Cobrix allows to collapse the GROUP and expand it's records. To turn this on use
 ```
 
 Let's loot at an example. Let's say we have a copybook that looks like this:
-```
+```cobol
        01  RECORD.
            05  ID                        PIC S9(4)  COMP.
            05  COMPANY.
@@ -324,7 +324,7 @@ more child records.
 To load such data in Spark the first thing you need to do is to create a copybook that contains all segment specific fields
 in redefined groups. Here is the copybook for our example:
 
-```
+```cobol
         01  COMPANY-DETAILS.
             05  SEGMENT-ID        PIC X(5).
             05  COMPANY-ID        PIC X(10).
@@ -625,7 +625,7 @@ By default Cobrix will retain such fields, but will rename each such filler to a
 can be specified unambiguously. For example, in this case the filler groups will be renamed to `FILLER_1` and `FILLER_2`.
 You can change this behaviour if you would like to drop such filler groups by providing this option:
 ```
-.option("drop_group_fillrs", "true")
+.option("drop_group_fillers", "true")
 ```
 
 ## Performance

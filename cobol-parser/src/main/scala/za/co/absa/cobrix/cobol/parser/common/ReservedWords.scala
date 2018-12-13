@@ -30,6 +30,7 @@ object ReservedWords {
   val OCCURS = "OCCURS"
   val ON = "ON"
   val PIC = "PIC"
+  val PICTURE = "PICTURE"
   val REDEFINES = "REDEFINES"
   val SYNC = "SYNC"
   val TO = "TO"
