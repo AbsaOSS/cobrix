@@ -67,7 +67,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
-      .option("drop_group_fillrs", dropGroupFillers)
+      .option("drop_group_fillers", dropGroupFillers)
       .load(inpudDataPath)
 
     df.printSchema()
