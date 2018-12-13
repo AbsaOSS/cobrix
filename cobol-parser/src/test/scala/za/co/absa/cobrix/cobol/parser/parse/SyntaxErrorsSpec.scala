@@ -37,7 +37,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 5)
@@ -53,7 +53,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 4)
@@ -67,7 +67,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("Decimal numbers with precision bigger"))
@@ -80,7 +80,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("Decimal numbers with scale bigger"))

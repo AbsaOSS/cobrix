@@ -62,7 +62,7 @@ class FixedLenFlatReader(val copyBookContents: String,
   }
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val schema = CopybookParser.parseTree(copyBookContents)
     new CobolSchema(schema, SchemaRetentionPolicy.KeepOriginal, generateRecordId = false)
   }
 

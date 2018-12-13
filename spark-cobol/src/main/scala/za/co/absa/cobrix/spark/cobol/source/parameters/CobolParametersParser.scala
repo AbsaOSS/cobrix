@@ -42,6 +42,7 @@ object CobolParametersParser {
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
+  val PARAM_GROUP_FILLERS             = "drop_group_fillrs"
 
   // Parameters for multisegment XCOM files
   val PARAM_IS_XCOM                   = "is_xcom"
@@ -87,7 +88,8 @@ object CobolParametersParser {
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),
-      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "true").toBoolean
+      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "true").toBoolean,
+      params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean
     )
   }
 

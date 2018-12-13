@@ -45,7 +45,7 @@ class FieldSizeSpec extends FunSuite {
   }
 
   test("Test field sizes are correctly calculated") {
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val copybook = CopybookParser.parseTree(copyBookContents)
     val size_s9_2_comp = fieldsize(0, copybook)
     val size_x10 = fieldsize(1, copybook)
     val size_s9_7_v_9_2_comp3 = fieldsize(2, copybook)

@@ -31,7 +31,7 @@ class MalformedValuesSpec extends FunSuite {
         |           10  FIELD           PIC 9(7)  COMP.
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
 
     // Encoded 8405184 is OK for Int32 and PIC 9(7)
@@ -51,7 +51,7 @@ class MalformedValuesSpec extends FunSuite {
         |           10  FIELD           PIC 9(5)V9(5).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
 
     // Encoded 12345.12345 is OK for Decimal and PIC 9(5)V9(5)

@@ -78,7 +78,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def fetchNext(): Unit = {
     var recordFetched = false
     while (!recordFetched) {
-      val binaryData = if (readerProperties.isXCOM) {
+      val binaryData = if (readerProperties.isRecordSequence) {
         fetchRecordUsingXcomHeaders()
       } else if (lengthField.isDefined) {
         fetchRecordUsingRecordLengthField()
