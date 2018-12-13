@@ -46,7 +46,7 @@ case class CobolParameters(
                             copybookPath:          Option[String],
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
-                            isXCOM:                Boolean,
+                            isRecordSequence:      Boolean,
                             isUsingIndex:          Boolean,
                             inputSplitRecords:     Option[Int],
                             inputSplitSizeMB:      Option[Int],
