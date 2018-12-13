@@ -277,6 +277,8 @@ Since this is not an issue present in most cluster configurations, this feature 
 .option("optimize_allocation", true)
 ```
 
+If however the option ```improve_locality``` is disabled, this option will also be disabled regardless of the configuration of the value of ```optimize_allocation```.
+
 ### Record headers support
 
 As you may already know file in mainframe world does not mean the same as in PC world.
