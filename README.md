@@ -277,7 +277,7 @@ Since this is not an issue present in most cluster configurations, this feature 
 .option("optimize_allocation", true)
 ```
 
-If however the option ```improve_locality``` is disabled, this option will also be disabled regardless of the configuration of the value of ```optimize_allocation```.
+If however the option ```improve_locality``` is disabled, this option will also be disabled regardless of the value in ```optimize_allocation```.
 
 ### Record headers support
 
