@@ -26,6 +26,7 @@ import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
+import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 import za.co.absa.cobrix.spark.cobol.utils.{HDFSUtils, SparkUtils}
@@ -42,9 +43,16 @@ private [source] object IndexBuilder {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(optimizeAllocation: Boolean = false): RDD[SimpleIndexEntry] = {
+  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SimpleIndexEntry] = {
     cobolReader match {
-      case reader: VarLenReader if reader.isIndexGenerationNeeded => buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext)(optimizeAllocation)
+      case reader: VarLenReader => {
+        if (reader.isIndexGenerationNeeded && localityParams.improveLocality){
+          buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext)(localityParams.optimizeAllocation)
+        }
+        else {
+          buildIndexForVarLenReader(filesList, reader, sqlContext)
+        }
+      }
       case _ => null
     }
   }
@@ -126,7 +134,6 @@ private [source] object IndexBuilder {
   /**
     * Builds records indexes. Does not take locality into account. Might be removed in further releases.
     */
-  @Deprecated
   def buildIndexForVarLenReader(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SimpleIndexEntry] = {
     val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
     val conf = sqlContext.sparkContext.hadoopConfiguration

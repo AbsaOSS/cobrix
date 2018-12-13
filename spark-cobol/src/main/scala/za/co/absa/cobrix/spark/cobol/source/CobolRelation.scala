@@ -31,6 +31,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.FileInputFormat
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
+import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanners
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 
@@ -63,7 +64,7 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
   *
   * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
-class CobolRelation(sourceDir: String, cobolReader: Reader, optimizeAllocations: Boolean = false)(@transient val sqlContext: SQLContext)
+class CobolRelation(sourceDir: String, cobolReader: Reader, localityParams: LocalityParameters)(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
   with TableScan {
@@ -72,7 +73,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader, optimizeAllocations:
 
   private val filesList = getListFilesWithOrder(sourceDir)
 
-  private lazy val indexes: RDD[SimpleIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(optimizeAllocations)
+  private lazy val indexes: RDD[SimpleIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
 
   override def schema: StructType = {
     cobolReader.getSparkSchema

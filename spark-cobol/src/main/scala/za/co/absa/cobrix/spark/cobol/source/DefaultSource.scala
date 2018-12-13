@@ -24,10 +24,9 @@ import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader, VarLenSearchReader}
-
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator}
+import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator, LocalityParameters}
 
 /**
   * This class represents a Cobol data source.
@@ -52,7 +51,7 @@ class DefaultSource
     val cobolParameters = CobolParametersParser.parse(parameters)
     CobolParametersValidator.checkSanity(cobolParameters)
 
-    new CobolRelation(parameters(PARAM_SOURCE_PATH), buildEitherReader(sqlContext.sparkSession, cobolParameters), cobolParameters.optimizeAllocation)(sqlContext)
+    new CobolRelation(parameters(PARAM_SOURCE_PATH), buildEitherReader(sqlContext.sparkSession, cobolParameters), LocalityParameters.extract(cobolParameters))(sqlContext)
   }
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.

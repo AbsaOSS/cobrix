@@ -38,6 +38,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   *                               so that the resulting Spark schema will consist of child elements of that group
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
+  * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
   * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
   */
 case class CobolParameters(
@@ -56,5 +57,6 @@ case class CobolParameters(
                             searchSignatureField:  Option[String],
                             searchSignatureValue:  Option[String],
                             multisegmentParams:    Option[MultisegmentParameters],
+                            improveLocality:       Boolean,
                             optimizeAllocation:    Boolean
                           )
