@@ -249,6 +249,21 @@ Currently this feature may inpact performance and scaling, please use it with ca
 
 ### Locality optimization for variable-length records parsing
 
+Variable-length records depend on headers to have their length calculated, which makes it hard to achieve parallelism while parsing.
+
+Cobrix strives to overcome this drawback by performing a two-stages parsing. The first stage traverses the records retrieving their lengths and offsets into structures called indexes. Then, the indexes are distributed across the cluster, which allows for parallel variable-length records parsing.
+
+However effective, this strategy may also suffer from excessive shuffling, since indexes may be sent to executors far from the actual data.
+
+The latter issue is overcome by extracting the preferred locations for each index directly from HDFS, and then passing those locations to Spark during the creation of the RDD that distributes the indexes.
+
+When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is enabled by default, but can be disabled by the configuration below:
+```
+.option("improve_locality", false)
+```
+
+### Workload optimization for variable-length records parsing
+
 When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse each record, i.e. the nodes where the record resides.
 
 This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the partition for that record in one of those locations.
@@ -257,10 +272,12 @@ However, sometimes, new nodes can be added to the cluster after the Cobol file i
 
 To overcome this issue, Cobrix also strives to re-balance the records among the new nodes at parsing time, as an attempt to maximize the utilization of the cluster. This is done through identifying the busiest nodes and sharing part of their burden with the new ones.
 
-This feature is enabled by default, and can be disabled from the configuration below:
+Since this is not an issue present in most cluster configurations, this feature is disabled by default, and can be enabled from the configuration below:
 ```
-.option("optimize_allocation", false)
+.option("optimize_allocation", true)
 ```
+
+If however the option ```improve_locality``` is disabled, this option will also be disabled regardless of the value in ```optimize_allocation```.
 
 ### Record headers support
 
