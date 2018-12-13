@@ -678,13 +678,14 @@ object CopybookParser {
       var index = 2
       val mapAccumulator = mutable.Map[String, String]()
       while (index < tokens.length) {
-        if (tokens(index) == PIC) {
+        if (tokens(index) == PIC || tokens(index) == PICTURE) {
           if (index >= tokens.length - 1) {
             throw new SyntaxErrorException(lineNumber, "", "PIC should be followed by a pattern")
           }
-          mapAccumulator += "PIC_ORIGIN" -> tokens(index + 1)
+          val pic = fixPic(tokens(index + 1))
+          mapAccumulator += "PIC_ORIGIN" -> pic
           // Expand PIC, e.g. S9(5) -> S99999
-          mapAccumulator += tokens(index) -> expandPic(tokens(index + 1))
+          mapAccumulator += PIC -> expandPic(pic)
           index += 1
         } else if (tokens(index) == REDEFINES) {
           // Expand REDEFINES, ensure current field redefines the consequent field
@@ -796,6 +797,25 @@ object CopybookParser {
       }
     }
     outputCharacters.mkString
+  }
+
+  /**
+    * Fix PIC according to the actual copybooks being encountered.
+    *
+    * <ul><li>For '`02 FIELD PIC 9(5)USAGE COMP.`' The picture is '`9(5)USAGE`', but should be '`9(5)`'</li></ul>
+    *
+    * @param inputPIC An input PIC specification, e.g. "9(5)V9(2)"
+    * @return The fixed PIC specification
+    */
+  def fixPic(inputPIC: String): String = {
+    // Fix 'PIC 9(5)USAGE' pics
+    if (inputPIC.contains('U')) {
+      inputPIC.split('U').head
+    } else if (inputPIC.contains('u')) {
+      inputPIC.split('u').head
+    } else {
+      inputPIC
+    }
   }
 
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
