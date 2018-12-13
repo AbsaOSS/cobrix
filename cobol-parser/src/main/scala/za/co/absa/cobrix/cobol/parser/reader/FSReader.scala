@@ -35,7 +35,7 @@ class FSReader (copybookFileName: String, binaryDataFileName: String) extends Ge
 
   def loadCopybokFromFS(copybookFile: String): Copybook = {
     val copyBookContents = Files.readAllLines(Paths.get(copybookFile), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val schema = CopybookParser.parseTree(copyBookContents)
     schema
   }
 

@@ -53,8 +53,8 @@ object CopybookParser {
     *
     * @return Seq[Group] where a group is a record inside the copybook
     */
-  def parseTree(copyBookContents: String): Copybook = {
-    parseTree(EBCDIC(), copyBookContents)
+  def parseTree(copyBookContents: String, dropGroupFillers: Boolean = false): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
   }
 
   /**
@@ -64,7 +64,7 @@ object CopybookParser {
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
-  def parseTree(enc: Encoding, copyBookContents: String): Copybook = {
+  def parseTree(enc: Encoding, copyBookContents: String, dropGroupFillers: Boolean): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -161,7 +161,12 @@ object CopybookParser {
       schema += root
     }
 
-    val newTrees = calculateNonFillerSizes(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+    val newTrees = if (dropGroupFillers) {
+      calculateNonFillerSizes(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+    } else {
+      calculateNonFillerSizes(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+    }
+
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
     new Copybook(ast)
   }
@@ -372,28 +377,43 @@ object CopybookParser {
     var lastFillerIndex = 0
 
     def renameSubGroupFillers(group: Group): Group = {
-      val newChildren = renameFillers(group.children)
-      var renamedGroup = if (group.isFiller) {
-        lastFillerIndex += 1
-        group.copy(name = s"${FILLER}_$lastFillerIndex", isFiller = false)(group.parent)
-      } else group
-      renamedGroup.copy(children = newChildren)(renamedGroup.parent)
+      val (newChildren, hasNonFillers) = renameFillers(group.children)
+      var renamedGroup = if (hasNonFillers) {
+        if (group.isFiller) {
+            lastFillerIndex += 1
+            group.copy(name = s"${FILLER}_$lastFillerIndex", children = newChildren, isFiller = false)(group.parent)
+        } else {
+          group.copy(children = newChildren)(group.parent)
+        }
+      } else {
+        // All the children are fillers
+        group.copy(children = newChildren, isFiller = true)(group.parent)
+      }
+      renamedGroup
     }
 
-    def renameFillers(subSchema: MutableCopybook): MutableCopybook = {
+    def renameFillers(subSchema: MutableCopybook): (MutableCopybook, Boolean) = {
       val newSchema = ArrayBuffer[Statement]()
+      var hasNonFillers = false
       subSchema.foreach {
         case grp: Group =>
           val newGrp = renameSubGroupFillers(grp)
           if (newGrp.children.nonEmpty) {
             newSchema += newGrp
           }
-        case st: Primitive => newSchema += st
+          if (!grp.isFiller) hasNonFillers = true
+        case st: Primitive =>
+          newSchema += st
+          if (!st.isFiller) hasNonFillers = true
       }
-      newSchema
+      (newSchema, hasNonFillers)
     }
 
-    renameFillers(originalSchema)
+    val (newSchema, hasNonFillers) = renameFillers(originalSchema)
+    if (!hasNonFillers) {
+      throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
+    }
+    newSchema
   }
 
   /**

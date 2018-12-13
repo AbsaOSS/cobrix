@@ -42,7 +42,7 @@ class CobolSchemaSpec extends FunSuite {
       "(StructField(STR_FLD,StringType,true))," +
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
 
-    val parsedSchema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val parsedSchema = CopybookParser.parseTree(copyBookContents)
     val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false)
     val actualSchema = cobolSchema.getSparkSchema.toString()
 

@@ -42,7 +42,7 @@ class FieldExtractorSpec extends FunSuite {
       |""".stripMargin
 
   test("Test AST objects extracted by names are correct") {
-    val parsedSchema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val parsedSchema = CopybookParser.parseTree(copyBookContents)
 
     val field1 = parsedSchema.getFieldByName("BIN-INT")
     assert(field1.name.equalsIgnoreCase("bin_int"))

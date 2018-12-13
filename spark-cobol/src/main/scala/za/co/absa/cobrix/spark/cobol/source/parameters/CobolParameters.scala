@@ -26,7 +26,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param copybookPath           String containing the path to the copybook in a given file system.
   * @param copybookContent        String containing the actual content of the copybook. Either this or the copybookPath parameter must be specified.
   * @param sourcePath             String containing the path to the Cobol file to be parsed.
-  * @param isXCOM                 Is XCOM or equivalent 4 byte header present in input file(s)
+  * @param isRecordSequence       Does input files have 4 byte record length headers
   * @param isUsingIndex           Is indexing input file before processing is requested
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
@@ -39,12 +39,13 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   *                               so that the resulting Spark schema will consist of child elements of that group
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
   * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
+  * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   */
 case class CobolParameters(
                             copybookPath:          Option[String],
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
-                            isXCOM:                Boolean,
+                            isRecordSequence:      Boolean,
                             isUsingIndex:          Boolean,
                             inputSplitRecords:     Option[Int],
                             inputSplitSizeMB:      Option[Int],
@@ -56,5 +57,6 @@ case class CobolParameters(
                             searchSignatureField:  Option[String],
                             searchSignatureValue:  Option[String],
                             multisegmentParams:    Option[MultisegmentParameters],
-                            optimizeAllocation:    Boolean
+                            optimizeAllocation:    Boolean,
+                            dropGroupFillers:      Boolean
                           )

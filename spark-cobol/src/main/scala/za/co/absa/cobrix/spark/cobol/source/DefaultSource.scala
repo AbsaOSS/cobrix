@@ -67,7 +67,7 @@ class DefaultSource
 
     val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
 
-    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature && !cobolParameters.isXCOM && !cobolParameters.generateRecordId) {
+    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature && !cobolParameters.isRecordSequence && !cobolParameters.generateRecordId) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -81,7 +81,11 @@ class DefaultSource
   private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    new FixedLenNestedReader(copybookContent, parameters.recordStartOffset, parameters.recordEndOffset, parameters.schemaRetentionPolicy
+    new FixedLenNestedReader(copybookContent,
+      parameters.recordStartOffset,
+      parameters.recordEndOffset,
+      parameters.schemaRetentionPolicy,
+      parameters.dropGroupFillers
     )
   }
 
@@ -108,13 +112,14 @@ class DefaultSource
         parameters.recordStartOffset,
         parameters.recordEndOffset,
         parameters.generateRecordId,
-        parameters.schemaRetentionPolicy
+        parameters.schemaRetentionPolicy,
+        parameters.dropGroupFillers
       )
     } else {
       new VarLenNestedReader(
         copybookContent,
         ReaderParameters(lengthFieldName = recordLengthField,
-          isXCOM = parameters.isXCOM,
+          isRecordSequence = parameters.isRecordSequence,
           isIndexGenerationNeeded = parameters.isUsingIndex,
           inputSplitRecords = parameters.inputSplitRecords,
           inputSplitSizeMB = parameters.inputSplitSizeMB,
@@ -122,7 +127,8 @@ class DefaultSource
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
           policy = parameters.schemaRetentionPolicy,
-          parameters.multisegmentParams
+          parameters.multisegmentParams,
+          parameters.dropGroupFillers
          )
       )
     }

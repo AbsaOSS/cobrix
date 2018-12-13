@@ -15,16 +15,14 @@
  */
 
 package za.co.absa.cobrix.cobol.parser.reader
-import java.io.InputStream
 
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.reader.iterator.VarLenIterator
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 class VarLenReader (copybookContents: String, data: SimpleStream, lengthFieldName: String, startOffset: Int = 0, endOffset: Int = 0) extends GenericReader {
 
-  override def getCobolSchema: Copybook = CopybookParser.parseTree(EBCDIC(), copybookContents)
+  override def getCobolSchema: Copybook = CopybookParser.parseTree(copybookContents)
 
   override def getIterator: Iterator[Seq[Any]] = {
     new VarLenIterator(getCobolSchema, data, lengthFieldName, startOffset, endOffset)

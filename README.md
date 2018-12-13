@@ -599,6 +599,34 @@ dfJoined.show(12, truncate = false)
 Again, the full example is available at
 `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
 
+## Group Filler dropping
+
+A FILLER is an anonymous field that is usually used for reserving space for new fields in a fixed record length data.
+Or it is used to remove a field from a copybook without affecting compatibility.
+
+```cobol
+      05  COMPANY.
+          10  NAME      PIC X(15).
+          10  FILLER    PIC X(5).
+          10  ADDRESS   PIC X(25).
+          10  FILLER    PIC X(125).
+``` 
+Such fields are dropped when imported into a Spark data frame by Cobrix. Some copybooks, however, have FILLER groups that
+contain non-filler fields. For example,
+```cobol
+      05  FILLER.
+          10  NAME      PIC X(15).
+          10  ADDRESS   PIC X(25).
+      05  FILLER.
+          10  AMOUNT    PIC 9(10)V96.
+          10  COMMENT   PIC X(40).
+``` 
+By default Cobrix will retain such fields, but will rename each such filler to a unique name so each each individual struct
+can be specified unambiguously. For example, in this case the filler groups will be renamed to `FILLER_1` and `FILLER_2`.
+You can change this behaviour if you would like to drop such filler groups by providing this option:
+```
+.option("drop_group_fillrs", "true")
+```
 
 ## Performance
 

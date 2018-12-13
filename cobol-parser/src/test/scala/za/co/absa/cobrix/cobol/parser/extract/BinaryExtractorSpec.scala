@@ -112,7 +112,7 @@ class BinaryExtractorSpec extends FunSuite {
     0x00.toByte, 0x00.toByte, 0x2F.toByte
   )
 
-  val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+  val copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
   test("Test extract primitive field") {
