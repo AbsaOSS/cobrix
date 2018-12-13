@@ -87,9 +87,9 @@
 ********** Binary formatted integral numbers
           10  NUM-BIN-INT01       PIC 9(1)         COMP.
           10  NUM-BIN-INT02       PIC 9(2)         COMP.
-          10  NUM-BIN-INT03       PIC 9(3)         COMP.
-          10  NUM-BIN-INT04       PIC 9(4)         COMP.
-          10  NUM-BIN-INT05       PIC 9(5)         COMP.
+          10  NUM-BIN-INT03       PIC 9(3)         COMP-0.
+          10  NUM-BIN-INT04       PIC 9(4)         COMP-4.
+          10  NUM-BIN-INT05       PIC 9(5)         COMP-5.
           10  NUM-BIN-INT06       PIC 9(8)         BINARY.
           10  NUM-BIN-INT07       PIC 9(9)         BINARY.
           10  NUM-BIN-INT08       PIC 9(10)       BINARY.

@@ -112,7 +112,7 @@ class BinaryExtractorSpec extends FunSuite {
     0x00.toByte, 0x00.toByte, 0x2F.toByte
   )
 
-  val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+  val copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
   test("Test extract primitive field") {
@@ -157,7 +157,7 @@ class BinaryExtractorSpec extends FunSuite {
     val dependingOn: Option[String] = None
     val isDependee: Boolean = false
     val isFiller: Boolean = false
-    val binaryProperties: BinaryProperties = BinaryProperties(2 * 8, 10 * 8, 10 * 8)
+    val binaryProperties: BinaryProperties = BinaryProperties(2, 10, 10)
 
     val primitive: Primitive = Primitive(level, name, lineNumber, dataType, redefines, isRedefined,
       occurs, to, dependingOn, isDependee, isFiller, DecoderSelector.getDecoder(dataType), binaryProperties)(None)

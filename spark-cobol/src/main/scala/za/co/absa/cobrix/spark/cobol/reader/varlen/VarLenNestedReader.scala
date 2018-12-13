@@ -53,7 +53,7 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def isIndexGenerationNeeded: Boolean = readerProperties.isXCOM && readerProperties.isIndexGenerationNeeded
+  override def isIndexGenerationNeeded: Boolean = readerProperties.isRecordSequence && readerProperties.isIndexGenerationNeeded
 
   override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
     new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
@@ -98,7 +98,7 @@ final class VarLenNestedReader(copybookContents: String,
 
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, readerProperties.dropGroupFillers)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)

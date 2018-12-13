@@ -113,7 +113,7 @@ class RowExtractorSpec extends FunSuite {
     0x00.toByte, 0x00.toByte, 0x2F.toByte
   )
 
-  val copybook: Copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+  val copybook: Copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
   test("Test row extractor") {

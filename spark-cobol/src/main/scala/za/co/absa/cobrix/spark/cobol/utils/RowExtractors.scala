@@ -32,7 +32,7 @@ object RowExtractors {
     *
     * @param ast              The parsed copybook
     * @param data             The data bits containing the record
-    * @param offsetBits       The offset to the beginning of the record (in bits)
+    * @param offsetBytes      The offset to the beginning of the record (in bits)
     * @param generateRecordId If true a record id field will be added as the first field of the record.
     * @param recordId         The record id to be saved to the record id field
     *
@@ -41,7 +41,7 @@ object RowExtractors {
   @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST,
                     data: Array[Byte],
-                    offsetBits: Long = 0,
+                    offsetBytes: Int = 0,
                     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                     generateRecordId: Boolean = false,
                     segmentLevelIds: Seq[Any] = Nil,
@@ -49,7 +49,7 @@ object RowExtractors {
                     recordId: Long = 0): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Long): Array[Any] = {
+    def extractArray(field: Statement, useOffset: Int): Array[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -91,7 +91,7 @@ object RowExtractors {
       }
     }
 
-    def extractValue(field: Statement, useOffset: Long): Any = {
+    def extractValue(field: Statement, useOffset: Int): Any = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp)
@@ -109,7 +109,7 @@ object RowExtractors {
       }
     }
 
-    def getGroupValues(offset: Long, group: Group): Row = {
+    def getGroupValues(offset: Int, group: Group): Row = {
       var bitOffset = offset
 
       val fields = new Array[Any](group.nonFillerSize)
@@ -135,7 +135,7 @@ object RowExtractors {
       new GenericRow(fields)
     }
 
-    var nextOffset = offsetBits
+    var nextOffset = offsetBytes
 
     val records = for (record <- ast) yield {
       val values = getGroupValues(nextOffset, record)

@@ -31,7 +31,7 @@ class PicValidationSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 2)
@@ -45,7 +45,7 @@ class PicValidationSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 2)
@@ -59,7 +59,7 @@ class PicValidationSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 2)

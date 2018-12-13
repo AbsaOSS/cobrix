@@ -35,15 +35,15 @@ import scala.collection.mutable.ListBuffer
 class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Map[String, Option[String]]] {
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val recordSize = cobolSchema.getRecordSize
-  private var bitIndex = 0L
+  private var byteIndex = 0
   private var currentRecord: Seq[(String, Option[String])] = _
 
-  override def hasNext: Boolean = bitIndex + recordSize <= (binaryData.length * 8)
+  override def hasNext: Boolean = byteIndex + recordSize <= binaryData.length
 
   override def next(): Map[String, Option[String]] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
+    def extractArray(field: Statement, useOffset: Int, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
       val fields = new ListBuffer[Tuple2[String, Option[String]]]()
       val from = 0
       val arraySize = field.arrayMaxSize
@@ -82,7 +82,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
       fields
     }
 
-    def extractValue(field: Statement, useOffset: Long, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
+    def extractValue(field: Statement, useOffset: Int, path: String="", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp, s"$path${grp.name}_", isNullPath)
@@ -103,7 +103,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
       }
     }
 
-    def getGroupValues(offset: Long, group: Group, path: String = "", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
+    def getGroupValues(offset: Int, group: Group, path: String = "", isNullPath: Boolean=false): Seq[Tuple2[String, Option[String]]] = {
       var bitOffset = offset
       val fields = new ListBuffer[Tuple2[String, Option[String]]]()
 
@@ -129,17 +129,17 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
       throw new NoSuchElementException()
     }
 
-    var offset = bitIndex
+    var offset = byteIndex
     val records = cobolSchema.getCobolSchema.ast.flatMap( record => {
       val values = getGroupValues(offset, record, s"${record.name}_")
       offset += record.binaryProperties.actualSize
       values
     })
 
-    // Advance bit index to the next record
+    // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    bitIndex += lastRecordActualSize
+    byteIndex += lastRecordActualSize
 
     currentRecord = records
 
@@ -190,7 +190,7 @@ class FixedLenMapIterator(val binaryData: Array[Byte], val cobolSchema: CobolSch
         case group: Group => getGroupValues(group, s"$path${group.name}_")
         case s: Primitive =>
           val name = s"$path${s.name}"
-          val valueAny = s.decodeTypeValue(bitIndex + s.binaryProperties.offset, binaryData)
+          val valueAny = s.decodeTypeValue(byteIndex + s.binaryProperties.offset, binaryData)
           val value = if (valueAny == null) None else Some(valueAny.toString)
           Map[String, Option[String]](name -> value)
       }

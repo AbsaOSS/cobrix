@@ -29,7 +29,7 @@ object DataExtractors {
 
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Long): IndexedSeq[Any] = {
+    def extractArray(field: Statement, useOffset: Int): IndexedSeq[Any] = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -61,7 +61,7 @@ object DataExtractors {
       }
     }
 
-    def extractValue(field: Statement, useOffset: Long): Any = {
+    def extractValue(field: Statement, useOffset: Int): Any = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp)
@@ -79,7 +79,7 @@ object DataExtractors {
       }
     }
 
-    def getGroupValues(offset: Long, group: Group): Seq[Any] = {
+    def getGroupValues(offset: Int, group: Group): Seq[Any] = {
       var bitOffset = offset
       val fields = new ArrayBuffer[Any]()
 
@@ -99,7 +99,7 @@ object DataExtractors {
       fields
     }
 
-    var nextOffset = offset * 8
+    var nextOffset = offset
     val records = for (record <- ast) yield {
       val values = getGroupValues(nextOffset, record)
       nextOffset += record.binaryProperties.actualSize

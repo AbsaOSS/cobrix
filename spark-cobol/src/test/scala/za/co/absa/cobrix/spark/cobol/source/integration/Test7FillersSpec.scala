@@ -34,18 +34,25 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
   private val inputCopybookFSPath = "../data/test7_fillers.cob"
   private val inpudDataPath = "../data/test7_data"
 
-  test(s"Integration test on $exampleName - segment ids") {
+  test(s"Integration test on $exampleName - drop group fillers handling") {
+    runTest("test7", dropGroupFillers = true)  }
 
-    val expectedSchemaPath = "../data/test7_expected/test7_schema.json"
-    val expectedLayoutPath = "../data/test7_expected/test7_layout.txt"
-    val actualSchemaPath = "../data/test7_expected/test7_schema_actual.json"
-    val actualLayoutPath = "../data/test7_expected/test7_layout_actual.txt"
-    val expectedResultsPath = "../data/test7_expected/test7.txt"
-    val actualResultsPath = "../data/test7_expected/test7_actual.txt"
+  test(s"Integration test on $exampleName - retain group fillers handling") {
+    runTest("test7a", dropGroupFillers = false)
+  }
+
+  private def runTest(namePrefix: String, dropGroupFillers: Boolean): Unit = {
+
+    val expectedSchemaPath = s"../data/test7_expected/${namePrefix}_schema.json"
+    val expectedLayoutPath = s"../data/test7_expected/${namePrefix}_layout.txt"
+    val actualSchemaPath = s"../data/test7_expected/${namePrefix}_schema_actual.json"
+    val actualLayoutPath = s"../data/test7_expected/${namePrefix}_layout_actual.txt"
+    val expectedResultsPath = s"../data/test7_expected/$namePrefix.txt"
+    val actualResultsPath = s"../data/test7_expected/${namePrefix}_actual.txt"
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
@@ -60,6 +67,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
+      .option("drop_group_fillers", dropGroupFillers)
       .load(inpudDataPath)
 
     df.printSchema()
@@ -91,4 +99,5 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
     }
     Files.delete(Paths.get(actualResultsPath))
   }
+
 }

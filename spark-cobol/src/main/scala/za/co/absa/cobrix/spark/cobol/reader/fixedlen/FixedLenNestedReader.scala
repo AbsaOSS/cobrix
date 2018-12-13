@@ -35,7 +35,8 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
 final class FixedLenNestedReader(copyBookContents: String,
                            startOffset: Int = 0,
                            endOffset: Int = 0,
-                           policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal)
+                           policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                           dropGroupFillers: Boolean)
   extends FixedLenReader with Serializable {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
@@ -71,7 +72,7 @@ final class FixedLenNestedReader(copyBookContents: String,
   }
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
     new CobolSchema(schema, policy, false)
   }
 

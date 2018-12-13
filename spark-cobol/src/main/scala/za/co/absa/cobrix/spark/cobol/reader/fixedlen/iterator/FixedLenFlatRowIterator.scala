@@ -17,9 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
-import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.mutable.ListBuffer
@@ -33,15 +31,15 @@ import scala.collection.mutable.ListBuffer
   */
 class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: CobolSchema) extends Iterator[Row] {
   private val recordSize = cobolSchema.getRecordSize
-  private var bitIndex = 0L
+  private var byteIndex = 0
 
-  override def hasNext: Boolean = bitIndex + recordSize <= (binaryData.length * 8)
+  override def hasNext: Boolean = byteIndex + recordSize <= binaryData.length
 
   @throws(classOf[IllegalStateException])
   override def next(): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
+    def extractArray(field: Statement, useOffset: Int, isNullPath: Boolean = false): Seq[Any] = {
       val fields = new ListBuffer[Any]()
       val from = 0
       val arraySize = field.arrayMaxSize
@@ -77,7 +75,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
       fields
     }
 
-    def extractValue(field: Statement, useOffset: Long, isNullPath: Boolean = false): Seq[Any] = {
+    def extractValue(field: Statement, useOffset: Int, isNullPath: Boolean = false): Seq[Any] = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp, isNullPath)
@@ -95,7 +93,7 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
       }
     }
 
-    def getGroupValues(offset: Long, group: Group, isNullPath: Boolean = false): Seq[Any] = {
+    def getGroupValues(offset: Int, group: Group, isNullPath: Boolean = false): Seq[Any] = {
       var bitOffset = offset
       val fields = new ListBuffer[Any]()
 
@@ -119,17 +117,17 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
       throw new NoSuchElementException()
     }
 
-    var offset = bitIndex
+    var offset = byteIndex
     val records = cobolSchema.getCobolSchema.ast.flatMap( record => {
       val values = getGroupValues(offset, record)
       offset += record.binaryProperties.actualSize
       values
     })
 
-    // Advance bit index to the next record
+    // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
-    bitIndex += lastRecordActualSize
+    byteIndex += lastRecordActualSize
 
     Row.fromSeq(records)
   }

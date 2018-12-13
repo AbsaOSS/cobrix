@@ -37,7 +37,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 5)
@@ -53,7 +53,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
 
     assert(syntaxErrorException.lineNumber == 4)
@@ -67,7 +67,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("Decimal numbers with precision bigger"))
@@ -80,7 +80,7 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents)
+      CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("Decimal numbers with scale bigger"))
@@ -124,6 +124,18 @@ class SyntaxErrorsSpec extends FunSuite {
     }
     assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("Explicit decimal point in 'PIC 9(8).9(9)' is not supported for COMP-3."))
+  }
+
+
+  test (""){
+    val copyBookContents: String =
+      """      01 GROUP.
+        |         02 FIELD1 PIC X(2).
+        |         02 FIELD2 PIC S9(6)USAGE COMP-3.
+        |         02 FIELD3 PIC S9(6)usage COMP.
+        |         02 FIELD4 PICTURE S9(6)USAGE COMP.
+        """.stripMargin
+    CopybookParser.parseTree(copyBookContents)
   }
 
 }

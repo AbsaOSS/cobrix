@@ -63,7 +63,8 @@ final class VarLenSearchReader(copybookContents: String,
                          startOffset: Int = 0,
                          endOffset: Int = 0,
                          generateRecordId: Boolean = false,
-                         policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal) extends VarLenReader {
+                         policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                         dropGroupFillers: Boolean) extends VarLenReader {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -83,7 +84,7 @@ final class VarLenSearchReader(copybookContents: String,
     IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents)
+    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
     new CobolSchema(schema, policy, generateRecordId)
   }
 
