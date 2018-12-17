@@ -22,7 +22,7 @@ import java.nio.file.{Files, Paths}
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.JavaConversions._
 
@@ -77,7 +77,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = df.schema.json
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
@@ -86,8 +86,8 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
     }
 
     // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
-    val actualDf = df.orderBy("AMOUNT").toJSON.take(100)
-    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+    val actualDf =  SparkUtils.convertDataFrameToPrettyJSON(df.orderBy("AMOUNT"), 100)
+    FileUtils.writeStringToFile(actualDf, actualResultsPath)
     val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]

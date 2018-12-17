@@ -16,10 +16,11 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{Column, DataFrame}
 import org.apache.spark.sql.functions.{concat_ws, expr, max}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
@@ -36,7 +37,7 @@ object SparkUtils {
     */
   def currentActiveExecutors(sc: SparkContext): Seq[String] = {
     val allExecutors = sc.getExecutorMemoryStatus.map(_._1.split(":").head)
-    val driverHost: String = sc.getConf.get("spark.driver.host","localhost")
+    val driverHost: String = sc.getConf.get("spark.driver.host", "localhost")
 
     logger.info(s"Going to filter driver from available executors: Driver host: $driverHost, Available executors: $allExecutors")
 
@@ -77,7 +78,7 @@ object SparkUtils {
           case st: StructType =>
             flattenGroup(s"$path`${structField.name}`[$i].", st)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
-          case _: StringType | _: TimestampType | _: DateType |  _: BooleanType | _: BinaryType | _: NumericType | _: NullType  =>
+          case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
             val newFieldName = getNewFieldName(structField.name)
             fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName)
             stringFields += s"""expr("$path`${structField.name}`[$i] AS `$newFieldName`")"""
@@ -163,4 +164,26 @@ object SparkUtils {
     convertToStrings("", df.schema)
     df.select(fields: _*)
   }
+
+
+  def convertDataFrameToPrettyJSON(df: DataFrame, takeN: Int = 0): String = {
+    val collected = if (takeN <= 0) {
+      df.toJSON.collect().mkString("\n")
+    } else {
+      df.toJSON.take(takeN).mkString("\n")
+    }
+
+    val json = "[" + "}\n".r.replaceAllIn(collected, "},\n") + "]"
+
+    prettyJSON(json)
+  }
+
+  def prettyJSON(jsonIn: String): String = {
+    val mapper = new ObjectMapper()
+
+    val jsonUnindented = mapper.readValue(jsonIn, classOf[Any])
+    val indented = mapper.writerWithDefaultPrettyPrinter.writeValueAsString(jsonUnindented)
+    indented.replace("\r\n", "\n")
+  }
+
 }
