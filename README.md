@@ -741,7 +741,7 @@ For multisegment variable lengths tests:
 ## Changelog
 
 - #### 0.3.0 released 17 Dec 2018
-  - This is a monot feature release. There are changes that change behavior.
+  - This is a minor feature release. There are changes that change behavior.
   - Added balancing partitions among potentially idle executors. See the section on locality optimization.
   - Added performance charts to README.md
   - Added 2 standalone projects in the 'examples' folder. It can be used as templates for creating Spark jobs that use Cobrix
