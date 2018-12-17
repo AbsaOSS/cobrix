@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.2.11</version>
+      <version>0.3.0</version>
 </dependency>
 ```
 
@@ -739,6 +739,17 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+
+- #### 0.3.0 released 17 Dec 2018
+  - This is a monot feature release. There are changes that change behavior.
+  - Added balancing partitions among potentially idle executors. See the section on locality optimization.
+  - Added performance charts to README.md
+  - Added 2 standalone projects in the 'examples' folder. It can be used as templates for creating Spark jobs that use Cobrix
+  - Added option to drop all FILLER GROUPs. See section "Group Filler dropping" describing the new option.
+  - Fixed handling of GROUP fields having only FILLER nested fields. Such groups are removed automatically because some formats don't support empty struct fields.
+  - All parser offsets are now in bytes instaed of bits.
+  - COMP-5 is similar to COMP-4, the truncation happens by the size of the binary data, not exactly by PIC precision specification. For COMP-5 numbers are expected to be big endian.
+  - Added artificial COMP-9 format for little endian binary numbers.
 
 - #### 0.2.11 released 10 Dec 2018
   - Added partitioning at the record-level by leveraging HDFS locations. This makes Cobrix data locality aware data source.
