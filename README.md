@@ -84,7 +84,10 @@ jobs via `spark-submit` or `spark-shell`.
 
 2. Start a ```sqlContext.read``` operation specifying ```za.co.absa.cobrix.spark.cobol.source``` as the format
 
-3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```
+3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. By default the copybook
+   is expected to be in HDFS. You can specify that a copybook is located in the local file system by adding `file://` prefix. For example, you
+   can specify a local file like this `.option("copybook", "file:///home/user/data/compybook.cpy")`. Alternatively, instead of providing a path
+   to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
 
 4. Inform the path to the HDFS directory containing the files: ```... .load("path_to_directory_containing_the_binary_files")``` 
 
@@ -112,8 +115,6 @@ cobolDataframe
 The full example is available [here](https://github.com/AbsaOSS/cobrix/blob/master/spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample.scala)
 
 In some scenarios Spark is unable to find "cobol" data source by it's short name. In that case you can use the full path to the source class instead: `.format("za.co.absa.cobrix.spark.cobol.source")`
-
-For an alternative copybook specification you can use `.option("copybook_contents", contents)` to provide copybook contents directly. 
 
 ### Streaming Cobol binary files from a directory
 
@@ -153,6 +154,80 @@ streamingContext.start()
 streamingContext.awaitTermination()
 ```
 
+### Using Cobrix from a Spark shell
+
+To query mainframe files interactively using `spark-shell` you need to provide jar(s) containing Corbrix and it's dependencies.
+This can be done either by downloading all the dependencies as separate jars or by creating an uber jar that contains all
+of the dependencies.
+
+#### Getting all Cobrix dependencies
+
+Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself and on `scodec` libraries
+to decode various binary formats.
+
+The jars that you need to get are:
+
+* spark-cobol-0.3.0.jar
+* cobol-parser-0.3.0.jar
+* scodec-core_2.11-1.10.3.jar
+* scodec-bits_2.11-1.1.4.jar
+
+After that you can specify these jars in `spark-shell` command line. Here is an example:
+```
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.3.0.jar,cobol-parser-0.3.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+18/09/14 14:05:45 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Spark context available as 'sc' (master = yarn, app id = application_1535701365011_2721).
+Spark session available as 'spark'.
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ `/ __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 2.2.1
+      /_/
+
+Using Scala version 2.11.8 (OpenJDK 64-Bit Server VM, Java 1.8.0_171)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> val df = spark.read.format("cobol").option("copybook", "/data/example1/test3_copybook.cob").load("/data/example1/data")
+df: org.apache.spark.sql.DataFrame = [TRANSDATA: struct<CURRENCY: string, SIGNATURE: string ... 4 more fields>]
+
+scala> df.show(false)
++----------------------------------------------------+
+|TRANSDATA                                           |
++----------------------------------------------------+
+|[GBP,S9276511,Beierbauh.,0123330087,1,89341.00]     |
+|[ZAR,S9276511,Envision Inc.,0039003991,1,2634633.00]|
+|[USD,S9276511,Beierbauh.,0038903321,0,75.71]        |
+|[ZAR,S9276511,Beierbauh.,0123330087,0,215.39]       |
+|[ZAR,S9276511,Prime Bank,0092317899,1,643.94]       |
+|[ZAR,S9276511,Xingzhoug,8822278911,1,998.03]        |
+|[USD,S9276511,Beierbauh.,0123330087,1,848.88]       |
+|[USD,S9276511,Beierbauh.,0123330087,0,664.11]       |
+|[ZAR,S9276511,Beierbauh.,0123330087,1,55262.00]     |
++----------------------------------------------------+
+only showing top 20 rows
+
+scala>
+``` 
+
+#### Creating an uber jar
+
+Gathering all dependencies manually maybe a tiresome task. A better approach would be to create a jar file that contains
+all of the dependencies.
+
+Creating an uber jar for Cobrix is very easy. Just go to a folder with one of the examples, say, `examples/spark-cobol-app`.
+After that run `mvn package`. Then, copy `target/spark-cobol-app-0.0.1-SNAPSHOT.jar` to a clustrr and run:
+
+```
+$ spark-shell --jars spark-cobol-app-0.0.1-SNAPSHOT.jar
+```
+
+Our example pom projects are set up so an uber jar is built every time you build it using Maven.
+
 ## Other Features
 
 ### Spark SQL schema extraction
@@ -161,32 +236,37 @@ This library also provides convenient methods to extract Spark SQL schemas and C
 If you want to extract a Spark SQL schema from a copybook: 
 
 ```scala
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenFlatReader
+import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
-val reader = new FixedLenFlatReader("...copybook_contents...")
-val sparkSchema = reader.getSparkSchema
+val parsedSchema = CopybookParser.parseTree(copyBookContents)
+val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot)
+val sparkSchema = cobolSchema.getSparkSchema.toString()
 println(sparkSchema)
 ```
 
 If you want to check the layout of the copybook: 
 
 ```scala
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenNestedReader
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 
-val reader = new FixedLenNestedReader("...copybook_contents...")
-val cobolSchema = reader.getCobolSchema
-println(cobolSchema.generateRecordLayoutPositions())
+val copyBook = CopybookParser.parseTree(copyBookContents)
+println(copyBook.generateRecordLayoutPositions())
 ```
 
 ### Varialble length records support
 
-Cobrix supports variable length records is an experimental feature. If a record contains a field that contains the actual record size, this
-field can be specified as a data source option and Cobrix will fetch records according to the value of the field.
+Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
+record header known as Record Descriptor Word (RDW). Such headers are created automatically when a variable record length
+file is copied from a mainframe.
 
-Usage example:
+To load variable length record file the following option should be specified:
 ```
-.option("record_length_field", "LENGTH")
+.option("is_record_sequence", "true")
 ```
+
+The space used by the headers should not be mentioned in the copybook if this option is used. Please refer to the
+'Record headers support' section below. 
 
 ### Schema collapsing
 
@@ -232,8 +312,9 @@ You can experiment with this feature using built-in example in `za.co.absa.cobri
 
 ### Record Id fields generation
 
-For data that has record order dependency generation of "File_Id" and "Record_Id" fields is supported. File_Id is unique for each file when
-a directory is specified as the source for data. Record_Id is a unique sequential record identifier within the file.
+For data that has record order dependency generation of "File_Id" and "Record_Id" fields is supported. The values of the File_Id column will
+be unique for each file when a directory is specified as the source for data. The values of the Record_Id column will be unique and sequential
+record identifiers within the file.
 
 Turn this feature on use
 ```
@@ -247,34 +328,41 @@ root
  |-- Record_Id: long (nullable = false)
 ```
 
-Currently this feature may inpact performance and scaling, please use it with caution.  
-
 ### Locality optimization for variable-length records parsing
 
 Variable-length records depend on headers to have their length calculated, which makes it hard to achieve parallelism while parsing.
 
-Cobrix strives to overcome this drawback by performing a two-stages parsing. The first stage traverses the records retrieving their lengths and offsets into structures called indexes. Then, the indexes are distributed across the cluster, which allows for parallel variable-length records parsing.
+Cobrix strives to overcome this drawback by performing a two-stages parsing. The first stage traverses the records retrieving their lengths
+and offsets into structures called indexes. Then, the indexes are distributed across the cluster, which allows for parallel variable-length
+records parsing.
 
 However effective, this strategy may also suffer from excessive shuffling, since indexes may be sent to executors far from the actual data.
 
-The latter issue is overcome by extracting the preferred locations for each index directly from HDFS, and then passing those locations to Spark during the creation of the RDD that distributes the indexes.
+The latter issue is overcome by extracting the preferred locations for each index directly from HDFS, and then passing those locations to
+Spark during the creation of the RDD that distributes the indexes.
 
-When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is enabled by default, but can be disabled by the configuration below:
+When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is
+enabled by default, but can be disabled by the configuration below:
 ```
 .option("improve_locality", false)
 ```
 
 ### Workload optimization for variable-length records parsing
 
-When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse each record, i.e. the nodes where the record resides.
+When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse
+each record, i.e. the nodes where the record resides.
 
-This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the partition for that record in one of those locations.
+This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the
+partition for that record in one of those locations.
 
-However, sometimes, new nodes can be added to the cluster after the Cobol file is stored, in which case those nodes would be ignored when processing the file since they do not contain any record.
+However, sometimes, new nodes can be added to the cluster after the Cobol file is stored, in which case those nodes would be ignored when
+processing the file since they do not contain any record.
 
-To overcome this issue, Cobrix also strives to re-balance the records among the new nodes at parsing time, as an attempt to maximize the utilization of the cluster. This is done through identifying the busiest nodes and sharing part of their burden with the new ones.
+To overcome this issue, Cobrix also strives to re-balance the records among the new nodes at parsing time, as an attempt to maximize the
+utilization of the cluster. This is done through identifying the busiest nodes and sharing part of their burden with the new ones.
 
-Since this is not an issue present in most cluster configurations, this feature is disabled by default, and can be enabled from the configuration below:
+Since this is not an issue present in most cluster configurations, this feature is disabled by default, and can be enabled from the
+configuration below:
 ```
 .option("optimize_allocation", true)
 ```
@@ -283,31 +371,30 @@ If however the option ```improve_locality``` is disabled, this option will also 
 
 ### Record headers support
 
-As you may already know file in mainframe world does not mean the same as in PC world.
-On PCs we think of a file as a stream of bytes that we can open, read/write and close.
-On mainframes a file can be a set of records that we can query. Record is a blob of bytes,
-can have different size. Mainframe's 'filesystem' handles the mapping between logical
-records and physical location of data.
+As you may already know a file in the mainframe world does not mean the same as in the PC world. On PCs we think of a file
+as a stream of bytes that we can open, read/write and close. On mainframes a file can be a set of records that we can query.
+Record is a blob of bytes, can have different size. Mainframe's 'filesystem' handles the mapping between logical records
+and physical location of data.
 
 > _Details are available at this [Wikipedia article](https://en.wikipedia.org/wiki/MVS) (look for MVS filesystem)._ 
 
-So usually a file cannot simply be 'copied' from a mainframe. When files are transferred
-using tools like XCOM each record is prepended with an additional *record header*. This header
-allows readers of a file in PC to restore the 'set of records' nature of the file.
+So usually a file cannot simply be 'copied' from a mainframe. When files are transferred using tools like XCOM each
+record is prepended with an additional *record header* or *RDW*. This header allows readers of a file in PC to restore the
+'set of records' nature of the file.
 
-Mainframe files coming from IMS and copied through specialized tools contain records (the payload)
-having schema of DBs copybook warped with DB export tool headers wrapped with record headers.
-Like this:
+Mainframe files coming from IMS and copied through specialized tools contain records (the payload) having schema of DBs
+copybook warped with DB export tool headers wrapped with record headers. Like this:
 
 RECORD_HEADERS ( TOOL_HEADERS ( PAYLOAD ) )
 
-> _Similar to Internet's IP protocol   IP_HEADERS ( TCP_HEADERS ( PAYLOAD ) )._
+> _Similar to Internet's TCP protocol   IP_HEADERS ( TCP_HEADERS ( PAYLOAD ) )._
 
 TOOL_HEADERS are application dependent. Often it contains the length of the payload. But this length is sometime
 not very reliable. RECORD_HEADERS contain the record length (including TOOL_HEADERS length) and are proved to be reliable.
 
-For fixed record length files record headers can be ignored since we already know the record length. But for variable record
-length files and for multisegment files record headers can be considered the most reliable single point of truth about record length.
+For fixed record length files record headers can be ignored since we already know the record length. But for variable
+record length files and for multisegment files record headers can be considered the most reliable single point of truth
+about record length.
 
 You can instruct the reader to use 4 byte record headers to extract records from a mainframe file.
 
@@ -316,17 +403,19 @@ You can instruct the reader to use 4 byte record headers to extract records from
 ```
 
 This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
-copybook it is very convenient to extract segments one by one by combining 'is_record_sequence' option with segment filter option.
+copybook it is very convenient to extract segments one by one by combining 'is_record_sequence' option with segment
+filter option.
 
 ```
 .option("segment_field", "SEG-ID")
 .option("segment_filter", "1122334")
 ```
 
-In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will
-read all segments, but will parse only ones that have `SEG-ID = "1122334"`.
+In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will read all
+segments, but will parse only ones that have `SEG-ID = "1122334"`.
 
-If you want to parse multiple segments, set the option 'segment_filter' to a comma separated list of the segment values. For example:
+If you want to parse multiple segments, set the option 'segment_filter' to a comma separated list of the segment values.
+For example:
 ```
 .option("segment_field", "SEG-ID")
 .option("segment_filter", "1122334,1122335")
@@ -336,9 +425,9 @@ will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
 ## <a id="ims"/>Reading hierarchical data sets
 
 Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
-record type. The root record contains company info, addreess and a taxpayer number. The child segment contains a contact
-person for a company. Each company can have zero or more contact persons. So each root record can be followed by zero or
-more child records.
+record type. The root record/segment contains company info, an addreess and a taxpayer number. The child segment contains
+a contact person for a company. Each company can have zero or more contact persons. So each root record can be followed by
+zero or more child records.
 
 To load such data in Spark the first thing you need to do is to create a copybook that contains all segment specific fields
 in redefined groups. Here is the copybook for our example:
@@ -416,7 +505,7 @@ df.show(10)
 +----------+----------+--------------------+--------------------+
 ```
 
-As you can see Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only
+As you can see Cobrix loaded *all* redefines for *every* record. Each record contains data from all of the segments. But only
 one redefine is valid for every segment. So we need to split the data set into 2 datasets or tables. The distinguisher is
 the 'SEGMENT_ID' field. All company details will go into one data sets (segment id = 'S01L1'') while contacts will go in
 the second data set (segment id = 'S01L2'). While doing the split we can also collapse the groups so the table won't
@@ -439,7 +528,7 @@ val dfCompanies = df
       .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
 ```
 
-The sesulting table looks like this:
+The resulting table looks like this:
 ```
 dfCompanies.show(10, truncate = false)
 +----------+-------------+-------------------------+--------+
@@ -540,9 +629,10 @@ You can now split these 2 segments and join them by Seg_Id0. The full example is
 To run it from an IDE you'll need to change Scala and Spark dependencies from 'provided' to 'compile' so the
 jar file would contain all the dependencies. This is because Cobrix is a library to be used in Spark job projects.
 Spark jobs uber jars should not contain Scala and Spark dependencies since Hadoop clusters have their Scala and Spark
-dependencies provided by 'spark-submit'.
+dependencies provided by the infrastructure. Including Spark and Scala dependencies in an uber jar can produce
+binary incompatibilities when these jars are used in `spark-submit` and `spark-shell`.
 
-Here is the example output of the joined tables:
+Here is our example tables to join:
 
 ##### Segment 1 (Companies)
 ```
@@ -585,6 +675,8 @@ dfContacts.show(12, truncate = false)
 +-------------------+----------+-------------------+----------------+
 
 ```
+
+Let's now join these tables.
 
 ##### Joined datasets
 
