@@ -18,7 +18,6 @@ package za.co.absa.cobrix.spark.cobol
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 
 class CobolSchemaSpec extends FunSuite {
