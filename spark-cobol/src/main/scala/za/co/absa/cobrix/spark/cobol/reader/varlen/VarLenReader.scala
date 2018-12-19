@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 import org.apache.spark.sql.Row
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -54,5 +54,5 @@ abstract class VarLenReader extends Reader with Serializable {
     *
     */
   @throws(classOf[Exception]) def generateIndex(binaryData: SimpleStream,
-                                                fileNumber: Int): ArrayBuffer[SimpleIndexEntry]
+                                                fileNumber: Int): ArrayBuffer[SparseIndexEntry]
 }

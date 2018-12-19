@@ -23,7 +23,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.{Constants, Reader}
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
@@ -43,7 +43,7 @@ private [source] object IndexBuilder {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SimpleIndexEntry] = {
+  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     cobolReader match {
       case reader: VarLenReader => {
         if (reader.isIndexGenerationNeeded && localityParams.improveLocality){
@@ -62,7 +62,7 @@ private [source] object IndexBuilder {
     * to those records in those locations.
     */
   private def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext)
-                                               (optimizeAllocation: Boolean): RDD[SimpleIndexEntry] = {
+                                               (optimizeAllocation: Boolean): RDD[SparseIndexEntry] = {
 
     val conf = sqlContext.sparkContext.hadoopConfiguration
 
@@ -90,7 +90,7 @@ private [source] object IndexBuilder {
       })
 
     logger.info("Going to collect located indexes into driver.")
-    val offsetsLocations: Seq[(SimpleIndexEntry,Seq[String])] = if (optimizeAllocation) {
+    val offsetsLocations: Seq[(SparseIndexEntry,Seq[String])] = if (optimizeAllocation) {
       optimizeDistribution(indexes.collect(), sqlContext.sparkContext)
     }
     else {
@@ -110,7 +110,7 @@ private [source] object IndexBuilder {
   /**
     * Tries to balance the allocation among unused executors.
     */
-  private def optimizeDistribution(allocation: Seq[(SimpleIndexEntry,Seq[String])], sc: SparkContext): Seq[(SimpleIndexEntry,Seq[String])] = {
+  private def optimizeDistribution(allocation: Seq[(SparseIndexEntry,Seq[String])], sc: SparkContext): Seq[(SparseIndexEntry,Seq[String])] = {
     val availableExecutors = SparkUtils.currentActiveExecutors(sc)
     logger.info(s"Trying to balance ${allocation.size} partitions among all available executors ($availableExecutors)")
     LocationBalancer.balance(allocation, availableExecutors)
@@ -134,7 +134,7 @@ private [source] object IndexBuilder {
   /**
     * Builds records indexes. Does not take locality into account. Might be removed in further releases.
     */
-  def buildIndexForVarLenReader(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SimpleIndexEntry] = {
+  def buildIndexForVarLenReader(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SparseIndexEntry] = {
     val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)

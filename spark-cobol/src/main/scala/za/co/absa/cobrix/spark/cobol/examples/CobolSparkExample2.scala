@@ -59,12 +59,17 @@ object CobolSparkExample2 {
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
       .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "S01L1")
+      .option("segment_id_level0", "C")
+      .option("segment_id_level1", "P")
       .load("examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+
+    df.printSchema
+    //println(df.count)
+    df.show(10, false)
 
     import spark.implicits._
 
-    val dfCompanies = df.filter($"SEGMENT_ID"==="S01L1")
+    val dfCompanies = df.filter($"SEGMENT_ID"==="C")
       .select($"Seg_Id0", $"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
         when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
           .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
@@ -73,7 +78,7 @@ object CobolSparkExample2 {
     //println(df.count)
     dfCompanies.show(50, truncate = false)
 
-    val dfContacts = df.filter($"SEGMENT_ID"==="S01L2")
+    val dfContacts = df.filter($"SEGMENT_ID"==="P")
       .select($"Seg_Id0", $"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
 
     dfContacts.printSchema
@@ -84,7 +89,7 @@ object CobolSparkExample2 {
 
     dfJoined.printSchema
     //println(df.count)
-    dfJoined.orderBy($"Seg_Id0").show(50, truncate = false)
+    dfJoined.orderBy($"Seg_Id0").show(800, truncate = false)
   }
 
 }

@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader.index.entry
+package za.co.absa.cobrix.cobol.parser.examples.generators.model
 
-case class SimpleIndexEntry(offsetFrom: Long, offsetTo: Long, fileId: Int, recordIndex: Long)
+case class Company (companyName: String, companyId: String, address: String )

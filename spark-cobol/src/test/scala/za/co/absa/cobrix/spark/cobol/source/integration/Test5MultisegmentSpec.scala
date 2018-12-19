@@ -53,8 +53,8 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "S01L1")
-      .option("segment_id_level1", "S01L2")
+      .option("segment_id_level0", "C")
+      .option("segment_id_level1", "P")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .option("segment_id_prefix", "A")
@@ -107,10 +107,10 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_xcom", "true")
+      .option("is_record_sequence", "true")
       .option("input_split_records", "100")
       .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_root", "S01L1")
+      .option("segment_id_root", "C")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .option("segment_id_prefix", "B")
@@ -153,13 +153,12 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
     val copybookContents = Files.readAllLines(Paths.get("../data/test5_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val copybook = CopybookParser.parseTree(copybookContents)
     val segmentIdField = copybook.getFieldByName("SEGMENT_ID").asInstanceOf[Primitive]
-    val segmentIdRootValue = "S01L1"
+    val segmentIdRootValue = "C"
 
+    val stream = new FileStreamer("../data/test5_data/COMP.DETAILS.SEP30.DATA.dat", FileSystem.get(new Configuration()))
 
-    val stream = new FileStreamer("../data/test5b_data/COMPANIES.dat", FileSystem.get(new Configuration()))
-
-    val indexes = IndexGenerator.simpleIndexGenerator(0, stream, Some(10), None, Some(copybook), Some(segmentIdField), segmentIdRootValue)
-    assert(indexes.length == 89)
+    val indexes = IndexGenerator.sparseIndexGenerator(0, stream, Some(10), None, Some(copybook), Some(segmentIdField), segmentIdRootValue)
+    assert(indexes.length == 88)
   }
 
 }

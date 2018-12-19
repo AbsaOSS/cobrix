@@ -22,7 +22,7 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
@@ -32,7 +32,7 @@ private [source] object CobolScanners {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private[source] def buildScanForVarLenIndex(reader: VarLenReader, indexes: RDD[SimpleIndexEntry], filesList: Array[FileWithOrder], sqlContext: SQLContext): RDD[Row] = {
+  private[source] def buildScanForVarLenIndex(reader: VarLenReader, indexes: RDD[SparseIndexEntry], filesList: Array[FileWithOrder], sqlContext: SQLContext): RDD[Row] = {
     val filesMap = filesList.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)

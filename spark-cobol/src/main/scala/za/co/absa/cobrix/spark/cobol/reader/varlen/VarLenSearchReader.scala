@@ -21,10 +21,8 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
-import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.{VarLenNestedIterator, VarLenSearchIterator}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
@@ -80,8 +78,8 @@ final class VarLenSearchReader(copybookContents: String,
     new VarLenSearchIterator(cobolSchema.copybook, binaryData, signatureFieldName, signatureFieldValue, lengthFieldName, minimumLength,
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
-  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
-    IndexGenerator.simpleIndexGenerator(fileNumber, binaryData)
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SparseIndexEntry] = {
+    IndexGenerator.sparseIndexGenerator(fileNumber, binaryData)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)

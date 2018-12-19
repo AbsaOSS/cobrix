@@ -22,9 +22,8 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
@@ -67,7 +66,7 @@ final class VarLenNestedReader(copybookContents: String,
     * @return An index of the file
     *
     */
-  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SimpleIndexEntry] = {
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SparseIndexEntry] = {
     var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
     val inputSplitSizeMB: Option[Int] = readerProperties.inputSplitSizeMB
@@ -91,8 +90,8 @@ final class VarLenNestedReader(copybookContents: String,
     val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
-      case None => IndexGenerator.simpleIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB)
+      case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
+      case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB)
     }
   }
 
