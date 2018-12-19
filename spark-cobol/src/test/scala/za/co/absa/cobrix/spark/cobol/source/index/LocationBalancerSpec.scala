@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source.index
 
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -26,22 +26,22 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
   behavior of LocationBalancer.getClass.getName
 
   it should "return empty list if input list is also empty" in {
-    val currentDistribution = Seq[(SimpleIndexEntry,Seq[String])]()
+    val currentDistribution = Seq[(SparseIndexEntry,Seq[String])]()
     assert(LocationBalancer.balance(currentDistribution, Seq[String]()).isEmpty)
   }
 
   it should "keep current distribution if empty list of executors" in {
-    val currentDistribution = Seq[(SimpleIndexEntry,Seq[String])](
-      (SimpleIndexEntry(0l, 2l, 1, 1l), Seq("exec1", "exec2")),
-      (SimpleIndexEntry(2l, 4l, 1, 2l), Seq("exec1", "exec3"))
+    val currentDistribution = Seq[(SparseIndexEntry,Seq[String])](
+      (SparseIndexEntry(0l, 2l, 1, 1l), Seq("exec1", "exec2")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), Seq("exec1", "exec3"))
     )
     assert(currentDistribution == LocationBalancer.balance(currentDistribution, Seq[String]()))
   }
 
   it should "keep current distribution if fewer executors in the list but all in the current distribution" in {
-    val currentDistribution = Seq[(SimpleIndexEntry,Seq[String])](
-      (SimpleIndexEntry(0l, 2l, 1, 1l), Seq("exec1", "exec2")),
-      (SimpleIndexEntry(2l, 4l, 1, 2l), Seq("exec1", "exec3"))
+    val currentDistribution = Seq[(SparseIndexEntry,Seq[String])](
+      (SparseIndexEntry(0l, 2l, 1, 1l), Seq("exec1", "exec2")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), Seq("exec1", "exec3"))
     )
     val availableExecutors = Seq("exec2", "exec3")
     assert(currentDistribution == LocationBalancer.balance(currentDistribution, availableExecutors))
@@ -49,9 +49,9 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
   }
 
   it should "rebalance if fewer executors in the list but any of them not in the current distribution" in {
-    val currentDistribution = List[(SimpleIndexEntry,Seq[String])](
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec1", "exec2")),
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
+    val currentDistribution = List[(SparseIndexEntry,Seq[String])](
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec1", "exec2")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
     )
 
     val availableExecutors = Seq("exec4")
@@ -59,17 +59,17 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
 
     val expected = List[(Any,Seq[String])](
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
     )
 
     assert(actual == expected)
   }
 
   it should "not rebalance if locality is damaged for nothing" in {
-    val currentDistribution = List[(SimpleIndexEntry,Seq[String])](
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec1", "exec2")),
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
+    val currentDistribution = List[(SparseIndexEntry,Seq[String])](
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec1", "exec2")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
     )
 
     val availableExecutors = Seq("exec2", "exec3", "exec4", "exec5")
@@ -77,17 +77,17 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
 
     val expected = List[(Any,Seq[String])](
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
     )
 
     assert(actual == expected)
   }
 
   it should "accept more idle than allocated executors and rebalance correctly" in {
-    val currentDistribution = List[(SimpleIndexEntry,Seq[String])](
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec1")),
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1"))
+    val currentDistribution = List[(SparseIndexEntry,Seq[String])](
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec1")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1"))
     )
 
     val availableExecutors = Seq("exec2", "exec3", "exec4", "exec5")
@@ -95,8 +95,8 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
 
     val expected = List[(Any,Seq[String])](
-      (SimpleIndexEntry(2l, 4l, 1, 2l), List("exec1")),
-      (SimpleIndexEntry(0l, 2l, 1, 1l), List("exec2"))
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1")),
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2"))
     )
 
     assert(actual == expected)

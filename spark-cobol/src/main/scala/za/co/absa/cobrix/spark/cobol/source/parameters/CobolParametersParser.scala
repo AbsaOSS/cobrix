@@ -44,7 +44,7 @@ object CobolParametersParser {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
 
-  // Parameters for multisegment XCOM files
+  // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_SEGMENT_FIELD             = "segment_field"

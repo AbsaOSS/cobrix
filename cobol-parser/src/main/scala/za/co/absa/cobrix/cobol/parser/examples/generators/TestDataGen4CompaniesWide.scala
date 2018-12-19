@@ -1,9 +1,26 @@
+/*
+ * Copyright 2018 ABSA Group Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
 import scodec.Attempt.Successful
 import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.examples.generators.model.Company
 
 import scala.util.Random
 
@@ -13,6 +30,9 @@ import scala.util.Random
 object TestDataGen4CompaniesWide {
 
   val numberOfRecordsToGenerate = 1000
+
+  // seed=100 is used for the integration test
+  val rand: Random = new Random(/*100*/)
 
   /*
           01  COMPANY-DETAILS.
@@ -35,8 +55,6 @@ object TestDataGen4CompaniesWide {
                  10  PHONE-NUMBER      PIC X(17).
                  10  CONTACT-PERSON    PIC X(28).
    */
-
-  case class Company(companyName: String, companyId: String, address: String)
 
   def putStringToArray(bytes: Array[Byte], str: String, index0: Int, index1: Int): Unit = {
     var i = index0
@@ -130,99 +148,23 @@ object TestDataGen4CompaniesWide {
     }
   }
 
-  val segments = Seq("S01L1", "S01L2")
+  val segments: Seq[String] = Seq("C", "P")
 
-  val companies = Seq(
-    Company("ABCD Ltd.", "0039887123", "74 Lawn ave., New York"),
-    Company("ECRONO", "0039567812", "123/B Prome str., Denver"),
-    Company("ZjkLPj", "0034412331", "5574, Tokyo"),
-    Company("Envision Inc.", "0039003991", "871A Forest ave., Toronto"),
-    Company("Prime Bank", "0092317899", "1 Garden str., London"),
-    Company("Pear GMBH.", "0002377771", "107 Labe str., Berlin"),
-    Company("Beierbauh.", "0123330087", "901 Ztt, Munich"),
-    Company("Johnson & D", "0039887123", "10 Sandton, Johannesburg"),
-    Company("Roboco Inc.", "0039801988", "2 Park ave., Johannesburg"),
-    Company("Beierbauh.", "0038903321", "2 G. str., Johannesburg"),
-    Company("Dobry Pivivar", "0021213441", "74 Staromestka., Prague"),
-    Company("Xingzhoug", "8822278911", "74 Qing ave., Beijing")
-  )
+  val companies: Seq[Company] = CommonLists.companies
 
-  val firstNames = Seq(
-    "Jene",
-    "Maya",
-    "Starr",
-    "Lynell",
-    "Eliana",
-    "Tyesha",
-    "Beatrice",
-    "Otelia",
-    "Timika",
-    "Wilbert",
-    "Mindy",
-    "Sunday",
-    "Tyson",
-    "Cliff",
-    "Mabelle",
-    "Verdie",
-    "Sulema",
-    "Alona",
-    "Suk",
-    "Deandra",
-    "Doretha",
-    "Cassey",
-    "Janiece",
-    "Deshawn",
-    "Willis",
-    "Carrie",
-    "Gabriele",
-    "Inge",
-    "Edyth",
-    "Estelle"
-  )
+  val firstNames: Seq[String] = CommonLists.firstNames
 
-  val lastNames = Seq(
-      "Corle",
-      "Mackinnon",
-      "Mork",
-      "Shapiro",
-      "Boettcher",
-      "Flatt",
-      "Acuna",
-      "Thorpe",
-      "Riojas",
-      "Lepe",
-      "Maxim",
-      "Gagliano",
-      "Benally",
-      "Ortego",
-      "Winburn",
-      "Sauve",
-      "Concannon",
-      "Newcombe",
-      "Boehme",
-      "Hisle",
-      "Godfrey",
-      "Wallingford",
-      "Debow",
-      "Bourke",
-      "Deveau",
-      "Batman",
-      "Norgard",
-      "Tumlin",
-      "Celestin",
-      "Brandis"
-  )
+  val lastNames: Seq[String] = CommonLists.lastNames
+
 
   def main(args: Array[String]): Unit = {
 
     val numOfCompanies = companies.size
 
-    val rand = new Random()
-
     val byteArray1: Array[Byte] = new Array[Byte](16068)
     val byteArray2: Array[Byte] = new Array[Byte](64)
 
-    val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.OCT30.DATA.dat"))
+    val bos = new BufferedOutputStream(new FileOutputStream("COMP.DETAILS.SEP30.DATA.dat"))
 
     var i = 0
     while (i < numberOfRecordsToGenerate) {
@@ -234,7 +176,7 @@ object TestDataGen4CompaniesWide {
       // Generating random company id for join on company id to work as expected
       val companyId = s"${rand.nextInt(89999) + 10000}${rand.nextInt(89999) + 10000}"
 
-      // XCOM header
+      // RDW header
       byteArray1(0) = 0
       byteArray1(1) = 0
       putShortToArray(byteArray1, 16064, 2, 3) // record size = 16064
@@ -283,7 +225,7 @@ object TestDataGen4CompaniesWide {
       var j = 0
 
       while (j < numOfContacts && i < numberOfRecordsToGenerate) {
-        // XCOM header
+        // RDW header
         byteArray2(0) = 0
         byteArray2(1) = 0
         putShortToArray(byteArray2, 60, 2, 3) // record size = 60

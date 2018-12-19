@@ -278,24 +278,24 @@ object BinaryUtils {
     }
   }
 
-  /** Extracts record length from an XCOM 4 byte header.**/
-  def extractXcomRecordSize(data: Array[Byte], byteIndex: Long = 0L): Int = {
-    val xcomHeaderBlock = 4
-    if (data.length < xcomHeaderBlock) {
+  /** Extracts record length from an RDW 4 byte header.**/
+  def extractRdwRecordSize(data: Array[Byte], byteIndex: Long = 0L): Int = {
+    val rdwHeaderBlock = 4
+    if (data.length < rdwHeaderBlock) {
       -1
     }
     else {
       val recordLength = (data(2) & 0xFF) + 256 * (data(3) & 0xFF)
 
       if (recordLength > 0) {
-        if (recordLength > Constants.maxXcomRecordSize) {
-          val xcomHeaders = data.map(_ & 0xFF).mkString(",")
-          throw new IllegalStateException(s"XCOM headers too big (length = $recordLength > ${Constants.maxXcomRecordSize}). Headers = $xcomHeaders at $byteIndex.")
+        if (recordLength > Constants.maxRdWRecordSize) {
+          val rdwHeaders = data.map(_ & 0xFF).mkString(",")
+          throw new IllegalStateException(s"RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $byteIndex.")
         }
         recordLength
       } else {
-        val xcomHeaders = data.map(_ & 0xFF).mkString(",")
-        throw new IllegalStateException(s"XCOM headers should never be zero ($xcomHeaders). Found zero size record at $byteIndex.")
+        val rdwHeaders = data.map(_ & 0xFF).mkString(",")
+        throw new IllegalStateException(s"RDW headers should never be zero ($rdwHeaders). Found zero size record at $byteIndex.")
       }
     }
   }

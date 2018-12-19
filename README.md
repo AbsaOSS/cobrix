@@ -200,10 +200,10 @@ scala> df.show(false)
 |TRANSDATA                                           |
 +----------------------------------------------------+
 |[GBP,S9276511,Beierbauh.,0123330087,1,89341.00]     |
-|[ZAR,S9276511,Envision Inc.,0039003991,1,2634633.00]|
+|[ZAR,S9276511,Etqutsa Inc.,0039003991,1,2634633.00] |
 |[USD,S9276511,Beierbauh.,0038903321,0,75.71]        |
 |[ZAR,S9276511,Beierbauh.,0123330087,0,215.39]       |
-|[ZAR,S9276511,Prime Bank,0092317899,1,643.94]       |
+|[ZAR,S9276511,Test Bank,0092317899,1,643.94]        |
 |[ZAR,S9276511,Xingzhoug,8822278911,1,998.03]        |
 |[USD,S9276511,Beierbauh.,0123330087,1,848.88]       |
 |[USD,S9276511,Beierbauh.,0123330087,0,664.11]       |
@@ -492,23 +492,23 @@ df.show(10)
 +----------+----------+--------------------+--------------------+
 |SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
 +----------+----------+--------------------+--------------------+
-|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
-|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
-|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
-|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
-|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
-|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
-|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
-|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
+|         C|9377942526|[Joan Q & Z,10 Sa...|[Joan Q & Z     1...|
+|         P|9377942526|[+(277) 944 44 5,...|[+(277) 944 44 55...|
+|         C|3483483977|[Robotrd Inc.,2 P...|[Robotrd Inc.   2...|
+|         P|3483483977|[+(174) 970 97 5,...|[+(174) 970 97 54...|
+|         P|3483483977|[+(848) 832 61 6,...|[+(848) 832 61 68...|
+|         P|3483483977|[+(455) 184 13 3,...|[+(455) 184 13 39...|
+|         C|7540764401|[Eqartion Inc.,87...|[Eqartion Inc.  8...|
+|         C|4413124035|[Xingzhoug,74 Qin...|[Xingzhoug      7...|
+|         C|9546291887|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+|         P|9546291887|[+(300) 252 33 1,...|[+(300) 252 33 17...|
 +----------+----------+--------------------+--------------------+
 ```
 
 As you can see Cobrix loaded *all* redefines for *every* record. Each record contains data from all of the segments. But only
 one redefine is valid for every segment. So we need to split the data set into 2 datasets or tables. The distinguisher is
-the 'SEGMENT_ID' field. All company details will go into one data sets (segment id = 'S01L1'') while contacts will go in
-the second data set (segment id = 'S01L2'). While doing the split we can also collapse the groups so the table won't
+the 'SEGMENT_ID' field. All company details will go into one data sets (segment id = 'C' [company]) while contacts will go in
+the second data set (segment id = 'P' [person]). While doing the split we can also collapse the groups so the table won't
 contain nested structures. This can be helpful to simplify the analysis of the data.
 
 While doing it you might notice that the taxpayer number field is actually a redefine. Depending on the 'TAXPAYER_TYPE'
@@ -520,7 +520,7 @@ import spark.implicits._
 
 val dfCompanies = df
   // Filtering the first segment by segment id
-  .filter($"SEGMENT_ID"==="S01L1")
+  .filter($"SEGMENT_ID"==="C")
   // Selecting fields that are only available in the first segment
   .select($"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
   // Resolving the taxpayer redefine
@@ -534,16 +534,16 @@ dfCompanies.show(10, truncate = false)
 +----------+-------------+-------------------------+--------+
 |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
 +----------+-------------+-------------------------+--------+
-|2998421316|ECRONO       |123/B Prome str., Denver |40098248|
-|7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
-|7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
-|2193550322|Prime Bank   |1 Garden str., London    |37798023|
-|5830860727|ZjkLPj       |5574, Tokyo              |17017107|
-|4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
-|4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
-|9665677039|Prime Bank   |1 Garden str., London    |79830357|
-|8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
-|4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
+|9377942526|Joan Q & Z   |10 Sandton, Johannesburg |92714306|
+|3483483977|Robotrd Inc. |2 Park ave., Johannesburg|31195396|
+|7540764401|Eqartion Inc.|871A Forest ave., Toronto|87432264|
+|4413124035|Xingzhoug    |74 Qing ave., Beijing    |50803302|
+|9546291887|ZjkLPj       |5574, Tokyo              |73538919|
+|9168453994|Test Bank    |1 Garden str., London    |82573513|
+|4225784815|ZjkLPj       |5574, Tokyo              |96136195|
+|8463159728|Xingzhoug    |74 Qing ave., Beijing    |17785468|
+|8180356010|Eqartion Inc.|871A Forest ave., Toronto|79054306|
+|7107728116|Xingzhoug    |74 Qing ave., Beijing    |70899995|
 +----------+-------------+-------------------------+--------+
 ```
 
@@ -553,7 +553,7 @@ This looks like a valid and clean table containing the list of companies. Now le
 ```scala
     val dfContacts = df
       // Filtering the second segment by segment id
-      .filter($"SEGMENT_ID"==="S01L2")
+      .filter($"SEGMENT_ID"==="P")
       // Selecting the fields only valid for the second segment
       .select($"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
 ```
@@ -561,20 +561,20 @@ This looks like a valid and clean table containing the list of companies. Now le
 The resulting data loons like this:
 ```
 dfContacts.show(10, truncate = false)
-+----------+----------------+----------------+
-|COMPANY_ID|CONTACT_PERSON  |PHONE_NUMBER    |
-+----------+----------------+----------------+
-|7888716268|Lynell Flatt    |+(782) 772 45 69|
-|4169179307|Mabelle Bourke  |+(589) 102 29 62|
-|4007588657|Lynell Lepe     |+(406) 714 80 90|
-|9665677039|Carrie Hisle    |+(115) 514 77 48|
-|9665677039|Deshawn Shapiro |+(10) 945 77 74 |
-|9665677039|Alona Boehme    |+(43) 922 55 37 |
-|9665677039|Cassey Shapiro  |+(434) 242 37 43|
-|4179823966|Beatrice Godfrey|+(339) 323 81 40|
-|9081730154|Wilbert Winburn |+(139) 236 46 45|
-|9081730154|Carrie Godfrey  |+(356) 451 77 64|
-+----------+----------------+----------------+
++----------+--------------------+----------------+
+|COMPANY_ID|CONTACT_PERSON      |PHONE_NUMBER    |
++----------+--------------------+----------------+
+|9377942526|Janiece Newcombe    |+(277) 944 44 55|
+|3483483977|Tyesha Debow        |+(174) 970 97 54|
+|3483483977|Mindy Celestin      |+(848) 832 61 68|
+|3483483977|Mabelle Winburn     |+(455) 184 13 39|
+|9546291887|Carrie Celestin     |+(300) 252 33 17|
+|9546291887|Edyth Deveau        |+(907) 101 70 64|
+|9546291887|Jene Norgard        |+(694) 918 17 44|
+|9168453994|Timika Bourke       |+(768) 691 44 85|
+|9168453994|Lynell Riojas       |+(695) 918 33 16|
+|4225784815|Jene Mackinnon      |+(540) 937 33 71|
++----------+--------------------+----------------+
 ```
 
 This looks good as well. The table contains the list of contact persons for companies. This data set contains the
@@ -594,28 +594,28 @@ val df = spark
   .option("schema_retention_policy", "collapse_root")
   .option("is_record_sequence", "true")
   .option("segment_field", "SEGMENT_ID")
-  .option("segment_id_level0", "S01L1")
-  .option("segment_id_level1", "S01L2")
+  .option("segment_id_level0", "C")
+  .option("segment_id_level1", "P")
   .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
 The resulting table will look like this:
 ```
 df.show(10)
-+------------------+--------------------+----------+----------+--------------------+--------------------+
-|           Seg_Id0|             Seg_Id1|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
-+------------------+--------------------+----------+----------+--------------------+--------------------+
-|20181119145226_0_0|                null|     S01L1|2998421316|[ECRONO,123/B Pro...|[ECRONO         1...|
-|20181119145226_0_1|                null|     S01L1|7888716268|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-|20181119145226_0_1|20181119145226_0_...|     S01L2|7888716268|[+(782) 772 45 6,...|[+(782) 772 45 69...|
-|20181119145226_0_3|                null|     S01L1|7929524264|[Roboco Inc.,2 Pa...|[Roboco Inc.    2...|
-|20181119145226_0_4|                null|     S01L1|2193550322|[Prime Bank,1 Gar...|[Prime Bank     1...|
-|20181119145226_0_5|                null|     S01L1|5830860727|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
-|20181119145226_0_6|                null|     S01L1|4169179307|[Dobry Pivivar,74...|[Dobry Pivivar  7...|
-|20181119145226_0_6|20181119145226_0_...|     S01L2|4169179307|[+(589) 102 29 6,...|[+(589) 102 29 62...|
-|20181119145226_0_8|                null|     S01L1|4007588657|[ABCD Ltd.,74 Law...|[ABCD Ltd.      7...|
-|20181119145226_0_8|20181119145226_0_...|     S01L2|4007588657|[+(406) 714 80 9,...|[+(406) 714 80 90...|
-+------------------+--------------------+----------+----------+--------------------+--------------------+
++------------------+-----------------------+----------+----------+--------------------+--------------------+
+|           Seg_Id0|                Seg_Id1|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
++------------------+-----------------------+----------+----------+--------------------+--------------------+
+|20181219130609_0_0|                   null|         C|9377942526|[Joan Q & Z,10 Sa...|[Joan Q & Z     1...|
+|20181219130609_0_0|20181219130723_0_0_L1_1|         P|9377942526|[+(277) 944 44 5,...|[+(277) 944 44 55...|
+|20181219130609_0_2|                   null|         C|3483483977|[Robotrd Inc.,2 P...|[Robotrd Inc.   2...|
+|20181219130609_0_2|20181219130723_0_2_L1_1|         P|3483483977|[+(174) 970 97 5,...|[+(174) 970 97 54...|
+|20181219130609_0_2|20181219130723_0_2_L1_2|         P|3483483977|[+(848) 832 61 6,...|[+(848) 832 61 68...|
+|20181219130609_0_2|20181219130723_0_2_L1_3|         P|3483483977|[+(455) 184 13 3,...|[+(455) 184 13 39...|
+|20181219130609_0_6|                   null|         C|7540764401|[Eqartion Inc.,87...|[Eqartion Inc.  8...|
+|20181219130609_0_7|                   null|         C|4413124035|[Xingzhoug,74 Qin...|[Xingzhoug      7...|
+|20181219130609_0_8|                   null|         C|9546291887|[ZjkLPj,5574, Tok...|[ZjkLPj         5...|
+|20181219130609_0_8|20181219130723_0_8_L1_1|         P|9546291887|[+(300) 252 33 1,...|[+(300) 252 33 17...|
++------------------+-----------------------+----------+----------+--------------------+--------------------+
 ```
 
 The data now contain 2 additional fields: 'Seg_Id0' and 'Seg_Id1'. The 'Seg_Id0' is an autogenerated id for each root
@@ -636,42 +636,42 @@ Here is our example tables to join:
 
 ##### Segment 1 (Companies)
 ```
-dfCompanies.show(11, truncate = false)
+dfCompanies.show(10, truncate = false)
 +--------------------+----------+-------------+-------------------------+--------+
 |Seg_Id0             |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|
 +--------------------+----------+-------------+-------------------------+--------+
-|20181119145346_0_0  |2998421316|ECRONO       |123/B Prome str., Denver |40098248|
-|20181119145346_0_1  |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|
-|20181119145346_0_3  |7929524264|Roboco Inc.  |2 Park ave., Johannesburg|60931086|
-|20181119145346_0_4  |2193550322|Prime Bank   |1 Garden str., London    |37798023|
-|20181119145346_0_5  |5830860727|ZjkLPj       |5574, Tokyo              |17017107|
-|20181119145346_0_6  |4169179307|Dobry Pivivar|74 Staromestka., Prague  |56802354|
-|20181119145346_0_8  |4007588657|ABCD Ltd.    |74 Lawn ave., New York   |15746762|
-|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|
-|20181119145346_0_15 |8766651850|Xingzhoug    |74 Qing ave., Beijing    |40657364|
-|20181119145346_0_16 |4179823966|Johnson & D  |10 Sandton, Johannesburg |37099628|
-|20181119145346_0_18 |9081730154|Pear GMBH.   |107 Labe str., Berlin    |65079222|
+|20181219130723_0_0  |9377942526|Joan Q & Z   |10 Sandton, Johannesburg |92714306|
+|20181219130723_0_2  |3483483977|Robotrd Inc. |2 Park ave., Johannesburg|31195396|
+|20181219130723_0_6  |7540764401|Eqartion Inc.|871A Forest ave., Toronto|87432264|
+|20181219130723_0_7  |4413124035|Xingzhoug    |74 Qing ave., Beijing    |50803302|
+|20181219130723_0_8  |9546291887|ZjkLPj       |5574, Tokyo              |73538919|
+|20181219130723_0_12 |9168453994|Test Bank    |1 Garden str., London    |82573513|
+|20181219130723_0_15 |4225784815|ZjkLPj       |5574, Tokyo              |96136195|
+|20181219130723_0_20 |8463159728|Xingzhoug    |74 Qing ave., Beijing    |17785468|
+|20181219130723_0_24 |8180356010|Eqartion Inc.|871A Forest ave., Toronto|79054306|
+|20181219130723_0_27 |7107728116|Xingzhoug    |74 Qing ave., Beijing    |70899995|
 +--------------------+----------+-------------+-------------------------+--------+
 ```
 
 ##### Segment 2 (Contacts)
 ```
-dfContacts.show(12, truncate = false)
+dfContacts.show(13, truncate = false)
 +-------------------+----------+-------------------+----------------+
 |Seg_Id0            |COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
 +-------------------+----------+-------------------+----------------+
-|20181119145346_0_1 |7888716268|Lynell Flatt       |+(782) 772 45 69|
-|20181119145346_0_6 |4169179307|Mabelle Bourke     |+(589) 102 29 62|
-|20181119145346_0_8 |4007588657|Lynell Lepe        |+(406) 714 80 90|
-|20181119145346_0_10|9665677039|Carrie Hisle       |+(115) 514 77 48|
-|20181119145346_0_10|9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
-|20181119145346_0_10|9665677039|Alona Boehme       |+(43) 922 55 37 |
-|20181119145346_0_10|9665677039|Cassey Shapiro     |+(434) 242 37 43|
-|20181119145346_0_16|4179823966|Beatrice Godfrey   |+(339) 323 81 40|
-|20181119145346_0_18|9081730154|Wilbert Winburn    |+(139) 236 46 45|
-|20181119145346_0_18|9081730154|Carrie Godfrey     |+(356) 451 77 64|
-|20181119145346_0_18|9081730154|Suk Wallingford    |+(57) 570 39 41 |
-|20181119145346_0_18|9081730154|Tyesha Debow       |+(258) 914 73 28|
+|20181219130723_0_0 |9377942526|Janiece Newcombe    |+(277) 944 44 55|
+|20181219130723_0_2 |3483483977|Tyesha Debow        |+(174) 970 97 54|
+|20181219130723_0_2 |3483483977|Mindy Celestin      |+(848) 832 61 68|
+|20181219130723_0_2 |3483483977|Mabelle Winburn     |+(455) 184 13 39|
+|20181219130723_0_8 |9546291887|Carrie Celestin     |+(300) 252 33 17|
+|20181219130723_0_8 |9546291887|Edyth Deveau        |+(907) 101 70 64|
+|20181219130723_0_8 |9546291887|Jene Norgard        |+(694) 918 17 44|
+|20181219130723_0_12|9168453994|Timika Bourke       |+(768) 691 44 85|
+|20181219130723_0_12|9168453994|Lynell Riojas       |+(695) 918 33 16|
+|20181219130723_0_15|4225784815|Jene Mackinnon      |+(540) 937 33 71|
+|20181219130723_0_15|4225784815|Timika Concannon    |+(122) 216 11 25|
+|20181219130723_0_15|4225784815|Jene Godfrey        |+(285) 643 50 47|
+|20181219130723_0_15|4225784815|Gabriele Winburn    |+(489) 644 53 67|
 +-------------------+----------+-------------------+----------------+
 
 ```
@@ -688,23 +688,24 @@ val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
 The joined data looks like this:
 
 ```
-dfJoined.show(12, truncate = false)
-+--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
-|Seg_Id0             |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|COMPANY_ID|CONTACT_PERSON     |PHONE_NUMBER    |
-+--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
-|20181119145346_0_1  |7888716268|ABCD Ltd.    |74 Lawn ave., New York   |59017432|7888716268|Lynell Flatt       |+(782) 772 45 69|
-|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Carrie Hisle       |+(115) 514 77 48|
-|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Cassey Shapiro     |+(434) 242 37 43|
-|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Deshawn Shapiro    |+(10) 945 77 74 |
-|20181119145346_0_10 |9665677039|Prime Bank   |1 Garden str., London    |79830357|9665677039|Alona Boehme       |+(43) 922 55 37 |
-|20181119145346_0_102|2631415894|Pear GMBH.   |107 Labe str., Berlin    |59705976|2631415894|Maya Bourke        |+(311) 260 97 83|
-|20181119145346_0_102|2631415894|Pear GMBH.   |107 Labe str., Berlin    |59705976|2631415894|Estelle Godfrey    |+(563) 491 37 73|
-|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Maya Boehme        |+(754) 274 56 63|
-|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Starr Benally      |+(303) 750 91 27|
-|20181119145346_0_105|6650267075|Johnson & D  |10 Sandton, Johannesburg |70174320|6650267075|Wilbert Concannon  |+(344) 192 14 38|
-|20181119145346_0_110|9825971915|Beierbauh.   |901 Ztt, Munich          |87008159|9825971915|Tyson Brandis      |+(598) 710 69 45|
-|20181119145346_0_110|9825971915|Beierbauh.   |901 Ztt, Munich          |87008159|9825971915|Tyesha Deveau      |+(68) 759 48 98 |
-+--------------------+----------+-------------+-------------------------+--------+----------+-------------------+----------------+
+dfJoined.show(13, truncate = false)
++--------------------+----------+-------------+-------------------------+--------+----------+--------------------+----------------+
+|Seg_Id0             |COMPANY_ID|COMPANY_NAME |ADDRESS                  |TAXPAYER|COMPANY_ID|CONTACT_PERSON      |PHONE_NUMBER    |
++--------------------+----------+-------------+-------------------------+--------+----------+--------------------+----------------+
+|20181219130723_0_0  |9377942526|Joan Q & Z   |10 Sandton, Johannesburg |92714306|9377942526|Janiece Newcombe    |+(277) 944 44 55|
+|20181219131239_0_2  |3483483977|Robotrd Inc. |2 Park ave., Johannesburg|31195396|3483483977|Mindy Celestin      |+(848) 832 61 68|
+|20181219131239_0_2  |3483483977|Robotrd Inc. |2 Park ave., Johannesburg|31195396|3483483977|Tyesha Debow        |+(174) 970 97 54|
+|20181219131239_0_2  |3483483977|Robotrd Inc. |2 Park ave., Johannesburg|31195396|3483483977|Mabelle Winburn     |+(455) 184 13 39|
+|20181219131344_0_8  |9546291887|ZjkLPj       |5574, Tokyo              |73538919|9546291887|Jene Norgard        |+(694) 918 17 44|
+|20181219131344_0_8  |9546291887|ZjkLPj       |5574, Tokyo              |73538919|9546291887|Edyth Deveau        |+(907) 101 70 64|
+|20181219131344_0_8  |9546291887|ZjkLPj       |5574, Tokyo              |73538919|9546291887|Carrie Celestin     |+(300) 252 33 17|
+|20181219131344_0_12 |9168453994|Test Bank    |1 Garden str., London    |82573513|9168453994|Timika Bourke       |+(768) 691 44 85|
+|20181219131344_0_12 |9168453994|Test Bank    |1 Garden str., London    |82573513|9168453994|Lynell Riojas       |+(695) 918 33 16|
+|20181219131344_0_15 |4225784815|ZjkLPj       |5574, Tokyo              |96136195|4225784815|Jene Mackinnon      |+(540) 937 33 71|
+|20181219131344_0_15 |4225784815|ZjkLPj       |5574, Tokyo              |96136195|4225784815|Timika Concannon    |+(122) 216 11 25|
+|20181219131344_0_15 |4225784815|ZjkLPj       |5574, Tokyo              |96136195|4225784815|Jene Godfrey        |+(285) 643 50 47|
+|20181219131344_0_15 |4225784815|ZjkLPj       |5574, Tokyo              |96136195|4225784815|Gabriele Winburn    |+(489) 644 53 67|
++--------------------+----------+-------------+-------------------------+--------+----------+--------------------+----------------+
 ```
 
 Again, the full example is available at
@@ -787,7 +788,7 @@ For multisegment variable lengths tests:
       .option("schema_retention_policy", "collapse_root")
       .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "S01L1")
+      .option("segment_id_level0", "C")
       .load(args(0))
     
       df.write.mode(SaveMode.Overwrite).parquet(args(1))

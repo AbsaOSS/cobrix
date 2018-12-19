@@ -1,9 +1,26 @@
+/*
+ * Copyright 2018 ABSA Group Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
 import scodec.Attempt.Successful
 import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.examples.generators.model.Company
 
 import scala.util.Random
 
@@ -12,7 +29,10 @@ import scala.util.Random
   */
 object TestDataGen1Transactions {
 
-  val numberOfRecordsToGenerate = 10000
+  val numberOfRecordsToGenerate = 1000
+
+  // seed=100 is used for the integration test
+  val rand: Random = new Random(/*100*/)
 
   /*
           01  TRANSDATA.
@@ -23,8 +43,6 @@ object TestDataGen1Transactions {
               05  WEALTH-QFY        PIC 9(1).
               05  AMOUNT            PIC S9(09)V99  BINARY.
    */
-
-  case class Company (companyName: String, companyId: String )
 
   def putStringToArray(bytes: Array[Byte], str: String, index0: Int, index1: Int): Unit = {
     var i = index0
@@ -62,33 +80,17 @@ object TestDataGen1Transactions {
 
   }
 
-  val currencies = Seq("ZAR", "ZAR", "ZAR", "ZAR", "ZAR", "ZAR", "ZAR", "ZAR", "USD", "EUR", "GBP", "CAD", "CHF", "CZK", "CYN")
+  val currencies: Seq[String] = CommonLists.currencies
 
-  val companies = Seq(
-    Company("ABCD Ltd.",     "0039887123"),
-    Company("ECRONO",        "0039567812"),
-    Company("ZjkLPj",        "0034412331"),
-    Company("Envision Inc.", "0039003991"),
-    Company("Prime Bank",    "0092317899"),
-    Company("Pear GMBH.",    "0002377771"),
-    Company("Beierbauh.",    "0123330087"),
-    Company("Johnson & D",   "0039887123"),
-    Company("Roboco Inc.",   "0039801988"),
-    Company("Beierbauh.",    "0038903321"),
-    Company("Dobry Pivivar", "0021213441"),
-    Company("Xingzhoug",     "8822278911")
-  )
+  val companies: Seq[Company] = CommonLists.companies
 
   def main(args: Array[String]): Unit = {
 
     val numOfCurrencies = currencies.size
     val numOfCompanies = companies.size
 
-
-    val rand = new Random()
-
     val byteArray: Array[Byte] = new Array[Byte](45)
-    val bos = new BufferedOutputStream(new FileOutputStream("TNAN.AUG31.DATA.dat"))
+    val bos = new BufferedOutputStream(new FileOutputStream("TRAN2.AUG31.DATA.dat"))
     var i = 0
     val sig = "S9276511"
     while (i< numberOfRecordsToGenerate) {

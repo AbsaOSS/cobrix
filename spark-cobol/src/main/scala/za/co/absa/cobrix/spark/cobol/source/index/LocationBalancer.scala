@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.index
 
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 
 case class ExecutorPair(newExecutor: String, busyExecutor: String)
 
@@ -39,7 +39,7 @@ object LocationBalancer {
   /**
     * Distributes the partitions among all executors available.
     */
-  def balance(currentDistribution: Seq[(SimpleIndexEntry, Seq[String])], availableExecutors: Seq[String]): Seq[(SimpleIndexEntry,Seq[String])] = {
+  def balance(currentDistribution: Seq[(SparseIndexEntry, Seq[String])], availableExecutors: Seq[String]): Seq[(SparseIndexEntry,Seq[String])] = {
 
     val executorSet = availableExecutors.toSet
     val allocationByExecutor = toDistributionByExecutor(currentDistribution)
@@ -52,8 +52,8 @@ object LocationBalancer {
 
       val reallocations = for (executorsPair <- toExecutorPairs(newExecutors.toSeq, busiestExecutors)) yield {
 
-        val entryToRelocate: SimpleIndexEntry = allocationByExecutor(executorsPair.busyExecutor).head
-        val currentBusyExecutorAllocation: List[SimpleIndexEntry] = allocationByExecutor(executorsPair.busyExecutor)
+        val entryToRelocate: SparseIndexEntry = allocationByExecutor(executorsPair.busyExecutor).head
+        val currentBusyExecutorAllocation: List[SparseIndexEntry] = allocationByExecutor(executorsPair.busyExecutor)
 
         // if more than one entry, relocate, otherwise keep as is - otherwise locality might be damaged
         if (currentBusyExecutorAllocation.size > 1) {
@@ -76,7 +76,7 @@ object LocationBalancer {
     }
   }
 
-  private def toDistributionByExecutor(currentDistribution: Seq[(SimpleIndexEntry, Seq[String])]): collection.mutable.Map[String,List[SimpleIndexEntry]] = {
+  private def toDistributionByExecutor(currentDistribution: Seq[(SparseIndexEntry, Seq[String])]): collection.mutable.Map[String,List[SparseIndexEntry]] = {
     collection.mutable.Map(
       currentDistribution
       .flatMap(distribution => distribution._2.map((_,distribution._1)))
@@ -86,7 +86,7 @@ object LocationBalancer {
     )
   }
 
-  private def findKBusiestExecutors(entriesByExecutor: collection.mutable.Map[String,List[SimpleIndexEntry]], k: Int): Seq[String] = {
+  private def findKBusiestExecutors(entriesByExecutor: collection.mutable.Map[String,List[SparseIndexEntry]], k: Int): Seq[String] = {
     entriesByExecutor
       .toSeq
       .sortWith(_._2.size > _._2.size) // sort executors by number of entries assigned to it, in decreasing order
@@ -94,7 +94,7 @@ object LocationBalancer {
       .take(k) // and takes the first k
   }
 
-  private def toItemsWithLocations(entriesByExecutors: collection.mutable.Map[String,Seq[SimpleIndexEntry]]): Seq[(SimpleIndexEntry,Seq[String])] = {
+  private def toItemsWithLocations(entriesByExecutors: collection.mutable.Map[String,Seq[SparseIndexEntry]]): Seq[(SparseIndexEntry,Seq[String])] = {
     entriesByExecutors
       .toSeq
       .flatMap(entry => entry._2.map((_, entry._1))) // reverts the map(k,v): now, it will be map(v,k), or map(entry,executor)

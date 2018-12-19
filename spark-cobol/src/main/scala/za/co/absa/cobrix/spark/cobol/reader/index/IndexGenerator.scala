@@ -22,22 +22,22 @@ import za.co.absa.cobrix.cobol.parser.common.DataExtractors
 import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 
 import scala.collection.mutable.ArrayBuffer
 
 object IndexGenerator {
-  private val xcomHeaderBlock = 4
+  private val rdwHeaderBlock = 4
 
-  def simpleIndexGenerator(fileId: Int,
+  def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
                            recordsPerIndexEntry: Option[Int] = None,
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
                            segmentField: Option[Primitive] = None,
-                           rootSegmentId: String = ""): ArrayBuffer[SimpleIndexEntry] = {
+                           rootSegmentId: String = ""): ArrayBuffer[SparseIndexEntry] = {
     var byteIndex = 0L
-    val index = new ArrayBuffer[SimpleIndexEntry]
+    val index = new ArrayBuffer[SparseIndexEntry]
     var rootRecordId: String = ""
     var rootRecordSize = -1
     var recordsInChunk = 0
@@ -48,7 +48,7 @@ object IndexGenerator {
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
 
     // Add the first mandatory index entry
-    val indexEntry = SimpleIndexEntry(0, -1, fileId, recordIndex)
+    val indexEntry = SparseIndexEntry(0, -1, fileId, recordIndex)
     index += indexEntry
 
     var endOfFileReached = false
@@ -71,7 +71,7 @@ object IndexGenerator {
           }
           if (needSplit(recordsInChunk, bytesInChunk)) {
             if (!isHierarchical || isSegmentGoodForSplit(rootRecordSize, rootRecordId, copybook.get, segmentField.get, record)) {
-              val indexEntry = SimpleIndexEntry(byteIndex, -1, fileId, recordIndex)
+              val indexEntry = SparseIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
               index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
               index += indexEntry
@@ -81,10 +81,10 @@ object IndexGenerator {
           }
         }
       }
-      byteIndex += xcomHeaderBlock + recordSize
+      byteIndex += rdwHeaderBlock + recordSize
       recordIndex += 1
       recordsInChunk += 1
-      bytesInChunk += xcomHeaderBlock + recordSize
+      bytesInChunk += rdwHeaderBlock + recordSize
     }
     if (isHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
       throw new IllegalStateException(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
@@ -123,7 +123,7 @@ object IndexGenerator {
     }
   }
 
-  private def getNextRecordSize(dataStream: SimpleStream): Int = BinaryUtils.extractXcomRecordSize(dataStream.next(xcomHeaderBlock))
+  private def getNextRecordSize(dataStream: SimpleStream): Int = BinaryUtils.extractRdwRecordSize(dataStream.next(rdwHeaderBlock))
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
     copybook.extractPrimitiveField(segmentIdField, data).toString.trim

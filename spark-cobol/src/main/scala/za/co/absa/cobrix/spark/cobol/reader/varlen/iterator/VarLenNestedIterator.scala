@@ -79,7 +79,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     var recordFetched = false
     while (!recordFetched) {
       val binaryData = if (readerProperties.isRecordSequence) {
-        fetchRecordUsingXcomHeaders()
+        fetchRecordUsingRdwHeaders()
       } else if (lengthField.isDefined) {
         fetchRecordUsingRecordLengthField()
       } else {
@@ -115,7 +115,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
   private def fetchRecordUsingRecordLengthField(): Option[Array[Byte]] = {
     if (lengthField.isEmpty) {
-      throw new IllegalStateException(s"For variable length reader either XCOM headers or record length field should be provided.")
+      throw new IllegalStateException(s"For variable length reader either RDW record headers or record length field should be provided.")
     }
 
     val lengthFieldBlock = lengthField.get.binaryProperties.offset + lengthField.get.binaryProperties.actualSize
@@ -146,12 +146,12 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     }
   }
 
-  private def fetchRecordUsingXcomHeaders(): Option[Array[Byte]] = {
-    val xcomHeaderBlock = 4
+  private def fetchRecordUsingRdwHeaders(): Option[Array[Byte]] = {
+    val rdwHeaderBlock = 4
 
-    val binaryDataStart = dataStream.next(xcomHeaderBlock)
+    val binaryDataStart = dataStream.next(rdwHeaderBlock)
 
-    val recordLength = BinaryUtils.extractXcomRecordSize(binaryDataStart, byteIndex)
+    val recordLength = BinaryUtils.extractRdwRecordSize(binaryDataStart, byteIndex)
     byteIndex += binaryDataStart.length
 
     if (recordLength > 0) {

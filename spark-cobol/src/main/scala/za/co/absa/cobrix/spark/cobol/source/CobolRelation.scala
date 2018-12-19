@@ -29,7 +29,7 @@ import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.mapred.FileInputFormat
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SimpleIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanners
@@ -73,7 +73,7 @@ class CobolRelation(sourceDir: String, cobolReader: Reader, localityParams: Loca
 
   private val filesList = getListFilesWithOrder(sourceDir)
 
-  private lazy val indexes: RDD[SimpleIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
+  private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
 
   override def schema: StructType = {
     cobolReader.getSparkSchema
