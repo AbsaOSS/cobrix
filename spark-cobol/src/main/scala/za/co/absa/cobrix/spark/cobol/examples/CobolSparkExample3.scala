@@ -15,16 +15,17 @@
  */
 package za.co.absa.cobrix.spark.cobol.examples
 
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
-import org.apache.log4j.{Level, Logger}
 
 // This is an example Spark Job that uses COBOL data source.
+// This is a multisegment file reader example similar to CobolSparkExample3, but segment ids are configured to be auto generated
 // IMPORTANT! To run this locally change the scope of all Scala and Spark libraries from 'provided' to 'compile' in pom.xml
 //            But revert it to 'provided' to create an uber jar for running on a cluster
 
-object CobolSparkExample2 {
+object CobolSparkExample3 {
 
   def main(args: Array[String]): Unit = {
 
@@ -32,7 +33,7 @@ object CobolSparkExample2 {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val sparkBuilder = SparkSession.builder().appName("Cobol source reader example 2")
+    val sparkBuilder = SparkSession.builder().appName("Cobol source reader example 3")
     val spark = sparkBuilder
       .master("local[*]")
       .getOrCreate()
@@ -59,19 +60,22 @@ object CobolSparkExample2 {
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
+      //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
       .option("is_record_sequence", "true")                   // Specifies that the input file is a sequence of records having RDW headers
+      .option("segment_field", "SEGMENT_ID")                  // Specified that segment id field is 'SEGMENT_ID'
+      .option("segment_id_level0", "C")                       // If SEGMENT_ID='C' then the segment contains company's info
+      .option("segment_id_level1", "P")                       // If SEGMENT_ID='P' then the segment contains contact person's info
       .load("examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
-
-    import spark.implicits._
 
     df.printSchema
     //println(df.count)
-    df.orderBy($"COMPANY_ID").show(10, false)
+    df.show(10, false)
 
+    import spark.implicits._
 
     val dfCompanies = df.filter($"SEGMENT_ID"==="C")
-      .select($"COMPANY_ID", $"COMPANY.NAME".as("COMPANY_NAME"), $"COMPANY.ADDRESS",
+      .select($"Seg_Id0", $"COMPANY_ID", $"COMPANY.NAME".as("COMPANY_NAME"), $"COMPANY.ADDRESS",
         when($"COMPANY.TAXPAYER.TAXPAYER_TYPE" === "A", $"COMPANY.TAXPAYER.TAXPAYER_STR")
           .otherwise($"COMPANY.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
 
@@ -80,17 +84,17 @@ object CobolSparkExample2 {
     dfCompanies.show(50, truncate = false)
 
     val dfContacts = df.filter($"SEGMENT_ID"==="P")
-      .select($"COMPANY_ID", $"CONTACT.CONTACT_PERSON", $"CONTACT.PHONE_NUMBER")
+      .select($"Seg_Id0", $"COMPANY_ID", $"CONTACT.CONTACT_PERSON", $"CONTACT.PHONE_NUMBER")
 
     dfContacts.printSchema
     //println(df.count)
     dfContacts.show(50, truncate = false)
 
-    val dfJoined = dfCompanies.join(dfContacts, "COMPANY_ID")
+    val dfJoined = dfCompanies.join(dfContacts, "Seg_Id0")
 
     dfJoined.printSchema
     //println(df.count)
-    dfJoined.orderBy($"COMPANY_ID").show(50, truncate = false)
+    dfJoined.orderBy($"Seg_Id0").show(50, truncate = false)
   }
 
 }

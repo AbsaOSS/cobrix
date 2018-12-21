@@ -126,7 +126,7 @@ private [source] object IndexBuilder {
       (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
     }).toSeq
 
-    filesWithPreferredLocations.foreach(println)
+    filesWithPreferredLocations.foreach(a => logger.debug(a.toString()))
 
     sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
   }
