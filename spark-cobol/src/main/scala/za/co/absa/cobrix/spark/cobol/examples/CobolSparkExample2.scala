@@ -36,16 +36,15 @@ object CobolSparkExample2 {
       """        01  COMPANY-DETAILS.
         |            05  SEGMENT-ID           PIC X(5).
         |            05  COMPANY-ID           PIC X(10).
-        |            05  STATIC-DETAILS.
-        |               10  COMPANY-NAME      PIC X(15).
+        |            05  COMPANY.
+        |               10  NAME              PIC X(15).
         |               10  ADDRESS           PIC X(25).
         |               10  TAXPAYER.
         |                  15  TAXPAYER-TYPE  PIC X(1).
         |                  15  TAXPAYER-STR   PIC X(8).
         |                  15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
         |                                     PIC 9(8) COMP.
-        |
-        |            05  CONTACTS REDEFINES STATIC-DETAILS.
+        |            05  CONTACT REDEFINES COMPANY.
         |               10  PHONE-NUMBER      PIC X(17).
         |               10  CONTACT-PERSON    PIC X(28).
         |""".stripMargin
@@ -57,10 +56,10 @@ object CobolSparkExample2 {
       .option("copybook_contents", copybook)
       //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-      .option("is_record_sequence", "true")
-      .option("segment_field", "SEGMENT_ID")
-      .option("segment_id_level0", "C")
-      .option("segment_id_level1", "P")
+      .option("is_record_sequence", "true")                   // Specifies that the input file is a sequence of records having RDW headers
+      .option("segment_field", "SEGMENT_ID")                  // Specified that segment id field is 'SEGMENT_ID'
+      .option("segment_id_level0", "C")                       // If SEGMENT_ID='C' then the segment contains company's info
+      .option("segment_id_level1", "P")                       // If SEGMENT_ID='P' then the segment contains contact person's info
       .load("examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 
     df.printSchema
@@ -70,16 +69,16 @@ object CobolSparkExample2 {
     import spark.implicits._
 
     val dfCompanies = df.filter($"SEGMENT_ID"==="C")
-      .select($"Seg_Id0", $"COMPANY_ID", $"STATIC_DETAILS.COMPANY_NAME", $"STATIC_DETAILS.ADDRESS",
-        when($"STATIC_DETAILS.TAXPAYER.TAXPAYER_TYPE" === "A", $"STATIC_DETAILS.TAXPAYER.TAXPAYER_STR")
-          .otherwise($"STATIC_DETAILS.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
+      .select($"Seg_Id0", $"COMPANY_ID", $"COMPANY.NAME".as("COMPANY_NAME"), $"COMPANY.ADDRESS",
+        when($"COMPANY.TAXPAYER.TAXPAYER_TYPE" === "A", $"COMPANY.TAXPAYER.TAXPAYER_STR")
+          .otherwise($"COMPANY.TAXPAYER.TAXPAYER_NUM").cast(StringType).as("TAXPAYER"))
 
     dfCompanies.printSchema
     //println(df.count)
     dfCompanies.show(50, truncate = false)
 
     val dfContacts = df.filter($"SEGMENT_ID"==="P")
-      .select($"Seg_Id0", $"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
+      .select($"Seg_Id0", $"COMPANY_ID", $"CONTACT.CONTACT_PERSON", $"CONTACT.PHONE_NUMBER")
 
     dfContacts.printSchema
     //println(df.count)
@@ -89,7 +88,7 @@ object CobolSparkExample2 {
 
     dfJoined.printSchema
     //println(df.count)
-    dfJoined.orderBy($"Seg_Id0").show(800, truncate = false)
+    dfJoined.orderBy($"Seg_Id0").show(50, truncate = false)
   }
 
 }
