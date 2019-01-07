@@ -31,7 +31,7 @@ object CobolValidators {
 
     object State extends Enumeration {
       type State = Value
-      val INITIAL, SIGN, STRING, NUMBER, OPEN_BRACKET, NUMBER_IN_BRACKET, CLOSING_BRACKET, DECIMAL_POINT = Value
+      val INITIAL, SIGN, STRING, NUMBER, OPEN_BRACKET, NUMBER_IN_BRACKET, CLOSING_BRACKET, DECIMAL_POINT, TRAILING_SIGN = Value
     }
 
     import State._
@@ -39,6 +39,7 @@ object CobolValidators {
     var state = INITIAL
     var signEncountered = false
     var decimalEncountered = false
+    var isSignSeparate = false
     var isNumber = false
     var numOpenedBrackets = 0
     var numberInBrackets = ""
@@ -46,7 +47,7 @@ object CobolValidators {
     while (i <= pic.length) {
       val c = displayPic.charAt(i - 1)
       if (state != NUMBER_IN_BRACKET && state != OPEN_BRACKET &&
-        c != 'X' && c != 'A' && c != '9' && c != 'S' && c != 'V' && c != '.' && c != '(' && c != ')') {
+        c != 'X' && c != 'A' && c != '9' && c != 'S' && c != 'V' && c != '.' && c != '(' && c != ')' && c != '+' && c != '-') {
         throwError(s"Invalid character encountered: '$c' at position $i")
       }
 
@@ -65,6 +66,16 @@ object CobolValidators {
             case 'S' =>
               isNumber = true
               signEncountered = true
+              state = SIGN
+            case '+' =>
+              isNumber = true
+              signEncountered = true
+              isSignSeparate = true
+              state = SIGN
+            case '-' =>
+              isNumber = true
+              signEncountered = true
+              isSignSeparate = true
               state = SIGN
             case '.' =>
               state = DECIMAL_POINT
@@ -130,6 +141,18 @@ object CobolValidators {
                 throwError(s"Decimal point 'V' should be specified only once at position $i.")
               }
               decimalEncountered = true
+            case '+' =>
+              if (isSignSeparate) {
+                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
+              }
+              isSignSeparate = true
+              state = TRAILING_SIGN
+            case '-' =>
+              if (isSignSeparate) {
+                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
+              }
+              isSignSeparate = true
+              state = TRAILING_SIGN
             case 'S' =>
               throwError(s"A sign should be specified only once at position $i.")
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
@@ -191,6 +214,24 @@ object CobolValidators {
               if (isNumber) {
                 throwError(s"Cannot mix 'X' with '9' at position $i.")
               }
+            case '+' =>
+              if (!isNumber) {
+                throwError(s"Cannot mix 'A' or 'X' with sign specifier '+' or '-' at position $i.")
+              }
+              if (isSignSeparate) {
+                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
+              }
+              isSignSeparate = true
+              state = TRAILING_SIGN
+            case '-' =>
+              if (!isNumber) {
+                throwError(s"Cannot mix 'A' or 'X' with sign specifier '+' or '-' at position $i.")
+              }
+              if (isSignSeparate) {
+                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
+              }
+              isSignSeparate = true
+              state = TRAILING_SIGN
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
           }
         case DECIMAL_POINT =>
@@ -207,6 +248,7 @@ object CobolValidators {
               throwError(s"Redundant decimal point character '$c' at position $i.")
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
           }
+        case TRAILING_SIGN => throwError(s"A sign specifier should be the first or the last element of a PIC. Unexpected '$c' at position $i.")
       }
 
       i += 1

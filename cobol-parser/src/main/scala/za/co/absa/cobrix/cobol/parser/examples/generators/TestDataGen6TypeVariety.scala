@@ -247,7 +247,13 @@ object TestDataGen6TypeVariety {
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
 ***********************************************************************
-
+          10  EX-NUM-INT01        PIC +9(8).
+          10  EX-NUM-INT02        PIC 9(8)+.
+          10  EX-NUM-INT03        PIC -9(8).
+          10  EX-NUM-INT04        PIC 9(8)-.
+          10  EX-NUM-DEC01        PIC +9(6)V99.
+          10  EX-NUM-DEC02        PIC 9(6)V99-.
+          10  EX-NUM-DEC03        PIC 9(6).99-.
    */
 
   var debugPrint = true
@@ -324,9 +330,9 @@ object TestDataGen6TypeVariety {
         i += 1
       } else {
         if (isNegative)
-          bytes(index0 + binLength) = Constants.minusCharEBCIDIC
+          bytes(index0 + binLength + explicitDecimalChars) = Constants.minusCharEBCIDIC
         else
-          bytes(index0 + binLength) = Constants.plusCharEBCIDIC
+          bytes(index0 + binLength + explicitDecimalChars) = Constants.plusCharEBCIDIC
       }
     }
     val index1 = i
@@ -529,7 +535,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1341)
+    val byteArray: Array[Byte] = new Array[Byte](1405)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -737,6 +743,14 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S913DCCOMP3", byteArray, bigNum, offset, 15, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S911DCC2", byteArray, bigNum, offset, 13, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S910DCC3", byteArray, bigNum, offset, 13, signed = true, isNegative)
+
+      offset = putNumStrToArray("EX-NUM-INT01", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+      offset = putNumStrToArray("EX-NUM-INT02", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("EX-NUM-INT03", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+      offset = putNumStrToArray("EX-NUM-INT04", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("EX-NUM-DEC01", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
+      offset = putNumStrToArray("EX-NUM-DEC02", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("EX-NUM-DEC03", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false, 6)
 
       bos.write(byteArray)
       i += 1
