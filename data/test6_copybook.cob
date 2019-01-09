@@ -229,9 +229,9 @@
           10  EX-NUM-INT01        PIC +9(8).
           10  EX-NUM-INT02        PIC 9(8)+.
           10  EX-NUM-INT03        PIC -9(8).
-          10  EX-NUM-INT04        PIC 9(8)-.
+          10  EX-NUM-INT04        PIC Z(8)-.
           10  EX-NUM-DEC01        PIC +9(6)V99.
-          10  EX-NUM-DEC02        PIC 9(6)V99-.
+          10  EX-NUM-DEC02        PIC Z(6)VZZ-.
           10  EX-NUM-DEC03        PIC 9(6).99-.
 
 

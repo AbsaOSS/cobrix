@@ -796,7 +796,9 @@ object CopybookParser {
         }
       }
     }
-    outputCharacters.mkString
+    val pic = outputCharacters.mkString
+    // 'Z' has the same meaning as '9' from Spark data types perspective
+    pic.replace('Z', '9')
   }
 
   /**

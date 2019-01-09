@@ -34,6 +34,8 @@ object CobolValidators {
       val INITIAL, SIGN, STRING, NUMBER, OPEN_BRACKET, NUMBER_IN_BRACKET, CLOSING_BRACKET, DECIMAL_POINT, TRAILING_SIGN = Value
     }
 
+    val allowedSymbols = Set[Char]('X', 'A', '9', 'Z', 'S', 'V', '.', ',', '(', ')', '+', '-')
+
     import State._
 
     var state = INITIAL
@@ -46,33 +48,24 @@ object CobolValidators {
     var i = 1
     while (i <= pic.length) {
       val c = displayPic.charAt(i - 1)
-      if (state != NUMBER_IN_BRACKET && state != OPEN_BRACKET &&
-        c != 'X' && c != 'A' && c != '9' && c != 'S' && c != 'V' && c != '.' && c != '(' && c != ')' && c != '+' && c != '-') {
+      if (state != NUMBER_IN_BRACKET && state != OPEN_BRACKET && !allowedSymbols.contains(c)) {
         throwError(s"Invalid character encountered: '$c' at position $i")
       }
 
       state match {
         case INITIAL =>
           c match {
-            case 'X' =>
+            case 'X' | 'A' =>
               isNumber = false
               state = STRING
-            case 'A' =>
-              isNumber = false
-              state = STRING
-            case '9' =>
+            case '9' | 'Z' =>
               isNumber = true
               state = NUMBER
             case 'S' =>
               isNumber = true
               signEncountered = true
               state = SIGN
-            case '+' =>
-              isNumber = true
-              signEncountered = true
-              isSignSeparate = true
-              state = SIGN
-            case '-' =>
+            case '+' | '-' =>
               isNumber = true
               signEncountered = true
               isSignSeparate = true
@@ -87,15 +80,13 @@ object CobolValidators {
           }
         case SIGN =>
           c match {
-            case '9' =>
+            case '9' | 'Z' =>
               state = NUMBER
             case ch => throwError(s"Unexpected character '$ch' at position $i. A sign definition should be followed by a number definition.")
           }
         case STRING =>
           c match {
-            case 'X' =>
-              state = STRING
-            case 'A' =>
+            case 'X' | 'A' =>
               state = STRING
             case '(' =>
               state = OPEN_BRACKET
@@ -104,7 +95,7 @@ object CobolValidators {
                 throwError(s"Only one level of brackets nesting is allowed at position $i.")
             case ')' =>
               throwError(s"Closing bracked doesn't have matching open one at position $i.")
-            case '9' =>
+            case '9' | 'Z' =>
               throwError(s"Cannot mix 'X','A' and '9' at position $i.")
             case 'S' =>
               throwError(s"A sign 'S' can only be specified for numeric fields at position $i.")
@@ -116,7 +107,7 @@ object CobolValidators {
           }
         case NUMBER =>
           c match {
-            case '9' =>
+            case '9' | 'Z' =>
               state = NUMBER
             case 'A' =>
               throwError(s"Cannot mix '9' with 'A' at position $i.")
@@ -135,19 +126,15 @@ object CobolValidators {
                 throwError(s"Decimal point '.' should be specified only once at position $i.")
               }
               decimalEncountered = true
+            case ',' =>
+              // ignored
             case 'V' =>
               state = DECIMAL_POINT
               if (decimalEncountered) {
                 throwError(s"Decimal point 'V' should be specified only once at position $i.")
               }
               decimalEncountered = true
-            case '+' =>
-              if (isSignSeparate) {
-                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
-              }
-              isSignSeparate = true
-              state = TRAILING_SIGN
-            case '-' =>
+            case '+' | '-' =>
               if (isSignSeparate) {
                 throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
               }
@@ -181,7 +168,7 @@ object CobolValidators {
           }
         case CLOSING_BRACKET =>
           c match {
-            case '9' =>
+            case '9' | 'Z' =>
               state = NUMBER
               if (!isNumber) {
                 throwError(s"Cannot mix '9' with 'A' or 'X' at position $i.")
@@ -204,26 +191,12 @@ object CobolValidators {
                 throwError(s"A Decimal point 'V' or '.' should be specified only once at position $i.")
               }
               decimalEncountered = true
-            case 'A' =>
+            case 'A' | 'X' =>
               state = STRING
               if (isNumber) {
                 throwError(s"Cannot mix 'A' with '9' at position $i.")
               }
-            case 'X' =>
-              state = STRING
-              if (isNumber) {
-                throwError(s"Cannot mix 'X' with '9' at position $i.")
-              }
-            case '+' =>
-              if (!isNumber) {
-                throwError(s"Cannot mix 'A' or 'X' with sign specifier '+' or '-' at position $i.")
-              }
-              if (isSignSeparate) {
-                throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
-              }
-              isSignSeparate = true
-              state = TRAILING_SIGN
-            case '-' =>
+            case '+' | '-' =>
               if (!isNumber) {
                 throwError(s"Cannot mix 'A' or 'X' with sign specifier '+' or '-' at position $i.")
               }
@@ -236,7 +209,7 @@ object CobolValidators {
           }
         case DECIMAL_POINT =>
           c match {
-            case '9' =>
+            case '9' | 'Z' =>
               state = NUMBER
             case 'A' =>
               throwError(s"Cannot mix 'A' with '9' at position $i.")
@@ -254,7 +227,7 @@ object CobolValidators {
       i += 1
     }
 
-    // Validate final state
+    // Validate the final state
     state match {
       case INITIAL => throwError("A PIC cannot be empty")
       case SIGN => throwError("A number precision and scale should follow 'S'.")
