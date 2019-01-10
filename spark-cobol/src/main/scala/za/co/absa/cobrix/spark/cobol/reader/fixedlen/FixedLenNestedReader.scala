@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -33,6 +33,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 final class FixedLenNestedReader(copyBookContents: String,
+                           isEbcdic: Boolean = true,
                            startOffset: Int = 0,
                            endOffset: Int = 0,
                            policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
@@ -72,7 +73,8 @@ final class FixedLenNestedReader(copyBookContents: String,
   }
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
+    val encoding = if (isEbcdic) EBCDIC() else ASCII()
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers)
     new CobolSchema(schema, policy, false)
   }
 

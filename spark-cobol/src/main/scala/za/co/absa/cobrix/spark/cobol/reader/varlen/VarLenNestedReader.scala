@@ -20,7 +20,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
@@ -97,7 +97,8 @@ final class VarLenNestedReader(copybookContents: String,
 
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, readerProperties.dropGroupFillers)
+    val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.policy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)

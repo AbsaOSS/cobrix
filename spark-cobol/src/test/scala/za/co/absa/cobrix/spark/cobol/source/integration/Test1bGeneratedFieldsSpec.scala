@@ -25,7 +25,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 //noinspection NameBooleanParameters
-class Test4GeneratedFieldsSpec extends FunSuite with SparkTestBase {
+class Test1bGeneratedFieldsSpec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test1b"
   private val inputCopybookPath = "file://../data/test1_copybook.cob"

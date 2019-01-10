@@ -33,6 +33,7 @@ object CobolParametersParser {
   val PARAM_COPYBOOK_PATH             = "copybook"
   val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
   val PARAM_SOURCE_PATH               = "path"
+  val PARAM_ENCODING                  = "encoding"
   val PARAM_RECORD_LENGTH             = "record_length_field"
   val PARAM_RECORD_LENGTH_MIN         = "record_length_min"
   val PARAM_RECORD_LENGTH_MAX         = "record_length_max"
@@ -73,10 +74,24 @@ object CobolParametersParser {
       throw new IllegalArgumentException(s"Invalid value '$policyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
     }
 
+    val encoding = params.getOrElse(PARAM_ENCODING, "")
+    val isEbcdic = {
+      if (encoding.isEmpty || encoding.compareToIgnoreCase("ebcdic") == 0) {
+        true
+      } else {
+        if (encoding.compareToIgnoreCase("ascii") == 0) {
+          false
+        } else {
+          throw new IllegalArgumentException(s"Invalid value '$encoding' for '$PARAM_ENCODING' option. Should be either 'EBCDIC' or 'ASCII'.")
+        }
+      }
+    }
+
     CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
+      isEbcdic,
       params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
       params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
       params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),

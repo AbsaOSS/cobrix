@@ -22,6 +22,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
 /**
   * These are properties for customizing mainframe binary data reader.
   *
+  * @param isEbcdic                 If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence         Does input files have 4 byte record length headers
   * @param isIndexGenerationNeeded  Is indexing input file before processing is requested
@@ -35,6 +36,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param dropGroupFillers         If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   */
 case class ReaderParameters(
+                             isEbcdic: Boolean = true,
                              lengthFieldName: Option[String] = None,
                              isRecordSequence: Boolean = false,
                              isIndexGenerationNeeded: Boolean = false,
