@@ -836,6 +836,12 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.3.1 released 11 Jan 2019
+  - This is a maintenance release.
+  - Added support for PICs specifying separate sign character (for example, `9(4)+`).
+  - Added support for PICs characters specifying zeros masking (for example, `Z(4)`).
+  - Added support for reading ASCII data files using `option("encoding", "ascii")`.
+
 - #### 0.3.0 released 17 Dec 2018
   - This is a minor feature release. There are changes that change behavior.
   - Added balancing partitions among potentially idle executors. See the section on locality optimization.
