@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.3.0</version>
+      <version>0.3.1</version>
 </dependency>
 ```
 
