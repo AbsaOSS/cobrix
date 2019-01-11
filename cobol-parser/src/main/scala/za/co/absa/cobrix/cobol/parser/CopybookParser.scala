@@ -546,7 +546,7 @@ object CopybookParser {
     val picOrigin = modifiers.getOrElse("PIC_ORIGIN", pic)
 
     // Trailing sign is supported implicitly by smart uncompressed number converters
-    val isSignSeparate = modifiers.contains(SIGN_SEP)
+    val isSignSeparate = modifiers.contains(SIGN_SEP) || pic.contains('+') || pic.contains('-')
 
     CobolValidators.validatePic(lineNumber, fieldName, picOrigin)
 
@@ -572,7 +572,7 @@ object CopybookParser {
       case s if s.contains("9") =>
         Integral(
           picOrigin,
-          precision = if (s.startsWith("S")) s.length-1 else s.length,
+          precision = s.count(_ == '9'),
           signPosition = if (s.startsWith("S")) Some(position.Left) else None,
           isSignSeparate = isSignSeparate,
           wordAlligned = if (sync) Some(position.Right) else None,
@@ -796,7 +796,9 @@ object CopybookParser {
         }
       }
     }
-    outputCharacters.mkString
+    val pic = outputCharacters.mkString
+    // 'Z' has the same meaning as '9' from Spark data types perspective
+    pic.replace('Z', '9')
   }
 
   /**

@@ -35,11 +35,11 @@ import scala.collection.JavaConversions._
 //noinspection NameBooleanParameters
 class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test5(multisegment)"
+  private val exampleName = "Test5(multisegment,ebcdic)"
   private val inputCopybookPath = "file://../data/test5_copybook.cob"
   private val inpudDataPath = "../data/test5_data"
 
-  test(s"Integration test on $exampleName - segment ids") {
+  test(s"Integration test on $exampleName - segment ids, ebcdic") {
     import spark.implicits._
 
     val expectedSchemaPath = "../data/test5_expected/test5_schema.json"

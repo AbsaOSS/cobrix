@@ -81,6 +81,7 @@ class DefaultSource
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     new FixedLenNestedReader(copybookContent,
+      parameters.isEbcdic,
       parameters.recordStartOffset,
       parameters.recordEndOffset,
       parameters.schemaRetentionPolicy,
@@ -117,7 +118,8 @@ class DefaultSource
     } else {
       new VarLenNestedReader(
         copybookContent,
-        ReaderParameters(lengthFieldName = recordLengthField,
+        ReaderParameters(isEbcdic = parameters.isEbcdic,
+          lengthFieldName = recordLengthField,
           isRecordSequence = parameters.isRecordSequence,
           isIndexGenerationNeeded = parameters.isUsingIndex,
           inputSplitRecords = parameters.inputSplitRecords,

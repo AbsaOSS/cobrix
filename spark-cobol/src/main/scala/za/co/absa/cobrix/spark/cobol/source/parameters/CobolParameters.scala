@@ -26,6 +26,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param copybookPath           String containing the path to the copybook in a given file system.
   * @param copybookContent        String containing the actual content of the copybook. Either this or the copybookPath parameter must be specified.
   * @param sourcePath             String containing the path to the Cobol file to be parsed.
+  * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param isRecordSequence       Does input files have 4 byte record length headers
   * @param isUsingIndex           Is indexing input file before processing is requested
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
@@ -46,6 +47,7 @@ case class CobolParameters(
                             copybookPath:          Option[String],
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
+                            isEbcdic:              Boolean,
                             isRecordSequence:      Boolean,
                             isUsingIndex:          Boolean,
                             inputSplitRecords:     Option[Int],

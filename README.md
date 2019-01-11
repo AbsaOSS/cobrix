@@ -116,6 +116,9 @@ The full example is available [here](https://github.com/AbsaOSS/cobrix/blob/mast
 
 In some scenarios Spark is unable to find "cobol" data source by it's short name. In that case you can use the full path to the source class instead: `.format("za.co.absa.cobrix.spark.cobol.source")`
 
+Cobrix assumes input data is encoded in EBCDIC. You can load ASCII files as well by specifying the following option:
+`.option("encoding", "ascii")`.
+
 ### Streaming Cobol binary files from a directory
 
 1. Create a Spark ```StreamContext```

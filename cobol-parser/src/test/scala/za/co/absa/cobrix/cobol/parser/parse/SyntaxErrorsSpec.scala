@@ -138,4 +138,46 @@ class SyntaxErrorsSpec extends FunSuite {
     CopybookParser.parseTree(copyBookContents)
   }
 
+  test("Test invalid 2 explicit decimals in PIC") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |          10  FIELD    PIC +9(8)+.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("A sign cannot be present in both beginning and at the end"))
+  }
+
+  test("Test invalid explicit decimal in PIC") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |          10  FIELD    PIC 9+(8).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.msg.contains("A sign specifier should be the first or the last element of a PIC"))
+  }
+
+  test("Test valid explicit decimal in PICs") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |          10  FIELD    PIC +9(2).
+        |          10  FIELD    PIC -9(3).
+        |          10  FIELD    PIC 9(4)+.
+        |          10  FIELD    PIC 9(5)-.
+        |          10  FIELD    PIC +999.
+        |          10  FIELD    PIC -9999.
+        |          10  FIELD    PIC 99999+.
+        |          10  FIELD    PIC 9(4)9-.
+        |""".stripMargin
+
+    CopybookParser.parseTree(copyBookContents)
+  }
+
 }

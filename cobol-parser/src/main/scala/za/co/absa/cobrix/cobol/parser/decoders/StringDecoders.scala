@@ -48,7 +48,10 @@ object StringDecoders {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
-      buf.append(bytes(i).toChar)
+      if (bytes(i) < 32 || bytes(i) > 127 /*Special and high order characters are masked*/)
+        buf.append(' ')
+      else
+        buf.append(bytes(i).toChar)
       i = i + 1
     }
     buf.toString.trim
