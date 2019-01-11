@@ -1,4 +1,4 @@
-    Copyright 2018 ABSA Group Limited
+    Copyright 2018-2019 ABSA Group Limited
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.3.0</version>
+      <version>0.3.1</version>
 </dependency>
 ```
 
@@ -835,6 +835,12 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+
+- #### 0.3.1 released 11 Jan 2019
+  - This is a maintenance release.
+  - Added support for PICs specifying separate sign character (for example, `9(4)+`).
+  - Added support for PICs characters specifying zeros masking (for example, `Z(4)`).
+  - Added support for reading ASCII data files using `option("encoding", "ascii")`.
 
 - #### 0.3.0 released 17 Dec 2018
   - This is a minor feature release. There are changes that change behavior.
