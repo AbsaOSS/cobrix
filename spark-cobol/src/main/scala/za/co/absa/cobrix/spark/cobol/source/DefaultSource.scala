@@ -142,7 +142,11 @@ class DefaultSource
     val conf = spark.sparkContext.hadoopConfiguration
     val fileSystem = FileSystem.get(conf)
     val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
-    logger.info(s"HDFS default block size = $hdfsBlockSize MB.")
+    hdfsBlockSize match {
+      case None => logger.info(s"Unable to get HDFS default block size.")
+      case Some(size) => logger.info(s"HDFS default block size = $size MB.")
+    }
+
     hdfsBlockSize
   }
 

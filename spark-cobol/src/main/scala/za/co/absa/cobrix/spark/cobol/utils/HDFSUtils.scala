@@ -61,12 +61,14 @@ object HDFSUtils {
     * Returns the default block size of the HDFS filesystem in megabytes.
     *
     * @param fileSystem An HDFS filesystem
+    * @param path       An optional path can be provided if the default block size is path-dependent.
+    *                   The path should not have to exist.
     *
     * @return A block size in megabytes and None in case of an error
     */
-  def getHDFSDefaultBlockSizeMB(fileSystem: FileSystem): Option[Int] = {
-    val conf = fileSystem.getConf
-    val blockSizeInBytes = conf.get("dfs.blocksize").toLong
+  def getHDFSDefaultBlockSizeMB(fileSystem: FileSystem, path: Option[String] = None): Option[Int] = {
+    val hdfsPath = new Path(path.getOrElse("/"))
+    val blockSizeInBytes = fileSystem.getDefaultBlockSize(hdfsPath)
     if (blockSizeInBytes > 0) {
       val blockSizeInBM = (blockSizeInBytes / bytesInMegabyte).toInt
       if (blockSizeInBM>0) {
