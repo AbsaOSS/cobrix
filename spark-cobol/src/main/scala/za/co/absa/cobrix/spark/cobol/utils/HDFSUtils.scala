@@ -23,6 +23,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
   * This object provides utility methods for interacting with HDFS internals.
   */
 object HDFSUtils {
+  final val bytesInMegabyte = 1048576
 
   /**
     * Retrieves distinct block locations for a given HDFS file.
@@ -55,4 +56,29 @@ object HDFSUtils {
       .flatMap(_.getHosts)
       .distinct
   }
+
+  /**
+    * Returns the default block size of the HDFS filesystem in megabytes.
+    *
+    * @param fileSystem An HDFS filesystem
+    * @param path       An optional path can be provided if the default block size is path-dependent.
+    *                   The path should not have to exist.
+    *
+    * @return A block size in megabytes and None in case of an error
+    */
+  def getHDFSDefaultBlockSizeMB(fileSystem: FileSystem, path: Option[String] = None): Option[Int] = {
+    val hdfsPath = new Path(path.getOrElse("/"))
+    val blockSizeInBytes = fileSystem.getDefaultBlockSize(hdfsPath)
+    if (blockSizeInBytes > 0) {
+      val blockSizeInBM = (blockSizeInBytes / bytesInMegabyte).toInt
+      if (blockSizeInBM>0) {
+        Some (blockSizeInBM)
+      } else {
+        None
+      }
+    } else {
+      None
+    }
+  }
+
 }

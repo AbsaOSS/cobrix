@@ -69,7 +69,7 @@ final class VarLenNestedReader(copybookContents: String,
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SparseIndexEntry] = {
     var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
-    val inputSplitSizeMB: Option[Int] = readerProperties.inputSplitSizeMB
+    val inputSplitSizeMB: Option[Int] = getSplitSizeMB
 
     if (inputSplitSizeRecords.isDefined) {
       if (inputSplitSizeRecords.get < 1 || inputSplitSizeRecords.get > 1000000000) {
@@ -115,6 +115,14 @@ final class VarLenNestedReader(copybookContents: String,
     }
     if (readerProperties.endOffset < 0) {
       throw new IllegalArgumentException(s"Invalid record end offset = ${readerProperties.endOffset}. A record end offset cannot be negative.")
+    }
+  }
+
+  private def getSplitSizeMB: Option[Int] = {
+    if (readerProperties.inputSplitSizeMB.isDefined) {
+      readerProperties.inputSplitSizeMB
+    } else {
+      readerProperties.hdfsDefaultBlockSize
     }
   }
 }

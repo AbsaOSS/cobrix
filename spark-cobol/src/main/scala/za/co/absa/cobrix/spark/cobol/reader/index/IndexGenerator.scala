@@ -44,6 +44,7 @@ object IndexGenerator {
     var bytesInChunk = 0L
     var recordIndex = 0
     var isHierarchical = copybook.nonEmpty && segmentField.nonEmpty
+    val isSplitBySize = recordsPerIndexEntry.isEmpty && sizePerIndexEntryMB.nonEmpty
 
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
 
@@ -76,7 +77,14 @@ object IndexGenerator {
               index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
               index += indexEntry
               recordsInChunk = 0
-              bytesInChunk = 0L
+              if (isSplitBySize) {
+                // If indexes are split by size subtract the size of the split from the total bytes read.
+                // This way the mismatch between Spark partitions and HDFS blocks won't accumulate.
+                // This wahieves better alignment between Spark partitions and HDFS blocks.
+                bytesInChunk -= sizePerIndexEntryMB.get.toLong * Constants.megabyte
+              } else {
+                bytesInChunk = 0L
+              }
             }
           }
         }
