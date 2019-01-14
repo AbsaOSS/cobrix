@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
+import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
@@ -27,6 +28,7 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenRe
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator, LocalityParameters}
+import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
 
 /**
   * This class represents a Cobol data source.
@@ -124,6 +126,7 @@ class DefaultSource
           isIndexGenerationNeeded = parameters.isUsingIndex,
           inputSplitRecords = parameters.inputSplitRecords,
           inputSplitSizeMB = parameters.inputSplitSizeMB,
+          hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
@@ -134,4 +137,13 @@ class DefaultSource
       )
     }
   }
+
+  private def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {
+    val conf = spark.sparkContext.hadoopConfiguration
+    val fileSystem = FileSystem.get(conf)
+    val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
+    logger.info(s"HDFS default block size = $hdfsBlockSize MB.")
+    hdfsBlockSize
+  }
+
 }

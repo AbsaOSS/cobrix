@@ -26,8 +26,9 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence         Does input files have 4 byte record length headers
   * @param isIndexGenerationNeeded  Is indexing input file before processing is requested
-  * @param inputSplitSizeMB         A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitRecords        The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
+  * @param inputSplitSizeMB         A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
+  * @param hdfsDefaultBlockSize     Default HDFS block size for the HDFS filesystem used. This value is used as the default split size if inputSplitSizeMB is not specified
   * @param startOffset              An offset to the start of the record in each binary data block.
   * @param endOffset                An offset from the end of the record to the end of the binary data block.
   * @param generateRecordId         If true, a record id field will be prepended to each record.
@@ -42,6 +43,7 @@ case class ReaderParameters(
                              isIndexGenerationNeeded: Boolean = false,
                              inputSplitRecords: Option[Int] = None,
                              inputSplitSizeMB: Option[Int] = None,
+                             hdfsDefaultBlockSize: Option[Int] = None,
                              startOffset: Int = 0,
                              endOffset: Int = 0,
                              generateRecordId: Boolean = false,
