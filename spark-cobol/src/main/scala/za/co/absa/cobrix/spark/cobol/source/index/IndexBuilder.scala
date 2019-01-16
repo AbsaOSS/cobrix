@@ -82,7 +82,7 @@ private [source] object IndexBuilder {
 
           index.map(entry => {
             val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
-            val length = if (entry.offsetTo > 0) entry.offsetTo else Long.MaxValue
+            val length = getBlockLengthByIndexEntry(entry)
             (entry, HDFSUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
           })
         }
@@ -105,6 +105,25 @@ private [source] object IndexBuilder {
     }
 
     sqlContext.sparkContext.makeRDD(offsetsLocations)
+  }
+
+  private def getBlockLengthByIndexEntry(entry: SparseIndexEntry): Long = {
+    val indexedLength = if (entry.offsetTo > 0) entry.offsetTo else Long.MaxValue
+
+    // Each entry of a sparse index can be slightly bigger than the default HDFS block size.
+    // The exact size depends on record size and root level boundaries between records.
+    // But overwhelming majority of these additional bytes will be less than 1 MB due to
+    // limitations on mainframe record sizes.
+    // We subtract 1 MB from indexed length to get locality nodes for the significant part
+    // of the block.
+    // In other words we don't care if the last megabyte is not node local as long as
+    // most of the split chunk is node local.
+    val significantLength = if (indexedLength < 10L*Constants.megabyte) {
+      indexedLength
+    } else {
+      indexedLength - Constants.megabyte
+    }
+    significantLength
   }
 
   /**
