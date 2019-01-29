@@ -34,6 +34,8 @@ object ReservedWords {
   val REDEFINES = "REDEFINES"
   val SYNC = "SYNC"
   val TO = "TO"
+  val INDEXED = "INDEXED"
+  val BY = "BY"
 
   // Sync and sign positions
   val LEFT = "LEFT"

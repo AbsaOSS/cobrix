@@ -714,7 +714,14 @@ object CopybookParser {
             throw new SyntaxErrorException(lineNumber, "", s"Modifier DEPENDING should be followed by ON FIELD")
           }
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
-          index += 1
+          index += 2
+        } else if (tokens(index) == INDEXED) {
+          // Handle INDEXED BY
+          if (index >= tokens.length - 2 || tokens(index+1) != BY) {
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier INDEXED should be followed by BY FIELD")
+          }
+          mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
+          index += 2
         } else if (tokens(index) == SIGN) {
           // SIGN [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]
           val except = new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]")
