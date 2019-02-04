@@ -31,6 +31,7 @@ object IndexGenerator {
 
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
+                           isRdwBigEndian: Boolean,
                            recordsPerIndexEntry: Option[Int] = None,
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
@@ -54,7 +55,7 @@ object IndexGenerator {
 
     var endOfFileReached = false
     while (!endOfFileReached) {
-      val recordSize = getNextRecordSize(dataStream)
+      val recordSize = getNextRecordSize(dataStream, isRdwBigEndian)
       if (recordSize <= 0) {
         endOfFileReached = true
       } else {
@@ -131,7 +132,8 @@ object IndexGenerator {
     }
   }
 
-  private def getNextRecordSize(dataStream: SimpleStream): Int = BinaryUtils.extractRdwRecordSize(dataStream.next(rdwHeaderBlock))
+  private def getNextRecordSize(dataStream: SimpleStream, isRdwBigEndian: Boolean): Int =
+    BinaryUtils.extractRdwRecordSize(dataStream.next(rdwHeaderBlock), isRdwBigEndian)
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
     copybook.extractPrimitiveField(segmentIdField, data).toString.trim

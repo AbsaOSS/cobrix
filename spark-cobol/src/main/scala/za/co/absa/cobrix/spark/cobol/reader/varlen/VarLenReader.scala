@@ -26,8 +26,11 @@ import scala.collection.mutable.ArrayBuffer
 /** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records) */
 abstract class VarLenReader extends Reader with Serializable {
 
-  /** Returns true of index generation is requested */
+  /** Returns true if index generation is requested */
   def isIndexGenerationNeeded: Boolean
+
+  /** Returns true if RDW header of variable length files is big endian */
+  def isRdwBigEndian: Boolean
 
   /**
     * Returns a file iterator between particular offsets. This is for faster traversal of big binary files
@@ -54,5 +57,6 @@ abstract class VarLenReader extends Reader with Serializable {
     *
     */
   @throws(classOf[Exception]) def generateIndex(binaryData: SimpleStream,
-                                                fileNumber: Int): ArrayBuffer[SparseIndexEntry]
+                                                fileNumber: Int,
+                                                isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry]
 }

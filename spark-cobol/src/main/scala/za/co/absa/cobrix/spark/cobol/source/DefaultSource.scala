@@ -123,6 +123,7 @@ class DefaultSource
         ReaderParameters(isEbcdic = parameters.isEbcdic,
           lengthFieldName = recordLengthField,
           isRecordSequence = parameters.isRecordSequence,
+          isRdwBigEndian = parameters.isRdwBigEndian,
           isIndexGenerationNeeded = parameters.isUsingIndex,
           inputSplitRecords = parameters.inputSplitRecords,
           inputSplitSizeMB = parameters.inputSplitSizeMB,

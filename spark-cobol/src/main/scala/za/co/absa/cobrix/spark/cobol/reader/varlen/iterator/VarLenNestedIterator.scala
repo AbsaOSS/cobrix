@@ -151,7 +151,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
     val binaryDataStart = dataStream.next(rdwHeaderBlock)
 
-    val recordLength = BinaryUtils.extractRdwRecordSize(binaryDataStart, byteIndex)
+    val recordLength = BinaryUtils.extractRdwRecordSize(binaryDataStart,readerProperties.isRdwBigEndian, byteIndex)
     byteIndex += binaryDataStart.length
 
     if (recordLength > 0) {

@@ -54,6 +54,8 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def isIndexGenerationNeeded: Boolean = readerProperties.isRecordSequence && readerProperties.isIndexGenerationNeeded
 
+  override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
+
   override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
     new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
 
@@ -66,7 +68,7 @@ final class VarLenNestedReader(copybookContents: String,
     * @return An index of the file
     *
     */
-  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SparseIndexEntry] = {
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int, isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
     var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
     val inputSplitSizeMB: Option[Int] = getSplitSizeMB
@@ -90,11 +92,12 @@ final class VarLenNestedReader(copybookContents: String,
     val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
-      case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, inputSplitSizeRecords, inputSplitSizeMB)
+      case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
+        inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
+      case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
+        inputSplitSizeRecords, inputSplitSizeMB)
     }
   }
-
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()

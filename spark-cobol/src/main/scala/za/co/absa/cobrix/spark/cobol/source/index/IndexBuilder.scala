@@ -78,7 +78,8 @@ private [source] object IndexBuilder {
           val fileOrder = row.order
 
           logger.info(s"Going to generate index for the file: $filePath")
-          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0),
+            fileOrder, reader.isRdwBigEndian)
 
           index.map(entry => {
             val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
@@ -166,7 +167,8 @@ private [source] object IndexBuilder {
           val fileOrder = row.order
 
           logger.info(s"Going to generate index for the file: $filePath")
-          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0), fileOrder)
+          val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0),
+            fileOrder, reader.isRdwBigEndian)
           index
         }
         )

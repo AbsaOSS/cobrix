@@ -48,6 +48,7 @@ object CobolParametersParser {
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
+  val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
   val PARAM_SEGMENT_FIELD             = "segment_field"
   val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
@@ -93,6 +94,7 @@ object CobolParametersParser {
       getParameter(PARAM_SOURCE_PATH, params),
       isEbcdic,
       params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
+      params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
       params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
       params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),

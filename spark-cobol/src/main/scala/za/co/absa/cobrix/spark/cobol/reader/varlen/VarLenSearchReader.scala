@@ -74,12 +74,14 @@ final class VarLenSearchReader(copybookContents: String,
 
   override def isIndexGenerationNeeded: Boolean = false
 
+  override def isRdwBigEndian: Boolean = false
+
   override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
     new VarLenSearchIterator(cobolSchema.copybook, binaryData, signatureFieldName, signatureFieldValue, lengthFieldName, minimumLength,
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
-  override def generateIndex(binaryData: SimpleStream, fileNumber: Int): ArrayBuffer[SparseIndexEntry] = {
-    IndexGenerator.sparseIndexGenerator(fileNumber, binaryData)
+  override def generateIndex(binaryData: SimpleStream, fileNumber: Int, isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
+    IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)

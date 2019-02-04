@@ -28,6 +28,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param sourcePath             String containing the path to the Cobol file to be parsed.
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param isRecordSequence       Does input files have 4 byte record length headers
+  * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
   * @param isUsingIndex           Is indexing input file before processing is requested
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
@@ -49,6 +50,7 @@ case class CobolParameters(
                             sourcePath:            Option[String],
                             isEbcdic:              Boolean,
                             isRecordSequence:      Boolean,
+                            isRdwBigEndian:        Boolean,
                             isUsingIndex:          Boolean,
                             inputSplitRecords:     Option[Int],
                             inputSplitSizeMB:      Option[Int],
