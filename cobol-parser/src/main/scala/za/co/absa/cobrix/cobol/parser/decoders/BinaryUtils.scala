@@ -278,13 +278,17 @@ object BinaryUtils {
   }
 
   /** Extracts record length from an RDW 4 byte header.**/
-  def extractRdwRecordSize(data: Array[Byte], byteIndex: Long = 0L): Int = {
+  def extractRdwRecordSize(data: Array[Byte], isBigEndian: Boolean, byteIndex: Long = 0L): Int = {
     val rdwHeaderBlock = 4
     if (data.length < rdwHeaderBlock) {
       -1
     }
     else {
-      val recordLength = (data(2) & 0xFF) + 256 * (data(3) & 0xFF)
+      val recordLength = if (isBigEndian) {
+        (data(1) & 0xFF) + 256 * (data(0) & 0xFF)
+      } else {
+        (data(2) & 0xFF) + 256 * (data(3) & 0xFF)
+      }
 
       if (recordLength > 0) {
         if (recordLength > Constants.maxRdWRecordSize) {

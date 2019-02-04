@@ -836,6 +836,11 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.3.2 to be released soon
+  - This is a minor feature release.
+  - Added support for big endian RDW headers in record sequence files `option("is_rdw_big_endian", "true")`. By default RDW headers are expected to be little-endian (for compatibility with earlier versions of Cobrix).
+  - Improved default settings for sparse index generation to achieve better data locality.
+
 - #### 0.3.1 released 11 Jan 2019
   - This is a maintenance release.
   - Added support for PICs specifying separate sign character (for example, `9(4)+`).

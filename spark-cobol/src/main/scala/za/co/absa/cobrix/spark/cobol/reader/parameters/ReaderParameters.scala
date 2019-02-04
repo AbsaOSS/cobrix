@@ -25,6 +25,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param isEbcdic                 If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence         Does input files have 4 byte record length headers
+  * @param isRdwBigEndian           Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
   * @param isIndexGenerationNeeded  Is indexing input file before processing is requested
   * @param inputSplitRecords        The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param inputSplitSizeMB         A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
@@ -40,6 +41,7 @@ case class ReaderParameters(
                              isEbcdic: Boolean = true,
                              lengthFieldName: Option[String] = None,
                              isRecordSequence: Boolean = false,
+                             isRdwBigEndian: Boolean = false,
                              isIndexGenerationNeeded: Boolean = false,
                              inputSplitRecords: Option[Int] = None,
                              inputSplitSizeMB: Option[Int] = None,
