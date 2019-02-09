@@ -70,16 +70,18 @@ object SparkUtils {
       name
     }
 
-    def flattenStructArray(path: String, structField: StructField, arrayType: ArrayType): Unit = {
+    def flattenStructArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       val maxInd = df.agg(max(expr(s"size($path${structField.name})"))).collect()(0)(0).toString.toInt
       var i = 0
       while (i < maxInd) {
         arrayType.elementType match {
           case st: StructType =>
-            flattenGroup(s"$path`${structField.name}`[$i].", st)
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
+            flattenGroup(s"$path`${structField.name}`[$i].", newFieldNamePrefix, st)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
           case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
-            val newFieldName = getNewFieldName(structField.name)
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
+            val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
             fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName)
             stringFields += s"""expr("$path`${structField.name}`[$i] AS `$newFieldName`")"""
           case _ =>
@@ -89,10 +91,10 @@ object SparkUtils {
     }
 
 
-    def flattenArray(path: String, structField: StructField, arrayType: ArrayType): Unit = {
+    def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
         case st: StructType =>
-          flattenStructArray(path, structField, arrayType)
+          flattenStructArray(path, fieldNamePrefix, structField, arrayType)
         case fld if combineArraysOfPrimitives =>
           // Aggregating arrays of primitives by concatenating their values
           val newFieldName = getNewFieldName(structField.name)
@@ -100,19 +102,20 @@ object SparkUtils {
           stringFields += s"""expr("concat_ws(' ', $path`${structField.name}`) AS `$newFieldName`")"""
         case fld =>
           // Aggregating arrays of primitives by projecting it's columns
-          flattenStructArray(path, structField, arrayType)
+          flattenStructArray(path, fieldNamePrefix, structField, arrayType)
       }
     }
 
-    def flattenGroup(path: String, structField: StructType): Unit = {
+    def flattenGroup(path: String, fieldNamePrefix: String, structField: StructType): Unit = {
       structField.foreach(field => {
+        val newFieldNamePrefix = s"${fieldNamePrefix}${field.name}_"
         field.dataType match {
           case st: StructType =>
-            flattenGroup(s"$path`${field.name}`.", st)
+            flattenGroup(s"$path`${field.name}`.", newFieldNamePrefix, st)
           case arr: ArrayType =>
-            flattenArray(path, field, arr)
+            flattenArray(path, newFieldNamePrefix, field, arr)
           case fld =>
-            val newFieldName = getNewFieldName(field.name)
+            val newFieldName = getNewFieldName(s"$fieldNamePrefix${field.name}")
             fields += expr(s"$path`${field.name}`").as(newFieldName)
             if (path.contains('['))
               stringFields += s"""expr("$path`${field.name}` AS `$newFieldName`")"""
@@ -122,7 +125,7 @@ object SparkUtils {
       })
     }
 
-    flattenGroup("", df.schema)
+    flattenGroup("", "", df.schema)
     logger.info(stringFields.mkString("Flattening code: \n.select(\n", ",\n", "\n)"))
     df.select(fields: _*)
   }
