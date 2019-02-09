@@ -180,4 +180,19 @@ class SyntaxErrorsSpec extends FunSuite {
     CopybookParser.parseTree(copyBookContents)
   }
 
+  test("Allow COMP- inside field names") {
+    // COMP-ACCOUNT-I is a valid field name. The parser should not be confused parsing it
+    // although it contains 'COMP-'
+    val copyBookContents =
+      """        12  ACCOUNT-DETAIL    OCCURS 80
+        |               DEPENDING ON NUMBER-OF-ACCTS
+        |               INDEXED BY COMP-ACCOUNT-I.
+        |          15  ACCOUNT-NUMBER     PIC X(24).
+        |          15  ACCOUNT-TYPE-N     PIC 9(5) COMP-3.
+        |          15  ACCOUNT-TYPE-X     REDEFINES
+        |               ACCOUNT-TYPE-N  PIC X(3).
+        |""".stripMargin
+    CopybookParser.parseTree(copyBookContents)
+  }
+
 }
