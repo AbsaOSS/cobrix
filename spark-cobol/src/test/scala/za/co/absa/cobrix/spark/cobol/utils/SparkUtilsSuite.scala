@@ -41,4 +41,31 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
     df2.show(false)
   }
 
+  test("Test schema flattening of a matrix") {
+    val f = List(
+      List(
+        List(1, 2, 3, 4, 5, 6),
+        List(7, 8, 9, 10, 11, 12, 13)
+      ), List(
+        List(201, 202, 203, 204, 205, 206),
+        List(207, 208, 209, 210, 211, 212, 213)
+      ), List(
+        List(201, 202, 203, 204, 205, 206),
+        List(207, 208, 209, 210, 211, 212, 213)
+      ), List(
+        List(201, 202, 203, 204, 205, 206),
+        List(207, 208, 209, 210, 211, 212, 213)
+      )
+    )
+    val df = f.toDF()
+
+    df.printSchema()
+
+    val df2 = SparkUtils.flattenSchema(df, false)
+
+    df2.printSchema()
+
+    df2.show(false)
+  }
+
 }
