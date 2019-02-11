@@ -23,6 +23,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 
 /**
@@ -70,6 +71,21 @@ object SparkUtils {
       name
     }
 
+    /**
+      * For an array of arrays of arrays, ... get the final element type at the bottom of the array
+      *
+      * @param arrayType An array data type from a Spark dataframe schema
+      * @return A non-array data type at the bottom of array nesting
+      */
+    @tailrec
+    def getDeepestArrayType(arrayType: ArrayType): DataType = {
+      arrayType.elementType match {
+        case a: ArrayType => getDeepestArrayType(a)
+        case b => b
+      }
+    }
+
+
     def flattenStructArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       val maxInd = df.agg(max(expr(s"size($path${structField.name})"))).collect()(0)(0).toString.toInt
       var i = 0
@@ -78,6 +94,9 @@ object SparkUtils {
           case st: StructType =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
             flattenGroup(s"$path`${structField.name}`[$i].", newFieldNamePrefix, st)
+          case ar: ArrayType =>
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
+            flattenArray(s"$path`${structField.name}`[$i].", newFieldNamePrefix, structField, ar)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
           case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
@@ -90,11 +109,35 @@ object SparkUtils {
       }
     }
 
+    def flattenNestedArrays(path: String, fieldNamePrefix: String, arrayType: ArrayType): Unit = {
+      val maxInd = df.agg(max(expr(s"size($path)"))).collect()(0)(0).toString.toInt
+      var i = 0
+      while (i < maxInd) {
+        arrayType.elementType match {
+          case st: StructType =>
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
+            flattenGroup(s"$path[$i]", newFieldNamePrefix, st)
+          case ar: ArrayType =>
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
+            flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar)
+          // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
+          case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
+            val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
+            val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
+            fields += expr(s"$path[$i]").as(newFieldName)
+            stringFields += s"""expr("$path`[$i] AS `$newFieldName`")"""
+          case _ =>
+        }
+        i += 1
+      }
+    }
 
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
         case st: StructType =>
           flattenStructArray(path, fieldNamePrefix, structField, arrayType)
+        case ar: ArrayType =>
+          flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
         case fld if combineArraysOfPrimitives =>
           // Aggregating arrays of primitives by concatenating their values
           val newFieldName = getNewFieldName(structField.name)
