@@ -86,6 +86,14 @@ object SparkUtils {
     }
 
 
+    /**
+      * Aggregating arrays of primitives by projecting it's columns
+      *
+      * @param path path to an StructArray
+      * @param fieldNamePrefix Prefix for the field name
+      * @param structField StructField
+      * @param arrayType ArrayType
+      */
     def flattenStructArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       val maxInd = df.agg(max(expr(s"size($path${structField.name})"))).collect()(0)(0).toString.toInt
       var i = 0
@@ -98,12 +106,11 @@ object SparkUtils {
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
             flattenArray(s"$path`${structField.name}`[$i].", newFieldNamePrefix, structField, ar)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
-          case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
+          case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
             fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName)
             stringFields += s"""expr("$path`${structField.name}`[$i] AS `$newFieldName`")"""
-          case _ =>
         }
         i += 1
       }
@@ -121,14 +128,33 @@ object SparkUtils {
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
             flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
-          case _: StringType | _: TimestampType | _: DateType | _: BooleanType | _: BinaryType | _: NumericType | _: NullType =>
+          case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
             fields += expr(s"$path[$i]").as(newFieldName)
             stringFields += s"""expr("$path`[$i] AS `$newFieldName`")"""
-          case _ =>
         }
         i += 1
+      }
+    }
+
+    /**
+      * Aggregating arrays of primitives by concatenating their values
+      *
+      * @param path path to an array of primitives
+      * @param name structField name
+      */
+    def flattenArrayOfPrimitives(path: String, name: String): Unit ={
+      val newFieldName = getNewFieldName(name)
+      fields += concat_ws(" ", expr(s"$path`$name`")).as(newFieldName)
+      stringFields += s"""expr("concat_ws(' ', $path`$name`) AS `$newFieldName`")"""
+    }
+
+    def flattenNormalArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
+      if (combineArraysOfPrimitives) {
+        flattenArrayOfPrimitives(path, structField.name)
+      } else {
+        flattenStructArray(path, fieldNamePrefix, structField, arrayType)
       }
     }
 
@@ -138,14 +164,8 @@ object SparkUtils {
           flattenStructArray(path, fieldNamePrefix, structField, arrayType)
         case ar: ArrayType =>
           flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
-        case fld if combineArraysOfPrimitives =>
-          // Aggregating arrays of primitives by concatenating their values
-          val newFieldName = getNewFieldName(structField.name)
-          fields += concat_ws(" ", expr(s"$path`${structField.name}`")).as(newFieldName)
-          stringFields += s"""expr("concat_ws(' ', $path`${structField.name}`) AS `$newFieldName`")"""
-        case fld =>
-          // Aggregating arrays of primitives by projecting it's columns
-          flattenStructArray(path, fieldNamePrefix, structField, arrayType)
+        case _ =>
+          flattenNormalArray(path, fieldNamePrefix, structField, arrayType)
       }
     }
 
@@ -157,7 +177,7 @@ object SparkUtils {
             flattenGroup(s"$path`${field.name}`.", newFieldNamePrefix, st)
           case arr: ArrayType =>
             flattenArray(path, newFieldNamePrefix, field, arr)
-          case fld =>
+          case _ =>
             val newFieldName = getNewFieldName(s"$fieldNamePrefix${field.name}")
             fields += expr(s"$path`${field.name}`").as(newFieldName)
             if (path.contains('['))
