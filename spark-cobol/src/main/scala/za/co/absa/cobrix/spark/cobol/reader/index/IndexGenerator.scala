@@ -136,6 +136,7 @@ object IndexGenerator {
     BinaryUtils.extractRdwRecordSize(dataStream.next(rdwHeaderBlock), isRdwBigEndian)
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
-    copybook.extractPrimitiveField(segmentIdField, data).toString.trim
+    val v = copybook.extractPrimitiveField(segmentIdField, data)
+    if (v == null) "" else v.toString.trim
   }
 }
