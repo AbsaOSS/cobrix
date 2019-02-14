@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.3.1</version>
+      <version>0.3.2</version>
 </dependency>
 ```
 
@@ -170,8 +170,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.3.0.jar
-* cobol-parser-0.3.0.jar
+* spark-cobol-0.3.2.jar
+* cobol-parser-0.3.2.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -836,10 +836,11 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
-- #### 0.3.2 to be released soon
+- #### 0.3.2 released 14 Feb 2019
   - This is a minor feature release.
   - Added support for big endian RDW headers in record sequence files `option("is_rdw_big_endian", "true")`. By default RDW headers are expected to be little-endian (for compatibility with earlier versions of Cobrix).
   - Improved default settings for sparse index generation to achieve better data locality.
+  - Fixed segment id filter pushdown if the segment id field contains non-decodable values
 
 - #### 0.3.1 released 11 Jan 2019
   - This is a maintenance release.
