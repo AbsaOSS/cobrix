@@ -17,19 +17,23 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import java.io.File
+import java.util.{Random, UUID}
 
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
+import org.spark_project.guava.io.Files
 
-class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
+class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   private val baseTestDir = TempDir.getNew // tmpDir/8377740/
   private val innerTestDir1 = new File(s"$baseTestDir/inner1") // tmpDir/8377740/inner1
   private val innerTestDir2 = new File(s"$baseTestDir/inner2") // tmpDir/8377740/inner2
   private val innerTestDir3 = new File(s"$innerTestDir2/inner3") // tmpDir/8377740/inner2/inner3
   private val innerTestDir4 = new File(s"$innerTestDir3/inner4") // tmpDir/8377740/inner2/inner3/inner4
+
+  private val controlledLengthFilesDir = new File(baseTestDir, "controlled_length_files_dir")
 
   private val testFiles = Map(
     baseTestDir.getName -> Array("a", ".a", "_a"),
@@ -58,11 +62,17 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
         testFiles(dir.getName)
           .foreach(fileName => new File(dir, fileName).createNewFile())
       })
+
+    controlledLengthFilesDir.mkdirs()
   }
 
   override def afterAll() {
     println(s"Deleting test directory at ${baseTestDir.getAbsolutePath}")
     CommonsFileUtils.deleteDirectory(baseTestDir)
+  }
+
+  override def beforeEach(): Unit = {
+    CommonsFileUtils.cleanDirectory(controlledLengthFilesDir)
   }
 
   behavior of FileUtils.getClass.getName
@@ -114,5 +124,82 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll {
   it should "retrieve all files recursively with glob pattern receiving Hadoop conf" in {
     val paths = FileUtils.getFiles(baseTestDir.getCanonicalPath + "/*", new Configuration(), recursive = true)
     assert(paths.size == 5, "should have ignored files starting with . or _")
+  }
+
+  it should "return the number of files inside a directory" in {
+
+    val length = 10
+    val numFiles = 5
+
+    Range.apply(0, 5, 1).foreach(r => produceFileOfLength(getRandomFileToBeWritten, length + r))
+
+    assertResult(numFiles)(FileUtils.getNumberOfFilesInDir(controlledLengthFilesDir.getAbsolutePath, fileSystem))
+  }
+
+  it should "return 0 if there are no files inside a directory" in {
+
+  }
+
+  it should "return true if found first non-divisible file" in {
+
+    val divisor = 10
+
+    produceFileOfLength(getRandomFileToBeWritten, divisor)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 2)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
+    produceFileOfLength(getRandomFileToBeWritten, divisor + 1) // non-divisible
+
+    assertResult(true)(FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+  }
+
+  it should "return number of non-divisible files" in {
+
+    val divisor = 10
+
+    produceFileOfLength(getRandomFileToBeWritten, divisor)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 2)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 4 + 1) // non-divisible
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 5 + 1) // non-divisible
+
+    assertResult(2)(FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+  }
+
+  it should "return false if no files are non-divisible by expected divisor" in {
+
+    val divisor = 10
+
+    produceFileOfLength(getRandomFileToBeWritten, divisor)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 2)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 4)
+
+    assertResult(false)(FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+
+  }
+
+  it should "return 0 if no files are non-divisible by expected divisor" in {
+
+    val divisor = 10
+
+    produceFileOfLength(getRandomFileToBeWritten, divisor)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 2)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 4) // non-divisible
+    produceFileOfLength(getRandomFileToBeWritten, divisor * 5) // non-divisible
+
+    assertResult(0)(FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+  }
+
+  private def getRandomFileToBeWritten: File = new File(controlledLengthFilesDir, UUID.randomUUID().toString)
+
+  private def produceFileOfLength(destination: File, length: Int): Unit = {
+    Files.write(getBytes(length), destination)
+  }
+
+  private def getBytes(length: Int): Array[Byte] = {
+    val bytes = new Array[Byte](length)
+    new Random().nextBytes(bytes)
+    bytes
   }
 }

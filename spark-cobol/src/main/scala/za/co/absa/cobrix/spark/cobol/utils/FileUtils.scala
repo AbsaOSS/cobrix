@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
-import org.apache.hadoop.mapred.FileInputFormat
+import org.slf4j.LoggerFactory
 
 /**
   * Retrieves files from a given file system.
@@ -31,6 +31,8 @@ import org.apache.hadoop.mapred.FileInputFormat
   * Applies the same filter as Hadoop's FileInputFormat, which excludes files starting with '.' or '_'.
   */
 object FileUtils {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val hiddenFileFilter = new PathFilter() {
     def accept(p: Path): Boolean = {
@@ -132,4 +134,40 @@ object FileUtils {
       }
     })
   }
+
+  def getNumberOfFilesInDir(directory: String, fileSystem: FileSystem): Int = fileSystem.listStatus(new Path(directory)).length
+
+  /**
+    * Finds the first file that is non-divisible by a given divisor and logs its name.
+    */
+  def findAndLogFirstNonDivisibleFile(sourceDir: String, divisor: Long, fileSystem: FileSystem): Boolean = {
+
+    val allFiles = fileSystem.listStatus(new Path(sourceDir))
+
+    val firstNonDivisibleFile = allFiles.find(isNonDivisible(_, divisor))
+
+    if (firstNonDivisibleFile.isDefined) {
+      logger.error(s"File ${firstNonDivisibleFile.get.getPath} IS NOT divisible by $divisor.")
+    }
+
+    firstNonDivisibleFile.isDefined
+  }
+
+  /**
+    * Finds all the files the are not divisible by a given divisor and logs their names.
+    */
+  def findAndLogAllNonDivisibleFiles(sourceDir: String, divisor: Long, fileSystem: FileSystem): Long = {
+
+    val allFiles = fileSystem.listStatus(new Path(sourceDir))
+
+    val allNonDivisibleFiles = allFiles.filter(isNonDivisible(_, divisor))
+
+    if (allNonDivisibleFiles.nonEmpty) {
+      allNonDivisibleFiles.foreach(file => logger.error(s"File ${file.getPath} IS NOT divisible by $divisor."))
+    }
+
+    allNonDivisibleFiles.length
+  }
+
+  private def isNonDivisible(fileStatus: FileStatus, divisor: Long) = fileStatus.getLen % divisor != 0
 }
