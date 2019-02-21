@@ -918,6 +918,13 @@ For multisegment variable lengths tests:
 | .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
 | .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
 | .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+
+## Acknowledgements
+
+- Thanks to the following people the project was made possible and for all the help along the way: 
+  - Andrew Baker, Francois Cillers, Adam Smyczek,  Jan Scherbaum, Peter Moon, Clifford Lategan, Rekha Gorantla, Mohit Suryavanshi, Niel Steyn
+- Thanks to the authors of the original COBOL parser. When we started the project we had zero knowledge of COBOL and this parser was a good starting point:
+  - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
    
 
 ## Dicalaimer
