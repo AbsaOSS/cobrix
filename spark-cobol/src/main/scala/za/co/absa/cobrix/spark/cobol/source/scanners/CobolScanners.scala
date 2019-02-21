@@ -84,7 +84,7 @@ private [source] object CobolScanners {
     val recordSize = reader.getCobolSchema.getRecordSize + reader.getRecordStartOffset + reader.getRecordEndOffset
 
     if (areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
-      throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the calculated RECORD SIZE ($recordSize). Check the logs for the names of the files.")
+      throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
     }
 
     val schema = reader.getSparkSchema
@@ -95,7 +95,7 @@ private [source] object CobolScanners {
 
   private def areThereNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Boolean = {
 
-    val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 10000
+    val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
 
     val fileSystem = FileSystem.get(hadoopConfiguration)
 

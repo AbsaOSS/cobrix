@@ -138,6 +138,35 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
 
   it should "return 0 if there are no files inside a directory" in {
 
+    assertResult(0)(FileUtils.getNumberOfFilesInDir(controlledLengthFilesDir.getAbsolutePath, fileSystem))
+  }
+
+  it should "return 1 if there source is actually a file" in {
+
+    val aFile = getRandomFileToBeWritten
+    produceFileOfLength(aFile, 10)
+
+    assertResult(1)(FileUtils.getNumberOfFilesInDir(aFile.getAbsolutePath, fileSystem))
+  }
+
+  it should "return the file itself if non-divisible and if asked for first file" in {
+
+    val aFile = getRandomFileToBeWritten
+
+    val divisor = 10
+    produceFileOfLength(aFile, divisor + 1)
+
+    assertResult(true)(FileUtils.findAndLogFirstNonDivisibleFile(aFile.getAbsolutePath, divisor, fileSystem))
+  }
+
+  it should "return the file itself if non-divisible and if asked for multiple files" in {
+
+    val aFile = getRandomFileToBeWritten
+
+    val divisor = 10
+    produceFileOfLength(aFile, divisor + 1)
+
+    assertResult(1)(FileUtils.findAndLogAllNonDivisibleFiles(aFile.getAbsolutePath, divisor, fileSystem))
   }
 
   it should "return true if found first non-divisible file" in {
