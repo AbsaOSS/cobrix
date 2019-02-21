@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.3.2</version>
+      <version>0.3.3</version>
 </dependency>
 ```
 
@@ -170,8 +170,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.3.2.jar
-* cobol-parser-0.3.2.jar
+* spark-cobol-0.3.3.jar
+* cobol-parser-0.3.3.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -836,12 +836,15 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.3.3 released 21 Feb 2019
+  - This is a hotfix release.
+  - Fixed segment id filter pushdown if the segment id field contains non-decodable values
+
 - #### 0.3.2 released 14 Feb 2019
   - This is a minor feature release.
   - Added support for big endian RDW headers in record sequence files `option("is_rdw_big_endian", "true")`. By default RDW headers are expected to be little-endian (for compatibility with earlier versions of Cobrix).
   - Improved default settings for sparse index generation to achieve better data locality.
   - Fixed parsing field names containing 'COMP-' inside its name.
-  - Fixed segment id filter pushdown if the segment id field contains non-decodable values
 
 - #### 0.3.1 released 11 Jan 2019
   - This is a maintenance release.
@@ -918,6 +921,13 @@ For multisegment variable lengths tests:
 | .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
 | .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
 | .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+
+## Acknowledgements
+
+- Thanks to the following people the project was made possible and for all the help along the way: 
+  - Andrew Baker, Francois Cillers, Adam Smyczek,  Jan Scherbaum, Peter Moon, Clifford Lategan, Rekha Gorantla, Mohit Suryavanshi, Niel Steyn
+- Thanks to the authors of the original COBOL parser. When we started the project we had zero knowledge of COBOL and this parser was a good starting point:
+  - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
    
 
 ## Dicalaimer
