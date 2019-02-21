@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.scanners
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
@@ -27,6 +28,7 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 private [source] object CobolScanners {
 
@@ -80,9 +82,28 @@ private [source] object CobolScanners {
     // https://spark.apache.org/docs/2.1.1/api/java/org/apache/spark/SparkContext.html#binaryFiles(java.lang.String,%20int)
 
     val recordSize = reader.getCobolSchema.getRecordSize + reader.getRecordStartOffset + reader.getRecordEndOffset
+
+    if (areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
+      throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
+    }
+
     val schema = reader.getSparkSchema
 
     val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
     recordParser(reader, records)
+  }
+
+  private def areThereNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Boolean = {
+
+    val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
+
+    val fileSystem = FileSystem.get(hadoopConfiguration)
+
+    if (FileUtils.getNumberOfFilesInDir(sourceDir, fileSystem) < THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK) {
+      FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem) > 0
+    }
+    else {
+      FileUtils.findAndLogFirstNonDivisibleFile(sourceDir, divisor, fileSystem)
+    }
   }
 }

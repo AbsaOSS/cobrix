@@ -20,13 +20,13 @@ import java.io.File
 import java.nio.charset.Charset
 import java.util.UUID
 
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
 import org.spark_project.guava.io.Files
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
-class HDFSUtilsSpec extends FlatSpec with BeforeAndAfterAll {
+class HDFSUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   private val baseTestDir = TempDir.getNew
   private val validFile = new File(baseTestDir, "a_valid_file")
@@ -41,7 +41,6 @@ class HDFSUtilsSpec extends FlatSpec with BeforeAndAfterAll {
   override def afterAll(): Unit = {
     CommonsFileUtils.deleteDirectory(baseTestDir)
   }
-
 
   behavior of HDFSUtils.getClass.getName
 

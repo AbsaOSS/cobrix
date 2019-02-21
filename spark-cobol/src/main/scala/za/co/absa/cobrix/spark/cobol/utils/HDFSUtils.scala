@@ -17,7 +17,8 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.slf4j.LoggerFactory
 
 /**
   * This object provides utility methods for interacting with HDFS internals.
@@ -80,5 +81,4 @@ object HDFSUtils {
       None
     }
   }
-
 }
