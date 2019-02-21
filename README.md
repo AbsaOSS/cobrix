@@ -836,12 +836,15 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.3.3 released 21 Feb 2019
+  - This is a hotfix release.
+  - Fixed segment id filter pushdown if the segment id field contains non-decodable values
+
 - #### 0.3.2 released 14 Feb 2019
   - This is a minor feature release.
   - Added support for big endian RDW headers in record sequence files `option("is_rdw_big_endian", "true")`. By default RDW headers are expected to be little-endian (for compatibility with earlier versions of Cobrix).
   - Improved default settings for sparse index generation to achieve better data locality.
   - Fixed parsing field names containing 'COMP-' inside its name.
-  - Fixed segment id filter pushdown if the segment id field contains non-decodable values
 
 - #### 0.3.1 released 11 Jan 2019
   - This is a maintenance release.
