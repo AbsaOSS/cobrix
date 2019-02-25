@@ -86,7 +86,7 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
                              |""".stripMargin.replace("\r\n", "\n")
 
     val df = spark.read.json(nestedSampleData.toDS)
-    val dfFlattened = SparkUtils.flattenSchema(df, combineArraysOfPrimitives = false)
+    val dfFlattened = SparkUtils.flattenSchema(df)
 
     val originalSchema = df.schema.treeString
     val originalData = showString(df)
@@ -96,6 +96,40 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
 
     assertSchema(originalSchema, expectedOrigSchema)
     assertResults(originalData, expectedOrigData)
+
+    assertSchema(flatSchema, expectedFlatSchema)
+    assertResults(flatData, expectedFlatData)
+  }
+
+  test("Test schema flattening when short names are used") {
+    val expectedFlatSchema = """root
+                               | |-- id: long (nullable = true)
+                               | |-- conditions_0_amount: long (nullable = true)
+                               | |-- checkNums_0: string (nullable = true)
+                               | |-- checkNums_1: string (nullable = true)
+                               | |-- checkNums_2: string (nullable = true)
+                               | |-- checkNums_3: string (nullable = true)
+                               | |-- checkNums_4: string (nullable = true)
+                               | |-- checkNums_5: string (nullable = true)
+                               | |-- legs_0_legid: long (nullable = true)
+                               |""".stripMargin.replace("\r\n", "\n")
+    val expectedFlatData = """+---+-------------------+-----------+-----------+-----------+-----------+-----------+-----------+------------+
+                             ||id |conditions_0_amount|checkNums_0|checkNums_1|checkNums_2|checkNums_3|checkNums_4|checkNums_5|legs_0_legid|
+                             |+---+-------------------+-----------+-----------+-----------+-----------+-----------+-----------+------------+
+                             ||1  |100                |1          |2          |3b         |4          |5c         |6          |100         |
+                             ||2  |200                |3          |4          |5b         |6          |7c         |8          |200         |
+                             ||3  |300                |6          |7          |8b         |9          |0c         |1          |300         |
+                             ||4  |null               |null       |null       |null       |null       |null       |null       |null        |
+                             ||5  |null               |null       |null       |null       |null       |null       |null       |null        |
+                             |+---+-------------------+-----------+-----------+-----------+-----------+-----------+-----------+------------+
+                             |
+                             |""".stripMargin.replace("\r\n", "\n")
+
+    val df = spark.read.json(nestedSampleData.toDS)
+    val dfFlattened = SparkUtils.flattenSchema(df, useShortFieldNames = true)
+
+    val flatSchema = dfFlattened.schema.treeString
+    val flatData = showString(dfFlattened)
 
     assertSchema(flatSchema, expectedFlatSchema)
     assertResults(flatData, expectedFlatData)
@@ -162,19 +196,26 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
 
     val df = f.toDF()
 
-    val dfFlattened = SparkUtils.flattenSchema(df, combineArraysOfPrimitives = false)
+    val dfFlattened1 = SparkUtils.flattenSchema(df)
+    val dfFlattened2 = SparkUtils.flattenSchema(df, useShortFieldNames = true)
 
     val originalSchema = df.schema.treeString
     val originalData = showString(df)
 
-    val flatSchema = dfFlattened.schema.treeString
-    val flatData = showString(dfFlattened)
+    val flatSchema1 = dfFlattened1.schema.treeString
+    val flatData1 = showString(dfFlattened1)
+
+    val flatSchema2 = dfFlattened2.schema.treeString
+    val flatData2 = showString(dfFlattened2)
 
     assertSchema(originalSchema, expectedOrigSchema)
     assertResults(originalData, expectedOrigData)
 
-    assertSchema(flatSchema, expectedFlatSchema)
-    assertResults(flatData, expectedFlatData)
+    assertSchema(flatSchema1, expectedFlatSchema)
+    assertResults(flatData1, expectedFlatData)
+
+    assertSchema(flatSchema2, expectedFlatSchema)
+    assertResults(flatData2, expectedFlatData)
   }
 
   private def showString(df: DataFrame, numRows: Int = 20): String = {
