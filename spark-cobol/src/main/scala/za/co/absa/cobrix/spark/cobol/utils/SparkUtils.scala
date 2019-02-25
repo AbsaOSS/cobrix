@@ -53,9 +53,11 @@ object SparkUtils {
     * especially on a vary big dataframes.
     *
     * @param df A dataframe
+    * @param useShortFieldNames When flattening a schema each field name will contain full path. You can override this
+    *                           behavior and use a short field names instead
     * @return A new dataframe with flat schema.
     */
-  def flattenSchema(df: DataFrame, combineArraysOfPrimitives: Boolean = true): DataFrame = {
+  def flattenSchema(df: DataFrame, useShortFieldNames: Boolean = false): DataFrame = {
     val fields = new mutable.ListBuffer[Column]()
     val stringFields = new mutable.ListBuffer[String]()
     val usedNames = new mutable.HashSet[String]()
@@ -138,24 +140,8 @@ object SparkUtils {
       }
     }
 
-    /**
-      * Aggregating arrays of primitives by concatenating their values
-      *
-      * @param path path to an array of primitives
-      * @param name structField name
-      */
-    def flattenArrayOfPrimitives(path: String, name: String): Unit = {
-      val newFieldName = getNewFieldName(name)
-      fields += concat_ws(" ", expr(s"$path`$name`")).as(newFieldName)
-      stringFields += s"""expr("concat_ws(' ', $path`$name`) AS `$newFieldName`")"""
-    }
-
     def flattenNormalArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
-      if (combineArraysOfPrimitives) {
-        flattenArrayOfPrimitives(path, structField.name)
-      } else {
-        flattenStructArray(path, fieldNamePrefix, structField, arrayType)
-      }
+      flattenStructArray(path, fieldNamePrefix, structField, arrayType)
     }
 
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
@@ -171,7 +157,11 @@ object SparkUtils {
 
     def flattenGroup(path: String, fieldNamePrefix: String, structField: StructType): Unit = {
       structField.foreach(field => {
-        val newFieldNamePrefix = s"${fieldNamePrefix}${field.name}_"
+        val newFieldNamePrefix = if (useShortFieldNames) {
+          s"${field.name}_"
+        } else {
+          s"$fieldNamePrefix${field.name}_"
+        }
         field.dataType match {
           case st: StructType =>
             flattenGroup(s"$path`${field.name}`.", newFieldNamePrefix, st)
