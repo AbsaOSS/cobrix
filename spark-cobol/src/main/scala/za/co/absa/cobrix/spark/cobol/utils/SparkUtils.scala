@@ -46,7 +46,7 @@ object SparkUtils {
   }
 
   /**
-    * Given an instance of [[DataFrame]] returns a dataframe with flttened schema.
+    * Given an instance of DataFrame returns a dataframe with flattened schema.
     * All nested structures are flattened and arrays are projected as columns.
     *
     * Note. The method checks the maximum size for each array and that could perform slowly,
@@ -89,10 +89,10 @@ object SparkUtils {
     /**
       * Aggregating arrays of primitives by projecting it's columns
       *
-      * @param path path to an StructArray
+      * @param path            path to an StructArray
       * @param fieldNamePrefix Prefix for the field name
-      * @param structField StructField
-      * @param arrayType ArrayType
+      * @param structField     StructField
+      * @param arrayType       ArrayType
       */
     def flattenStructArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       val maxInd = df.agg(max(expr(s"size($path${structField.name})"))).collect()(0)(0).toString.toInt
@@ -144,7 +144,7 @@ object SparkUtils {
       * @param path path to an array of primitives
       * @param name structField name
       */
-    def flattenArrayOfPrimitives(path: String, name: String): Unit ={
+    def flattenArrayOfPrimitives(path: String, name: String): Unit = {
       val newFieldName = getNewFieldName(name)
       fields += concat_ws(" ", expr(s"$path`$name`")).as(newFieldName)
       stringFields += s"""expr("concat_ws(' ', $path`$name`) AS `$newFieldName`")"""
@@ -195,7 +195,7 @@ object SparkUtils {
 
 
   /**
-    * Given an instance of [[DataFrame]] returns a dataframe where all promitive fields are converted to String
+    * Given an instance of DataFrame returns a dataframe where all primitive fields are converted to String
     *
     * @param df A dataframe
     * @return A new dataframe with all primitive fields as Strings.
