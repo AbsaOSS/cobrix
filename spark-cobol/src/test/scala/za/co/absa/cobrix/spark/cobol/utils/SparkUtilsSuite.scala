@@ -16,29 +16,89 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
+import java.io.ByteArrayOutputStream
+
+import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import org.apache.spark.sql.functions._
+import org.slf4j.LoggerFactory
 
 class SparkUtilsSuite extends FunSuite with SparkTestBase {
+
   import spark.implicits._
 
-  val nestedSampleData: List[String] = """[{"id":1,"legs":[{"legid":100,"conditions":[{"checks":[{"checkNums":["1","2","3b","4","5c","6"]}],"amount":100}]}]}]""" ::
-    """[{"id":2,"legs":[{"legid":200,"conditions":[{"checks":[{"checkNums":["3","4","5b","6","7c","8"]}],"amount":200}]}]}]""" ::
-    """[{"id":3,"legs":[{"legid":300,"conditions":[{"checks":[{"checkNums":["6","7","8b","9","0c","1"]}],"amount":300}]}]}]""" ::
-    """[{"id":4,"legs":[]}]""" ::
-    """[{"id":5,"legs":null}]""" :: Nil
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
+  val nestedSampleData: List[String] =
+    """[{"id":1,"legs":[{"legid":100,"conditions":[{"checks":[{"checkNums":["1","2","3b","4","5c","6"]}],"amount":100}]}]}]""" ::
+      """[{"id":2,"legs":[{"legid":200,"conditions":[{"checks":[{"checkNums":["3","4","5b","6","7c","8"]}],"amount":200}]}]}]""" ::
+      """[{"id":3,"legs":[{"legid":300,"conditions":[{"checks":[{"checkNums":["6","7","8b","9","0c","1"]}],"amount":300}]}]}]""" ::
+      """[{"id":4,"legs":[]}]""" ::
+      """[{"id":5,"legs":null}]""" :: Nil
 
   test("Test schema flattening of multiple nested structure") {
+    val expectedOrigSchema = """root
+                               | |-- id: long (nullable = true)
+                               | |-- legs: array (nullable = true)
+                               | |    |-- element: struct (containsNull = true)
+                               | |    |    |-- conditions: array (nullable = true)
+                               | |    |    |    |-- element: struct (containsNull = true)
+                               | |    |    |    |    |-- amount: long (nullable = true)
+                               | |    |    |    |    |-- checks: array (nullable = true)
+                               | |    |    |    |    |    |-- element: struct (containsNull = true)
+                               | |    |    |    |    |    |    |-- checkNums: array (nullable = true)
+                               | |    |    |    |    |    |    |    |-- element: string (containsNull = true)
+                               | |    |    |-- legid: long (nullable = true)
+                               |""".stripMargin.replace("\r\n", "\n")
+    val expectedOrigData = """+---+----------------------------------------------------------------------------+
+                             ||id |legs                                                                        |
+                             |+---+----------------------------------------------------------------------------+
+                             ||1  |[[WrappedArray([100,WrappedArray([WrappedArray(1, 2, 3b, 4, 5c, 6)])]),100]]|
+                             ||2  |[[WrappedArray([200,WrappedArray([WrappedArray(3, 4, 5b, 6, 7c, 8)])]),200]]|
+                             ||3  |[[WrappedArray([300,WrappedArray([WrappedArray(6, 7, 8b, 9, 0c, 1)])]),300]]|
+                             ||4  |[]                                                                          |
+                             ||5  |null                                                                        |
+                             |+---+----------------------------------------------------------------------------+
+                             |
+                             |""".stripMargin.replace("\r\n", "\n")
+
+    val expectedFlatSchema = """root
+                               | |-- id: long (nullable = true)
+                               | |-- legs_0_conditions_0_amount: long (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_0: string (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_1: string (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_2: string (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_3: string (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_4: string (nullable = true)
+                               | |-- legs_0_conditions_0_checks_0_checkNums_5: string (nullable = true)
+                               | |-- legs_0_legid: long (nullable = true)
+                               |""".stripMargin.replace("\r\n", "\n")
+    val expectedFlatData = """+---+--------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+------------+
+                             ||id |legs_0_conditions_0_amount|legs_0_conditions_0_checks_0_checkNums_0|legs_0_conditions_0_checks_0_checkNums_1|legs_0_conditions_0_checks_0_checkNums_2|legs_0_conditions_0_checks_0_checkNums_3|legs_0_conditions_0_checks_0_checkNums_4|legs_0_conditions_0_checks_0_checkNums_5|legs_0_legid|
+                             |+---+--------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+------------+
+                             ||1  |100                       |1                                       |2                                       |3b                                      |4                                       |5c                                      |6                                       |100         |
+                             ||2  |200                       |3                                       |4                                       |5b                                      |6                                       |7c                                      |8                                       |200         |
+                             ||3  |300                       |6                                       |7                                       |8b                                      |9                                       |0c                                      |1                                       |300         |
+                             ||4  |null                      |null                                    |null                                    |null                                    |null                                    |null                                    |null                                    |null        |
+                             ||5  |null                      |null                                    |null                                    |null                                    |null                                    |null                                    |null                                    |null        |
+                             |+---+--------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+----------------------------------------+------------+
+                             |
+                             |""".stripMargin.replace("\r\n", "\n")
+
     val df = spark.read.json(nestedSampleData.toDS)
+    val dfFlattened = SparkUtils.flattenSchema(df, combineArraysOfPrimitives = false)
 
-    df.printSchema()
+    val originalSchema = df.schema.treeString
+    val originalData = showString(df)
 
-    val df2 = SparkUtils.flattenSchema(df, false)
+    val flatSchema = dfFlattened.schema.treeString
+    val flatData = showString(dfFlattened)
 
-    df2.printSchema()
+    assertSchema(originalSchema, expectedOrigSchema)
+    assertResults(originalData, expectedOrigData)
 
-    df2.show(false)
+    assertSchema(flatSchema, expectedFlatSchema)
+    assertResults(flatData, expectedFlatData)
   }
 
   test("Test schema flattening of a matrix") {
@@ -57,15 +117,88 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
         List(207, 208, 209, 210, 211, 212, 213)
       )
     )
+
+    val expectedOrigSchema = """root
+                               | |-- value: array (nullable = false)
+                               | |    |-- element: array (containsNull = true)
+                               | |    |    |-- element: integer (containsNull = false)
+                               |""".stripMargin.replace("\r\n", "\n")
+    val expectedOrigData = """+---------------------------------------------------------------------------------------------+
+                             ||value                                                                                        |
+                             |+---------------------------------------------------------------------------------------------+
+                             ||[WrappedArray(1, 2, 3, 4, 5, 6), WrappedArray(7, 8, 9, 10, 11, 12, 13)]                      |
+                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
+                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
+                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
+                             |+---------------------------------------------------------------------------------------------+
+                             |
+                             |""".stripMargin.replace("\r\n", "\n")
+
+    val expectedFlatSchema = """root
+                               | |-- value_0_0: integer (nullable = true)
+                               | |-- value_0_1: integer (nullable = true)
+                               | |-- value_0_2: integer (nullable = true)
+                               | |-- value_0_3: integer (nullable = true)
+                               | |-- value_0_4: integer (nullable = true)
+                               | |-- value_0_5: integer (nullable = true)
+                               | |-- value_1_0: integer (nullable = true)
+                               | |-- value_1_1: integer (nullable = true)
+                               | |-- value_1_2: integer (nullable = true)
+                               | |-- value_1_3: integer (nullable = true)
+                               | |-- value_1_4: integer (nullable = true)
+                               | |-- value_1_5: integer (nullable = true)
+                               | |-- value_1_6: integer (nullable = true)
+                               |""".stripMargin.replace("\r\n", "\n")
+    val expectedFlatData = """+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
+                             ||value_0_0|value_0_1|value_0_2|value_0_3|value_0_4|value_0_5|value_1_0|value_1_1|value_1_2|value_1_3|value_1_4|value_1_5|value_1_6|
+                             |+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
+                             ||1        |2        |3        |4        |5        |6        |7        |8        |9        |10       |11       |12       |13       |
+                             ||201      |202      |203      |204      |205      |206      |207      |208      |209      |210      |211      |212      |213      |
+                             ||201      |202      |203      |204      |205      |206      |207      |208      |209      |210      |211      |212      |213      |
+                             ||201      |202      |203      |204      |205      |206      |207      |208      |209      |210      |211      |212      |213      |
+                             |+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+---------+
+                             |
+                             |""".stripMargin.replace("\r\n", "\n")
+
     val df = f.toDF()
 
-    df.printSchema()
+    val dfFlattened = SparkUtils.flattenSchema(df, combineArraysOfPrimitives = false)
 
-    val df2 = SparkUtils.flattenSchema(df, false)
+    val originalSchema = df.schema.treeString
+    val originalData = showString(df)
 
-    df2.printSchema()
+    val flatSchema = dfFlattened.schema.treeString
+    val flatData = showString(dfFlattened)
 
-    df2.show(false)
+    assertSchema(originalSchema, expectedOrigSchema)
+    assertResults(originalData, expectedOrigData)
+
+    assertSchema(flatSchema, expectedFlatSchema)
+    assertResults(flatData, expectedFlatData)
+  }
+
+  private def showString(df: DataFrame, numRows: Int = 20): String = {
+    val outCapture = new ByteArrayOutputStream
+    Console.withOut(outCapture) {
+      df.show(numRows, truncate = false)
+    }
+    new String(outCapture.toByteArray)
+  }
+
+  private def assertSchema(actualSchema: String, expectedSchema: String): Unit = {
+    if (actualSchema != expectedSchema) {
+      logger.error(s"EXPECTED:\n$expectedSchema")
+      logger.error(s"ACTUAL:\n$actualSchema")
+      fail("Actual schema does not match the expected schema (see above).")
+    }
+  }
+
+  private def assertResults(actualResults: String, expectedResults: String): Unit = {
+    if (actualResults != expectedResults) {
+      logger.error(s"EXPECTED:\n$expectedResults")
+      logger.error(s"ACTUAL:\n$actualResults")
+      fail("Actual dataset data does not match the expected data (see above).")
+    }
   }
 
 }
