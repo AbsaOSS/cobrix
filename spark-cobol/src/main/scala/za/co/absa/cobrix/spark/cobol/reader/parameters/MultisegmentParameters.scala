@@ -21,7 +21,8 @@ package za.co.absa.cobrix.spark.cobol.reader.parameters
   */
 case class MultisegmentParameters(
                                    segmentIdField: String,
-                                   segmentIdFilter: Option[Seq[String]],    // The list of segment ids to read
-                                   segmentLevelIds: Seq[String],    // The list of segment id on corresponding levels
-                                   segmentIdPrefix: String          // A prefix that will be added to all segment id fields
+                                   segmentIdFilter: Option[Seq[String]],     // The list of segment ids to read
+                                   segmentLevelIds: Seq[String],             // The list of segment id on corresponding levels
+                                   segmentIdPrefix: String,                  // A prefix that will be added to all segment id fields
+                                   segmentIdRedefineMap: Map[String, String] // Key = a segment id, Value = a redefined field
                                  )

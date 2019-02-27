@@ -140,7 +140,8 @@ object CobolParametersParser {
         params(PARAM_SEGMENT_FIELD),
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
-        params.getOrElse(PARAM_SEGMENT_ID_PREFIX, "")
+        params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
+        getSegmentIdRedefineMapping(params)
       ))
     }
     else {
@@ -196,4 +197,43 @@ object CobolParametersParser {
       None
     }
   }
+
+  // key - segment id, value - redefine field name
+  /**
+    * Parses the list of redefines and their corresponding segment ids.
+    *
+    * Example:
+    * For
+    * {{{
+    *   sprak.read
+    *     .option("redefine-segment-id: COMPANY", "C,D")
+    *     .option("redefine-segment-id: CONTACT", "P")
+    * }}}
+    *
+    * The corresponding mapping will be:
+    *
+    * {{{
+    *    "C" -> "COMPANY"
+    *    "D" -> "COMPANY"
+    *    "P" -> "PERSON"
+    * }}}
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a sequence of segment ids on the order of hierarchy levels
+    */
+  def getSegmentIdRedefineMapping(params: Map[String, String]): Map[String, String] = {
+    params.flatMap {
+      case (k, v) =>
+        val keyNoCase = k.toLowerCase
+        if (keyNoCase.startsWith("redefine-segment-id:")) {
+          val redefne = k.split(':')(1).trim
+          val segmentIds = v.split(',').map(_.trim)
+          segmentIds.map(segmentId => (segmentId, redefne))
+        } else {
+          Nil
+        }
+    }
+  }
+
+
 }
