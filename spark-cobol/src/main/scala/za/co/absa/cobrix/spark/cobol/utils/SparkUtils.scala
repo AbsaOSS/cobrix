@@ -127,9 +127,7 @@ object SparkUtils {
 
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
-        case st: StructType =>
-          flattenStructArray(path, fieldNamePrefix, structField, arrayType)
-        case ar: ArrayType =>
+        case _: ArrayType =>
           flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
         case _ =>
           flattenStructArray(path, fieldNamePrefix, structField, arrayType)
