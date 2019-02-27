@@ -74,21 +74,6 @@ object SparkUtils {
     }
 
     /**
-      * For an array of arrays of arrays, ... get the final element type at the bottom of the array
-      *
-      * @param arrayType An array data type from a Spark dataframe schema
-      * @return A non-array data type at the bottom of array nesting
-      */
-    @tailrec
-    def getDeepestArrayType(arrayType: ArrayType): DataType = {
-      arrayType.elementType match {
-        case a: ArrayType => getDeepestArrayType(a)
-        case b => b
-      }
-    }
-
-
-    /**
       * Aggregating arrays of primitives by projecting it's columns
       *
       * @param path            path to an StructArray
@@ -140,10 +125,6 @@ object SparkUtils {
       }
     }
 
-    def flattenNormalArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
-      flattenStructArray(path, fieldNamePrefix, structField, arrayType)
-    }
-
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
         case st: StructType =>
@@ -151,7 +132,7 @@ object SparkUtils {
         case ar: ArrayType =>
           flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
         case _ =>
-          flattenNormalArray(path, fieldNamePrefix, structField, arrayType)
+          flattenStructArray(path, fieldNamePrefix, structField, arrayType)
       }
     }
 
