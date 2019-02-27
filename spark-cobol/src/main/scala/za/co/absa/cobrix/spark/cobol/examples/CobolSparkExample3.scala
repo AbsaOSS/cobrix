@@ -66,6 +66,8 @@ object CobolSparkExample3 {
       .option("segment_field", "SEGMENT_ID")                  // Specified that segment id field is 'SEGMENT_ID'
       .option("segment_id_level0", "C")                       // If SEGMENT_ID='C' then the segment contains company's info
       .option("segment_id_level1", "P")                       // If SEGMENT_ID='P' then the segment contains contact person's info
+      .option("redefine-segment-id: COMPANY", "C,D")
+      .option("redefine-segment-id: CONTACT", "P")
       .load("examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 
     df.printSchema
