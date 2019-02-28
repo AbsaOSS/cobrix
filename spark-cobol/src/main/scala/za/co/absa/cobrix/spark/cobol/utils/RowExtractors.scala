@@ -35,8 +35,7 @@ object RowExtractors {
     * @param offsetBytes      The offset to the beginning of the record (in bits)
     * @param generateRecordId If true a record id field will be added as the first field of the record.
     * @param recordId         The record id to be saved to the record id field
-    *
-    * @return                 A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
+    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
     */
   @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST,
@@ -46,7 +45,8 @@ object RowExtractors {
                     generateRecordId: Boolean = false,
                     segmentLevelIds: Seq[Any] = Nil,
                     fileId: Int = 0,
-                    recordId: Long = 0): Row = {
+                    recordId: Long = 0,
+                    activeSegmentRedefine: String = ""): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     def extractArray(field: Statement, useOffset: Int): Array[Any] = {
@@ -65,7 +65,7 @@ object RowExtractors {
       var offset = useOffset
       field match {
         case grp: Group =>
-          val groupValues = new Array[Any](actualSize-from)
+          val groupValues = new Array[Any](actualSize - from)
           var i = from
           var j = 0
           while (i < actualSize) {
@@ -77,7 +77,7 @@ object RowExtractors {
           }
           groupValues
         case s: Primitive =>
-          val values = new Array[Any](actualSize-from)
+          val values = new Array[Any](actualSize - from)
           var i = from
           var j = 0
           while (i < actualSize) {
@@ -94,7 +94,11 @@ object RowExtractors {
     def extractValue(field: Statement, useOffset: Int): Any = {
       field match {
         case grp: Group =>
-          getGroupValues(useOffset, grp)
+          if (grp.isSegmentRedefine && grp.name.compareToIgnoreCase(activeSegmentRedefine) != 0) {
+            null
+          } else {
+            getGroupValues(useOffset, grp)
+          }
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
           if (value != null && st.isDependee) {
@@ -151,9 +155,9 @@ object RowExtractors {
     *
     * <p>The following transofmations will currently be applied:
     * <ul>
-    *   <li>If `generateRecordId == true` the record id field will be prepended to the row.</li>
-    *   <li>If the schema has only one root StructType element, the element will be expanded. The resulting schema will contain only the children fields of
-    *   the element.</li>
+    * <li>If `generateRecordId == true` the record id field will be prepended to the row.</li>
+    * <li>If the schema has only one root StructType element, the element will be expanded. The resulting schema will contain only the children fields of
+    * the element.</li>
     * </ul>
     * Combinations of the listed transformations are supported.
     * </p>
@@ -163,8 +167,7 @@ object RowExtractors {
     * @param generateRecordId If true a record id field will be added as the first field of the record.
     * @param fileId           The file id to be saved to the file id field
     * @param recordId         The record id to be saved to the record id field
-    *
-    * @return                 A Spark [[Row]] object corresponding to the record schema
+    * @return A Spark [[Row]] object corresponding to the record schema
     */
   private def applyRowPostProcessing(ast: CopybookAST,
                                      records: Seq[Row],
@@ -177,7 +180,7 @@ object RowExtractors {
       if (policy == SchemaRetentionPolicy.CollapseRoot) {
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId
-        val expandedRows = records.flatMap( record => record.toSeq )
+        val expandedRows = records.flatMap(record => record.toSeq)
         Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ expandedRows))
       } else {
         // Add recordId as the first field
@@ -187,7 +190,7 @@ object RowExtractors {
       // Addition of record index is not required
       if (policy == SchemaRetentionPolicy.CollapseRoot) {
         // If the policy for schema retention is root collapsing, expand root fields
-        Row.fromSeq(segmentLevelIds ++ records.flatMap( record => record.toSeq ))
+        Row.fromSeq(segmentLevelIds ++ records.flatMap(record => record.toSeq))
       } else {
         // Return rows as the original sequence of groups
         Row.fromSeq(segmentLevelIds ++ records)

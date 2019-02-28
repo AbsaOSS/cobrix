@@ -25,6 +25,7 @@ import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -58,6 +59,8 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
   private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
+  private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String,String]())
+  private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
   fetchNext()
 
@@ -96,6 +99,10 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
           val segmentLevelIds = getSegmentLevelIds(segmentIdStr)
 
           if (isSegmentMatchesTheFilter(segmentIdStr)) {
+            val segmentRedefine = if (segmentRedefineAvailable) {
+              segmentRedefineMap.getOrElse(segmentIdStr, "")
+            } else ""
+
             cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
               data,
               readerProperties.startOffset,
@@ -103,7 +110,9 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
               readerProperties.generateRecordId,
               segmentLevelIds,
               fileId,
-              recordIndex))
+              recordIndex,
+              activeSegmentRedefine = segmentRedefine
+            ))
 
             byteIndex += data.length
             recordIndex = recordIndex + 1

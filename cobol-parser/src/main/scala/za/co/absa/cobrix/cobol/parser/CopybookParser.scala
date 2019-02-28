@@ -394,7 +394,7 @@ object CopybookParser {
   @throws(classOf[IllegalStateException])
   def markSegmentRedefines(originalSchema: MutableCopybook, segmentRedefines: Seq[String]): MutableCopybook = {
     var foundRedefines = new mutable.HashSet[String]
-    val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier)
+    val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier(_).toLowerCase)
     val allowNonRedefines = segmentRedefines.lengthCompare(1) == 0
     var redefineGroupState = 0
 
@@ -411,7 +411,7 @@ object CopybookParser {
 
     def isOneOfSegmentRedefines(g: Group): Boolean = {
       (allowNonRedefines || g.isRedefined || g.redefines.nonEmpty) &&
-        transformedSegmentRedefines.contains(g.name)
+        transformedSegmentRedefines.contains(g.name.toLowerCase())
     }
 
     def processGroupFields(group: Group): Group = {
@@ -419,18 +419,20 @@ object CopybookParser {
         case p: Primitive =>
           ensureSegmentRedefinesAreIneGroup(p.name, isCurrentFieldASegmentRedefine = false)
           p
-        case g: Group =>
+        case g: Group => {
+          val groupNameLowerCase = g.name.toLowerCase
           if (isOneOfSegmentRedefines(g)) {
-            if (foundRedefines.contains(g.name)) {
+            if (foundRedefines.contains(groupNameLowerCase)) {
               throw new IllegalStateException(s"Duplicate segment redefine field '${g.name}' found.")
             }
-            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
-            foundRedefines += g.name
+            ensureSegmentRedefinesAreIneGroup(groupNameLowerCase, isCurrentFieldASegmentRedefine = true)
+            foundRedefines += groupNameLowerCase
             g.withUpdatedIsSegmentRedefine(true)
           } else {
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
             g
           }
+        }
       }
       group.copy(children = newChildren)(group.parent)
     }

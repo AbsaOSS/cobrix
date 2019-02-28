@@ -148,6 +148,62 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
     Files.delete(Paths.get(actualResultsPath))
   }
 
+  test(s"Integration test on $exampleName - auto resolve segment redefines") {
+    import spark.implicits._
+
+    val expectedSchemaPath = "../data/test5_expected/test5c_schema.json"
+    val actualSchemaPath = "../data/test5_expected/test5c_schema_actual.json"
+    val expectedResultsPath = "../data/test5_expected/test5c.txt"
+    val actualResultsPath = "../data/test5_expected/test5c_actual.txt"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("is_record_sequence", "true")
+      .option("input_split_records", "100")
+      .option("segment_field", "SEGMENT_ID")
+      .option("segment_id_root", "C")
+      .option("generate_record_id", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .option("segment_id_prefix", "B")
+      .option("redefine-segment-id: STATIC-DETAILS", "C")
+      .option("redefine-segment-id: CONTACTS", "P")
+
+      .load(inputDataPathLittleEndian)
+
+    // This is to print the actual output
+    //println(df.schema.json)
+    //df.toJSON.take(60).foreach(println)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = df.schema.json
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    //df.show(200)
+    val actualDf = df
+      .orderBy("File_Id", "Record_Id")
+      .toJSON
+      .take(60)
+
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+  }
+
   test(s"Index generator test on $exampleName - root segment id") {
     val copybookContents = Files.readAllLines(Paths.get("../data/test5_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val copybook = CopybookParser.parseTree(copybookContents)
