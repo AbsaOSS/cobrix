@@ -714,6 +714,56 @@ dfJoined.show(13, truncate = false)
 Again, the full example is available at
 `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
 
+## Automatic segment redefines filtering
+
+When reading a multisegment file you can use Spark to clean up redefines that do not match segment ids. Cobrix will parse
+every redefined field for each segment. To increase performance you can specify which redefine corresponds to which
+segment id. This way Cobrix will parse only relevant segment redefined fields and leave the rest of the redefined fields null.
+
+```
+  .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...")
+  .option("redefine-segment-id-map:1", "REDEFINED_FIELD2 => SegmentId10,SegmentId11,...")
+```
+
+For the above example the load options will lok like this (last 2 options):
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("schema_retention_policy", "collapse_root")
+  .option("is_record_sequence", "true")
+  .option("segment_field", "SEGMENT_ID")
+  .option("segment_id_level0", "C")
+  .option("segment_id_level1", "P")
+  .option("redefine-segment-id-map:0", "STATIC-DETAILS => C")
+  .option("redefine-segment-id-map:1", "CONTACTS => P")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The filtered data will look like this:
+```
+df.show(10)
++----------+----------+--------------------+--------------------+
+|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
++----------+----------+--------------------+--------------------+
+|         C|9377942526|[Joan Q & Z,10 Sa...|                    |
+|         P|9377942526|                    |[+(277) 944 44 55...|
+|         C|3483483977|[Robotrd Inc.,2 P...|                    |
+|         P|3483483977|                    |[+(174) 970 97 54...|
+|         P|3483483977|                    |[+(848) 832 61 68...|
+|         P|3483483977|                    |[+(455) 184 13 39...|
+|         C|7540764401|[Eqartion Inc.,87...|                    |
+|         C|4413124035|[Xingzhoug,74 Qin...|                    |
+|         C|9546291887|[ZjkLPj,5574, Tok...|                    |
+|         P|9546291887|                    |[+(300) 252 33 17...|
++----------+----------+--------------------+--------------------+
+```
+
+In the above example invalid fields became `null` and the parsing is done faster because Cobrix does not need to process
+every redefine for each record.
+
+
 ## Group Filler dropping
 
 A FILLER is an anonymous field that is usually used for reserving space for new fields in a fixed record length data.
