@@ -20,19 +20,21 @@ import scala.collection.mutable
 
 /** An abstraction for the non-leaves in the Cobol copybook
   *
-  * @param level       A level for the statement
-  * @param name        An identifier
-  * @param lineNumber  An line number in the copybook
-  * @param children    Child entities
-  * @param redefines   A name of a field which is redefined by this one
-  * @param occurs      The number of elements in an fixed size array / minimum items in variable-sized array
-  * @param to          The maximum number of items in a variable size array
-  * @param dependingOn A field which specifies size of the array in a record
-  * @param isFiller    Is the group a filler (unnamed block of data)
-  * @param groupUsage  A USAGE to be inherited by all the fields in the group
-  * @param nonFillerSize The number of non-filler children in the group
-  * @param binaryProperties Pre-calculated offsets and sizes of thebinary data of the group
-  * @param parent      A parent node
+  * @param level             A level for the statement
+  * @param name              An identifier
+  * @param lineNumber        An line number in the copybook
+  * @param children          Child entities
+  * @param redefines         A name of a field which is redefined by this one
+  * @param isRedefined       Is the field redefined by an other field
+  * @param isSegmentRedefine Is the field corresponds to one of the segments (it should be a redefine)
+  * @param occurs            The number of elements in an fixed size array / minimum items in variable-sized array
+  * @param to                The maximum number of items in a variable size array
+  * @param dependingOn       A field which specifies size of the array in a record
+  * @param isFiller          Is the group a filler (unnamed block of data)
+  * @param groupUsage        A USAGE to be inherited by all the fields in the group
+  * @param nonFillerSize     The number of non-filler children in the group
+  * @param binaryProperties  Pre-calculated offsets and sizes of thebinary data of the group
+  * @param parent            A parent node
   */
 case class Group(
                   level: Int,
@@ -41,6 +43,7 @@ case class Group(
                   children: mutable.ArrayBuffer[Statement] = mutable.ArrayBuffer(),
                   redefines: Option[String] = None,
                   isRedefined: Boolean = false,
+                  isSegmentRedefine: Boolean = false,
                   occurs: Option[Int] = None,
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
@@ -83,6 +86,11 @@ case class Group(
   /** Returns the original Group with updated `isRedefined` flag */
   def withUpdatedIsRedefined(newIsRedefined: Boolean): Group = {
     copy(isRedefined = newIsRedefined)(parent)
+  }
+
+  /** Returns the original AST element with updated `isSegmentRedefine` flag */
+  def withUpdatedIsSegmentRedefine(newIsSegmentRedefine: Boolean): Group = {
+    copy(isSegmentRedefine = newIsSegmentRedefine)(parent)
   }
 
 }

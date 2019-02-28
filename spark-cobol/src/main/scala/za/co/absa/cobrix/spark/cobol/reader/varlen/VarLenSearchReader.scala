@@ -84,7 +84,7 @@ final class VarLenSearchReader(copybookContents: String,
     IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
+    val schema = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines = Nil)
     new CobolSchema(schema, policy, generateRecordId)
   }
 

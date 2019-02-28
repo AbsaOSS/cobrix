@@ -32,10 +32,10 @@ import scala.collection.mutable.ArrayBuffer
   * This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class
   * provides the corresponding Spark schema and also other properties for the Spark data source.
   *
-  * @param copybook         A parsed copybook.
-  * @param policy           Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
-  * @param generateRecordId If true, a record id field will be prepended to to the begginning of the schema.
-  * @param generateSegIdFieldsCnt   A number of segment ID levels to generate
+  * @param copybook                A parsed copybook.
+  * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param generateRecordId        If true, a record id field will be prepended to to the begginning of the schema.
+  * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
   */
 class CobolSchema(val copybook: Copybook,

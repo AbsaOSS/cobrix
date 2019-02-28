@@ -32,7 +32,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -49,7 +49,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -66,7 +66,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -100,7 +100,7 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false)
+      CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
     }
 
     assert(syntaxErrorException.lineNumber == 3)

@@ -51,20 +51,29 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
+    * @param copyBookContents A string containing all lines of a copybook
+    * @param dropGroupFillers Drop groups marked as fillers from the output AST
+    * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     * @return Seq[Group] where a group is a record inside the copybook
     */
-  def parseTree(copyBookContents: String, dropGroupFillers: Boolean = false): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers)
+  def parseTree(copyBookContents: String,
+                dropGroupFillers: Boolean = false,
+                segmentRedefines: Seq[String] = Nil): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines)
   }
 
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param enc Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param enc              Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param copyBookContents A string containing all lines of a copybook
+    * @param dropGroupFillers Drop groups marked as fillers from the output AST
+    * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    *                         resolving segment redefines.
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
-  def parseTree(enc: Encoding, copyBookContents: String, dropGroupFillers: Boolean): Copybook = {
+  def parseTree(enc: Encoding, copyBookContents: String, dropGroupFillers: Boolean, segmentRedefines: Seq[String]): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -149,11 +158,13 @@ object CopybookParser {
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
           val decode = DecoderSelector.getDecoder(dataType)
-          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller, decode = decode)(None)
+          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
+            dependingOn, isFiller = isFiller, decode = decode)(None)
         }
         else {
           val groupUsage = getUsageModifiers(field.modifiers)
-          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
+          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
+            isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
         }
 
         attachLevel.add(newElement)
@@ -162,9 +173,9 @@ object CopybookParser {
     }
 
     val newTrees = if (dropGroupFillers) {
-      calculateNonFillerSizes(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
     } else {
-      calculateNonFillerSizes(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))))
+      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
     }
 
     val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
@@ -205,19 +216,19 @@ object CopybookParser {
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[SyntaxErrorException])
-  def calculateSchemaSizes(subSchema: MutableCopybook ): MutableCopybook  = {
+  def calculateSchemaSizes(subSchema: MutableCopybook): MutableCopybook = {
 
     def calculateGroupSize(originalGroup: Group): Group = {
       val children: MutableCopybook = calculateSchemaSizes(originalGroup.children)
       val groupSize = (for (child <- children if child.redefines.isEmpty) yield child.binaryProperties.actualSize).sum
-      val groupSizeAllOccurs = groupSize*originalGroup.arrayMaxSize
+      val groupSizeAllOccurs = groupSize * originalGroup.arrayMaxSize
       val newBinProps = BinaryProperties(originalGroup.binaryProperties.offset, groupSize, groupSizeAllOccurs)
       originalGroup.withUpdatedChildren(children).withUpdatedBinaryProperties(newBinProps)
     }
 
     def calculatePrimitiveSize(originalPrimitive: Primitive): Primitive = {
       val size = originalPrimitive.getBinarySizeBytes
-      val sizeAllOccurs = size*originalPrimitive.arrayMaxSize
+      val sizeAllOccurs = size * originalPrimitive.arrayMaxSize
       val binProps = BinaryProperties(originalPrimitive.binaryProperties.offset, size, sizeAllOccurs)
       originalPrimitive.withUpdatedBinaryProperties(binProps)
     }
@@ -241,7 +252,7 @@ object CopybookParser {
           if (!redefinedNames.contains(redefines.toUpperCase)) {
             throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
           }
-          newSchema(i-1) = newSchema(i-1).withUpdatedIsRedefined(newIsRedefined = true)
+          newSchema(i - 1) = newSchema(i - 1).withUpdatedIsRedefined(newIsRedefined = true)
       }
 
       val childWithSizes = child match {
@@ -255,9 +266,9 @@ object CopybookParser {
         // Calculate maximum redefine size
         val maxSize = redefinedSizes.max
         for (j <- redefinedSizes.indices) {
-          val updatedBinProps = newSchema(i-j).binaryProperties.copy(actualSize = maxSize)
-          val updatedChild = newSchema(i-j).withUpdatedBinaryProperties(updatedBinProps)
-          newSchema(i-j) = updatedChild
+          val updatedBinProps = newSchema(i - j).binaryProperties.copy(actualSize = maxSize)
+          val updatedChild = newSchema(i - j).withUpdatedBinaryProperties(updatedBinProps)
+          newSchema(i - j) = updatedChild
         }
       }
     }
@@ -279,7 +290,7 @@ object CopybookParser {
     }
 
     var offset = bitOffset
-    var redefinedOffset =  bitOffset
+    var redefinedOffset = bitOffset
     val newSchema = for (field <- subSchema) yield {
       val useOffset = if (field.redefines.isEmpty) {
         redefinedOffset = offset
@@ -315,7 +326,7 @@ object CopybookParser {
     def addDependeeField(name: String): Unit = {
       val nameUpper = name.toUpperCase
       // Find all the fields that match DEPENDING ON name
-      val foundFields = flatFields.filter( f => f.name.toUpperCase == nameUpper)
+      val foundFields = flatFields.filter(f => f.name.toUpperCase == nameUpper)
       if (foundFields.isEmpty) {
         throw new IllegalStateException(s"Unable to find dependee field $nameUpper from DEPENDING ON clause.")
       }
@@ -367,6 +378,91 @@ object CopybookParser {
   }
 
   /**
+    * Sets isSegmentRedefine property of redefined groups so the row extractor be able to skip parsing segment groups
+    * that do not belong to a particular segment id.
+    *
+    * * Each field should appear in the list only once
+    * * Any such field should be a redefine or a redefined by.
+    * * All segment fields should belong to the same redefine group. E.g. they should redefine each other,
+    * * All segment fields should belong to the level 1 (one level down record root level)
+    * * A segment redefine cannot be inside an array
+    *
+    * @param originalSchema   An AST as a set of copybook records
+    * @param segmentRedefines The list of fields names that correspond to segment GROUPs.
+    * @return The same AST with binary properties set for every field
+    */
+  @throws(classOf[IllegalStateException])
+  def markSegmentRedefines(originalSchema: MutableCopybook, segmentRedefines: Seq[String]): MutableCopybook = {
+    var foundRedefines = new mutable.HashSet[String]
+    val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier)
+    val allowNonRedefines = segmentRedefines.lengthCompare(1) == 0
+    var redefineGroupState = 0
+
+    def ensureSegmentRedefinesAreIneGroup(currentField: String, isCurrentFieldASegmentRedefine: Boolean): Unit = {
+      if (redefineGroupState == 0 && isCurrentFieldASegmentRedefine) {
+        redefineGroupState = 1
+      } else if (redefineGroupState == 1 && !isCurrentFieldASegmentRedefine) {
+        redefineGroupState = 2
+      } else if (redefineGroupState == 2 && isCurrentFieldASegmentRedefine) {
+        throw new IllegalStateException(s"The '$currentField' field is specified to be a segment redefine. " +
+          "However, it is not in the same group of REDEFINE fields")
+      }
+    }
+
+    def isOneOfSegmentRedefines(g: Group): Boolean = {
+      (allowNonRedefines || g.isRedefined || g.redefines.nonEmpty) &&
+        transformedSegmentRedefines.contains(g.name)
+    }
+
+    def processGroupFields(group: Group): Group = {
+      val newChildren: ArrayBuffer[Statement] = group.children.map {
+        case p: Primitive =>
+          ensureSegmentRedefinesAreIneGroup(p.name, isCurrentFieldASegmentRedefine = false)
+          p
+        case g: Group =>
+          if (isOneOfSegmentRedefines(g)) {
+            if (foundRedefines.contains(g.name)) {
+              throw new IllegalStateException(s"Duplicate segment redefine field '${g.name}' found.")
+            }
+            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
+            foundRedefines += g.name
+            g.withUpdatedIsSegmentRedefine(true)
+          } else {
+            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
+            g
+          }
+      }
+      group.copy(children = newChildren)(group.parent)
+    }
+
+    def processRootLevelFields(copybook: MutableCopybook): MutableCopybook = {
+      copybook.map {
+        case p: Primitive =>
+          p
+        case g: Group =>
+          processGroupFields(g)
+      }
+    }
+
+    def validateAllSegmentsFound(): Unit = {
+      val notFound = transformedSegmentRedefines.filterNot(foundRedefines)
+      if (notFound.nonEmpty) {
+        val notFoundList = notFound.mkString(",")
+        throw new IllegalStateException(s"The following segment redefines not found: $notFoundList. " +
+          "Please check the fields exist and are redefines/redefined by.")
+      }
+    }
+
+    if (segmentRedefines.isEmpty) {
+      originalSchema
+    } else {
+      val newSchema = processRootLevelFields(originalSchema)
+      validateAllSegmentsFound()
+      newSchema
+    }
+  }
+
+  /**
     * Rename group fillers so filed names in the scheme doesn't repeat
     * Also, remove all group fillers that doesn't have child nodes
     *
@@ -380,8 +476,10 @@ object CopybookParser {
       val (newChildren, hasNonFillers) = renameFillers(group.children)
       var renamedGroup = if (hasNonFillers) {
         if (group.isFiller) {
-            lastFillerIndex += 1
-            group.copy(name = s"${FILLER}_$lastFillerIndex", children = newChildren, isFiller = false)(group.parent)
+          lastFillerIndex += 1
+          group.copy(name = s"${
+            FILLER
+          }_$lastFillerIndex", children = newChildren, isFiller = false)(group.parent)
         } else {
           group.copy(children = newChildren)(group.parent)
         }
@@ -419,8 +517,8 @@ object CopybookParser {
   /**
     * Process group fillers.
     * <ul>
-    *   <li>Make fillers each group that contains only filler fields.</li>
-    *   <li>Remove all groups that don't have child nodes.</li>
+    * <li>Make fillers each group that contains only filler fields.</li>
+    * <li>Remove all groups that don't have child nodes.</li>
     * </ul>
     *
     * @param originalSchema An AST as a set of copybook records
@@ -501,11 +599,11 @@ object CopybookParser {
   /**
     * Get the type and length from a cobol data structure.
     *
-    * @param keywords Keywords of a Copybook statement
-    * @param modifiers Modifiers of a Copybook field
+    * @param keywords       Keywords of a Copybook statement
+    * @param modifiers      Modifiers of a Copybook field
     * @param groupModifiers Modifiers of the group level
-    * @param lineNumber Line number of the field definition
-    * @param fieldName The name of the field
+    * @param lineNumber     Line number of the field definition
+    * @param fieldName      The name of the field
     * @return Cobol data type
     */
   @throws(classOf[SyntaxErrorException])
@@ -628,11 +726,13 @@ object CopybookParser {
     var partiallLine: String = ""
     var lastLineNumber = 0
 
-    linesIn.foreach( line => {
+    linesIn.foreach(line => {
       if (line.text.contains('.')) {
         val parts = (line.text + " ").split('.')
-        parts.dropRight(1).foreach( p => {
-          linesOut += StatementLine(line.lineNumber, s"${partiallLine.trim} $p")
+        parts.dropRight(1).foreach(p => {
+          linesOut += StatementLine(line.lineNumber, s"${
+            partiallLine.trim
+          } $p")
           partiallLine = ""
         })
         partiallLine = parts.last
@@ -690,14 +790,18 @@ object CopybookParser {
         } else if (tokens(index) == REDEFINES) {
           // Expand REDEFINES, ensure current field redefines the consequent field
           if (index >= tokens.length - 1) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${tokens(index)} should be followed by a field name")
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${
+              tokens(index)
+            } should be followed by a field name")
           }
           // Add modifiers with parameters
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 1))
           index += 1
         } else if (keywordsWithModifiers.contains(tokens(index))) {
           if (index >= tokens.length - 1) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${tokens(index)} should be followed by a parameter")
+            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${
+              tokens(index)
+            } should be followed by a parameter")
           }
           // Add modifiers with parameters
           mapAccumulator += tokens(index) -> tokens(index + 1)
@@ -710,14 +814,14 @@ object CopybookParser {
           mapAccumulator += tokens(index) -> RIGHT
         } else if (tokens(index) == DEPENDING) {
           // Handle DEPENDING ON
-          if (index >= tokens.length - 2 || tokens(index+1) != ON) {
+          if (index >= tokens.length - 2 || tokens(index + 1) != ON) {
             throw new SyntaxErrorException(lineNumber, "", s"Modifier DEPENDING should be followed by ON FIELD")
           }
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
           index += 2
         } else if (tokens(index) == INDEXED) {
           // Handle INDEXED BY
-          if (index >= tokens.length - 2 || tokens(index+1) != BY) {
+          if (index >= tokens.length - 2 || tokens(index + 1) != BY) {
             throw new SyntaxErrorException(lineNumber, "", s"Modifier INDEXED should be followed by BY FIELD")
           }
           mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
@@ -794,7 +898,9 @@ object CopybookParser {
           } else {
             // Do nothing if num == 0
             if (num < 0 || num > Constants.maxFieldLength) {
-              throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+              throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${
+                Constants.maxFieldLength
+              }.")
             }
           }
         }
@@ -846,5 +952,6 @@ object CopybookParser {
     val parts = str.split(separator)
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
-    (nines1, nines2)  }
+    (nines1, nines2)
+  }
 }
