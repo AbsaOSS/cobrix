@@ -77,7 +77,7 @@ class SegmentRedefinesSpec extends FunSuite {
     val exception1 = intercept[IllegalStateException] {
       CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefinesMissing)
     }
-    assert(exception1.getMessage.contains("The following segment redefines not found: SEGMENT_D"))
+    assert(exception1.getMessage.contains("The following segment redefines not found: segment_d"))
 
     // Segment redefines should be correctly redefined
     assert(!parsedCopybook.ast.head.children(0).asInstanceOf[Group].isSegmentRedefine)
@@ -111,7 +111,7 @@ class SegmentRedefinesSpec extends FunSuite {
     val exception1 = intercept[IllegalStateException] {
       CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines)
     }
-    assert(exception1.getMessage.contains("The 'SEGMENT_C' field is specified to be a segment redefine."))
+    assert(exception1.getMessage.contains("The 'segment_c' field is specified to be a segment redefine."))
   }
 
 

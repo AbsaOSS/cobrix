@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
@@ -228,7 +229,7 @@ object CobolParametersParser {
         if (keyNoCase.startsWith("redefine-segment-id:")) {
           val redefne = k.split(':')(1).trim
           val segmentIds = v.split(',').map(_.trim)
-          segmentIds.map(segmentId => (segmentId, redefne))
+          segmentIds.map(segmentId => (segmentId, CopybookParser.transformIdentifier(redefne)))
         } else {
           Nil
         }
