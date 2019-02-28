@@ -24,8 +24,8 @@ import scala.collection.immutable.HashMap
 class ParametersParsingSpec extends FunSuite {
   test("Test segment id - redefine mapping") {
     val config = HashMap[String,String] ("is_record_sequence"-> "true",
-      "redefine-segment-id: COMPANY" -> "C,D",
-      "redefine-segment-id: CONTACT" -> "P")
+      "redefine-segment-id:0" -> "COMPANY => C,D",
+      "redefine-segment-id:1" -> "CONTACT => P")
 
     val segmentIdMapping = CobolParametersParser.getSegmentIdRedefineMapping(config)
 

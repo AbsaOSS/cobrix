@@ -207,8 +207,8 @@ object CobolParametersParser {
     * For
     * {{{
     *   sprak.read
-    *     .option("redefine-segment-id: COMPANY", "C,D")
-    *     .option("redefine-segment-id: CONTACT", "P")
+    *     .option("redefine-segment-id-map:0", "COMPANY => C,D")
+    *     .option("redefine-segment-id-map:1", "CONTACT => P")
     * }}}
     *
     * The corresponding mapping will be:
@@ -226,10 +226,14 @@ object CobolParametersParser {
     params.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
-        if (keyNoCase.startsWith("redefine-segment-id:")) {
-          val redefne = k.split(':')(1).trim
-          val segmentIds = v.split(',').map(_.trim)
-          segmentIds.map(segmentId => (segmentId, CopybookParser.transformIdentifier(redefne)))
+        if (keyNoCase.startsWith("redefine-segment-id")) {
+          val splitVal = v.split("\\=\\>")
+          if (splitVal.lengthCompare(2) !=0) {
+            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id' option: '$v'.")
+          }
+          val redefine = splitVal(0).trim
+          val segmentIds = splitVal(1).split(',').map(_.trim)
+          segmentIds.map(segmentId => (segmentId, CopybookParser.transformIdentifier(redefine)))
         } else {
           Nil
         }
