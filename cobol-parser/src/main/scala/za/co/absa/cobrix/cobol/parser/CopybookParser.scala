@@ -394,7 +394,7 @@ object CopybookParser {
   @throws(classOf[IllegalStateException])
   def markSegmentRedefines(originalSchema: MutableCopybook, segmentRedefines: Seq[String]): MutableCopybook = {
     var foundRedefines = new mutable.HashSet[String]
-    val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier(_).toLowerCase)
+    val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier)
     val allowNonRedefines = segmentRedefines.lengthCompare(1) == 0
     var redefineGroupState = 0
 
@@ -411,7 +411,7 @@ object CopybookParser {
 
     def isOneOfSegmentRedefines(g: Group): Boolean = {
       (allowNonRedefines || g.isRedefined || g.redefines.nonEmpty) &&
-        transformedSegmentRedefines.contains(g.name.toLowerCase())
+        transformedSegmentRedefines.contains(g.name)
     }
 
     def processGroupFields(group: Group): Group = {
@@ -420,13 +420,12 @@ object CopybookParser {
           ensureSegmentRedefinesAreIneGroup(p.name, isCurrentFieldASegmentRedefine = false)
           p
         case g: Group => {
-          val groupNameLowerCase = g.name.toLowerCase
           if (isOneOfSegmentRedefines(g)) {
-            if (foundRedefines.contains(groupNameLowerCase)) {
+            if (foundRedefines.contains(g.name)) {
               throw new IllegalStateException(s"Duplicate segment redefine field '${g.name}' found.")
             }
-            ensureSegmentRedefinesAreIneGroup(groupNameLowerCase, isCurrentFieldASegmentRedefine = true)
-            foundRedefines += groupNameLowerCase
+            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
+            foundRedefines += g.name
             g.withUpdatedIsSegmentRedefine(true)
           } else {
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
@@ -450,7 +449,7 @@ object CopybookParser {
       val notFound = transformedSegmentRedefines.filterNot(foundRedefines)
       if (notFound.nonEmpty) {
         val notFoundList = notFound.mkString(",")
-        throw new IllegalStateException(s"The following segment redefines not found: $notFoundList. " +
+        throw new IllegalStateException(s"The following segment redefines not found: [ $notFoundList ]. " +
           "Please check the fields exist and are redefines/redefined by.")
       }
     }

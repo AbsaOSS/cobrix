@@ -167,8 +167,10 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .option("segment_id_prefix", "B")
-      .option("redefine-segment-id: STATIC-DETAILS", "C")
-      .option("redefine-segment-id: CONTACTS", "P")
+      .option("redefine-segment-id-map:0", "STATIC-DETAILS => C,D")
+      .option("redefine-segment-id-map:1", "CONTACTS => P")
+      //.option("redefine-segment-id: STATIC-DETAILS", "C")
+      //.option("redefine-segment-id: CONTACTS", "P")
 
       .load(inputDataPathLittleEndian)
 
