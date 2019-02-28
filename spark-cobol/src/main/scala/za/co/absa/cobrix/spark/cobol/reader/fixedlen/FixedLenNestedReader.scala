@@ -74,7 +74,7 @@ final class FixedLenNestedReader(copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers)
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil)
     new CobolSchema(schema, policy, false)
   }
 
