@@ -48,7 +48,7 @@ object StringDecoders {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
-      if (bytes(i) < 32 || bytes(i) > 127 /*Special and high order characters are masked*/)
+      if (bytes(i) < 32 || bytes(i) > 127 /*Special and high order characters are masked*/ )
         buf.append(' ')
       else
         buf.append(bytes(i).toChar)
@@ -65,10 +65,11 @@ object StringDecoders {
     * <li> Explicit decimal point</li>
     * </ul>
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes      A byte array that represents the binary data
+    * @param isUnsigned Is the number expected to be unsigned
     * @return A string representation of the binary data
     */
-  def decodeEbcdicNumber(bytes: Array[Byte]): String = {
+  def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
     import Constants._
     val buf = new StringBuffer(bytes.length + 1)
     var sign = ' '
@@ -110,7 +111,7 @@ object StringDecoders {
     if (malformed)
       null
     else if (sign != ' ')
-      sign + buf.toString
+      if (sign == '-' && isUnsigned) null else sign + buf.toString.trim
     else
       buf.toString
   }
@@ -118,10 +119,11 @@ object StringDecoders {
   /**
     * A decoder for any ASCII uncompressed numbers supporting leading and trailing sign
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes      A byte array that represents the binary data
+    * @param isUnsigned Is the number expected to be unsigned
     * @return A string representation of the binary data
     */
-  def decodeAsciiNumber(bytes: Array[Byte]): String = {
+  def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
     val buf = new StringBuffer(bytes.length)
     var sign = ' '
     var i = 0
@@ -134,8 +136,9 @@ object StringDecoders {
       }
       i = i + 1
     }
-    if (sign != ' ')
-      sign + buf.toString.trim
+    if (sign != ' ') {
+      if (sign == '-' && isUnsigned) null else sign + buf.toString.trim
+    }
     else
       buf.toString.trim
   }
@@ -146,9 +149,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed integer
     */
-  def decodeEbcdicInt(bytes: Array[Byte]): Integer = {
+  def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean): Integer = {
     try {
-      decodeEbcdicNumber(bytes).toInt
+      decodeEbcdicNumber(bytes, isUnsigned).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -160,9 +163,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed integer
     */
-  def decodeAsciiInt(bytes: Array[Byte]): Integer = {
+  def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean): Integer = {
     try {
-      decodeAsciiNumber(bytes).toInt
+      decodeAsciiNumber(bytes, isUnsigned).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -174,9 +177,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed long
     */
-  def decodeEbcdicLong(bytes: Array[Byte]): java.lang.Long = {
+  def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean): java.lang.Long = {
     try {
-      decodeEbcdicNumber(bytes).toLong
+      decodeEbcdicNumber(bytes, isUnsigned).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -188,9 +191,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed long
     */
-  def decodeAsciiLong(bytes: Array[Byte]): java.lang.Long = {
+  def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean): java.lang.Long = {
     try {
-      decodeAsciiNumber(bytes).toLong
+      decodeAsciiNumber(bytes, isUnsigned).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -203,9 +206,9 @@ object StringDecoders {
     * @param scale A decimal scale in case decimal number with implicit decimal point is expected
     * @return A big decimal containing a big integral number
     */
-  def decodeEbcdicBigNumber(bytes: Array[Byte], scale: Int = 0): BigDecimal = {
+  def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes), scale))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned), scale))
     } catch {
       case NonFatal(_) => null
     }
@@ -218,9 +221,9 @@ object StringDecoders {
     * @param scale A decimal scale in case decimal number with implicit decimal point is expected
     * @return A big decimal containing a big integral number
     */
-  def decodeAsciiBigNumber(bytes: Array[Byte], scale: Int = 0): BigDecimal = {
+  def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes), scale))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned), scale))
     } catch {
       case NonFatal(_) => null
     }
@@ -233,9 +236,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A big decimal containing a big integral number
     */
-  def decodeEbcdicBigDecimal(bytes: Array[Byte]): BigDecimal = {
+  def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeEbcdicNumber(bytes))
+      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned))
     } catch {
       case NonFatal(_) => null
     }
@@ -248,9 +251,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A big decimal containing a big integral number
     */
-  def decodeAsciiBigDecimal(bytes: Array[Byte]): BigDecimal = {
+  def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeAsciiNumber(bytes))
+      BigDecimal(decodeAsciiNumber(bytes, isUnsigned))
     } catch {
       case NonFatal(_) => null
     }

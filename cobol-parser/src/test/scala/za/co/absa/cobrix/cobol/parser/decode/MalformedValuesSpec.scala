@@ -43,7 +43,7 @@ class MalformedValuesSpec extends FunSuite {
     val data2 = Array(0xC2.toByte, 0x80.toByte, 0x40.toByte, 0xC0.toByte)
     val decodedValue2 = primitive.decodeTypeValue(0, data2)
     assert(decodedValue2 == null)
- }
+  }
 
   test("Test malformed decimal handling") {
     val copyBookContents: String =
@@ -69,4 +69,98 @@ class MalformedValuesSpec extends FunSuite {
     val decodedValue3 = primitive.decodeTypeValue(0, data3)
     assert(decodedValue3 == null)
   }
+
+  test("Test processing malformed unsigned numbers") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           10  FIELD1           PIC 9(2).
+        |           10  FIELD2           PIC 9(6).
+        |           10  FIELD3           PIC 9(10).
+        |           10  FIELD4           PIC 9(5)V9(5).
+        |           10  FIELD5           PIC S9(2).
+        |           10  FIELD6           PIC S9(6).
+        |           10  FIELD7           PIC S9(10).
+        |           10  FIELD8           PIC S9(5)V9(5).
+        |""".stripMargin
+
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, Nil)
+    val field1 = copybook.ast.head.children.head.asInstanceOf[Primitive]
+    val field2 = copybook.ast.head.children(1).asInstanceOf[Primitive]
+    val field3 = copybook.ast.head.children(2).asInstanceOf[Primitive]
+    val field4 = copybook.ast.head.children(3).asInstanceOf[Primitive]
+    val field5 = copybook.ast.head.children(4).asInstanceOf[Primitive]
+    val field6 = copybook.ast.head.children(5).asInstanceOf[Primitive]
+    val field7 = copybook.ast.head.children(6).asInstanceOf[Primitive]
+    val field8 = copybook.ast.head.children(7).asInstanceOf[Primitive]
+
+    // Encoded 12 is OK since it is positive
+    assert(field1.decodeTypeValue(0, Array(0xF1.toByte, 0xF2.toByte)) == 12)
+
+    // Encoded -2 is incorrect since it is a negative number for an unsigned pattern
+    assert(field1.decodeTypeValue(0, Array(0x60.toByte, 0xF2.toByte)) == null)
+
+    // Encoded 123456 is OK since it is positive
+    assert(field2.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte)) == 123456)
+
+    // Encoded -23456 is incorrect since it is a negative number for an unsigned pattern
+    assert(field2.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte)) == null)
+
+    // Encoded 1234567890 is OK since it is positive
+    assert(field3.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == 1234567890)
+
+    // Encoded -234567890 is incorrect since it is a negative number for an unsigned pattern
+    assert(field3.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == null)
+
+    // Encoded 12345.67890 is OK since it is positive
+    assert(field4.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == 12345.6789)
+
+    // Encoded -2345.67890 is incorrect since it is a negative number for an unsigned pattern
+    assert(field4.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == null)
+
+    // Encoded 12 is OK since it is positive
+    assert(field5.decodeTypeValue(0, Array(0xF1.toByte, 0xF2.toByte)) == 12)
+
+    // Encoded -2 is OK since the field is signed
+    assert(field5.decodeTypeValue(0, Array(0x60.toByte, 0xF2.toByte)) == -2)
+
+    // Encoded 123456 is OK
+    assert(field6.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte)) == 123456)
+
+    // Encoded -23456 is OK since the field is signed
+    assert(field6.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte)) == -23456)
+
+    // Encoded 1234567890 is OK
+    assert(field7.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == 1234567890)
+
+    // Encoded -234567890 is OK since the field is signed
+    assert(field7.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == -234567890)
+
+    // Encoded 12345.67890 is OK
+    assert(field8.decodeTypeValue(0,
+      Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == 12345.6789)
+
+    // Encoded -2345.67890 is OK since the field is signed
+    assert(field8.decodeTypeValue(0,
+      Array(0x60.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF6.toByte,
+        0xF7.toByte, 0xF8.toByte, 0xF9.toByte, 0xF0.toByte)) == -2345.6789)
+
+  }
+
 }
