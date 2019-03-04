@@ -35,13 +35,13 @@ class BinaryDecoderSpec extends FunSuite {
 
 
   test("Test uncompressed number decoding") {
-    assert(StringDecoders.decodeAsciiNumber("100200".toCharArray.map(_.toByte)).contains("100200"))
-    assert(StringDecoders.decodeAsciiBigNumber("1002551".toCharArray.map(_.toByte), 3).toString.contains("1002.551"))
-    assert(StringDecoders.decodeAsciiBigNumber("1002.551".toCharArray.map(_.toByte), 0).toString.contains("1002.551"))
+    assert(StringDecoders.decodeAsciiNumber("100200".toCharArray.map(_.toByte), isUnsigned = false).contains("100200"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002551".toCharArray.map(_.toByte), isUnsigned = false, 3).toString.contains("1002.551"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002.551".toCharArray.map(_.toByte), isUnsigned = false, 0).toString.contains("1002.551"))
 
     // "1002551"
     val ebcdicNum = Array[Byte](0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF2.toByte, 0xF5.toByte, 0xF5.toByte, 0xF1.toByte)
-    assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, 2).toString().contains("10025.51"))
+    assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, isUnsigned = false, 2).toString().contains("10025.51"))
   }
 
   test("Test positive COMP-3 format decoding") {

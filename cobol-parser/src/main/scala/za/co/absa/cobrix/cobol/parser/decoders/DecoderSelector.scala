@@ -72,14 +72,14 @@ object DecoderSelector {
       case None =>
         if (decimalType.explicitDecimal) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigDecimal
+            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned)
           else
-            StringDecoders.decodeAsciiBigDecimal
+            StringDecoders.decodeAsciiBigDecimal(_, !isSigned)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, decimalType.scale)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, decimalType.scale)
           else
-            StringDecoders.decodeAsciiBigNumber(_, decimalType.scale)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, decimalType.scale)
         }
       case Some(Constants.compBinary1) =>
         // COMP aka BINARY encoded number
@@ -117,23 +117,25 @@ object DecoderSelector {
       case _: ASCII => false
     }
 
+    val isSigned = integralType.signPosition.isDefined
+
     integralType.compact match {
       case None =>
         if (integralType.precision <= Constants.maxIntegerPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicInt
+            StringDecoders.decodeEbcdicInt(_, !isSigned)
           else
-            StringDecoders.decodeAsciiInt
+            StringDecoders.decodeAsciiInt(_, !isSigned)
         } else if (integralType.precision <= Constants.maxLongPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicLong
+            StringDecoders.decodeEbcdicLong(_, !isSigned)
           else
-            StringDecoders.decodeAsciiLong
+            StringDecoders.decodeAsciiLong(_, !isSigned)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned)
           else
-            StringDecoders.decodeAsciiBigNumber(_)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned)
         }
       case Some(Constants.compBinary1) =>
         // COMP aka BINARY encoded number
