@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.3.3</version>
+      <version>0.4.0</version>
 </dependency>
 ```
 
@@ -170,8 +170,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.3.3.jar
-* cobol-parser-0.3.3.jar
+* spark-cobol-0.4.0.jar
+* cobol-parser-0.4.0.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
