@@ -886,6 +886,12 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.4.0 released 6 Mar 2019
+  - This is a minor feature release.
+  - Add ability to specify segment id to redefine mapping. If specified Cobrix won't parse redefines that are not valid for a given segment id.
+    This should increase performance when parsing multisegment files. 
+  - Unsigned numeric type patterns are now handled more strictly resulting in `null` values if a number is decoded as negative
+
 - #### 0.3.3 released 21 Feb 2019
   - This is a hotfix release.
   - Fixed segment id filter pushdown if the segment id field contains non-decodable values
