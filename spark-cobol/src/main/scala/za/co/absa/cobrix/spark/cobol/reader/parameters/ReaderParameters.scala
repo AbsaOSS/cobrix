@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -33,7 +35,8 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param startOffset              An offset to the start of the record in each binary data block.
   * @param endOffset                An offset from the end of the record to the end of the binary data block.
   * @param generateRecordId         If true, a record id field will be prepended to each record.
-  * @param policy                   Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param schemaPolicy             Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param stringTrimmingPolicy     Specifies if and how strings should be trimmed when parsed.
   * @param multisegment             Parameters specific to reading multisegment files
   * @param dropGroupFillers         If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   */
@@ -49,7 +52,8 @@ case class ReaderParameters(
                              startOffset: Int = 0,
                              endOffset: Int = 0,
                              generateRecordId: Boolean = false,
-                             policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                             schemaPolicy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment: Option[MultisegmentParameters],
                              dropGroupFillers: Boolean
                            )

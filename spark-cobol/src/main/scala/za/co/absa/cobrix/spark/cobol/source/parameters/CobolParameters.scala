@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.source.parameters.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 
 /**
   * This class holds parameters for the job.

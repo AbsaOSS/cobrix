@@ -87,6 +87,7 @@ class DefaultSource
       parameters.recordStartOffset,
       parameters.recordEndOffset,
       parameters.schemaRetentionPolicy,
+      parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers
     )
   }
@@ -131,7 +132,8 @@ class DefaultSource
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
           generateRecordId = parameters.generateRecordId,
-          policy = parameters.schemaRetentionPolicy,
+          schemaPolicy = parameters.schemaRetentionPolicy,
+          stringTrimmingPolicy = parameters.stringTrimmingPolicy,
           parameters.multisegmentParams,
           parameters.dropGroupFillers
          )

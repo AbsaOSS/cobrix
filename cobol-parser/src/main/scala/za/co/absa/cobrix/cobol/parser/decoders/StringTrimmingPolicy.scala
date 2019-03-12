@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.source.parameters
+package za.co.absa.cobrix.cobol.parser.decoders
 
 object StringTrimmingPolicy extends Enumeration {
   type StringTrimmingPolicy = Value
 
-  val NoTrimming, TrimLeft, TrimRight, TrimBoth = Value
+  val TrimNone, TrimLeft, TrimRight, TrimBoth = Value
 
   def withNameOpt(s: String): Option[Value] = {
     val exactNames = values.find(_.toString == s)
     if (exactNames.isEmpty) {
       val sLowerCase = s.toLowerCase()
       if (sLowerCase == "none") {
-        Some(NoTrimming)
+        Some(TrimNone)
       } else if (sLowerCase == "left") {
         Some(TrimLeft)
       } else if (sLowerCase == "right") {

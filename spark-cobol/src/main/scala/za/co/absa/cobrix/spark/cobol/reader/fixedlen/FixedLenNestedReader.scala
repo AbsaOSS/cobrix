@@ -19,6 +19,8 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
@@ -30,14 +32,15 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param copyBookContents    A copybook contents.
   * @param startOffset         Specifies the number of bytes at the beginning of each record that can be ignored.
   * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
-  * @param policy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 final class FixedLenNestedReader(copyBookContents: String,
-                           isEbcdic: Boolean = true,
-                           startOffset: Int = 0,
-                           endOffset: Int = 0,
-                           policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
-                           dropGroupFillers: Boolean)
+                                 isEbcdic: Boolean = true,
+                                 startOffset: Int = 0,
+                                 endOffset: Int = 0,
+                                 schemaRetentionPolicy: SchemaRetentionPolicy,
+                                 stringTrimmingPolicy: StringTrimmingPolicy,
+                                 dropGroupFillers: Boolean)
   extends FixedLenReader with Serializable {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
@@ -49,7 +52,7 @@ final class FixedLenNestedReader(copyBookContents: String,
   @throws(classOf[Exception])
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
-    new FixedLenNestedRowIterator(binaryData, cobolSchema, policy, startOffset, endOffset)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, schemaRetentionPolicy, startOffset, endOffset)
   }
 
   @throws(classOf[IllegalArgumentException])
@@ -74,8 +77,8 @@ final class FixedLenNestedReader(copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil)
-    new CobolSchema(schema, policy, false)
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil, stringTrimmingPolicy)
+    new CobolSchema(schema, schemaRetentionPolicy, false)
   }
 
   override def getRecordStartOffset: Int = startOffset
