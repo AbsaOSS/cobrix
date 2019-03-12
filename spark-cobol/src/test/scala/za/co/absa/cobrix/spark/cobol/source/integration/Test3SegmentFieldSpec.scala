@@ -35,18 +35,24 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
 
   private val expectedSchemaPath = "../data/test3_expected/test3_schema.json"
   private val actualSchemaPath = "../data/test3_expected/test3_schema_actual.json"
-  private val expectedResultsPath = "../data/test3_expected/test3.txt"
-  private val actualResultsPath = "../data/test3_expected/test3_actual.txt"
 
-  test(s"Integration test on $exampleName data") {
-    val df = spark
-      .read
-      .format("cobol")
-      .option("copybook", inputCopybookPath)
-      .option("schema_retention_policy", "collapse_root")
-      .option("segment_field", "SIGNATURE")
-      .option("segment_filter", "S9276511")
-      .load(inpudDataPath)
+  def runTest(expectPrefix: String, options: Seq[(String, String)]): Unit = {
+    val expectedResultsPath = s"../data/test3_expected/test3$expectPrefix.txt"
+    val actualResultsPath = s"../data/test3_expected/test3${expectPrefix}_actual.txt"
+
+    val df = {
+      val loadDf = spark
+        .read
+        .format("cobol")
+        .option("copybook", inputCopybookPath)
+        .option("schema_retention_policy", "collapse_root")
+
+      val loadDfWithOptions = options.foldLeft(loadDf)((a, b) => {
+        a.option(b._1, b._2)
+      })
+
+      loadDfWithOptions.load(inpudDataPath)
+    }
 
     // This is to print the actual output
     println(df.schema.json)
@@ -68,6 +74,45 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
       FileUtils.writeStringsToFile(actual, actualResultsPath)
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
     }
+  }
+
+  test(s"Integration test on $exampleName data") {
+    runTest("",
+      "segment_field" -> "SIGNATURE" ::
+      "segment_filter" -> "S9276511" ::
+        Nil)
+  }
+
+  test(s"Test trimming = none on $exampleName data") {
+    runTest("_trim_none",
+      "segment_field" -> "SIGNATURE" ::
+      "segment_filter" -> "S9276511" ::
+      "string_trimming" -> "none" ::
+        Nil)
+  }
+
+  test(s"Test trimming = left on $exampleName data") {
+    runTest("_trim_left",
+      "segment_field" -> "SIGNATURE" ::
+        "segment_filter" -> "S9276511" ::
+        "string_trimming" -> "left" ::
+        Nil)
+  }
+
+  test(s"Test trimming = right on $exampleName data") {
+    runTest("_trim_right",
+      "segment_field" -> "SIGNATURE" ::
+        "segment_filter" -> "S9276511" ::
+        "string_trimming" -> "right" ::
+        Nil)
+  }
+
+  test(s"Test trimming = both on $exampleName data") {
+    runTest("_trim_both",
+      "segment_field" -> "SIGNATURE" ::
+        "segment_filter" -> "S9276511" ::
+        "string_trimming" -> "both" ::
+        Nil)
   }
 
 }
