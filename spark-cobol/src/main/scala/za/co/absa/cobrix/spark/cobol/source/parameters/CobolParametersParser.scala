@@ -46,6 +46,9 @@ object CobolParametersParser {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
 
+  // Data parsing parameters
+  val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
+
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
@@ -68,12 +71,18 @@ object CobolParametersParser {
   val PARAM_IMPROVE_LOCALITY          = "improve_locality"
 
   def parse(params: Map[String,String]): CobolParameters = {
+    val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
+    val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
 
-    val policyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
-    val policy = SchemaRetentionPolicy.withNameOpt(policyName)
+    if (schemaRetentionPolicy.isEmpty) {
+      throw new IllegalArgumentException(s"Invalid value '$schemaRetentionPolicyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
+    }
 
-    if (policy.isEmpty) {
-      throw new IllegalArgumentException(s"Invalid value '$policyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
+    val stringTrimmingPolicyName = params.getOrElse(PARAM_STRING_TRIMMING_POLICY, "both")
+    val stringTrimmingPolicy = StringTrimmingPolicy.withNameOpt(stringTrimmingPolicyName)
+
+    if (schemaRetentionPolicy.isEmpty) {
+      throw new IllegalArgumentException(s"Invalid value '$schemaRetentionPolicyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
     }
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
@@ -103,7 +112,8 @@ object CobolParametersParser {
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
-      policy.get,
+      schemaRetentionPolicy.get,
+      stringTrimmingPolicy.get,
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),
