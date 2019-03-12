@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.source.parameters.StringTrimmingPolicy.StringTrimmingPolicy
 
 /**
   * This class holds parameters for the job.
@@ -39,6 +40,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   *                               so that the resulting Spark schema will consist of child elements of that group
+  * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
   * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
   * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
@@ -59,6 +61,7 @@ case class CobolParameters(
                             variableLengthParams:  Option[VariableLengthParameters],
                             generateRecordId:      Boolean,
                             schemaRetentionPolicy: SchemaRetentionPolicy,
+                            stringTrimmingPolicy:  StringTrimmingPolicy,
                             searchSignatureField:  Option[String],
                             searchSignatureValue:  Option[String],
                             multisegmentParams:    Option[MultisegmentParameters],
