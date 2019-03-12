@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
-import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
@@ -58,22 +59,28 @@ object CopybookParser {
     */
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
-                segmentRedefines: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines)
+                segmentRedefines: Seq[String] = Nil,
+                stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy)
   }
 
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param enc              Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
-    * @param copyBookContents A string containing all lines of a copybook
-    * @param dropGroupFillers Drop groups marked as fillers from the output AST
-    * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
-    *                         resolving segment redefines.
+    * @param enc                  Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param copyBookContents     A string containing all lines of a copybook
+    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    *                             resolving segment redefines.
+    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
-  def parseTree(enc: Encoding, copyBookContents: String, dropGroupFillers: Boolean, segmentRedefines: Seq[String]): Copybook = {
+  def parseTree(enc: Encoding,
+                copyBookContents: String,
+                dropGroupFillers: Boolean,
+                segmentRedefines: Seq[String],
+                stringTrimmingPolicy: StringTrimmingPolicy): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -157,7 +164,7 @@ object CopybookParser {
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          val decode = DecoderSelector.getDecoder(dataType)
+          val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy)
           Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
             dependingOn, isFiller = isFiller, decode = decode)(None)
         }

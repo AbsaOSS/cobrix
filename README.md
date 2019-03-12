@@ -793,6 +793,36 @@ You can change this behaviour if you would like to drop such filler groups by pr
 .option("drop_group_fillers", "true")
 ```
 
+## Summary of all available options
+
+##### Data parsing options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `none`, `left`, `right`, `both` (default).  |
+
+
+##### Multisegment indexing options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("is_xcom", "true")                 | Indexing is supported only on files having XCOM headers at the moment.        |
+| .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
+| .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
+| .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. |
+| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
+
+##### Helper fields generation options    
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:---------------------------------------------------------------------------- |
+| .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.         |
+| .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments. |
+| .option("segment_id_level0", "SEGID-ROOT") | Specifies segment id value for root level records. When this option is specified the Seg_Id0 field will be generated for each root record |
+| .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
+| .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
+| .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+
 ## Performance Analysis
 
 Performance tests were performed on synthetic datasets. The setup and results are as follows.
@@ -956,27 +986,6 @@ For multisegment variable lengths tests:
   - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split a dataset into individual segments and then join them.
     The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets above](#ims).
   - Fixed many performance issues that should make reading mainframe files several times faster. The actual performance depends on concrete copybooks.
-
-##### Multisegment indexing options
-
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("is_xcom", "true")                 | Indexing is supported only on files having XCOM headers at the moment.        |
-| .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
-| .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
-| .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. (This option is **experimental**) |
-| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
-     
-##### Helper fields generation options    
-
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:---------------------------------------------------------------------------- |
-| .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.         |
-| .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments. |
-| .option("segment_id_level0", "SEGID-ROOT") | Specifies segment id value for root level records. When this option is specified the Seg_Id0 field will be generated for each root record |
-| .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
-| .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
-| .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
 
 ## Acknowledgements
 

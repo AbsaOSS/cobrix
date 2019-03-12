@@ -22,29 +22,45 @@ import scala.util.control.NonFatal
 
 object StringDecoders {
 
+  // Simple constants are used instead of enumeration for better performance
+  val TrimNone  = 1
+  val TrimLeft  = 2
+  val TrimRight = 3
+  val TrimBoth  = 4
+
   /**
     * A decoder for any EBCDIC string fields (alphabetical or any char)
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes        A byte array that represents the binary data
+    * @param trimmingType Specifies if and how the soutput string should be trimmed
     * @return A string representation of the binary data
     */
-  def decodeEbcdicString(bytes: Array[Byte]): String = {
+  def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int): String = {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
       buf.append(BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256))
       i = i + 1
     }
-    buf.toString.trim
+    if (trimmingType == TrimNone) {
+      buf.toString
+    } else if (trimmingType == TrimLeft) {
+      StringTools.trimLeft(buf.toString)
+    } else if (trimmingType == TrimRight) {
+      StringTools.trimRight(buf.toString)
+    } else {
+      buf.toString.trim
+    }
   }
 
   /**
     * A decoder for any ASCII string fields (alphabetical or any char)
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes        A byte array that represents the binary data
+    * @param trimmingType Specifies if and how the soutput string should be trimmed
     * @return A string representation of the binary data
     */
-  def decodeAsciiString(bytes: Array[Byte]): String = {
+  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int): String = {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
@@ -54,7 +70,15 @@ object StringDecoders {
         buf.append(bytes(i).toChar)
       i = i + 1
     }
-    buf.toString.trim
+    if (trimmingType == TrimNone) {
+      buf.toString
+    } else if (trimmingType == TrimLeft) {
+      StringTools.trimLeft(buf.toString)
+    } else if (trimmingType == TrimRight) {
+      StringTools.trimRight(buf.toString)
+    } else {
+      buf.toString.trim
+    }
   }
 
   /**

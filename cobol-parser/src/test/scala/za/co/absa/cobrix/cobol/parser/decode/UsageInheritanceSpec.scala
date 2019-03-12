@@ -20,6 +20,7 @@ import org.scalatest.FunSuite
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -32,7 +33,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil, StringTrimmingPolicy.TrimBoth)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -49,7 +50,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil, StringTrimmingPolicy.TrimBoth)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -66,7 +67,7 @@ class UsageInheritanceSpec extends FunSuite {
         |              15  FLD       PIC 9(7).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
+    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil, StringTrimmingPolicy.TrimBoth)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
@@ -100,7 +101,7 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
-      CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil)
+      CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, segmentRedefines = Nil, StringTrimmingPolicy.TrimBoth)
     }
 
     assert(syntaxErrorException.lineNumber == 3)

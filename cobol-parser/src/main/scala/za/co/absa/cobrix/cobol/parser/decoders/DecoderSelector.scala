@@ -26,6 +26,9 @@ import scala.util.control.NonFatal
 object DecoderSelector {
   type Decoder = Array[Byte] => Any
 
+  import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy._
+
+
   /**
     * Gets a decoder function suitable for converting the specified COBOL data type
     * to a target type. The target type is determined based on Spark expectations.
@@ -36,12 +39,13 @@ object DecoderSelector {
     * <li> Integral types are represented as boxed integers and longs. Larger integral numbers are represented as BigDecimal </li>
     * </ul>
     *
-    * @param dataType A daatype of a copybook field
+    * @param dataType             A daatype of a copybook field
+    * @param stringTrimmingPolicy Specifies how the decoder should handle string types
     * @return A function that converts an array of bytes to the target data type.
     */
-  def getDecoder(dataType: CobolType): Decoder = {
+  def getDecoder(dataType: CobolType, stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth): Decoder = {
     val decoder = dataType match {
-      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()))
+      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy)
       case decimalType: Decimal => getDecimalDecoder(decimalType)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
@@ -50,10 +54,19 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is ENCDIC or ASCII */
-  private def getStringDecoder(encoding: Encoding): Decoder = {
+  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy): Decoder = {
     encoding match {
-      case _: EBCDIC => StringDecoders.decodeEbcdicString
-      case _: ASCII => StringDecoders.decodeAsciiString
+      case _: EBCDIC => StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy))
+      case _: ASCII => StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
+    }
+  }
+
+  private def getStringStrimmingType(stringTrimmingPolicy: StringTrimmingPolicy): Int = {
+    stringTrimmingPolicy match {
+      case TrimNone => StringDecoders.TrimNone
+      case TrimLeft => StringDecoders.TrimLeft
+      case TrimRight => StringDecoders.TrimRight
+      case TrimBoth => StringDecoders.TrimBoth
     }
   }
 

@@ -31,7 +31,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test3"
   private val inputCopybookPath = "file://../data/test3_copybook.cob"
-  private val inpudDataPath = "../data/test3_data"
+  private val inputDataPath = "../data/test3_data"
 
   private val expectedSchemaPath = "../data/test3_expected/test3_schema.json"
   private val actualSchemaPath = "../data/test3_expected/test3_schema_actual.json"
@@ -51,7 +51,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
         a.option(b._1, b._2)
       })
 
-      loadDfWithOptions.load(inpudDataPath)
+      loadDfWithOptions.load(inputDataPath)
     }
 
     // This is to print the actual output
@@ -87,7 +87,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
     runTest("_trim_none",
       "segment_field" -> "SIGNATURE" ::
       "segment_filter" -> "S9276511" ::
-      "string_trimming" -> "none" ::
+      "string_trimming_policy" -> "none" ::
         Nil)
   }
 
@@ -95,7 +95,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
     runTest("_trim_left",
       "segment_field" -> "SIGNATURE" ::
         "segment_filter" -> "S9276511" ::
-        "string_trimming" -> "left" ::
+        "string_trimming_policy" -> "left" ::
         Nil)
   }
 
@@ -103,7 +103,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
     runTest("_trim_right",
       "segment_field" -> "SIGNATURE" ::
         "segment_filter" -> "S9276511" ::
-        "string_trimming" -> "right" ::
+        "string_trimming_policy" -> "right" ::
         Nil)
   }
 
@@ -111,7 +111,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
     runTest("_trim_both",
       "segment_field" -> "SIGNATURE" ::
         "segment_filter" -> "S9276511" ::
-        "string_trimming" -> "both" ::
+        "string_trimming_policy" -> "both" ::
         Nil)
   }
 
