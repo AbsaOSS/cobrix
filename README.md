@@ -799,7 +799,8 @@ You can change this behaviour if you would like to drop such filler groups by pr
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `none`, `left`, `right`, `both` (default).  |
+| .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
+| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`. The `common_extended` code page supports non-printable characters that converts to ASCII codes below 32. |
 
 
 ##### Multisegment indexing options
