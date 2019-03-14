@@ -16,8 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 
@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param copybookContent        String containing the actual content of the copybook. Either this or the copybookPath parameter must be specified.
   * @param sourcePath             String containing the path to the Cobol file to be parsed.
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
+  * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param isRecordSequence       Does input files have 4 byte record length headers
   * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
   * @param isUsingIndex           Is indexing input file before processing is requested
@@ -51,6 +52,7 @@ case class CobolParameters(
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
                             isEbcdic:              Boolean,
+                            ebcdicCodePage:        EbcdicCodePage,
                             isRecordSequence:      Boolean,
                             isRdwBigEndian:        Boolean,
                             isUsingIndex:          Boolean,

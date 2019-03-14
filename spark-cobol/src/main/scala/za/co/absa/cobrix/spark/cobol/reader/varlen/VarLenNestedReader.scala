@@ -102,7 +102,8 @@ final class VarLenNestedReader(copybookContents: String,
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers, segmentRedefines, readerProperties.stringTrimmingPolicy)
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers,
+      segmentRedefines, readerProperties.stringTrimmingPolicy, readerProperties.ebcdicCodePage)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)

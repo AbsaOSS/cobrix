@@ -61,6 +61,61 @@ object BinaryUtils {
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', spc, spc, spc, spc, spc, spc) // 240 - 255
   }
 
+  /** This is the EBCDIC to ASCII conversion table with non-printable characters mapping**/
+  lazy val ebcdic2asciiNonPrintable: Array[Char] = {
+    val clf = '\r'
+    val ccr = '\n'
+    val spc = ' '
+    val qts = '\''
+    val qtd = '\"'
+    val bsh = '\\'
+
+    val c00 = '\00'
+    val c01 = '\00'
+    val c02 = '\00'
+    val c03 = '\00'
+
+    val c08 = '\10'
+    val c09 = '\11'
+
+    val c0b = '\13'
+    val c0c = '\14'
+    val c0d = '\15'
+    val c0e = '\16'
+    val c0f = '\17'
+
+    val c10 = '\20'
+    val c11 = '\21'
+    val c12 = '\22'
+    val c13 = '\23'
+    val c18 = '\30'
+    val c19 = '\31'
+    val c1a = '\32'
+    val c1c = '\34'
+    val c1d = '\35'
+    val c1e = '\36'
+    val c1f = '\37'
+
+    // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
+    Array[Char](
+      c00, c01, c02, c03, c1a, c09, c1a, spc, c1a, c1a, c1a, c0b, c0c, c0d, c0e, c0f, //   0 -  15
+      c10, c11, c12, c13, c1a, c1a, c08, c1a, c18, c19, c1a, c1a, c1c, c1d, c1e, c1f, //  16 -  31
+      spc, spc, spc, spc, spc, clf, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  32 -  47
+      spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  48 -  63
+      ' ', ' ', spc, spc, spc, spc, spc, spc, spc, spc, spc, '.', '<', '(', '+', '|', //  64 -  79
+      '&', spc, spc, spc, spc, spc, spc, spc, spc, spc, '!', '$', '*', ')', ';', spc, //  80 -  95
+      '-', '/', spc, spc, spc, spc, spc, spc, spc, spc, '|', ',', '%', '_', '>', '?', //  96 - 111
+      spc, spc, spc, spc, spc, spc, spc, spc, spc, '`', ':', '#', '@', qts, '=', qtd, // 112 - 127
+      spc, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', spc, spc, spc, spc, spc, spc, // 128 - 143
+      spc, 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', spc, spc, spc, spc, spc, spc, // 144 - 159
+      spc, '~', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', spc, spc, spc, spc, spc, spc, // 160 - 175
+      '^', spc, spc, spc, spc, spc, spc, spc, spc, spc, '[', ']', spc, spc, spc, spc, // 176 - 191
+      '{', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', '-', spc, spc, spc, spc, spc, // 192 - 207
+      '}', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', spc, spc, spc, spc, spc, spc, // 208 - 223
+      bsh, spc, 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', spc, spc, spc, spc, spc, spc, // 224 - 239
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', spc, spc, spc, spc, spc, spc) // 240 - 255
+  }
+
   lazy val ascii2ebcdic: Array[Byte] = Array[Byte] (
     0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte, 0x40.toByte,  //   0 -   7
     0x40.toByte, 0x40.toByte, 0x0d.toByte, 0x40.toByte, 0x40.toByte, 0x25.toByte, 0x40.toByte, 0x40.toByte,  //   8 -  15
