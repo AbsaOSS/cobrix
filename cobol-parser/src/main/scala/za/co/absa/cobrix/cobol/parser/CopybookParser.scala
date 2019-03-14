@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, EbcdicCodePage, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
@@ -60,8 +61,9 @@ object CopybookParser {
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
-                stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy)
+                stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                ebcdicCodePage: EbcdicCodePage = EbcdicCodePage.Common): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage)
   }
 
   /**
@@ -80,7 +82,8 @@ object CopybookParser {
                 copyBookContents: String,
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
-                stringTrimmingPolicy: StringTrimmingPolicy): Copybook = {
+                stringTrimmingPolicy: StringTrimmingPolicy,
+                ebcdicCodePage: EbcdicCodePage): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -164,7 +167,7 @@ object CopybookParser {
 
         val newElement = if (isLeaf) {
           val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy)
+          val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
           Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
             dependingOn, isFiller = isFiller, decode = decode)(None)
         }

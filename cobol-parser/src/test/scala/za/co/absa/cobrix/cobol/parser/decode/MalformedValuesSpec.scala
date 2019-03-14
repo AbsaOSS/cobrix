@@ -17,12 +17,8 @@
 package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.FunSuite
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{CobolType, Integral}
-import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Primitive}
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
 
 class MalformedValuesSpec extends FunSuite {
 
@@ -32,7 +28,7 @@ class MalformedValuesSpec extends FunSuite {
         |           10  FIELD           PIC 9(7)  COMP.
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, Nil, StringTrimmingPolicy.TrimBoth)
+    val copybook = CopybookParser.parseTree(copyBookContents)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
 
     // Encoded 8405184 is OK for Int32 and PIC 9(7)
@@ -52,7 +48,7 @@ class MalformedValuesSpec extends FunSuite {
         |           10  FIELD           PIC 9(5)V9(5).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, Nil, StringTrimmingPolicy.TrimBoth)
+    val copybook = CopybookParser.parseTree(copyBookContents)
     val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
 
     // Encoded 12345.12345 is OK for Decimal and PIC 9(5)V9(5)
@@ -84,7 +80,7 @@ class MalformedValuesSpec extends FunSuite {
         |           10  FIELD8           PIC S9(5)V9(5).
         |""".stripMargin
 
-    val copybook = CopybookParser.parseTree(EBCDIC(), copyBookContents, dropGroupFillers = false, Nil, StringTrimmingPolicy.TrimBoth)
+    val copybook = CopybookParser.parseTree(copyBookContents)
     val field1 = copybook.ast.head.children.head.asInstanceOf[Primitive]
     val field2 = copybook.ast.head.children(1).asInstanceOf[Primitive]
     val field3 = copybook.ast.head.children(2).asInstanceOf[Primitive]

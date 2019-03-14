@@ -17,12 +17,9 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
-import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.{EbcdicCodePage, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.source.parameters
 
 import scala.collection.mutable.ListBuffer
 
@@ -49,6 +46,7 @@ object CobolParametersParser {
 
   // Data parsing parameters
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
+  val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
 
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
@@ -82,8 +80,15 @@ object CobolParametersParser {
     val stringTrimmingPolicyName = params.getOrElse(PARAM_STRING_TRIMMING_POLICY, "both")
     val stringTrimmingPolicy = StringTrimmingPolicy.withNameOpt(stringTrimmingPolicyName)
 
-    if (schemaRetentionPolicy.isEmpty) {
-      throw new IllegalArgumentException(s"Invalid value '$schemaRetentionPolicyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
+    if (stringTrimmingPolicy.isEmpty) {
+      throw new IllegalArgumentException(s"Invalid value '$stringTrimmingPolicy' for '$PARAM_STRING_TRIMMING_POLICY' option.")
+    }
+
+    val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
+    val ebcdicCodePage = EbcdicCodePage.withNameOpt(ebcdicCodePageName)
+
+    if (ebcdicCodePage.isEmpty) {
+      throw new IllegalArgumentException(s"Invalid value '$ebcdicCodePage' for '$PARAM_EBCDIC_CODE_PAGE' option.")
     }
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
@@ -104,6 +109,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       isEbcdic,
+      ebcdicCodePage.get,
       params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
       params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,

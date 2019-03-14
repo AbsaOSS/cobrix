@@ -33,15 +33,17 @@ object StringDecoders {
     *
     * @param bytes        A byte array that represents the binary data
     * @param trimmingType Specifies if and how the soutput string should be trimmed
+    * @param conversionTable A conversion table to use to convert from EBCDIC to ASCII
     * @return A string representation of the binary data
     */
-  def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int): String = {
+  def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, conversionTable: Array[Char]): String = {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
       buf.append(BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256))
       i = i + 1
     }
+
     if (trimmingType == TrimNone) {
       buf.toString
     } else if (trimmingType == TrimLeft) {

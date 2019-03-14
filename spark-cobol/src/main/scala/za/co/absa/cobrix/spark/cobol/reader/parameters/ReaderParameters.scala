@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
@@ -25,6 +26,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * These are properties for customizing mainframe binary data reader.
   *
   * @param isEbcdic                 If true the input data file encoding is EBCDIC, otherwise it is ASCII
+  * @param ebcdicCodePage           Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence         Does input files have 4 byte record length headers
   * @param isRdwBigEndian           Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
@@ -41,19 +43,20 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param dropGroupFillers         If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   */
 case class ReaderParameters(
-                             isEbcdic: Boolean = true,
-                             lengthFieldName: Option[String] = None,
-                             isRecordSequence: Boolean = false,
-                             isRdwBigEndian: Boolean = false,
+                             isEbcdic:                Boolean = true,
+                             ebcdicCodePage:          EbcdicCodePage,
+                             lengthFieldName:         Option[String] = None,
+                             isRecordSequence:        Boolean = false,
+                             isRdwBigEndian:          Boolean = false,
                              isIndexGenerationNeeded: Boolean = false,
-                             inputSplitRecords: Option[Int] = None,
-                             inputSplitSizeMB: Option[Int] = None,
-                             hdfsDefaultBlockSize: Option[Int] = None,
-                             startOffset: Int = 0,
-                             endOffset: Int = 0,
-                             generateRecordId: Boolean = false,
-                             schemaPolicy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
-                             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-                             multisegment: Option[MultisegmentParameters],
-                             dropGroupFillers: Boolean
+                             inputSplitRecords:       Option[Int] = None,
+                             inputSplitSizeMB:        Option[Int] = None,
+                             hdfsDefaultBlockSize:    Option[Int] = None,
+                             startOffset:             Int = 0,
+                             endOffset:               Int = 0,
+                             generateRecordId:        Boolean = false,
+                             schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                             stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                             multisegment:            Option[MultisegmentParameters],
+                             dropGroupFillers:        Boolean
                            )
