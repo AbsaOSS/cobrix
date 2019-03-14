@@ -40,7 +40,7 @@ object StringDecoders {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
-      buf.append(BinaryUtils.ebcdic2ascii((bytes(i) + 256) % 256))
+      buf.append(conversionTable((bytes(i) + 256) % 256))
       i = i + 1
     }
 
