@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -27,18 +26,18 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 // This test suite will be deprecated soon since search reader is deprecated
 
 //noinspection NameBooleanParameters
-class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
+class Test8NonPrintables extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test3"
-  private val inputCopybookPath = "file://../data/test3_copybook.cob"
-  private val inputDataPath = "../data/test3_data"
+  private val exampleName = "Test8"
+  private val inputCopybookPath = "file://../data/test8_copybook.cob"
+  private val inputDataPath = "../data/test8_data"
 
-  private val expectedSchemaPath = "../data/test3_expected/test3_schema.json"
-  private val actualSchemaPath = "../data/test3_expected/test3_schema_actual.json"
+  private val expectedSchemaPath = "../data/test8_expected/test8_schema.json"
+  private val actualSchemaPath = "../data/test8_expected/test8_schema_actual.json"
 
   def runTest(expectPrefix: String, options: Seq[(String, String)]): Unit = {
-    val expectedResultsPath = s"../data/test3_expected/test3$expectPrefix.txt"
-    val actualResultsPath = s"../data/test3_expected/test3${expectPrefix}_actual.txt"
+    val expectedResultsPath = s"../data/test8_expected/test8$expectPrefix.txt"
+    val actualResultsPath = s"../data/test8_expected/test8${expectPrefix}_actual.txt"
 
     val df = {
       val loadDf = spark
@@ -67,6 +66,7 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
+    //df.write.option("encoding", "UTF-8").csv(s"$actualResultsPath.csv")
     val actual = df.toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
@@ -76,43 +76,15 @@ class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
     }
   }
 
-  test(s"Integration test on $exampleName data") {
-    runTest("",
-      "segment_field" -> "SIGNATURE" ::
-      "segment_filter" -> "S9276511" ::
-        Nil)
+  test(s"Integration test on $exampleName (printable characters) data") {
+    runTest("_printable",
+      "ebcdic_code_page" -> "common" :: Nil)
   }
 
-  test(s"Test trimming = none on $exampleName data") {
-    runTest("_trim_none",
-      "segment_field" -> "SIGNATURE" ::
-      "segment_filter" -> "S9276511" ::
-      "string_trimming_policy" -> "none" ::
-        Nil)
-  }
-
-  test(s"Test trimming = left on $exampleName data") {
-    runTest("_trim_left",
-      "segment_field" -> "SIGNATURE" ::
-        "segment_filter" -> "S9276511" ::
-        "string_trimming_policy" -> "left" ::
-        Nil)
-  }
-
-  test(s"Test trimming = right on $exampleName data") {
-    runTest("_trim_right",
-      "segment_field" -> "SIGNATURE" ::
-        "segment_filter" -> "S9276511" ::
-        "string_trimming_policy" -> "right" ::
-        Nil)
-  }
-
-  test(s"Test trimming = both on $exampleName data") {
-    runTest("_trim_both",
-      "segment_field" -> "SIGNATURE" ::
-        "segment_filter" -> "S9276511" ::
-        "string_trimming_policy" -> "both" ::
-        Nil)
+  test(s"Integration test on $exampleName (non-printable characters) data") {
+    //runTest("_non_printable",
+    //  "ebcdic_code_page" -> "common_extended" ::
+    //    "string_trimming_policy" -> "none" :: Nil)
   }
 
 }

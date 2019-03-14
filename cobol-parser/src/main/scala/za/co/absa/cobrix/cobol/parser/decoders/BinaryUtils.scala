@@ -71,9 +71,9 @@ object BinaryUtils {
     val bsh = '\\'
 
     val c00 = '\00'
-    val c01 = '\00'
-    val c02 = '\00'
-    val c03 = '\00'
+    val c01 = '\01'
+    val c02 = '\02'
+    val c03 = '\03'
 
     val c08 = '\10'
     val c09 = '\11'

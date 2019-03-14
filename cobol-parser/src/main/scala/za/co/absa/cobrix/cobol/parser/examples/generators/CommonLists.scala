@@ -38,6 +38,18 @@ object CommonLists {
     Company("Xingzhoug", "8822278911", "74 Qing ave., Beijing")
   )
 
+  val companiesWithNonPrintableCharacters: Seq[Company] = Seq(
+    Company("\01\02\03\04\05\06\07\10", "0039887123", "74 Lawn ave., New York"),
+    Company("\11\12\13\14\15\16\17\20", "0039567812", "123/B Prome str., Denver"),
+    Company("\11\12\13\14\15\16\17\20", "0034412331", "5574, Tokyo"),
+    Company("\21\22\23\24\25\26\27\30", "0092317899", "1 Garden str., London"),
+    Company("\31\32\33\34\35\36\37\40", "0002377771", "107 Labe str., Berlin"),
+    Company("\41\42\43\44\45\46\47\50", "0123330087", "901 Ztt, Munich"),
+    Company("\51\52\53\54\55\56\57\60", "0039887123", "10 Sandton, Johannesburg"),
+    Company("\61\62\63\64\65\66\67\70", "0039801988", "2 Park ave., Johannesburg"),
+    Company("\71\72\73\74\75\76\77\100", "0038903321", "2 G. str., Johannesburg")
+  )
+
   val firstNames: Seq[String] = Seq(
     "Jene",
     "Maya",
