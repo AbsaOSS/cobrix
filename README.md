@@ -917,6 +917,11 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.4.1 released 15 Mar 2019
+  - This is a minor feature release.
+  - Add an option to specify if and how strings should be trimmed. 
+  - Add an option to select an EBCDIC code page with support of non-pritable characters.
+
 - #### 0.4.0 released 6 Mar 2019
   - This is a minor feature release.
   - Add ability to specify segment id to redefine mapping. If specified Cobrix won't parse redefines that are not valid for a given segment id.
