@@ -74,23 +74,29 @@ object BinaryUtils {
     val c01 = '\01'
     val c02 = '\02'
     val c03 = '\03'
-
+    val c04 = '\04'
+    val c05 = '\05'
+    val c06 = '\06'
+    val c07 = '\07'
     val c08 = '\10'
     val c09 = '\11'
-
     val c0b = '\13'
     val c0c = '\14'
     val c0d = '\15'
     val c0e = '\16'
     val c0f = '\17'
-
     val c10 = '\20'
     val c11 = '\21'
     val c12 = '\22'
     val c13 = '\23'
+    val c14 = '\24'
+    val c15 = '\25'
+    val c16 = '\26'
+    val c17 = '\27'
     val c18 = '\30'
     val c19 = '\31'
     val c1a = '\32'
+    val c1b = '\33'
     val c1c = '\34'
     val c1d = '\35'
     val c1e = '\36'
@@ -100,8 +106,8 @@ object BinaryUtils {
     Array[Char](
       c00, c01, c02, c03, c1a, c09, c1a, spc, c1a, c1a, c1a, c0b, c0c, c0d, c0e, c0f, //   0 -  15
       c10, c11, c12, c13, c1a, c1a, c08, c1a, c18, c19, c1a, c1a, c1c, c1d, c1e, c1f, //  16 -  31
-      spc, spc, spc, spc, spc, clf, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  32 -  47
-      spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  48 -  63
+      spc, spc, spc, spc, spc, clf, c17, c1b, spc, spc, spc, spc, spc, c05, c06, c07, //  32 -  47
+      spc, spc, c16, spc, spc, spc, spc, c04, spc, spc, spc, spc, c14, c15, spc, spc, //  48 -  63
       ' ', ' ', spc, spc, spc, spc, spc, spc, spc, spc, spc, '.', '<', '(', '+', '|', //  64 -  79
       '&', spc, spc, spc, spc, spc, spc, spc, spc, spc, '!', '$', '*', ')', ';', spc, //  80 -  95
       '-', '/', spc, spc, spc, spc, spc, spc, spc, spc, '|', ',', '%', '_', '>', '?', //  96 - 111
