@@ -27,7 +27,7 @@ import scala.util.Random
 /**
   * This is a test data generator. The copybook for it is listed below.
   */
-object TestDataGen1aNonPrintableNames {
+object TestDataGen8NonPrintableNames {
 
   val numberOfRecordsToGenerate = 1000
 

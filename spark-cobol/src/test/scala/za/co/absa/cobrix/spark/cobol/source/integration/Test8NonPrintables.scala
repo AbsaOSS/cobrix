@@ -82,9 +82,9 @@ class Test8NonPrintables extends FunSuite with SparkTestBase {
   }
 
   test(s"Integration test on $exampleName (non-printable characters) data") {
-    //runTest("_non_printable",
-    //  "ebcdic_code_page" -> "common_extended" ::
-    //    "string_trimming_policy" -> "none" :: Nil)
+    runTest("_non_printable",
+      "ebcdic_code_page" -> "common_extended" ::
+        "string_trimming_policy" -> "none" :: Nil)
   }
 
 }
