@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
+import org.apache.spark.sql.SaveMode
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -66,7 +67,10 @@ class Test8NonPrintables extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    //df.write.option("encoding", "UTF-8").csv(s"$actualResultsPath.csv")
+    df.write.mode(SaveMode.Overwrite)
+      .option("encoding", "UTF-8")
+      .option("charset", "UTF-8")
+      .csv(s"$actualResultsPath.csv")
     val actual = df.toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
