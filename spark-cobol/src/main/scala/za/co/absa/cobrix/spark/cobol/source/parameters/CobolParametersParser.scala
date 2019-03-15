@@ -17,9 +17,12 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.{EbcdicCodePage, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable.ListBuffer
 
@@ -69,27 +72,46 @@ object CobolParametersParser {
   val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
   val PARAM_IMPROVE_LOCALITY          = "improve_locality"
 
-  def parse(params: Map[String,String]): CobolParameters = {
+  private def getSchemaRetentionPolicy(params: Map[String,String]): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
 
-    if (schemaRetentionPolicy.isEmpty) {
-      throw new IllegalArgumentException(s"Invalid value '$schemaRetentionPolicyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
+    schemaRetentionPolicy match {
+      case Some(p) =>
+        p
+      case None =>
+        throw new IllegalArgumentException(s"Invalid value '$schemaRetentionPolicyName' for '$PARAM_SCHEMA_RETENTION_POLICY' option.")
     }
+  }
 
+  private def getStringTrimmingPolicy(params: Map[String,String]): StringTrimmingPolicy = {
     val stringTrimmingPolicyName = params.getOrElse(PARAM_STRING_TRIMMING_POLICY, "both")
     val stringTrimmingPolicy = StringTrimmingPolicy.withNameOpt(stringTrimmingPolicyName)
 
-    if (stringTrimmingPolicy.isEmpty) {
-      throw new IllegalArgumentException(s"Invalid value '$stringTrimmingPolicy' for '$PARAM_STRING_TRIMMING_POLICY' option.")
+    stringTrimmingPolicy match {
+      case Some(p) =>
+        p
+      case None =>
+        throw new IllegalArgumentException(s"Invalid value '$stringTrimmingPolicy' for '$PARAM_STRING_TRIMMING_POLICY' option.")
     }
+  }
 
+  private def getEbcdicCodePage(params: Map[String,String]): EbcdicCodePage = {
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
     val ebcdicCodePage = EbcdicCodePage.withNameOpt(ebcdicCodePageName)
 
-    if (ebcdicCodePage.isEmpty) {
-      throw new IllegalArgumentException(s"Invalid value '$ebcdicCodePage' for '$PARAM_EBCDIC_CODE_PAGE' option.")
+    ebcdicCodePage match {
+      case Some(p) =>
+        p
+      case None =>
+        throw new IllegalArgumentException(s"Invalid value '$ebcdicCodePage' for '$PARAM_EBCDIC_CODE_PAGE' option.")
     }
+  }
+
+  def parse(params: Map[String,String]): CobolParameters = {
+    val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
+    val stringTrimmingPolicy = getStringTrimmingPolicy(params)
+    val ebcdicCodePage = getEbcdicCodePage(params)
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
@@ -109,7 +131,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       isEbcdic,
-      ebcdicCodePage.get,
+      ebcdicCodePage,
       params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
       params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
@@ -119,8 +141,8 @@ object CobolParametersParser {
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
-      schemaRetentionPolicy.get,
-      stringTrimmingPolicy.get,
+      schemaRetentionPolicy,
+      stringTrimmingPolicy,
       getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
       getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),

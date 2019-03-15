@@ -16,8 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.schema
 
-import za.co.absa.cobrix.spark.cobol.schema
-
 object SchemaRetentionPolicy extends Enumeration {
   type SchemaRetentionPolicy = Value
 
