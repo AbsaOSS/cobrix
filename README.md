@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1</version>
 </dependency>
 ```
 
@@ -170,8 +170,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.4.0.jar
-* cobol-parser-0.4.0.jar
+* spark-cobol-0.4.1.jar
+* cobol-parser-0.4.1.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -917,6 +917,11 @@ For multisegment variable lengths tests:
 
 ## Changelog
 
+- #### 0.4.1 released 15 Mar 2019
+  - This is a minor feature release.
+  - Add an option to specify if and how strings should be trimmed. 
+  - Add an option to select an EBCDIC code page with support of non-pritable characters.
+  
 - #### 0.4.0 released 6 Mar 2019
   - This is a minor feature release.
   - Add ability to specify segment id to redefine mapping. If specified Cobrix won't parse redefines that are not valid for a given segment id.
