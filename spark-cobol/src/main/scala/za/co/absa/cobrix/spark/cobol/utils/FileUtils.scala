@@ -16,12 +16,15 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.PrintWriter
+import java.io.{FileOutputStream, OutputStreamWriter, PrintWriter}
+import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 import org.slf4j.LoggerFactory
+
+import scala.collection.JavaConverters._
 
 /**
   * Retrieves files from a given file system.
@@ -94,6 +97,23 @@ object FileUtils {
   }
 
   /**
+    * Writes a string to a file in UTF-8 encoding
+    */
+  def writeStringToUtf8File(string: String, filePathName: String): Unit = {
+    val utf8Output: OutputStreamWriter  = new OutputStreamWriter(
+      new FileOutputStream(filePathName),
+      StandardCharsets.UTF_8
+    )
+
+    val writer = new PrintWriter(utf8Output)
+    try {
+      writer.write(string)
+    } finally {
+      writer.close()
+    }
+  }
+
+  /**
     * Writes array of strings to a file
     */
   def writeStringsToFile(strings: Array[String], filePathName: String): Unit = {
@@ -106,6 +126,38 @@ object FileUtils {
     } finally {
       writer.close()
     }
+  }
+
+  /**
+    * Writes array of strings to a file in UTF-8 encoding
+    */
+  def writeStringsToUtf8File(strings: Array[String], filePathName: String): Unit = {
+    val utf8Output: OutputStreamWriter  = new OutputStreamWriter(
+      new FileOutputStream(filePathName),
+      StandardCharsets.UTF_8
+    )
+
+    val writer = new PrintWriter(utf8Output)
+    try {
+      for (str <- strings) {
+        writer.write(str)
+        writer.write("\n")
+      }
+    } finally {
+      writer.close()
+    }
+  }
+
+  def readAllFileLines(fileName: String): String = {
+    Files.readAllLines(Paths.get(fileName), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+  }
+
+  def readAllFileStringUtf8(fileName: String): String = {
+    Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8).toArray.mkString("\n")
+  }
+
+  def readAllFileLinesUtf8(fileName: String): Array[String] = {
+    Files.readAllLines(Paths.get(fileName), StandardCharsets.UTF_8).asScala.toArray
   }
 
   /**
