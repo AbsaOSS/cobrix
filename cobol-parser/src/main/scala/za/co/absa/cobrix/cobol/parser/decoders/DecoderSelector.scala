@@ -76,6 +76,7 @@ object DecoderSelector {
     ebcdicCodePage match {
       case Common => BinaryUtils.ebcdic2ascii
       case CommonExtended => BinaryUtils.ebcdic2asciiNonPrintable
+      case CP037 => BinaryUtils.ebcdicCP037ToAsciiNonPrintable
     }
   }
 
