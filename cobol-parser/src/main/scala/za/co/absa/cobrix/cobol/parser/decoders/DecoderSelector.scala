@@ -75,8 +75,9 @@ object DecoderSelector {
   private def getEbcdicConversionTable(ebcdicCodePage: EbcdicCodePage): Array[Char] = {
     ebcdicCodePage match {
       case Common => BinaryUtils.ebcdic2ascii
-      case CommonExtended => BinaryUtils.ebcdic2asciiNonPrintable
-      case CP037 => BinaryUtils.ebcdicCP037ToAsciiNonPrintable
+      case CommonExt => BinaryUtils.ebcdic2asciiNonPrintable
+      case CP037 => BinaryUtils.ebcdicCP037ToAscii
+      case CP037Ext => BinaryUtils.ebcdicCP037ToAsciiNonPrintable
     }
   }
 

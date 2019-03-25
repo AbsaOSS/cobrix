@@ -82,7 +82,6 @@ object BinaryUtils {
     val c09 = '\11'
     val c0b = '\13'
     val c0c = '\14'
-    val c0d = '\15'
     val c0e = '\16'
     val c0f = '\17'
     val c10 = '\20'
@@ -104,7 +103,7 @@ object BinaryUtils {
 
     // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
     Array[Char](
-      c00, c01, c02, c03, c1a, c09, c1a, spc, c1a, c1a, c1a, c0b, c0c, c0d, c0e, c0f, //   0 -  15
+      c00, c01, c02, c03, c1a, c09, c1a, spc, c1a, c1a, c1a, c0b, c0c, ccr, c0e, c0f, //   0 -  15
       c10, c11, c12, c13, c1a, c1a, c08, c1a, c18, c19, c1a, c1a, c1c, c1d, c1e, c1f, //  16 -  31
       spc, spc, spc, spc, spc, clf, c17, c1b, spc, spc, spc, spc, spc, c05, c06, c07, //  32 -  47
       spc, spc, c16, spc, spc, spc, spc, c04, spc, spc, spc, spc, c14, c15, spc, spc, //  48 -  63
@@ -120,6 +119,39 @@ object BinaryUtils {
       '}', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', spc, spc, spc, spc, spc, spc, // 208 - 223
       bsh, spc, 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', spc, spc, spc, spc, spc, spc, // 224 - 239
       '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', spc, spc, spc, spc, spc, spc) // 240 - 255
+  }
+
+  /** This is the EBCDIC Code Page 37 to ASCII conversion table from https://en.wikipedia.org/wiki/EBCDIC_037 **/
+  lazy val ebcdicCP037ToAscii: Array[Char] = {
+    val clf = '\r'
+    val ccr = '\n'
+    val spc = ' '
+    val qts = '\''
+    val qtd = '\"'
+    val bsh = '\\'
+
+    val shy = '\u00ad'
+    val nel = '\u0085'
+    val rsp = '\u00a0'
+
+    // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
+    Array[Char](
+      spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, ccr, spc, spc, //   0 -  15
+      spc, spc, spc, spc, spc, nel, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  16 -  31
+      spc, spc, spc, spc, spc, clf, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  32 -  47
+      spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, spc, //  48 -  63
+      ' ', rsp, 'â', 'ä', 'à', 'á', 'ã', 'å', 'ç', 'ñ', '¢', '.', '<', '(', '+', '|', //  64 -  79
+      '&', 'é', 'ê', 'ë', 'è', 'í', 'î', 'ï', 'ì', 'ß', '!', '$', '*', ')', ';', '¬', //  80 -  95
+      '-', '/', 'Â', 'Ä', 'À', 'Á', 'Ã', 'Å', 'Ç', 'Ñ', '|', ',', '%', '_', '>', '?', //  96 - 111
+      'ø', 'É', 'Ê', 'Ë', 'È', 'Í', 'Î', 'Ï', 'Ì', '`', ':', '#', '@', qts, '=', qtd, // 112 - 127
+      'Ø', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', '«', '»', 'ð', 'ý', 'þ', '±', // 128 - 143
+      '°', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 'ª', 'º', 'æ', '¸', 'Æ', '¤', // 144 - 159
+      'µ', '~', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '¡', '¿', 'Ð', 'Ý', 'Þ', '®', // 160 - 175
+      '^', '£', '¥', '·', '©', '§', '¶', '¼', '½', '¾', '[', ']', '¯', '¨', '´', '×', // 176 - 191
+      '{', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', shy, 'ô', 'ö', 'ò', 'ó', 'õ', // 192 - 207
+      '}', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', '¹', 'û', 'ü', 'ù', 'ú', 'ÿ', // 208 - 223
+      bsh, '÷', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '²', 'Ô', 'Ö', 'Ò', 'Ó', 'Õ', // 224 - 239
+      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '³', 'Û', 'Ü', 'Ù', 'Ú', spc) // 240 - 255
   }
 
   /** This is the EBCDIC Code Page 37 to ASCII conversion table with non-printable characters mapping
@@ -144,7 +176,6 @@ object BinaryUtils {
     val c09 = '\11'
     val c0b = '\13'
     val c0c = '\14'
-    val c0d = '\15'
     val c0e = '\16'
     val c0f = '\17'
     val c10 = '\20'
@@ -167,10 +198,10 @@ object BinaryUtils {
     val shy = '\u00ad'
     val nel = '\u0085'
     val rsp = '\u00a0'
-    
+
     // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
     Array[Char](
-      c00, c01, c02, c03, spc, c09, spc, del, spc, spc, spc, c0b, c0c, c0d, c0e, c0f, //   0 -  15
+      c00, c01, c02, c03, spc, c09, spc, del, spc, spc, spc, c0b, c0c, ccr, c0e, c0f, //   0 -  15
       c10, c11, c12, c13, spc, nel, c08, spc, c18, c19, spc, spc, c1c, c1d, c1e, c1f, //  16 -  31
       spc, spc, spc, spc, spc, clf, c17, c1b, spc, spc, spc, spc, spc, c05, c06, c07, //  32 -  47
       spc, spc, c16, spc, spc, spc, spc, c04, spc, spc, spc, spc, c14, c15, spc, c1a, //  48 -  63
