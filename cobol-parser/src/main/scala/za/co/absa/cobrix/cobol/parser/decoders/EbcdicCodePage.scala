@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 object EbcdicCodePage extends Enumeration {
   type EbcdicCodePage = Value
 
-  val Common, CommonExtended, CP037 = Value
+  val Common, CommonExt, CP037, CP037Ext = Value
 
   def withNameOpt(s: String): Option[Value] = {
     val exactNames = values.find(_.toString == s)
@@ -28,9 +28,11 @@ object EbcdicCodePage extends Enumeration {
       if (sLowerCase == "common") {
         Some(Common)
       } else if (sLowerCase == "common_extended") {
-        Some(CommonExtended)
+        Some(CommonExt)
       } else if (sLowerCase == "cp037") {
         Some(CP037)
+      } else if (sLowerCase == "cp037_extended") {
+        Some(CP037Ext)
       }
       else {
         None
