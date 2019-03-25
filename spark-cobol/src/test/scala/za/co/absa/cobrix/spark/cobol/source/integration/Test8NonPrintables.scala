@@ -63,10 +63,10 @@ class Test8NonPrintables extends FunSuite with SparkTestBase {
     }
 
     val actual = df.toJSON.take(60)
-    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
+    val expected = FileUtils.readAllFileLinesUtf8(expectedResultsPath)
 
     if (!actual.sameElements(expected)) {
-      FileUtils.writeStringsToFile(actual, actualResultsPath)
+      FileUtils.writeStringsToUtf8File(actual, actualResultsPath)
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
     }
   }
