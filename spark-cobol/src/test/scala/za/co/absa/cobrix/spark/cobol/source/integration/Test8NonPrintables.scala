@@ -67,10 +67,10 @@ class Test8NonPrintables extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    df.write.mode(SaveMode.Overwrite)
-      .option("encoding", "UTF-8")
-      .option("charset", "UTF-8")
-      .csv(s"$actualResultsPath.csv")
+//    df.write.mode(SaveMode.Overwrite)
+//      .option("encoding", "UTF-8")
+//      .option("charset", "UTF-8")
+//      .csv(s"$actualResultsPath.csv")
     val actual = df.toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
