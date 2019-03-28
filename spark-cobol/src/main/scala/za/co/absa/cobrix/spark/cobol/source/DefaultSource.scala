@@ -21,6 +21,7 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.spark.cobol.reader.Reader
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
@@ -84,7 +85,7 @@ class DefaultSource
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     new FixedLenNestedReader(copybookContent,
       parameters.isEbcdic,
-      parameters.ebcdicCodePage,
+      getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
       parameters.recordStartOffset,
       parameters.recordEndOffset,
       parameters.schemaRetentionPolicy,
@@ -124,6 +125,7 @@ class DefaultSource
         copybookContent,
         ReaderParameters(isEbcdic = parameters.isEbcdic,
           ebcdicCodePage = parameters.ebcdicCodePage,
+          ebcdicCodePageClass = parameters.ebcdicCodePageClass,
           lengthFieldName = recordLengthField,
           isRecordSequence = parameters.isRecordSequence,
           isRdwBigEndian = parameters.isRdwBigEndian,
@@ -153,6 +155,13 @@ class DefaultSource
     }
 
     hdfsBlockSize
+  }
+
+  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
+    codePageClass match {
+      case Some(c) => CodePage.getCodePageByClass(c)
+      case None => CodePage.getCodePageByName(codePageName)
+    }
   }
 
 }

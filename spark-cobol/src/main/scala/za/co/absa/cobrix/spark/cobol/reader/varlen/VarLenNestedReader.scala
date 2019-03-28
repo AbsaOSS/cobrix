@@ -20,6 +20,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
@@ -102,8 +103,9 @@ final class VarLenNestedReader(copybookContents: String,
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers,
-      segmentRedefines, readerProperties.stringTrimmingPolicy, readerProperties.ebcdicCodePage)
+      segmentRedefines, readerProperties.stringTrimmingPolicy, codePage)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
@@ -128,6 +130,13 @@ final class VarLenNestedReader(copybookContents: String,
       readerProperties.inputSplitSizeMB
     } else {
       readerProperties.hdfsDefaultBlockSize
+    }
+  }
+
+  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
+    codePageClass match {
+      case Some(c) => CodePage.getCodePageByClass(c)
+      case None => CodePage.getCodePageByName(codePageName)
     }
   }
 }

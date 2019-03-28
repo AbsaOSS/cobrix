@@ -736,8 +736,8 @@ val df = spark
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "C")
   .option("segment_id_level1", "P")
-  .option("redefine-segment-id-map:0", "STATIC-DETAILS => C")
-  .option("redefine-segment-id-map:1", "CONTACTS => P")
+  .option("redefine_segment_id_map:0", "STATIC-DETAILS => C")
+  .option("redefine_segment_id_map:1", "CONTACTS => P")
   .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
@@ -800,8 +800,8 @@ You can change this behaviour if you would like to drop such filler groups by pr
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
-| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`. The `common_extended` code page supports non-printable characters that converts to ASCII codes below 32. |
-
+| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
 
 ##### Multisegment indexing options
 

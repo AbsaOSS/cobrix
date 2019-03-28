@@ -17,9 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.{EbcdicCodePage, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -50,6 +49,7 @@ object CobolParametersParser {
   // Data parsing parameters
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
+  val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
 
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
@@ -96,22 +96,11 @@ object CobolParametersParser {
     }
   }
 
-  private def getEbcdicCodePage(params: Map[String,String]): EbcdicCodePage = {
-    val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
-    val ebcdicCodePage = EbcdicCodePage.withNameOpt(ebcdicCodePageName)
-
-    ebcdicCodePage match {
-      case Some(p) =>
-        p
-      case None =>
-        throw new IllegalArgumentException(s"Invalid value '$ebcdicCodePage' for '$PARAM_EBCDIC_CODE_PAGE' option.")
-    }
-  }
-
   def parse(params: Map[String,String]): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
-    val ebcdicCodePage = getEbcdicCodePage(params)
+    val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
+    val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
@@ -131,7 +120,8 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       isEbcdic,
-      ebcdicCodePage,
+      ebcdicCodePageName,
+      ebcdicCodePageClass,
       params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
       params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
@@ -265,10 +255,11 @@ object CobolParametersParser {
     params.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
-        if (keyNoCase.startsWith("redefine-segment-id")) {
+        if (keyNoCase.startsWith("redefine-segment-id-map") ||
+          keyNoCase.startsWith("redefine_segment_id_map")) {
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) !=0) {
-            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id' option: '$v'.")
+            throw new IllegalArgumentException(s"Illegal argument for the 'redefine_segment_id_map' option: '$v'.")
           }
           val redefine = splitVal(0).trim
           val segmentIds = splitVal(1).split(',').map(_.trim)
