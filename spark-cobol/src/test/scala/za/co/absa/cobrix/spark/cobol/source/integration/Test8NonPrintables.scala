@@ -23,8 +23,6 @@ import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-// This test suite will be deprecated soon since search reader is deprecated
-
 //noinspection NameBooleanParameters
 class Test8NonPrintables extends FunSuite with SparkTestBase {
 

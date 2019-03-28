@@ -16,13 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, FileUtil, Path}
-import org.apache.spark.sql.SaveMode
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase

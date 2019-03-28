@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
