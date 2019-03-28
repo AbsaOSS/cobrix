@@ -16,12 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.ByteArrayOutputStream
-
-import org.apache.spark.sql.DataFrame
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.spark.cobol.utils.TestUtils._
 
 class SparkUtilsSuite extends FunSuite with SparkTestBase {
 
@@ -216,14 +214,6 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
 
     assertSchema(flatSchema2, expectedFlatSchema)
     assertResults(flatData2, expectedFlatData)
-  }
-
-  private def showString(df: DataFrame, numRows: Int = 20): String = {
-    val outCapture = new ByteArrayOutputStream
-    Console.withOut(outCapture) {
-      df.show(numRows, truncate = false)
-    }
-    new String(outCapture.toByteArray)
   }
 
   private def assertSchema(actualSchema: String, expectedSchema: String): Unit = {
