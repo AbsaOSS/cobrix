@@ -19,8 +19,8 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
@@ -36,7 +36,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   */
 final class FixedLenNestedReader(copyBookContents: String,
                                  isEbcdic: Boolean = true,
-                                 ebcdicCodePage: EbcdicCodePage,
+                                 ebcdicCodePage: CodePage,
                                  startOffset: Int = 0,
                                  endOffset: Int = 0,
                                  schemaRetentionPolicy: SchemaRetentionPolicy,

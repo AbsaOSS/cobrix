@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
@@ -27,7 +28,6 @@ object DecoderSelector {
   type Decoder = Array[Byte] => Any
 
   import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy._
-  import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage._
 
 
   /**
@@ -45,7 +45,7 @@ object DecoderSelector {
     * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
     * @return A function that converts an array of bytes to the target data type.
     */
-  def getDecoder(dataType: CobolType, stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth, ebcdicCodePage: EbcdicCodePage = Common): Decoder = {
+  def getDecoder(dataType: CobolType, stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth, ebcdicCodePage: CodePage = new CodePageCommon): Decoder = {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage)
       case decimalType: Decimal => getDecimalDecoder(decimalType)
@@ -56,9 +56,9 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is ENCDIC or ASCII */
-  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: EbcdicCodePage): Decoder = {
+  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage): Decoder = {
     encoding match {
-      case _: EBCDIC => StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), getEbcdicConversionTable(ebcdicCodePage))
+      case _: EBCDIC => StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
       case _: ASCII => StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
     }
   }
@@ -69,15 +69,6 @@ object DecoderSelector {
       case TrimLeft => StringDecoders.TrimLeft
       case TrimRight => StringDecoders.TrimRight
       case TrimBoth => StringDecoders.TrimBoth
-    }
-  }
-
-  private def getEbcdicConversionTable(ebcdicCodePage: EbcdicCodePage): Array[Char] = {
-    ebcdicCodePage match {
-      case Common => BinaryUtils.ebcdic2ascii
-      case CommonExt => BinaryUtils.ebcdic2asciiNonPrintable
-      case CP037 => BinaryUtils.ebcdicCP037ToAscii
-      case CP037Ext => BinaryUtils.ebcdicCP037ToAsciiNonPrintable
     }
   }
 

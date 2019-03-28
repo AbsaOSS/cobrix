@@ -20,9 +20,9 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
-import za.co.absa.cobrix.cobol.parser.decoders.EbcdicCodePage.EbcdicCodePage
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, EbcdicCodePage, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
@@ -62,7 +62,7 @@ object CopybookParser {
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-                ebcdicCodePage: EbcdicCodePage = EbcdicCodePage.Common): Copybook = {
+                ebcdicCodePage: CodePage = new CodePageCommon): Copybook = {
     parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage)
   }
 
@@ -83,7 +83,7 @@ object CopybookParser {
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
-                ebcdicCodePage: EbcdicCodePage): Copybook = {
+                ebcdicCodePage: CodePage): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
