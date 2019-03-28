@@ -115,10 +115,10 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
             ))
 
             byteIndex += data.length
-            recordIndex = recordIndex + 1
             recordFetched = true
           }
       }
+      recordIndex = recordIndex + 1
     }
   }
 
