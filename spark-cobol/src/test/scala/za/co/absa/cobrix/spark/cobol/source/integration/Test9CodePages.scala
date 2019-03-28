@@ -79,4 +79,10 @@ class Test9CodePages extends FunSuite with SparkTestBase {
         "string_trimming_policy" -> "none" :: Nil)
   }
 
+  test(s"Integration test on $exampleName custom code page") {
+    runTest("_cp_custom",
+      "ebcdic_code_page_class" -> "za.co.absa.cobrix.spark.cobol.source.utils.CustomCodePage" ::
+      "string_trimming_policy" -> "none" :: Nil)
+  }
+
 }

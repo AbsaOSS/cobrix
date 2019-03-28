@@ -62,14 +62,13 @@ object CodePage {
       case "common_extended" => new CodePageCommonExt
       case "cp037"           => new CodePage037
       case "cp037_extended"  => new CodePage037Ext
-      case codePage => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the built-in EBCDIC code pages.")
+      case codePage => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the builtin EBCDIC code pages.")
     }
   }
 
   def getCodePageByClass(codePageClass: String): CodePage = {
     log.info(s"Instantiating code page class: $codePageClass")
     Class.forName(codePageClass)
-      .getConstructor(classOf[CodePage])
       .newInstance()
       .asInstanceOf[CodePage]
   }
