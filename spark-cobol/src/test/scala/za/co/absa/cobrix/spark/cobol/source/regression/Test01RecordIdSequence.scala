@@ -56,7 +56,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
     FileUtils.deleteDirectory(new File(tmpPath))
   }
 
-  test(s"Regression test on inconsistnt generated record IDs") {
+  test(s"Regression test on inconsistent generated record IDs") {
     // This example is provided by Peter Moon
 
     val expected1 =
@@ -121,10 +121,9 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
       .option("is_xcom", true)
       .load(fileName)
     logger.debug("Rows Count (No Segment Filter): " + dfRecordAll.count())
-    val dfRecordFilterAll = dfRecordAll /*.filter(col("R.I") === lit(1))*/
+    val dfRecordFilterAll = dfRecordAll
     logger.debug("Record_Ids after DataFrame filter")
     val actual1 = showString(dfRecordFilterAll.select(col("Record_Id"), col("R.I"), col("R.D")))
-    //println(actual1)
     assert(actual1 == expected1)
 
     val dfRecordSegmentFilter = spark
@@ -141,9 +140,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
 
     logger.debug("Record_Ids after DataFrame filter")
     val dfRecordFilterSegmentFilter = dfRecordSegmentFilter
-    /*.filter(col("R.I") === lit(1))*/
     val actual2 = showString(dfRecordFilterSegmentFilter.select(col("Record_Id"), col("R.I"), col("R.D")))
-    //println(actual2)
     assert(actual2 == expected2)
 
     val dfRecordSegmentFilterWithRootSegment = spark
@@ -162,9 +159,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
 
     logger.debug("Record_Ids after DataFrame filter")
     val dfRecordSegmentFilterWithRootSegmentFilter = dfRecordSegmentFilterWithRootSegment
-    /*.filter(col("R.I") === lit(1))*/
     val actual3 = showString(dfRecordSegmentFilterWithRootSegmentFilter.select(col("Record_Id"), col("Seg_Id0"), col("R.I"), col("R.D")))
-    //print(actual3)
     assert(actual3 == expected3)
   }
 
