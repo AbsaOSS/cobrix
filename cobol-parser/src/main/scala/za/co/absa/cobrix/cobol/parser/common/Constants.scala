@@ -71,4 +71,9 @@ object Constants {
   val fileIdField = "File_Id"
   val recordIdField = "Record_Id"
 
+  // Types of built-in record header parsers
+  val RhXcom = "xcom"
+  val RhRdw = "rdw"
+  val RhRdwBigEndian = "rdw_big_endian"
+  val RhRdwLittleEndian = "rdw_little_endian"
 }

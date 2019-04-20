@@ -21,7 +21,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 /**
   * This is a parser for records that contain 4 byte RDW headers.
   */
-class RecordHeaderParserRDW(isBigEndian: Boolean) extends RecordHeaderParser {
+class RecordHeaderParserRDW(isBigEndian: Boolean) extends Serializable with RecordHeaderParser {
 
   /** RDW header is a 4 byte header */
   override def getHeaderLength: Int = 4

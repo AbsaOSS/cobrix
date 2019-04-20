@@ -19,6 +19,8 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
@@ -80,7 +82,8 @@ final class VarLenSearchReader(copybookContents: String,
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int, isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
-    IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian)
+    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
+    IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian, recordHeaderParser)
   }
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val schema = CopybookParser.parseTree(copyBookContents)

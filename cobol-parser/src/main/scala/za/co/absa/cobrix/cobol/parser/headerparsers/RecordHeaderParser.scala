@@ -22,6 +22,11 @@ package za.co.absa.cobrix.cobol.parser.headerparsers
   * a custom header parser can be provided to Cobrix to extract such records.
   *
   * To this you need to create a parser class that extends this trait and implement the header parser logic.
+  * Each concrete class inherited from this trait should be serializable because it need to be transferrable to
+  * executors when used from Spark framework.
+  *
+  * So the usual way implementing a custom record header parser is
+  * `extends Serializable with RecordHeaderParser`
   *
   * A record header parser for RDW is implemented in `RecordHeaderParserRDW`. This is a good starting point
   * for implementing your own record header parser.

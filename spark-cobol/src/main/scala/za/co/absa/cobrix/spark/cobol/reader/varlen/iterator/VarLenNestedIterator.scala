@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 import org.apache.spark.sql.Row
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
@@ -31,18 +31,20 @@ import scala.collection.mutable.ListBuffer
 /**
   * This iterator is used to variable length data sequentially using the [[SimpleStream]] interface.
   *
-  * @param cobolSchema      A parsed copybook.
-  * @param dataStream       A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
-  * @param readerProperties Additional properties for customizing the reader.
-  * @param fileId           A FileId to put to the corresponding column
-  * @param startRecordId    A starting record id value for this particular file/stream `dataStream`
-  * @param startingFileOffset  An offset of the file where parsing should be started
-  * @param segmentIdPrefix A prefix to be used for all segment ID generated fields
+  * @param cobolSchema        A parsed copybook.
+  * @param dataStream         A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
+  * @param readerProperties   Additional properties for customizing the reader.
+  * @param recordHeaderParser A record parser for multisegment files
+  * @param fileId             A FileId to put to the corresponding column
+  * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
+  * @param startingFileOffset An offset of the file where parsing should be started
+  * @param segmentIdPrefix    A prefix to be used for all segment ID generated fields
   */
 @throws(classOf[IllegalStateException])
 final class VarLenNestedIterator(cobolSchema: Copybook,
                                  dataStream: SimpleStream,
                                  readerProperties: ReaderParameters,
+                                 recordHeaderParser: RecordHeaderParser,
                                  fileId: Int,
                                  startRecordId: Long,
                                  startingFileOffset: Long,
@@ -59,7 +61,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
   private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
-  private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String,String]())
+  private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
   fetchNext()
@@ -156,11 +158,14 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   }
 
   private def fetchRecordUsingRdwHeaders(): Option[Array[Byte]] = {
-    val rdwHeaderBlock = 4
+    val rdwHeaderBlock = recordHeaderParser.getHeaderLength
 
     val binaryDataStart = dataStream.next(rdwHeaderBlock)
 
-    val recordLength = BinaryUtils.extractRdwRecordSize(binaryDataStart,readerProperties.isRdwBigEndian, byteIndex)
+    // ToDo skip records for which `isValid` is set to `false` in metadata
+    val recordMetadata = recordHeaderParser.getRecordMetadata(binaryDataStart, byteIndex)
+    val recordLength = recordMetadata.recordLength
+
     byteIndex += binaryDataStart.length
 
     if (recordLength > 0) {
