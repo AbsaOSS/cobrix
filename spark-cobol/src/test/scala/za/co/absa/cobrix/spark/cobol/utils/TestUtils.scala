@@ -28,7 +28,7 @@ object TestUtils {
     Console.withOut(outCapture) {
       df.show(numRows, truncate = false)
     }
-    new String(outCapture.toByteArray)
+    new String(outCapture.toByteArray).replace("\r\n", "\n")
   }
 
 
