@@ -50,11 +50,7 @@ final class VarLenNestedReader(copybookContents: String,
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
   private val recordHeaderParser: RecordHeaderParser = {
-    if (isRdwBigEndian) {
-      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwBigEndian)
-    } else {
-      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
-    }
+    getRecordHeaderParser
   }
 
   checkInputArgumentsValidity()
@@ -151,6 +147,25 @@ final class VarLenNestedReader(copybookContents: String,
     codePageClass match {
       case Some(c) => CodePage.getCodePageByClass(c)
       case None => CodePage.getCodePageByName(codePageName)
+    }
+  }
+
+  private def getRecordHeaderParser: RecordHeaderParser = {
+    readerProperties.multisegment match {
+      case Some(multisegment) =>
+        multisegment.recordHeaderParser match {
+          case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser)
+          case None => getDefaultRecordHeaderParser
+        }
+      case None => getDefaultRecordHeaderParser
+    }
+  }
+
+  private def getDefaultRecordHeaderParser: RecordHeaderParser = {
+    if (isRdwBigEndian) {
+      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwBigEndian)
+    } else {
+      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
     }
   }
 }

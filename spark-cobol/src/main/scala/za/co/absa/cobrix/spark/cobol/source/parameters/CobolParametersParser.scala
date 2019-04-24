@@ -59,6 +59,7 @@ object CobolParametersParser {
   val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
+  val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
 
   // Parameters for signature search reader
   val PARAM_SEARCH_SIGNATURE_FIELD    = "search_field_name"
@@ -171,7 +172,8 @@ object CobolParametersParser {
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
-        getSegmentIdRedefineMapping(params)
+        getSegmentIdRedefineMapping(params),
+        params.get(PARAM_RECORD_HEADER_PARSER)
       ))
     }
     else {
