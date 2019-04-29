@@ -31,20 +31,23 @@ object CobolValidators {
 
     object State extends Enumeration {
       type State = Value
-      val INITIAL, SIGN, STRING, NUMBER, OPEN_BRACKET, NUMBER_IN_BRACKET, CLOSING_BRACKET, DECIMAL_POINT, TRAILING_SIGN = Value
+      val INITIAL, SIGN, STRING, NUMBER, OPEN_BRACKET, NUMBER_IN_BRACKET, CLOSING_BRACKET, DECIMAL_POINT, SCALE, TRAILING_SIGN = Value
     }
 
-    val allowedSymbols = Set[Char]('X', 'A', '9', 'Z', 'S', 'V', '.', ',', '(', ')', '+', '-')
+    val allowedSymbols = Set[Char]('X', 'A', '9', 'Z', 'S', 'V', 'P', '.', ',', '(', ')', '+', '-')
 
     import State._
 
     var state = INITIAL
     var signEncountered = false
     var decimalEncountered = false
+    var scaleEncountered = false
     var isSignSeparate = false
     var isNumber = false
+    var numberEncountered = false
     var numOpenedBrackets = 0
     var numberInBrackets = ""
+    var repeatedSymbol = ' '
     var i = 1
     while (i <= pic.length) {
       val c = displayPic.charAt(i - 1)
@@ -60,6 +63,7 @@ object CobolValidators {
               state = STRING
             case '9' | 'Z' =>
               isNumber = true
+              numberEncountered = true
               state = NUMBER
             case 'S' =>
               isNumber = true
@@ -71,23 +75,34 @@ object CobolValidators {
               isSignSeparate = true
               state = SIGN
             case '.' =>
-              state = DECIMAL_POINT
               decimalEncountered = true
+              state = DECIMAL_POINT
             case 'V' =>
-              state = DECIMAL_POINT
+              isNumber = true
               decimalEncountered = true
+              state = DECIMAL_POINT
+            case 'P' =>
+              isNumber = true
+              scaleEncountered = true
+              state = SCALE
             case ch => throwError(s"A PIC cannot start with '$ch'.")
           }
         case SIGN =>
           c match {
             case '9' | 'Z' =>
+              numberEncountered = true
               state = NUMBER
             case 'V' =>
-              state = DECIMAL_POINT
               if (decimalEncountered) {
                 throwError(s"Decimal point 'V' should be specified only once at position $i.")
               }
+              isNumber = true
               decimalEncountered = true
+              state = DECIMAL_POINT
+            case 'P' =>
+              isNumber = true
+              scaleEncountered = true
+              state = SCALE
             case ch => throwError(s"Unexpected character '$ch' at position $i. A sign definition should be followed by a number definition.")
           }
         case STRING =>
@@ -95,10 +110,11 @@ object CobolValidators {
             case 'X' | 'A' =>
               state = STRING
             case '(' =>
-              state = OPEN_BRACKET
+              repeatedSymbol = 'X'
               numOpenedBrackets += 1
               if (numOpenedBrackets > 1)
                 throwError(s"Only one level of brackets nesting is allowed at position $i.")
+              state = OPEN_BRACKET
             case ')' =>
               throwError(s"Closing bracked doesn't have matching open one at position $i.")
             case '9' | 'Z' =>
@@ -109,6 +125,8 @@ object CobolValidators {
               throwError(s"A decimal point '.' can only be specified for numeric fields at position $i.")
             case 'V' =>
               throwError(s"A decimal point 'V' can only be specified for numeric fields at position $i.")
+            case 'P' =>
+              throwError(s"A scale specifier 'P' can only be specified for numeric fields at position $i.")
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
           }
         case NUMBER =>
@@ -120,26 +138,33 @@ object CobolValidators {
             case 'X' =>
               throwError(s"Cannot mix '9' with 'X' at position $i.")
             case '(' =>
-              state = OPEN_BRACKET
+              repeatedSymbol = '9'
               numOpenedBrackets += 1
               if (numOpenedBrackets > 1)
                 throwError(s"Only one level of brackets nesting is allowed at position $i.")
+              state = OPEN_BRACKET
             case ')' =>
               throwError(s"Closing bracket doesn't have matching open one at position $i.")
             case '.' =>
-              state = DECIMAL_POINT
               if (decimalEncountered) {
                 throwError(s"Decimal point '.' should be specified only once at position $i.")
               }
               decimalEncountered = true
+              state = DECIMAL_POINT
             case ',' =>
               // ignored
             case 'V' =>
-              state = DECIMAL_POINT
               if (decimalEncountered) {
                 throwError(s"Decimal point 'V' should be specified only once at position $i.")
               }
               decimalEncountered = true
+              state = DECIMAL_POINT
+            case 'P' =>
+              if (scaleEncountered) {
+                throwError(s"Scale specifier 'P' should be specified only once at position $i.")
+              }
+              scaleEncountered = true
+              state = SCALE
             case '+' | '-' =>
               if (isSignSeparate) {
                 throwError(s"A sign cannot be present in both beginning and at the end of a PIC at position $i.")
@@ -153,8 +178,8 @@ object CobolValidators {
         case OPEN_BRACKET =>
           c match {
             case a if a.toByte >= '0'.toByte && a.toByte <= '9'.toByte =>
-              state = NUMBER_IN_BRACKET
               numberInBrackets = s"$a"
+              state = NUMBER_IN_BRACKET
             case ')' =>
               throwError(s"There should be a number inside parenthesis at position $i.")
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
@@ -162,8 +187,8 @@ object CobolValidators {
         case NUMBER_IN_BRACKET =>
           c match {
             case a if a.toByte >= '0'.toByte && a.toByte <= '9'.toByte =>
-              state = NUMBER_IN_BRACKET
               numberInBrackets += a
+              state = NUMBER_IN_BRACKET
             case ')' =>
               numOpenedBrackets -= 1
               if (numberInBrackets.length > 5) {
@@ -175,12 +200,15 @@ object CobolValidators {
         case CLOSING_BRACKET =>
           c match {
             case '9' | 'Z' =>
-              state = NUMBER
+              if (repeatedSymbol == 'P' && numberEncountered) {
+                throwError(s"Scale symbol 'P' cannot be in-between number symbols '9' at position $i.")
+              }
               if (!isNumber) {
                 throwError(s"Cannot mix '9' with 'A' or 'X' at position $i.")
               }
+              numberEncountered = true
+              state = NUMBER
             case 'V' =>
-              state = DECIMAL_POINT
               if (!isNumber) {
                 throwError(s"Cannot specify 'V' for non-numeric fields at position $i.")
               }
@@ -188,8 +216,8 @@ object CobolValidators {
                 throwError(s"A Decimal point 'V' or '.' should be specified only once at position $i.")
               }
               decimalEncountered = true
-            case '.' =>
               state = DECIMAL_POINT
+            case '.' =>
               if (!isNumber) {
                 throwError(s"Cannot specify '.' for non-numeric fields at position $i.")
               }
@@ -197,11 +225,21 @@ object CobolValidators {
                 throwError(s"A Decimal point 'V' or '.' should be specified only once at position $i.")
               }
               decimalEncountered = true
+              state = DECIMAL_POINT
+            case 'P' =>
+              if (!isNumber) {
+                throwError(s"Cannot specify 'P' for non-numeric fields at position $i.")
+              }
+              if (scaleEncountered) {
+                throwError(s"Scale specifier 'P' should be specified only once at position $i.")
+              }
+              scaleEncountered = true
+              state = SCALE
             case 'A' | 'X' =>
-              state = STRING
               if (isNumber) {
                 throwError(s"Cannot mix 'A' with '9' at position $i.")
               }
+              state = STRING
             case '+' | '-' =>
               if (!isNumber) {
                 throwError(s"Cannot mix 'A' or 'X' with sign specifier '+' or '-' at position $i.")
@@ -227,6 +265,48 @@ object CobolValidators {
               throwError(s"Redundant decimal point character '$c' at position $i.")
             case ch => throwError(s"Unexpected character '$ch' at position $i.")
           }
+        case SCALE =>
+          c match {
+            case 'P' =>
+              state = SCALE
+            case '9' | 'Z' =>
+              if (numberEncountered) {
+                throwError(s"Scale symbol 'P' cannot be in-between number symbols '9' at position $i.")
+              }
+              numberEncountered = true
+              state = NUMBER
+            case 'A' =>
+              throwError(s"Cannot mix 'A' with 'P' at position $i.")
+            case 'X' =>
+              throwError(s"Cannot mix 'X' with 'P' at position $i.")
+            case 'V' =>
+              if (!isNumber) {
+                throwError(s"Cannot specify 'V' for non-numeric fields at position $i.")
+              }
+              if (decimalEncountered) {
+                throwError(s"A Decimal point 'V' or '.' should be specified only once at position $i.")
+              }
+              decimalEncountered = true
+              state = DECIMAL_POINT
+            case '.' =>
+              if (!isNumber) {
+                throwError(s"Cannot specify '.' for non-numeric fields at position $i.")
+              }
+              if (decimalEncountered) {
+                throwError(s"A Decimal point 'V' or '.' should be specified only once at position $i.")
+              }
+              decimalEncountered = true
+              state = DECIMAL_POINT
+            case '(' =>
+              repeatedSymbol = 'P'
+              numOpenedBrackets += 1
+              if (numOpenedBrackets > 1)
+                throwError(s"Only one level of brackets nesting is allowed at position $i.")
+              state = OPEN_BRACKET
+            case ')' =>
+              throwError(s"Closing bracket doesn't have matching open one at position $i.")
+            case ch => throwError(s"Unexpected character '$ch' at position $i.")
+          }
         case TRAILING_SIGN => throwError(s"A sign specifier should be the first or the last element of a PIC. Unexpected '$c' at position $i.")
       }
 
@@ -243,10 +323,13 @@ object CobolValidators {
       case _ => // OK
     }
 
+    if (scaleEncountered && !numberEncountered) {
+      throwError("A PIC specifying 'P' should have at least one '9' symbol")
+    }
+
     if (numOpenedBrackets != 0) {
       throwError("Parenthesis don't match.")
     }
-
 
   }
 
