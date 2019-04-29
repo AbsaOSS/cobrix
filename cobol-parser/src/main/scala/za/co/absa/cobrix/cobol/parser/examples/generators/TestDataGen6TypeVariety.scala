@@ -243,6 +243,8 @@ object TestDataGen6TypeVariety {
           10  COMMON-S913DCCOMP3  PIC S9(13)V99   COMP-3.
           10  COMMON-S911DCC2     PIC S9(11)V99   COMP-3.
           10  COMMON-S910DCC3     PIC S9(10)V999  COMP-3.
+          10  COMMON-S03DDC       PIC SV9(5)      COMP-3.
+          10  COMMON-U03DDC       PIC V9(5)       COMP-3.
 
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
@@ -535,7 +537,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1405)
+    val byteArray: Array[Byte] = new Array[Byte](1411)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -743,6 +745,8 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S913DCCOMP3", byteArray, bigNum, offset, 15, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S911DCC2", byteArray, bigNum, offset, 13, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S910DCC3", byteArray, bigNum, offset, 13, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S03DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-U03DDC", byteArray, bigNum, offset, 5, signed = false)
 
       offset = putNumStrToArray("EX-NUM-INT01", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("EX-NUM-INT02", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)

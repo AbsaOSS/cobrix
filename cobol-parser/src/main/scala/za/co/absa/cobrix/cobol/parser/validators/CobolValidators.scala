@@ -82,6 +82,12 @@ object CobolValidators {
           c match {
             case '9' | 'Z' =>
               state = NUMBER
+            case 'V' =>
+              state = DECIMAL_POINT
+              if (decimalEncountered) {
+                throwError(s"Decimal point 'V' should be specified only once at position $i.")
+              }
+              decimalEncountered = true
             case ch => throwError(s"Unexpected character '$ch' at position $i. A sign definition should be followed by a number definition.")
           }
         case STRING =>

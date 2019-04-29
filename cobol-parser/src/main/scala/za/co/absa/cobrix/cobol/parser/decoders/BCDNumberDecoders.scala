@@ -87,11 +87,26 @@ object BCDNumberDecoders {
       return null
     }
 
-    var i: Int = 0
     var sign = ""
-    val chars = new StringBuffer(bytes.length * 2 + 2)
-    val decimalPointPosition = bytes.length * 2 - (scale + 1)
 
+    val intendedDecimalPosition = bytes.length * 2 - (scale + 1)
+
+    val additionalZeros = if (intendedDecimalPosition <= 0) {
+      -intendedDecimalPosition + 1
+    } else {
+      0
+    }
+
+    val chars = new StringBuffer(bytes.length * 2 + 2 + additionalZeros)
+    val decimalPointPosition = bytes.length * 2 - (scale + 1) + additionalZeros
+
+    var i: Int = 0
+    while (i < additionalZeros) {
+      chars.append('0')
+      i += 1
+    }
+
+    i = 0
     while (i < bytes.length) {
       val b = bytes(i)
       val lowNibble = b & 0x0f
