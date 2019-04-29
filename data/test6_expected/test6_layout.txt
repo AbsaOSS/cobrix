@@ -1,6 +1,6 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-RECORD                                                       1   1405   1405
+RECORD                                                       1   1411   1411
   10 ID                                               1      1      4      4
   10 STRING_VAL                                       2      5     14     10
   10 NUM_STR_INT01                                    3     15     15      1
@@ -169,10 +169,12 @@ RECORD                                                       1   1405   1405
   10 COMMON_S913DCCOMP3                             166   1320   1327      8
   10 COMMON_S911DCC2                                167   1328   1334      7
   10 COMMON_S910DCC3                                168   1335   1341      7
-  10 EX_NUM_INT01                                   169   1342   1350      9
-  10 EX_NUM_INT02                                   170   1351   1359      9
-  10 EX_NUM_INT03                                   171   1360   1368      9
-  10 EX_NUM_INT04                                   172   1369   1377      9
-  10 EX_NUM_DEC01                                   173   1378   1386      9
-  10 EX_NUM_DEC02                                   174   1387   1395      9
-  10 EX_NUM_DEC03                                   175   1396   1405     10
+  10 COMMON_S03DDC                                  169   1342   1344      3
+  10 COMMON_U03DDC                                  170   1345   1347      3
+  10 EX_NUM_INT01                                   171   1348   1356      9
+  10 EX_NUM_INT02                                   172   1357   1365      9
+  10 EX_NUM_INT03                                   173   1366   1374      9
+  10 EX_NUM_INT04                                   174   1375   1383      9
+  10 EX_NUM_DEC01                                   175   1384   1392      9
+  10 EX_NUM_DEC02                                   176   1393   1401      9
+  10 EX_NUM_DEC03                                   177   1402   1411     10

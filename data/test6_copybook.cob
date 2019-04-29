@@ -222,6 +222,8 @@
           10  COMMON-S913DCCOMP3  PIC S9(13)V99   COMP-3.
           10  COMMON-S911DCC2     PIC S9(11)V99   COMP-3.
           10  COMMON-S910DCC3     PIC S9(10)V999  COMP-3.
+          10  COMMON-S03DDC       PIC SV9(5)      COMP-3.
+          10  COMMON-U03DDC       PIC V9(5)       COMP-3.
 
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
