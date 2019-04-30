@@ -897,7 +897,7 @@ For multisegment variable lengths tests:
 - 68 bytes per segment 1 record and 64 bytes per segment 2 record
 - 640,000,000 records
 - 40 GB single input file size
-- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.TestDataGen3Companies` generqator app
+- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.TestDataGen3Companies` generator app
 
 ![](performance/images/exp2_multiseg_narrow_time.svg) ![](performance/images/exp2_multiseg_narrow_efficiency.svg)    
 ![](performance/images/exp2_multiseg_narrow_records_throughput.svg) ![](performance/images/exp2_multiseg_narrow_mb_throughput.svg)
@@ -910,7 +910,7 @@ For multisegment variable lengths tests:
 - 16068 bytes per segment 1 record and 64 bytes per segment 2 record
 - 8,000,000 records
 - 40 GB single input file size
-- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.generatorsTestDataGen4CompaniesWide` generqator app
+- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.generatorsTestDataGen4CompaniesWide` generator app
 
 ![](performance/images/exp3_multiseg_wide_time.svg) ![](performance/images/exp3_multiseg_wide_efficiency.svg)    
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
