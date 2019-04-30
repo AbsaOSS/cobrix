@@ -22,28 +22,32 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 class DataSizeSpec extends FunSuite {
 
   test("Test PIC values are expanded correctly") {
-    assert (CopybookParser.expandPic("99999V99") == "99999V99")
-    assert (CopybookParser.expandPic("9(3)") == "999")
-    assert (CopybookParser.expandPic("X(3)XXX") == "XXXXXX")
-    assert (CopybookParser.expandPic("X(3)XX(5)X") == "XXXXXXXXXX")
-    assert (CopybookParser.expandPic("XX(3)X.X(5)X") == "XXXXX.XXXXXX")
+    assert(CopybookParser.expandPic("99999V99") == "99999V99")
+    assert(CopybookParser.expandPic("9(3)") == "999")
+    assert(CopybookParser.expandPic("X(3)XXX") == "XXXXXX")
+    assert(CopybookParser.expandPic("X(3)XX(5)X") == "XXXXXXXXXX")
+    assert(CopybookParser.expandPic("XX(3)X.X(5)X") == "XXXXX.XXXXXX")
   }
 
   test("Test Number of Decimal digits are reported correctly for a given PIC") {
-    assert (CopybookParser.decimalLength("99999V99") == (5,2))
-    assert (CopybookParser.decimalLength("9(13)V99") == (13,2))
-    assert (CopybookParser.decimalLength("9(13)V9(2)") == (13,2))
-    assert (CopybookParser.decimalLength("9999999999V9(2)") == (10,2))
-    assert (CopybookParser.decimalLength("99(5)V99(2)") == (6,3))
-    assert (CopybookParser.decimalLength("99(5)99V99(2)99") == (8,5))
+    assert(CopybookParser.decimalLength("99999V99") == (5, 2, 0))
+    assert(CopybookParser.decimalLength("9(13)V99") == (13, 2, 0))
+    assert(CopybookParser.decimalLength("9(13)V9(2)") == (13, 2, 0))
+    assert(CopybookParser.decimalLength("9999999999V9(2)") == (10, 2, 0))
+    assert(CopybookParser.decimalLength("99(5)V99(2)") == (6, 3, 0))
+    assert(CopybookParser.decimalLength("99(5)99V99(2)99") == (8, 5, 0))
 
-    assert (CopybookParser.decimalLength("99999.99") == (5,2))
-    assert (CopybookParser.decimalLength("9(13).99") == (13,2))
-    assert (CopybookParser.decimalLength("9(13)V") == (13,0))
-    assert (CopybookParser.decimalLength("9(13).9(2)") == (13,2))
-    assert (CopybookParser.decimalLength("9999999999.9(2)") == (10,2))
-    assert (CopybookParser.decimalLength("99(5).99(2)") == (6,3))
-    assert (CopybookParser.decimalLength("99(5)99.99(2)99") == (8,5))
+    assert(CopybookParser.decimalLength("99999.99") == (5, 2, 0))
+    assert(CopybookParser.decimalLength("9(13).99") == (13, 2, 0))
+    assert(CopybookParser.decimalLength("9(13)V") == (13, 0, 0))
+    assert(CopybookParser.decimalLength("9(13).9(2)") == (13, 2, 0))
+    assert(CopybookParser.decimalLength("9999999999.9(2)") == (10, 2, 0))
+    assert(CopybookParser.decimalLength("99(5).99(2)") == (6, 3, 0))
+    assert(CopybookParser.decimalLength("99(5)99.99(2)99") == (8, 5, 0))
+
+    assert(CopybookParser.decimalLength("PPP99999") == (5, 5, -3))
+    assert(CopybookParser.decimalLength("P(3)9(10)") == (10, 10, -3))
+    assert(CopybookParser.decimalLength("9(10)PPP") == (10, 0, 3))
   }
 
 }

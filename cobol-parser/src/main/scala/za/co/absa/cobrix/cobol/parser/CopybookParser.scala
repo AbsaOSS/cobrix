@@ -721,12 +721,13 @@ object CopybookParser {
               if (sync) Some(position.Right) else None,
               comp,
               Some(enc))
-          case (integralDigits, fractureDigits) =>
+          case (integralDigits, fractureDigits, scaleFactor) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Decimal(
               picOrigin,
               fractureDigits,
               integralDigits + fractureDigits,
+              scaleFactor,
               s.contains(','),
               if (s.startsWith("S")) Some(position.Left) else None,
               isSignSeparate = isSignSeparate,
@@ -1011,14 +1012,43 @@ object CopybookParser {
     * Get number of decimal digits given a PIC of a numeric field
     *
     * @param s A PIC string
-    * @return A pair specifying the number of digits before and after decimal separator
+    * @return A tuple specifying the number of digits before and after decimal separator and the scale factor
     */
-  def decimalLength(s: String): (Int, Int) = {
+  def decimalLength(s: String): (Int, Int, Int) = {
     var str = expandPic(s)
     val separator = if (str.contains('V')) 'V' else if (str.contains(',')) ',' else '.'
     val parts = str.split(separator)
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
-    (nines1, nines2)
+    val scaleFactor = getScaleFactor(str)
+    val scale = if (scaleFactor < 0) nines1 else nines2
+    (nines1, scale, scaleFactor)
+  }
+
+  private def getScaleFactor(s: String): Int = {
+    val scaleFactorSymbolCount = s.count(_ == 'P')
+    var scalePositive = false
+    if (scaleFactorSymbolCount == 0) {
+      0
+    } else {
+      var nineEncountered = false
+      var scaleEncountered = false
+      var i = 0
+      while (i < s.length) {
+        if (!nineEncountered && !scaleEncountered) {
+          if (s.charAt(i) == '9') {
+            nineEncountered = true
+          }
+          if (s.charAt(i) == 'P') {
+            scaleEncountered = true
+          }
+        }
+        if (nineEncountered && !scaleEncountered) {
+          scalePositive = true
+        }
+        i += 1
+      }
+    }
+    if (scalePositive) scaleFactorSymbolCount else -scaleFactorSymbolCount
   }
 }

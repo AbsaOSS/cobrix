@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.position.Position
   *
   * @param scale        A scale that is the number of fracture decimal digits in a number
   * @param precision    A precision that is the number of digits in a number
+  * @param scaleFactor  A number of digits to shift the decimal points to
   * @param signPosition A position of a sign in the numeric representation
   * @param wordAlligned An alignment type
   * @param compact      A type of binary number representation format
@@ -32,6 +33,7 @@ case class Decimal(
                     pic: String,
                     scale: Int,
                     precision: Int,
+                    scaleFactor: Int,
                     explicitDecimal: Boolean = false,
                     signPosition: Option[Position] = None,
                     isSignSeparate: Boolean = false,
