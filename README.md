@@ -280,7 +280,7 @@ Cobrix allows to collapse the GROUP and expand it's records. To turn this on use
 .option("schema_retention_policy", "collapse_root")
 ```
 
-Let's loot at an example. Let's say we have a copybook that looks like this:
+Let's look at an example. Let's say we have a copybook that looks like this:
 ```cobol
        01  RECORD.
            05  ID                        PIC S9(4)  COMP.
@@ -428,7 +428,7 @@ will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
 ## <a id="ims"/>Reading hierarchical data sets
 
 Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
-record type. The root record/segment contains company info, an addreess and a taxpayer number. The child segment contains
+record type. The root record/segment contains company info, an address and a taxpayer number. The child segment contains
 a contact person for a company. Each company can have zero or more contact persons. So each root record can be followed by
 zero or more child records.
 
@@ -885,7 +885,7 @@ For multisegment variable lengths tests:
 - 1341 bytes per record
 - 30,000,000 records
 - 40 GB single input file size
-- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.TestDataGen6TypeVariety` generqator app
+- The data can be generated using `za.co.absa.cobrix.cobol.parser.examples.TestDataGen6TypeVariety` generator app
 
 ![](performance/images/exp1_raw_records_time.svg) ![](performance/images/exp1_raw_efficiency.svg)    
 ![](performance/images/exp1_raw_records_throughput.svg) ![](performance/images/exp1_raw_mb_throughput.svg)
@@ -925,7 +925,7 @@ For multisegment variable lengths tests:
 - #### 0.4.1 released 15 Mar 2019
   - This is a minor feature release.
   - Added an option to specify if and how strings should be trimmed. 
-  - Added an option to select an EBCDIC code page with support of non-pritable characters.
+  - Added an option to select an EBCDIC code page with support of non-printable characters.
   
 - #### 0.4.0 released 6 Mar 2019
   - This is a minor feature release.
@@ -956,7 +956,7 @@ For multisegment variable lengths tests:
   - Added 2 standalone projects in the 'examples' folder. It can be used as templates for creating Spark jobs that use Cobrix
   - Added option to drop all FILLER GROUPs. See section "Group Filler dropping" describing the new option.
   - Fixed handling of GROUP fields having only FILLER nested fields. Such groups are removed automatically because some formats don't support empty struct fields.
-  - All parser offsets are now in bytes instaed of bits.
+  - All parser offsets are now in bytes instead of bits.
   - COMP-5 is similar to COMP-4, the truncation happens by the size of the binary data, not exactly by PIC precision specification. For COMP-5 numbers are expected to be big endian.
   - Added artificial COMP-9 format for little endian binary numbers.
 
@@ -1006,7 +1006,7 @@ For multisegment variable lengths tests:
   - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
    
 
-## Dicalaimer
+## Disclaimer
 
 Companies, Names, Ids and values in all examples present in this project/repository are completely fictional and
 were generated randomly. Any resemblance to actual persons, companies or actual transactions is purely coincidental.
