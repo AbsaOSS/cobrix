@@ -128,24 +128,14 @@ object CopybookParser {
     val tokens = tokenize(copyBookContents)
     val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
 
-    val lines: Seq[CopybookLine] =
+    val fields: Seq[CopybookLine] =
       tokens.zip(lexedLines)
         .map { case (lineTokens, modifiers) =>
           CreateCopybookLine(lineTokens, modifiers)
         }
 
-    val fields = CopybookLine(-1, "_ROOT_", 0, Map[String, String]()) +: lines
-    val schema: MutableCopybook = new MutableCopybook()
-
-    val rootElement = fields.head
-    val root = Group(0,
-      rootElement.name,
-      rootElement.lineNumber,
-      mutable.ArrayBuffer(),
-      redefines = None)(None)
-    val trees = fields
-      .drop(1) // root already added so drop first line
-      .foldLeft[Statement](root)((element, field) => {
+    val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
+    fields.foldLeft[Statement](root)((element, field) => {
       val comp = getComactLevel(field.modifiers).getOrElse(-1)
       val keywords = field.modifiers.keys.toList
       val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
@@ -170,9 +160,8 @@ object CopybookParser {
 
       attachLevel.add(newElement)
     })
-    schema += root
+    val schema: MutableCopybook = ArrayBuffer(root)
 
-    val segReds = segmentRedefines.map(x => "_ROOT_." + x)
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
     } else {
