@@ -96,5 +96,5 @@ case class Group(
 }
 
 object Group {
-  val root: Group = Group(level=0, name="_ROOT", lineNumber = -1)()
+  val root: Group = Group(level=0, name="_ROOT_", lineNumber = -1)()
 }
