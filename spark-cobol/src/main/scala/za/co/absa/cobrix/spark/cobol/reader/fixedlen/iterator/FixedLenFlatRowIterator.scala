@@ -118,14 +118,14 @@ class FixedLenFlatRowIterator(val binaryData: Array[Byte], val cobolSchema: Cobo
     }
 
     var offset = byteIndex
-    val records = cobolSchema.getCobolSchema.ast.flatMap( record => {
-      val values = getGroupValues(offset, record)
+    val records = cobolSchema.getCobolSchema.ast.children.flatMap( record => {
+      val values = getGroupValues(offset, record.asInstanceOf[Group])
       offset += record.binaryProperties.actualSize
       values
     })
 
     // Advance byte index to the next record
-    val lastRecord = cobolSchema.getCobolSchema.ast.last
+    val lastRecord = cobolSchema.getCobolSchema.ast.children.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
     byteIndex += lastRecordActualSize
 

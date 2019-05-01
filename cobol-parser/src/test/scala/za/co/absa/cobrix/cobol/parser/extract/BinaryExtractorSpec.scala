@@ -139,7 +139,7 @@ class BinaryExtractorSpec extends FunSuite {
     }
 
     // check extracted values in the map
-    traverseAst(copybook.ast.head)
+    traverseAst(copybook.ast)
     assert(extractedData("ID").asInstanceOf[Int] === 6)
     assert(extractedData("SHORT_NAME").asInstanceOf[String] === "EXAMPLE4")
     assert(extractedData("NUMBER_OF_ACCTS").asInstanceOf[Int] === 3)
