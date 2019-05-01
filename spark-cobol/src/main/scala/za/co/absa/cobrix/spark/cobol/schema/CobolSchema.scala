@@ -117,8 +117,15 @@ class CobolSchema(val copybook: Copybook,
               } else if (computation == 2) {
                 DoubleType
               } else {
-                val additionalScale = if (scaleFactor > 0) scaleFactor else 0
-                DecimalType(precision + Math.abs(scaleFactor), scale + additionalScale)
+                val realPrecision = precision + Math.abs(scaleFactor)
+                val realScale =
+                  if (scaleFactor > 0)
+                    0
+                  else if (scaleFactor < 0)
+                    realPrecision
+                  else
+                    scale
+                DecimalType(realPrecision, realScale)
               }
             case _: AlphaNumeric => StringType
             case dt: Integral =>
@@ -166,8 +173,15 @@ class CobolSchema(val copybook: Copybook,
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case Decimal(_, scale, precision, scaleFactor, _, _, _, _, _, _) =>
-              val additionalScale = if (scaleFactor > 0) scaleFactor else 0
-              DecimalType(precision + Math.abs(scaleFactor), scale + additionalScale)
+              val realPrecision = precision + Math.abs(scaleFactor)
+              val realScale =
+                if (scaleFactor > 0)
+                  0
+                else if (scaleFactor < 0)
+                  realPrecision
+                else
+                  scale
+              DecimalType(realPrecision, realScale)
             case _: AlphaNumeric => StringType
             case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {

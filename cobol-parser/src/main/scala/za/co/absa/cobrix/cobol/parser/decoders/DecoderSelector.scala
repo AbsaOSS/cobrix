@@ -107,7 +107,7 @@ object DecoderSelector {
         BinaryUtils.decodeDouble
       case Some(Constants.compBCD) =>
         // COMP-3 aka BCD-encoded number
-        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale)
+        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
       case Some(Constants.compBinary2) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
@@ -221,7 +221,7 @@ object DecoderSelector {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a)
       } else {
         a: Array[Byte] =>
-          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0)
+          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0, 0)
           if (bcdDecoded != null)
             BigDecimal(bcdDecoded)
           else

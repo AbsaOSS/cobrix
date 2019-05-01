@@ -246,6 +246,11 @@ object TestDataGen6TypeVariety {
           10  COMMON-S03DDC       PIC SV9(5)      COMP-3.
           10  COMMON-U03DDC       PIC V9(5)       COMP-3.
 
+          10  COMMON-UPC5DDC      PIC PPP9(5)     COMP-3.
+          10  COMMON-SPC5DDC      PIC SPP99999    COMP-3.
+          10  COMMON-UPI5DDC      PIC 9(5)PPP     COMP-3.
+          10  COMMON-SPI5DDC      PIC S99999PPP   COMP-3.
+
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
 ***********************************************************************
@@ -537,7 +542,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1411)
+    val byteArray: Array[Byte] = new Array[Byte](1423)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -747,6 +752,11 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S910DCC3", byteArray, bigNum, offset, 13, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S03DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-U03DDC", byteArray, bigNum, offset, 5, signed = false)
+
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-UPC5DDC", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-SPC5DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-UPI5DDC", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-SPI5DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
 
       offset = putNumStrToArray("EX-NUM-INT01", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("EX-NUM-INT02", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)

@@ -709,7 +709,7 @@ object CopybookParser {
     val dataType = pic match {
       case s if s.contains('X') || s.contains('A') =>
         AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
-      case s if s.contains('V') || s.contains(',') =>
+      case s if s.contains('V') || s.contains(',') || s.contains('P') =>
         CopybookParser.decimalLength(s) match {
           case (integralDigits, 0) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
@@ -1021,8 +1021,7 @@ object CopybookParser {
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
     val scaleFactor = getScaleFactor(str)
-    val scale = if (scaleFactor < 0) nines1 else nines2
-    (nines1, scale, scaleFactor)
+    (nines1, nines2, scaleFactor)
   }
 
   private def getScaleFactor(s: String): Int = {
