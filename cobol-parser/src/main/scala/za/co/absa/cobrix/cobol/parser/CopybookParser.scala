@@ -38,7 +38,7 @@ object CopybookParser {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   type MutableCopybook = mutable.ArrayBuffer[Statement]
-  type CopybookAST = Seq[Group]
+  type CopybookAST = Group
 
   import za.co.absa.cobrix.cobol.parser.common.ReservedWords._
 
@@ -134,62 +134,52 @@ object CopybookParser {
           CreateCopybookLine(lineTokens, modifiers)
         }
 
-    val breakpoints: Seq[RecordBoundary] = getBreakpoints(lines)
-
-    // A forest can only have multiple items if there is a duplicate newElementLevel
-    val forest: Seq[Seq[CopybookLine]] = breakpoints.map(p => lines.slice(p.begin, p.end))
-
+    val fields = CopybookLine(-1, "_ROOT_", 0, Map[String, String]()) +: lines
     val schema: MutableCopybook = new MutableCopybook()
-    forest.foreach { fields =>
-      val rootElement = fields.head
-      if (rootElement.modifiers.keys.toList.contains(PIC)) {
-        throw new SyntaxErrorException(rootElement.lineNumber, "", s"Error in '${rootElement.name}' field definition. All top level fields need to be GROUPs. " +
-          s"Non-group elements at the top level are not supported.")
+
+    val rootElement = fields.head
+    val root = Group(0,
+      rootElement.name,
+      rootElement.lineNumber,
+      mutable.ArrayBuffer(),
+      redefines = None)(None)
+    val trees = fields
+      .drop(1) // root already added so drop first line
+      .foldLeft[Statement](root)((element, field) => {
+      val comp = getComactLevel(field.modifiers).getOrElse(-1)
+      val keywords = field.modifiers.keys.toList
+      val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
+      val redefines = field.modifiers.get(REDEFINES)
+      val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
+      val to = field.modifiers.get(TO).map(i => i.toInt)
+      val dependingOn = field.modifiers.get(DEPENDING)
+      val attachLevel = getMatchingGroup(element, field.level)
+      val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
+
+      val newElement = if (isLeaf) {
+        val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
+        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+        Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
+          dependingOn, isFiller = isFiller, decode = decode)(None)
+      }
+      else {
+        val groupUsage = getUsageModifiers(field.modifiers)
+        Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
+          isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
       }
 
-      val root = Group(1,
-        rootElement.name,
-        rootElement.lineNumber,
-        mutable.ArrayBuffer(),
-        redefines = None)(None)
-      val trees = fields
-        .drop(1) // root already added so drop first line
-        .foldLeft[Statement](root)((element, field) => {
-        val comp = getComactLevel(field.modifiers).getOrElse(-1)
-        val keywords = field.modifiers.keys.toList
-        val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
-        val redefines = field.modifiers.get(REDEFINES)
-        val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
-        val to = field.modifiers.get(TO).map(i => i.toInt)
-        val dependingOn = field.modifiers.get(DEPENDING)
-        val attachLevel = getMatchingGroup(element, field.level)
-        val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
+      attachLevel.add(newElement)
+    })
+    schema += root
 
-        val newElement = if (isLeaf) {
-          val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
-          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
-            dependingOn, isFiller = isFiller, decode = decode)(None)
-        }
-        else {
-          val groupUsage = getUsageModifiers(field.modifiers)
-          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
-            isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
-        }
-
-        attachLevel.add(newElement)
-      })
-      schema += root
-    }
-
+    val segReds = segmentRedefines.map(x => "_ROOT_." + x)
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
     } else {
       calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
     }
 
-    val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
-    new Copybook(ast)
+    new Copybook(newTrees.head.asInstanceOf[Group])
   }
 
   private def CreateCopybookLine(lineTokens: StatementTokens, modifiers: Map[String, String]): CopybookLine = {
@@ -286,7 +276,7 @@ object CopybookParser {
   }
 
   /**
-    * Calculate binary offsets for a mutble Cobybook schema which is just an array of AST objects
+    * Calculate binary offsets for a mutable Cobybook schema which is just an array of AST objects
     *
     * @param subSchema An array of AST objects
     * @return The same AST with all offsets set for every field
@@ -467,9 +457,9 @@ object CopybookParser {
     if (segmentRedefines.isEmpty) {
       originalSchema
     } else {
-      val newSchema = processRootLevelFields(originalSchema)
+      val newSchema = processRootLevelFields(originalSchema.head.asInstanceOf[Group].children)
       validateAllSegmentsFound()
-      newSchema
+      ArrayBuffer(originalSchema.head.asInstanceOf[Group].copy(children=newSchema)(None))
     }
   }
 

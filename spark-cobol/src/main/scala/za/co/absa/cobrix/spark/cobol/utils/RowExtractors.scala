@@ -141,8 +141,8 @@ object RowExtractors {
 
     var nextOffset = offsetBytes
 
-    val records = for (record <- ast) yield {
-      val values = getGroupValues(nextOffset, record)
+    val records = for (record <- ast.children) yield {
+      val values = getGroupValues(nextOffset, record.asInstanceOf[Group])
       nextOffset += record.binaryProperties.actualSize
       values
     }

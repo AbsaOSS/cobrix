@@ -49,8 +49,8 @@ class SegmentRedefinesSpec extends FunSuite {
 
     val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines)
 
-    assert(parsedCopybook.ast.head.children(0).asInstanceOf[Group].isSegmentRedefine)
-    assert(!parsedCopybook.ast.head.children(1).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
+    assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
   }
 
   test ("Test segment redefines mark all redefines at root level") {
@@ -73,18 +73,18 @@ class SegmentRedefinesSpec extends FunSuite {
 
     val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefinesOk)
 
-    // If a segment redefine is missing in the copybok an exception should be raised
+    // If a segment redefine is missing in the copybook an exception should be raised
     val exception1 = intercept[IllegalStateException] {
       CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefinesMissing)
     }
     assert(exception1.getMessage.contains("The following segment redefines not found: [ SEGMENT_D ]"))
 
     // Segment redefines should be correctly redefined
-    assert(!parsedCopybook.ast.head.children(0).asInstanceOf[Group].isSegmentRedefine)
-    assert(parsedCopybook.ast.head.children(1).asInstanceOf[Group].isSegmentRedefine)
-    assert(parsedCopybook.ast.head.children(2).asInstanceOf[Group].isSegmentRedefine)
-    assert(parsedCopybook.ast.head.children(3).asInstanceOf[Group].isSegmentRedefine)
-    assert(!parsedCopybook.ast.head.children(4).asInstanceOf[Group].isSegmentRedefine)
+    assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(2).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(3).asInstanceOf[Group].isSegmentRedefine)
+    assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(4).asInstanceOf[Group].isSegmentRedefine)
   }
 
   test ("Test segment redefines should be in the same redefined group") {

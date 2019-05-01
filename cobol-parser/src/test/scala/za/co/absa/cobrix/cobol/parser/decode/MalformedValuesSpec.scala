@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 
 class MalformedValuesSpec extends FunSuite {
 
@@ -29,7 +29,8 @@ class MalformedValuesSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Primitive]
 
     // Encoded 8405184 is OK for Int32 and PIC 9(7)
     val data1 = Array(0x00.toByte, 0x80.toByte, 0x40.toByte, 0xC0.toByte)
@@ -49,7 +50,8 @@ class MalformedValuesSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Primitive]
 
     // Encoded 12345.12345 is OK for Decimal and PIC 9(5)V9(5)
     val data1 = Array(0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte, 0xF5.toByte)
@@ -81,14 +83,15 @@ class MalformedValuesSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val field1 = copybook.ast.head.children.head.asInstanceOf[Primitive]
-    val field2 = copybook.ast.head.children(1).asInstanceOf[Primitive]
-    val field3 = copybook.ast.head.children(2).asInstanceOf[Primitive]
-    val field4 = copybook.ast.head.children(3).asInstanceOf[Primitive]
-    val field5 = copybook.ast.head.children(4).asInstanceOf[Primitive]
-    val field6 = copybook.ast.head.children(5).asInstanceOf[Primitive]
-    val field7 = copybook.ast.head.children(6).asInstanceOf[Primitive]
-    val field8 = copybook.ast.head.children(7).asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val field1 = firstRecord.children.head.asInstanceOf[Primitive]
+    val field2 = firstRecord.children(1).asInstanceOf[Primitive]
+    val field3 = firstRecord.children(2).asInstanceOf[Primitive]
+    val field4 = firstRecord.children(3).asInstanceOf[Primitive]
+    val field5 = firstRecord.children(4).asInstanceOf[Primitive]
+    val field6 = firstRecord.children(5).asInstanceOf[Primitive]
+    val field7 = firstRecord.children(6).asInstanceOf[Primitive]
+    val field8 = firstRecord.children(7).asInstanceOf[Primitive]
 
     // Encoded 12 is OK since it is positive
     assert(field1.decodeTypeValue(0, Array(0xF1.toByte, 0xF2.toByte)) == 12)
