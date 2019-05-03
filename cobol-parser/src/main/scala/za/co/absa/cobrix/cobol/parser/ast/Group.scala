@@ -50,7 +50,7 @@ case class Group(
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
                   isFiller: Boolean = false,
-                  groupUsage: Option[Usage.Value] = None,
+                  groupUsage: Option[Usage] = None,
                   nonFillerSize: Int = 0,
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )

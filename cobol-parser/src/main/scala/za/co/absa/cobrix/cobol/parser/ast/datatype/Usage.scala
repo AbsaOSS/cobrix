@@ -1,6 +1,14 @@
 package za.co.absa.cobrix.cobol.parser.ast.datatype
 
-object Usage extends Enumeration {
-  type Usage = Value
-  val COMP, COMP1, COMP2, COMP3, COMP4, COMP5, DISPLAY, BINARY = Value
-}
+
+trait Usage
+
+case class COMP() extends Usage
+case class COMP1() extends Usage
+case class COMP2() extends Usage
+case class COMP3() extends Usage
+case class COMP4() extends Usage
+case class COMP5() extends Usage
+case class DISPLAY() extends Usage
+case class BINARY() extends Usage
+

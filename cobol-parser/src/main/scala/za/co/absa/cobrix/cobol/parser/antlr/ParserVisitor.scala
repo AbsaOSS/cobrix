@@ -3,7 +3,7 @@ package za.co.absa.cobrix.cobol.parser.antlr
 import scala.util.matching.Regex
 import scala.collection.JavaConverters._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Usage, Integral, Decimal}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, BINARY, COMP, COMP1, COMP2, COMP3, COMP4, COMP5, DISPLAY, Decimal, Usage, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 
@@ -20,7 +20,7 @@ class ParserVisitor() extends copybook_parserBaseVisitor[Expr] {
   case class Field(value: Statement) extends Expr
   case class IdentifierExpr(value: String) extends Expr
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
-  case class UsageExpr(value: Usage.Value) extends Expr
+  case class UsageExpr(value: Usage) extends Expr
   case class AlphaExpr(value: AlphaNumeric) extends Expr
   case class IntegerExpr(value: Integral) extends Expr
   case class DecimalExpr(value: Decimal) extends Expr
@@ -65,14 +65,14 @@ class ParserVisitor() extends copybook_parserBaseVisitor[Expr] {
 
   override def visitUsage(ctx: copybook_parser.UsageContext): UsageExpr = {
     ctx.usageLiteral().getText match {
-      case "COMP" | "COMPUTATIONAL" => UsageExpr(Usage.COMP)
-      case "COMP-1" | "COMPUTATIONAL-1" => UsageExpr(Usage.COMP1)
-      case "COMP-2" | "COMPUTATIONAL-2" => UsageExpr(Usage.COMP2)
-      case "COMP-3" | "COMPUTATIONAL-3" | "PACKED-DECIMAL" => UsageExpr(Usage.COMP3)
-      case "COMP-4" | "COMPUTATIONAL-4" => UsageExpr(Usage.COMP4)
-      case "COMP-5" | "COMPUTATIONAL-5" => UsageExpr(Usage.COMP5)
-      case "DISPLAY" => UsageExpr(Usage.DISPLAY)
-      case "BINARY" => UsageExpr(Usage.BINARY)
+      case "COMP" | "COMPUTATIONAL" => UsageExpr(COMP())
+      case "COMP-1" | "COMPUTATIONAL-1" => UsageExpr(COMP1())
+      case "COMP-2" | "COMPUTATIONAL-2" => UsageExpr(COMP2())
+      case "COMP-3" | "COMPUTATIONAL-3" | "PACKED-DECIMAL" => UsageExpr(COMP3())
+      case "COMP-4" | "COMPUTATIONAL-4" => UsageExpr(COMP4())
+      case "COMP-5" | "COMPUTATIONAL-5" => UsageExpr(COMP5())
+      case "DISPLAY" => UsageExpr(DISPLAY())
+      case "BINARY" => UsageExpr(BINARY())
       case _ => throw new RuntimeException("Unknown Usage literal " + ctx.usageLiteral().getText)
     }
   }
@@ -101,7 +101,7 @@ class ParserVisitor() extends copybook_parserBaseVisitor[Expr] {
       case x :: _ => Some(visitOccurs(x))
     }
 
-    val usage: Option[Usage.Value] = ctx.usage().asScala.toList match {
+    val usage: Option[Usage] = ctx.usage().asScala.toList match {
       case Nil => None
       case x :: _ => Some(visitUsage(x).value)
     }
@@ -134,7 +134,7 @@ class ParserVisitor() extends copybook_parserBaseVisitor[Expr] {
       visitAlpha_x(ctx.alpha_x())
     }
     else {
-      val usage: Option[Usage.Value] = ctx.usage() match {
+      val usage: Option[Usage] = ctx.usage() match {
         case null => None
         case x => Some(visitUsage(x).value)
       }
