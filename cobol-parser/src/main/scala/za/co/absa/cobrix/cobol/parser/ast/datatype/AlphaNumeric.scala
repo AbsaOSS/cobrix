@@ -22,13 +22,14 @@ import za.co.absa.cobrix.cobol.parser.position.Position
 /** The AlphaNumeric data type is fixed length string.
   *
   * @param length       A length of a string
-  * @param wordAlligned An alignment type
+  * @param wordAligned An alignment type
   * @param enc          An encoding
   */
 case class AlphaNumeric(
                          pic: String,
                          length: Int,
-                         wordAlligned: Option[Position] = None,
-                         enc: Option[Encoding] = None
+                         wordAligned: Option[Position] = None,
+                         enc: Option[Encoding] = None,
+                         originalPic: Option[String] = None
                        )
   extends CobolType

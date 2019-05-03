@@ -17,7 +17,8 @@
 package za.co.absa.cobrix.cobol.parser
 
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, StringTrimmingPolicy}
@@ -118,10 +119,13 @@ object CopybookParser {
       }
     }
 
-    def getUsageModifiers(modifiers: Map[String, String]): Map[String, String] = {
+    def getUsageModifiers(modifiers: Map[String, String]): Option[Usage.Value] = {
       getComactLevel(modifiers) match {
-        case Some(value) => Map[String, String](COMP123 -> value.toString)
-        case None => Map[String, String]()
+        case Some(1) => Some(Usage.COMP1)
+        case Some(2) => Some(Usage.COMP2)
+        case Some(3) => Some(Usage.COMP3)
+        case Some(4) => Some(Usage.COMP)
+        case _ => None
       }
     }
 
@@ -160,7 +164,10 @@ object CopybookParser {
 
       attachLevel.add(newElement)
     })
+
+
     val schema: MutableCopybook = ArrayBuffer(root)
+    val schemaANTLR = ArrayBuffer(ANTLRParser.parse(copyBookContents))
 
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
@@ -600,12 +607,18 @@ object CopybookParser {
   def typeAndLengthFromString(
                                keywords: List[String],
                                modifiers: Map[String, String],
-                               groupModifiers: Map[String, String],
+                               groupModifiers: Option[Usage.Value],
                                lineNumber: Int,
                                fieldName: String
                              )(enc: Encoding): CobolType = {
     val compDefined = getComactLevel(modifiers)
-    val compInherited = getComactLevel(groupModifiers)
+    val compInherited: Option[Int] = groupModifiers match{
+      case Some(Usage.COMP1) => Some(1)
+      case Some(Usage.COMP2) => Some(2)
+      case Some(Usage.COMP3) => Some(3)
+      case Some(Usage.COMP) => Some(4)
+      case _ => None
+    }
 
     val comp = (compDefined, compInherited) match {
       case (None, None) => None
@@ -641,7 +654,7 @@ object CopybookParser {
     val sync = keywords.contains(SYNC)
     val dataType = pic match {
       case s if s.contains('X') || s.contains('A') =>
-        AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
+        AlphaNumeric(picOrigin, s.length, wordAligned = if (sync) Some(position.Left) else None, Some(enc))
       case s if s.contains('V') || s.contains(',') =>
         CopybookParser.decimalLength(s) match {
           case (integralDigits, fractureDigits) =>

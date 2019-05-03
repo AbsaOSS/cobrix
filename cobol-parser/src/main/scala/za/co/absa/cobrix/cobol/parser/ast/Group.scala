@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.ast
 
+import za.co.absa.cobrix.cobol.parser.ast.datatype.Usage
+
 import scala.collection.mutable
 
 /** An abstraction for the non-leaves in the Cobol copybook
@@ -48,7 +50,7 @@ case class Group(
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
                   isFiller: Boolean = false,
-                  groupUsage: Map[String, String] = Map[String, String](), // Group usage modifiers (e.g. COMP-1) to be applied to all subitems of the group
+                  groupUsage: Option[Usage.Value] = None,
                   nonFillerSize: Int = 0,
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )
