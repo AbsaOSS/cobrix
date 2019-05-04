@@ -396,30 +396,22 @@ class ParserVisitor(enc: Encoding,
     if (ctx.getText contains "P")
       throw new RuntimeException("Scaled numbers not supported yet")
 
-    var len: Int = 0
-    var pic: String = ""
-
-    val numericSPicRegexScaled(s_1, nine_1, scale_1) = ctx.getText
-    val numericSPicRegexDecimalScaled(s_2, nine1_2, scale_2, nine2_2) = ctx.getText
-    val numericSPicRegexDecimalScaledLead(s_3, scale_3, nine_3) = ctx.getText
-
-    if (s_1 != null) {
-      PicExpr(
-        fromNumericSPicRegexScaled(s_1, nine_1, scale_1)
+    ctx.getText match {
+      case numericSPicRegexScaled(s, nine, scale) => PicExpr(
+        fromNumericSPicRegexScaled(s, nine, scale)
       )
+      case x => x match {
+          case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
+            fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+          )
+          case y => y match {
+              case numericSPicRegexDecimalScaledLead(s, scale, nine) => PicExpr(
+                fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+              )
+              case _ => throw new RuntimeException("Error reading PIC " + y)
+            }
+        }
     }
-    else if (s_2 != null) {
-      PicExpr(
-        fromNumericSPicRegexDecimalScaled(s_2, nine1_2, scale_2, nine2_2)
-      )
-    }
-    else if (s_2 != null) {
-      PicExpr(
-        fromNumericSPicRegexDecimalScaledLead(s_3, scale_3, nine_3)
-      )
-    }
-    else
-      throw new RuntimeException("Error reading PIC " + ctx.getText)
   }
 
   override def visitPrecision_9_zs(ctx: copybook_parser.Precision_9_zsContext): PicExpr = {
