@@ -91,7 +91,7 @@ PLUSCHAR : '+';
 RPARENCHAR : ')';
 SINGLEQUOTE : '\'';
 SLASHCHAR : '/';
-TERMINAL : '.' ('\r' | '\n' | '\f' | '\t' | ' ')+ | '.' EOF;
+TERMINAL : '.' ('\r' | '\n' | '\f' | '\t' | ' ')+ | '.' CONTROL_Z? EOF;
 COMMENT:  '*' ~( '\r' | '\n' )* -> skip;
 
 
@@ -205,6 +205,8 @@ fragment X:('x'|'X');
 fragment Y:('y'|'Y');
 fragment Z:('z'|'Z');
 
+// control-z EOF
+CONTROL_Z: '\u001A';
 
 // whitespace
 WS : [ \n\r\t]+ -> skip ;

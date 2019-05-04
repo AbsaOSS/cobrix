@@ -5,6 +5,7 @@ options { tokenVocab=copybook_lexer; }
 // main rule
 main:
     item+
+    CONTROL_Z?
     EOF;
 
 // literals
