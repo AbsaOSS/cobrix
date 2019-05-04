@@ -6,7 +6,7 @@ import scala.util.matching.Regex
 import scala.collection.JavaConverters._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, BINARY, COMP, COMP1, COMP2, COMP3, COMP4, COMP5, CobolType, DISPLAY, Decimal, Integral, Usage}
-import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
@@ -254,8 +254,16 @@ class ParserVisitor(enc: Encoding,
 
   override def visitOccurs(ctx: copybook_parser.OccursContext): OccursExpr = {
     val m = ctx.integerLiteral.getText.toInt
+    val M: Option[Int] = ctx.occurs_to() match {
+      case null => None
+      case x => Some(x.getText.toInt)
+    }
+    val dep: Option[String] = ctx.depending_on() match {
+      case null => None
+      case x => Some(visitIdentifier(x.identifier()).value)
+    }
 
-    OccursExpr(m, Some(0), None)
+    OccursExpr(m, M, dep)
   }
 
   override def visitUsage(ctx: copybook_parser.UsageContext): UsageExpr = {
