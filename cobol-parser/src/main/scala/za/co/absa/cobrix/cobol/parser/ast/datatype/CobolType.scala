@@ -19,4 +19,5 @@ package za.co.absa.cobrix.cobol.parser.ast.datatype
 /** Trait for Cobol data types */
 trait CobolType {
   def pic: String
+  def originalPic: Option[String]
 }

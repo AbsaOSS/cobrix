@@ -13,11 +13,17 @@ literal:
     ;
 
 numericLiteral:
-    NUMERICLITERAL | ZERO | integerLiteral
+    plus_minus? NUMERICLITERAL | ZERO | plus_minus? integerLiteral
     ;
 
 integerLiteral:
-    INTEGERLITERAL | NINES | LEVEL_ROOT | LEVEL_REGULAR | LEVEL_NUMBER_66 | LEVEL_NUMBER_77 | LEVEL_NUMBER_88
+      INTEGERLITERAL
+    | NINES
+    | LEVEL_ROOT
+    | LEVEL_REGULAR
+    | LEVEL_NUMBER_66
+    | LEVEL_NUMBER_77
+    | LEVEL_NUMBER_88
     ;
 
 booleanLiteral
@@ -25,7 +31,7 @@ booleanLiteral
    ;
 
 identifier:
-      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | X_S | S
+      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | X_S | S_S | Z_S
     | SINGLE_QUOTED_IDENTIFIER // is this valid?
     ;
 
@@ -117,7 +123,10 @@ plus_minus:
     ;
 
 precision_9:
-      PRECISION_9_SIMPLE            #precision_9_simple
+      NINES                         #precision_9_nines
+    | S_S                           #precision_9_ss
+    | Z_S                           #precision_9_zs
+    | PRECISION_9_SIMPLE            #precision_9_simple
     | PRECISION_9_EXPLICIT_DOT      #precision_9_explicit_dot
     | PRECISION_9_DECIMAL_SCALED    #precision_9_decimal_scaled
     | PRECISION_9_SCALED            #precision_9_scaled
@@ -127,14 +136,9 @@ precision_9:
     | PRECISION_Z_SCALED            #precision_z_scaled
     ;
 
-sign_precision_9_with_sign:
-      (precision_9 plus_minus?)     #trailing_sign
-    | (plus_minus? precision_9)     #leading_sign
-    ;
-
 sign_precision_9:
-      NINES
-    | sign_precision_9_with_sign
+      (plus_minus? precision_9)     #leading_sign
+    | (precision_9 plus_minus?)     #trailing_sign
     ;
 
 alpha_x:

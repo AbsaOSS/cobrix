@@ -168,7 +168,7 @@ object CopybookParser {
 
 
     val schema: MutableCopybook = ArrayBuffer(root)
-    val schemaANTLR = ArrayBuffer(ANTLRParser.parse(copyBookContents, stringTrimmingPolicy, ebcdicCodePage))
+    val schemaANTLR = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage))
 
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))

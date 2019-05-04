@@ -55,7 +55,7 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	T visitThru(copybook_parser.ThruContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link copybook_parser#plus_minusplus_minusprecision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9sign_precision_9_with_signsign_precision_9_with_sign}.
+	 * labeled alternative in {@link copybook_parser#plus_minusplus_minusprecision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9sign_precision_9sign_precision_9}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
@@ -171,6 +171,27 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitMinus(copybook_parser.MinusContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code precision_9_nines}
+	 * labeled alternative in {@link copybook_parser#precision_9}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrecision_9_nines(copybook_parser.Precision_9_ninesContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code precision_9_ss}
+	 * labeled alternative in {@link copybook_parser#precision_9}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrecision_9_ss(copybook_parser.Precision_9_ssContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code precision_9_zs}
+	 * labeled alternative in {@link copybook_parser#precision_9}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrecision_9_zs(copybook_parser.Precision_9_zsContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code precision_9_simple}
 	 * labeled alternative in {@link copybook_parser#precision_9}.
 	 * @param ctx the parse tree
@@ -227,25 +248,19 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPrecision_z_scaled(copybook_parser.Precision_z_scaledContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code trailing_sign}
-	 * labeled alternative in {@link copybook_parser#sign_precision_9_with_sign}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTrailing_sign(copybook_parser.Trailing_signContext ctx);
-	/**
 	 * Visit a parse tree produced by the {@code leading_sign}
-	 * labeled alternative in {@link copybook_parser#sign_precision_9_with_sign}.
+	 * labeled alternative in {@link copybook_parser#sign_precision_9}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitLeading_sign(copybook_parser.Leading_signContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link copybook_parser#sign_precision_9}.
+	 * Visit a parse tree produced by the {@code trailing_sign}
+	 * labeled alternative in {@link copybook_parser#sign_precision_9}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSign_precision_9(copybook_parser.Sign_precision_9Context ctx);
+	T visitTrailing_sign(copybook_parser.Trailing_signContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link copybook_parser#alpha_x}.
 	 * @param ctx the parse tree

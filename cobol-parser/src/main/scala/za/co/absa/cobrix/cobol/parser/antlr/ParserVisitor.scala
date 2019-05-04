@@ -8,7 +8,9 @@ import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, S
 import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.position.Position
 
 import scala.collection.mutable
 import scala.collection.mutable.Stack
@@ -17,7 +19,8 @@ import scala.collection.mutable.Stack
 sealed trait Expr
 
 
-class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
+class ParserVisitor(enc: Encoding,
+                    stringTrimmingPolicy: StringTrimmingPolicy,
                     ebcdicCodePage: CodePage) extends copybook_parserBaseVisitor[Expr] {
   /* expressions */
   case class NoOpExpr()
@@ -26,9 +29,6 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
   case class UsageExpr(value: Usage) extends Expr
   case class PicExpr(value: CobolType) extends Expr
-//  case class AlphaExpr(value: AlphaNumeric) extends PicExpr
-//  case class IntegerExpr(value: Integral) extends PicExpr
-//  case class DecimalExpr(value: Decimal) extends PicExpr
   case class PrimitiveExpr(value: Primitive) extends Expr
   case class SepSignExpr(value: Char) extends Expr
 
@@ -52,13 +52,48 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
     }
   }
 
+  def compact(usage: Usage): Option[Int] = {
+    usage match {
+      case COMP1() => Some(1)
+      case COMP2() => Some(2)
+      case COMP3() => Some(3)
+      case COMP() | BINARY() => Some(4)
+      case _ => None
+    }
+  }
+
+  def replaceUsage(pic: PicExpr, usage: Usage): PicExpr = {
+    PicExpr(
+      pic.value match {
+        case x: Decimal => x.asInstanceOf[Decimal].copy(compact=compact(usage))
+        case x: Integral => x.asInstanceOf[Integral].copy(compact=compact(usage))
+      }
+    )
+  }
+
+  def replaceSign(pic: PicExpr, char: Char): PicExpr = {
+    import za.co.absa.cobrix.cobol.parser.position.Left
+    import za.co.absa.cobrix.cobol.parser.position.Right
+
+    val side: Option[Position] = char match {
+      case 'L' => Some(Left)
+      case 'T' => Some(Right)
+    }
+
+    PicExpr(
+      pic.value match {
+        case x: Decimal => x.asInstanceOf[Decimal].copy(signPosition=side, isSignSeparate=true)
+        case x: Integral => x.asInstanceOf[Integral].copy(signPosition=side, isSignSeparate=true)
+      }
+    )
+  }
+
   def getParentFromLevel(section: Int): Group = {
     while (section <= levels.top.n) {
       levels.pop
     }
     levels.top.el
   }
-
 
   override def visitMain(ctx: copybook_parser.MainContext): Expr = {
     // initialize AST
@@ -145,13 +180,12 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
       visitAlpha_x(ctx.alpha_x())
     }
     else {
-      val usage: Option[Usage] = ctx.usage() match {
-        case null => None
-        case x => Some(visitUsage(x).value)
-      }
+      val numeric = visit(ctx.sign_precision_9()).asInstanceOf[PicExpr]
 
-      // FIX THIS -- just to pass for now
-      PicExpr(AlphaNumeric("X", 100))
+      ctx.usage() match {
+        case null => numeric
+        case x => replaceUsage(numeric, visitUsage(x).value)
+      }
     }
   }
 
@@ -167,8 +201,38 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
     PicExpr(AlphaNumeric(char, len))
   }
 
-  override def visitSign_precision_9(ctx: copybook_parser.Sign_precision_9Context): Expr = {
-    visitChildren(ctx)
+//  override def visitSign_precision_9(ctx: copybook_parser.Sign_precision_9Context): PicExpr = {
+//    ctx.NINES() match {
+//      case null => visit(ctx.sign_precision_9_with_sign()).asInstanceOf[PicExpr]
+//      case x => PicExpr(
+//        Integral(
+//          x.getText,
+//          x.getText.length,
+//          None,
+//          isSignSeparate = false,
+//          None,
+//          None,
+//          Some(enc),
+//          Some(x.getText)
+//        )
+//      )
+//    }
+//  }
+
+  override def visitTrailing_sign(ctx: copybook_parser.Trailing_signContext): PicExpr = {
+    val prec = visit(ctx.precision_9()).asInstanceOf[PicExpr]
+    ctx.plus_minus() match {
+      case null => prec
+      case _ => replaceSign(prec, 'T')
+    }
+  }
+
+  override def visitLeading_sign(ctx: copybook_parser.Leading_signContext): PicExpr = {
+    val prec = visit(ctx.precision_9()).asInstanceOf[PicExpr]
+    ctx.plus_minus() match {
+      case null => prec
+      case _ => replaceSign(prec, 'L')
+    }
   }
 
   override def visitSeparate_sign(ctx: copybook_parser.Separate_signContext): SepSignExpr = {
@@ -177,6 +241,63 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
     else
       SepSignExpr('T')
   }
+
+  override def visitPrecision_9_nines(ctx: copybook_parser.Precision_9_ninesContext): PicExpr = {
+    val pic = ctx.getText
+    PicExpr(
+      Integral(
+        pic,
+        pic.length,
+        None,
+        isSignSeparate = false,
+        None,
+        None,
+        Some(enc),
+        Some(pic)
+      )
+    )
+  }
+
+  override def visitPrecision_9_ss(ctx: copybook_parser.Precision_9_ssContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_zs(ctx: copybook_parser.Precision_9_zsContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_simple(ctx: copybook_parser.Precision_9_simpleContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_decimal_scaled(ctx: copybook_parser.Precision_9_decimal_scaledContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_explicit_dot(ctx: copybook_parser.Precision_9_explicit_dotContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_scaled(ctx: copybook_parser.Precision_9_scaledContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_9_scaled_lead(ctx: copybook_parser.Precision_9_scaled_leadContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_z_explicit_dot(ctx: copybook_parser.Precision_z_explicit_dotContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_z_decimal_scaled(ctx: copybook_parser.Precision_z_decimal_scaledContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
+  override def visitPrecision_z_scaled(ctx: copybook_parser.Precision_z_scaledContext): PicExpr = {
+    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+  }
+
 
   override def visitPrimitive(ctx: copybook_parser.PrimitiveContext): Expr = {
     val section = ctx.section.getText.toInt
@@ -189,6 +310,8 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
     assert(ctx.pic.size() == 1)
 
     val identifier = visitIdentifier(ctx.identifier()).value
+
+    val pic: CobolType = visitPic(ctx.pic(0)).value
 
     val redefines: Option[String] = ctx.redefines().asScala.toList match {
       case Nil => None
@@ -209,8 +332,6 @@ class ParserVisitor(stringTrimmingPolicy: StringTrimmingPolicy,
       case Nil => None
       case x :: _ => Some(visitSeparate_sign(x).value)
     }
-
-    val pic: CobolType = visitPic(ctx.pic(0)).value
 
     val prim = Primitive(
       section,

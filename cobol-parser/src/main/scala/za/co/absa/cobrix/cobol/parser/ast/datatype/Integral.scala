@@ -34,6 +34,7 @@ case class Integral(
                     isSignSeparate: Boolean = false,
                     wordAlligned: Option[Position] = None,
                     compact: Option[Int] = None,
-                    enc: Option[Encoding] = None
+                    enc: Option[Encoding] = None,
+                    originalPic: Option[String] = None
                   )
   extends CobolType

@@ -95,11 +95,13 @@ TERMINAL : '.' ('\r' | '\n' | '\f' | '\t' | ' ')+ | '.' EOF;
 COMMENT:  '*' ~( '\r' | '\n' )* -> skip;
 
 
-// special cases (for the lengths
-NINES: SIGN_CHAR?'9'+;
+// special cases (for the lengths)
+NINES: '9'+;
 A_S: A+;
-P_S: P+;
+P_S: P+ '9'*;
 X_S: X+;
+S_S: S '9'* V P* '9'* | S P* '9'* | S '9'* P*;
+Z_S: Z+ '9'* P* | Z+ '9'* V P* '9'*;
 
 // numbers
 PRECISION_9_SIMPLE: S? LENGTH_TYPE_9;
@@ -141,7 +143,6 @@ LENGTH_TYPE_Z:
     ;
 
 
-
 // strings
 STRINGLITERAL: QUOTEDLITERAL | HEXNUMBER;
 
@@ -165,10 +166,11 @@ LEVEL_NUMBER_77 : '77';
 LEVEL_NUMBER_88 : '88';
 
 // numbers
-INTEGERLITERAL: SIGN_CHAR? [0-9]+;
-NUMERICLITERAL: SIGN_CHAR? [0-9]* DOT? [0-9]+ (E SIGN_CHAR? [0-9]+)?;
 
-SIGN_CHAR:
+INTEGERLITERAL: [0-9]+;
+NUMERICLITERAL: [0-9]* DOT? [0-9]+ (E SIGN_CHAR? [0-9]+)?;
+
+fragment SIGN_CHAR:
     PLUSCHAR | MINUSCHAR
     ;
 
@@ -195,7 +197,7 @@ fragment O:('o'|'O');
 fragment P:('p'|'P');
 fragment Q:('q'|'Q');
 fragment R:('r'|'R');
-         S:('s'|'S');
+fragment S:('s'|'S');
 fragment T:('t'|'T');
 fragment U:('u'|'U');
 fragment V:('v'|'V');
