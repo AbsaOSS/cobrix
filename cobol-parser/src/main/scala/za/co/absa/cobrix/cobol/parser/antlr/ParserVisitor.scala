@@ -1,5 +1,7 @@
 package za.co.absa.cobrix.cobol.parser.antlr
 
+import za.co.absa.cobrix.cobol.parser.CopybookParser
+
 import scala.util.matching.Regex
 import scala.collection.JavaConverters._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
@@ -11,6 +13,9 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.position.Position
+import za.co.absa.cobrix.cobol.parser.position.Left
+import za.co.absa.cobrix.cobol.parser.position.Right
+
 
 import scala.collection.mutable
 import scala.collection.mutable.Stack
@@ -38,7 +43,33 @@ class ParserVisitor(enc: Encoding,
   var ast: CopybookAST = Group.root
 
   /* regex */
+  def genericLengthRegex(char: Char, optional: Boolean= false): String = {
+    val question = if (optional) "?" else ""
+    s"($char\\(\\d+\\)|$char+)$question"
+  }
+
   val lengthRegex: Regex = "([9XPZ])\\((\\d+)\\)|([9XPZ]+)".r
+  val numericSPicRegexScaled: Regex = ("(S?)"
+                                       + genericLengthRegex('9')
+                                       + genericLengthRegex('P', optional = true)
+                                       ).r
+  val numericSPicRegexExplicitDot: Regex = ("(S?)"
+                                            + genericLengthRegex('9')
+                                            + "\\."
+                                            + genericLengthRegex('9')
+                                            ).r
+  val numericSPicRegexDecimalScaled: Regex = ("(S?)"
+                                              + genericLengthRegex('9', optional = true)
+                                              + "V"
+                                              + genericLengthRegex('P', optional = true)
+                                              + genericLengthRegex('9', optional = true)
+                                              ).r
+  val numericSPicRegexDecimalScaledLead: Regex = ("(S?)"
+                                                  + genericLengthRegex('P')
+                                                  + genericLengthRegex('9')
+                                                  ).r
+  val numericZPicRegex: Regex = "".r
+
 
   /* aux methods */
   def length(text: String): (String, Int) = {
@@ -62,6 +93,15 @@ class ParserVisitor(enc: Encoding,
     }
   }
 
+  def isSignSeparate(pic: CobolType): Boolean ={
+    pic match {
+      case x: Decimal => x.isSignSeparate
+      case x: Integral => x.isSignSeparate
+      case _ => throw new RuntimeException("Bad test for sign.")
+    }
+  }
+
+
   def replaceUsage(pic: PicExpr, usage: Usage): PicExpr = {
     PicExpr(
       pic.value match {
@@ -72,20 +112,37 @@ class ParserVisitor(enc: Encoding,
   }
 
   def replaceSign(pic: PicExpr, char: Char): PicExpr = {
-    import za.co.absa.cobrix.cobol.parser.position.Left
-    import za.co.absa.cobrix.cobol.parser.position.Right
-
     val side: Option[Position] = char match {
       case 'L' => Some(Left)
       case 'T' => Some(Right)
     }
 
+    val newPic = (if (char == 'L') "-" else "") + pic.value.pic + (if (char == 'T') "-" else "")
+
     PicExpr(
       pic.value match {
-        case x: Decimal => x.asInstanceOf[Decimal].copy(signPosition=side, isSignSeparate=true)
-        case x: Integral => x.asInstanceOf[Integral].copy(signPosition=side, isSignSeparate=true)
+        case x: Decimal => x.copy(pic=newPic, signPosition=side, isSignSeparate=true)
+        case x: Integral => x.copy(pic=newPic, signPosition=side, isSignSeparate=true)
       }
     )
+  }
+
+  def replaceDecimal0(pic: PicExpr): PicExpr = {
+    pic.value match {
+      case x: Decimal if x.scale == 0 => PicExpr(
+        Integral(
+          x.pic,
+          x.precision,
+          x.signPosition,
+          x.isSignSeparate,
+          x.wordAlligned,
+          x.compact,
+          x.enc,
+          x.originalPic
+        )
+      )
+      case _ => pic
+    }
   }
 
   def getParentFromLevel(section: Int): Group = {
@@ -95,16 +152,104 @@ class ParserVisitor(enc: Encoding,
     levels.top.el
   }
 
+  def fromNumericSPicRegexDecimalScaled(s: String, nine1: String, scale: String, nine2: String): Decimal = {
+    val (char_1, len_1) = nine1 match {
+      case null => ('9', 0)
+      case _ => length(nine1)
+    }
+    val (char_s, len_s) = scale match {
+      case null => ('9', 0)
+      case _ => length(scale)
+    }
+    val (char_2, len_2) = nine2 match {
+      case null => ('9', 0)
+      case _ => length(nine2)
+    }
+
+    val pic = (s
+      + (if (len_1 > 0) char_1 + "(" + len_1.toString + ")" else "")
+      + "V"
+      + (if (len_s > 0) char_s + "(" + len_s.toString + ")" else "")
+      + (if (len_2 > 0) char_2 + "(" + len_2.toString + ")" else "")
+      )
+
+    Decimal(
+      pic,
+      len_2,
+      len_1 + len_2,
+      explicitDecimal = false,
+      if (s == "S") Some(Left) else None,
+      isSignSeparate = false,
+      None,
+      None,
+      Some(enc),
+      None
+    )
+  }
+
+  def fromNumericSPicRegexScaled(s: String, text: String, scale: String): Integral = {
+    val (char, len) = length(text)
+    Integral(
+      s"$s$char(${len.toString})",
+      len,
+      if (s == "S") Some(Left) else None,
+      isSignSeparate = false,
+      None,
+      None,
+      Some(enc),
+      None
+    )
+  }
+
+  def fromNumericSPicRegexExplicitDot(s: String, nine1: String, nine2: String): Decimal = {
+    val (char_1, len_1) = length(nine1)
+    val (char_2, len_2) = length(nine2)
+    val pic = s"$s$char_1(${len_1.toString}).$char_2(${len_2.toString})"
+    Decimal(
+      pic,
+      len_2,
+      len_1 + len_2,
+      explicitDecimal = true,
+      if (s == "S") Some(Left) else None,
+      isSignSeparate = false,
+      None,
+      None,
+      Some(enc),
+      None
+    )
+  }
+
+  def fromNumericSPicRegexDecimalScaledLead(s: String, scale: String, nine: String): Decimal = {
+    val (char, len) = length(nine)
+    Decimal(
+      s"$s$char(${len.toString})",
+      0,
+      len,
+      explicitDecimal= false,
+      if (s == "S") Some(Left) else None,
+      isSignSeparate = false,
+      None,
+      None,
+      Some(enc),
+      None
+    )
+  }
+
+
   override def visitMain(ctx: copybook_parser.MainContext): Expr = {
     // initialize AST
-    ast = Group.root.copy()(None)
+    ast = Group.root.copy(children = mutable.ArrayBuffer())(None)
     levels = Stack(Level(0, ast))
 
     visitChildren(ctx)
   }
 
   override def visitIdentifier(ctx: copybook_parser.IdentifierContext): IdentifierExpr = {
-    IdentifierExpr(ctx.getText.replace("'", "").replace("\"", ""))
+    IdentifierExpr(
+      CopybookParser.transformIdentifier(
+        ctx.getText.replace("'", "").replace("\"", "")
+      )
+    )
   }
 
   override def visitOccurs(ctx: copybook_parser.OccursContext): OccursExpr = {
@@ -180,8 +325,7 @@ class ParserVisitor(enc: Encoding,
       visitAlpha_x(ctx.alpha_x())
     }
     else {
-      val numeric = visit(ctx.sign_precision_9()).asInstanceOf[PicExpr]
-
+      val numeric = replaceDecimal0(visit(ctx.sign_precision_9()).asInstanceOf[PicExpr])
       ctx.usage() match {
         case null => numeric
         case x => replaceUsage(numeric, visitUsage(x).value)
@@ -192,32 +336,14 @@ class ParserVisitor(enc: Encoding,
   override def visitAlpha_x(ctx: copybook_parser.Alpha_xContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(char, len))
+    PicExpr(AlphaNumeric(char, len, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitAlpha_a(ctx: copybook_parser.Alpha_aContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(char, len))
+    PicExpr(AlphaNumeric(char, len, None, Some(enc), Some(ctx.getText)))
   }
-
-//  override def visitSign_precision_9(ctx: copybook_parser.Sign_precision_9Context): PicExpr = {
-//    ctx.NINES() match {
-//      case null => visit(ctx.sign_precision_9_with_sign()).asInstanceOf[PicExpr]
-//      case x => PicExpr(
-//        Integral(
-//          x.getText,
-//          x.getText.length,
-//          None,
-//          isSignSeparate = false,
-//          None,
-//          None,
-//          Some(enc),
-//          Some(x.getText)
-//        )
-//      )
-//    }
-//  }
 
   override def visitTrailing_sign(ctx: copybook_parser.Trailing_signContext): PicExpr = {
     val prec = visit(ctx.precision_9()).asInstanceOf[PicExpr]
@@ -259,43 +385,83 @@ class ParserVisitor(enc: Encoding,
   }
 
   override def visitPrecision_9_ss(ctx: copybook_parser.Precision_9_ssContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    if (ctx.getText contains "P")
+      throw new RuntimeException("Scaled numbers not supported yet")
+
+    var len: Int = 0
+    var pic: String = ""
+
+    val numericSPicRegexScaled(s_1, nine_1, scale_1) = ctx.getText
+    val numericSPicRegexDecimalScaled(s_2, nine1_2, scale_2, nine2_2) = ctx.getText
+    val numericSPicRegexDecimalScaledLead(s_3, scale_3, nine_3) = ctx.getText
+
+    if (s_1 != null) {
+      PicExpr(
+        fromNumericSPicRegexScaled(s_1, nine_1, scale_1)
+      )
+    }
+    else if (s_2 != null) {
+      PicExpr(
+        fromNumericSPicRegexDecimalScaled(s_2, nine1_2, scale_2, nine2_2)
+      )
+    }
+    else if (s_2 != null) {
+      PicExpr(
+        fromNumericSPicRegexDecimalScaledLead(s_3, scale_3, nine_3)
+      )
+    }
+    else
+      throw new RuntimeException("Error reading PIC " + ctx.getText)
   }
 
   override def visitPrecision_9_zs(ctx: copybook_parser.Precision_9_zsContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
-  }
-
-  override def visitPrecision_9_simple(ctx: copybook_parser.Precision_9_simpleContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
-  }
-
-  override def visitPrecision_9_decimal_scaled(ctx: copybook_parser.Precision_9_decimal_scaledContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    throw new RuntimeException("Zero numeric not supported yet")
   }
 
   override def visitPrecision_9_explicit_dot(ctx: copybook_parser.Precision_9_explicit_dotContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    val numericSPicRegexExplicitDot(s, nine1, nine2) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexExplicitDot(s, nine1, nine2).copy(originalPic = Some(ctx.getText))
+    )
+  }
+
+  override def visitPrecision_9_decimal_scaled(ctx: copybook_parser.Precision_9_decimal_scaledContext): PicExpr = {
+    if (ctx.getText contains "P")
+      throw new RuntimeException("Scaled numbers not supported yet")
+
+    val numericSPicRegexDecimalScaled(s, nine1, scale, nine2) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
+    )
   }
 
   override def visitPrecision_9_scaled(ctx: copybook_parser.Precision_9_scaledContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    if (ctx.getText contains "P")
+      throw new RuntimeException("Scaled numbers not supported yet")
+
+    val numericSPicRegexScaled(s, text, scale) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexScaled(s, text, scale).copy(originalPic = Some(ctx.getText))
+    )
   }
 
   override def visitPrecision_9_scaled_lead(ctx: copybook_parser.Precision_9_scaled_leadContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    val numericSPicRegexDecimalScaledLead(s, scale, nine) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+    )
   }
 
   override def visitPrecision_z_explicit_dot(ctx: copybook_parser.Precision_z_explicit_dotContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    throw new RuntimeException("Explicit decimal not supported yet")
   }
 
   override def visitPrecision_z_decimal_scaled(ctx: copybook_parser.Precision_z_decimal_scaledContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    throw new RuntimeException("Zero numeric not supported yet")
   }
 
   override def visitPrecision_z_scaled(ctx: copybook_parser.Precision_z_scaledContext): PicExpr = {
-    PicExpr(Integral("", 10, None, isSignSeparate = false, None, None, Some(enc), Some("")))
+    throw new RuntimeException("Zero numeric not supported yet")
   }
 
 
@@ -311,7 +477,7 @@ class ParserVisitor(enc: Encoding,
 
     val identifier = visitIdentifier(ctx.identifier()).value
 
-    val pic: CobolType = visitPic(ctx.pic(0)).value
+    var pic: PicExpr = visitPic(ctx.pic(0))
 
     val redefines: Option[String] = ctx.redefines().asScala.toList match {
       case Nil => None
@@ -323,21 +489,23 @@ class ParserVisitor(enc: Encoding,
       case x :: _ => Some(visitOccurs(x))
     }
 
-    val usage: Option[Usage] = ctx.usage().asScala.toList match {
-      case Nil => None
-      case x :: _ => Some(visitUsage(x).value)
+    pic = ctx.usage().asScala.toList match {
+      case Nil if parent.groupUsage.isEmpty => pic
+      case Nil => replaceUsage(pic, parent.groupUsage.get)
+      case x :: _ => replaceUsage(pic, visitUsage(x).value)
     }
 
-    val sepSign: Option[Char] = ctx.separate_sign().asScala.toList match {
-      case Nil => None
-      case x :: _ => Some(visitSeparate_sign(x).value)
+    pic = ctx.separate_sign().asScala.toList match {
+      case Nil => pic
+      case x :: _ if !isSignSeparate(pic.value) => replaceSign(pic, visitSeparate_sign(x).value)
+      case _ => throw new RuntimeException("Cannot mix explicit signs and SEPARATE clauses")
     }
 
     val prim = Primitive(
       section,
       identifier,
       ctx.start.getLine,
-      pic,
+      pic.value,
       redefines,
       isRedefined = false,
       if (occurs.isDefined) Some(occurs.get.m) else None,
@@ -345,7 +513,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) occurs.get.dep else None,
       isDependee = false,
       identifier.toUpperCase() == ReservedWords.FILLER,
-      DecoderSelector.getDecoder(pic, stringTrimmingPolicy, ebcdicCodePage)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage)
       ) (Some(parent))
 
     parent.children.append(prim)
@@ -353,7 +521,9 @@ class ParserVisitor(enc: Encoding,
     PrimitiveExpr(prim)
   }
 
-
+  override def visitLevel66statement(ctx: copybook_parser.Level66statementContext): Expr = {
+    throw new RuntimeException("Renames not supported yet")
+  }
 }
 
 

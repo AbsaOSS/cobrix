@@ -174,8 +174,9 @@ class SyntaxErrorsSpec extends FunSuite {
         |          10  FIELD    PIC +999.
         |          10  FIELD    PIC -9999.
         |          10  FIELD    PIC 99999+.
-        |          10  FIELD    PIC 9(4)9-.
         |""".stripMargin
+
+    //           10  FIELD    PIC 9(4)9-.  <-- is this valid?
 
     CopybookParser.parseTree(copyBookContents)
   }

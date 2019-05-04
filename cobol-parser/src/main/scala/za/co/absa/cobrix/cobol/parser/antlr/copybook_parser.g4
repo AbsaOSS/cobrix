@@ -126,7 +126,6 @@ precision_9:
       NINES                         #precision_9_nines
     | S_S                           #precision_9_ss
     | Z_S                           #precision_9_zs
-    | PRECISION_9_SIMPLE            #precision_9_simple
     | PRECISION_9_EXPLICIT_DOT      #precision_9_explicit_dot
     | PRECISION_9_DECIMAL_SCALED    #precision_9_decimal_scaled
     | PRECISION_9_SCALED            #precision_9_scaled

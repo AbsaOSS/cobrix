@@ -55,7 +55,7 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	T visitThru(copybook_parser.ThruContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link copybook_parser#plus_minusplus_minusprecision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9sign_precision_9sign_precision_9}.
+	 * labeled alternative in {@link copybook_parser#plus_minusplus_minusprecision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9precision_9sign_precision_9sign_precision_9}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
@@ -191,13 +191,6 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrecision_9_zs(copybook_parser.Precision_9_zsContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code precision_9_simple}
-	 * labeled alternative in {@link copybook_parser#precision_9}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitPrecision_9_simple(copybook_parser.Precision_9_simpleContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code precision_9_explicit_dot}
 	 * labeled alternative in {@link copybook_parser#precision_9}.

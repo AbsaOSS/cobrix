@@ -168,12 +168,12 @@ object CopybookParser {
 
 
     val schema: MutableCopybook = ArrayBuffer(root)
-    val schemaANTLR = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage))
+    val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage))
 
     val newTrees = if (dropGroupFillers) {
-      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schemaANTLR))), segmentRedefines))
     } else {
-      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schemaANTLR))), segmentRedefines))
     }
 
     new Copybook(newTrees.head.asInstanceOf[Group])

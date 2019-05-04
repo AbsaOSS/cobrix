@@ -17,7 +17,7 @@ object ANTLRParser {
     val lexer = new copybook_lexer(charStream)
     val tokens = new CommonTokenStream(lexer)
     val parser = new copybook_parser(tokens)
-    parser.setErrorHandler(new BailErrorStrategy());
+    parser.setErrorHandler(new BailErrorStrategy())
 
     visitor.visitMain(parser.main())
     visitor.ast
