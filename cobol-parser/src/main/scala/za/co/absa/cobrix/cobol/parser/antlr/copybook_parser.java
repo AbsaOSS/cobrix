@@ -19,26 +19,26 @@ public class copybook_parser extends Parser {
 		new PredictionContextCache();
 	public static final int
 		THRU_OR_THROUGH=1, ALL=2, ARE=3, ASCENDING=4, BINARY=5, BLANK=6, BY=7, 
-		CHARACTER=8, CHARACTERS=9, COMP=10, COMP_1=11, COMP_2=12, COMP_3=13, COMP_4=14, 
-		COMP_5=15, COMPUTATIONAL=16, COMPUTATIONAL_1=17, COMPUTATIONAL_2=18, COMPUTATIONAL_3=19, 
-		COMPUTATIONAL_4=20, COMPUTATIONAL_5=21, COPY=22, DEPENDING=23, DESCENDING=24, 
-		DISPLAY=25, EXTERNAL=26, FALSE=27, FROM=28, HIGH_VALUE=29, HIGH_VALUES=30, 
-		INDEXED=31, IS=32, JUST=33, JUSTIFIED=34, KEY=35, LEADING=36, LEFT=37, 
-		LOW_VALUE=38, LOW_VALUES=39, NULL=40, NULLS=41, NUMBER=42, NUMERIC=43, 
-		OCCURS=44, ON=45, PACKED_DECIMAL=46, PIC=47, PICTURE=48, QUOTE=49, QUOTES=50, 
-		REDEFINES=51, RENAMES=52, RIGHT=53, SEPARATE=54, SKIP1=55, SKIP2=56, SKIP3=57, 
-		SIGN=58, SPACE=59, SPACES=60, THROUGH=61, THRU=62, TIMES=63, TO=64, TRAILING=65, 
-		TRUE=66, USAGE=67, USING=68, VALUE=69, VALUES=70, WHEN=71, ZERO=72, ZEROS=73, 
-		ZEROES=74, DOUBLEQUOTE=75, COMMACHAR=76, DOT=77, LPARENCHAR=78, MINUSCHAR=79, 
-		PLUSCHAR=80, RPARENCHAR=81, SINGLEQUOTE=82, SLASHCHAR=83, TERMINAL=84, 
-		COMMENT=85, NINES=86, A_S=87, P_S=88, X_S=89, S_S=90, Z_S=91, PRECISION_9_EXPLICIT_DOT=92, 
-		PRECISION_9_DECIMAL_SCALED=93, PRECISION_9_SCALED=94, PRECISION_9_SCALED_LEAD=95, 
-		PRECISION_Z_EXPLICIT_DOT=96, PRECISION_Z_DECIMAL_SCALED=97, PRECISION_Z_SCALED=98, 
-		LENGTH_TYPE_9=99, LENGTH_TYPE_A=100, LENGTH_TYPE_P=101, LENGTH_TYPE_X=102, 
-		LENGTH_TYPE_Z=103, STRINGLITERAL=104, LEVEL_ROOT=105, LEVEL_REGULAR=106, 
-		LEVEL_NUMBER_66=107, LEVEL_NUMBER_77=108, LEVEL_NUMBER_88=109, INTEGERLITERAL=110, 
-		NUMERICLITERAL=111, SINGLE_QUOTED_IDENTIFIER=112, IDENTIFIER=113, CONTROL_Z=114, 
-		WS=115;
+		CHARACTER=8, CHARACTERS=9, COMP=10, COMP_0=11, COMP_1=12, COMP_2=13, COMP_3=14, 
+		COMP_4=15, COMP_5=16, COMPUTATIONAL=17, COMPUTATIONAL_0=18, COMPUTATIONAL_1=19, 
+		COMPUTATIONAL_2=20, COMPUTATIONAL_3=21, COMPUTATIONAL_4=22, COMPUTATIONAL_5=23, 
+		COPY=24, DEPENDING=25, DESCENDING=26, DISPLAY=27, EXTERNAL=28, FALSE=29, 
+		FROM=30, HIGH_VALUE=31, HIGH_VALUES=32, INDEXED=33, IS=34, JUST=35, JUSTIFIED=36, 
+		KEY=37, LEADING=38, LEFT=39, LOW_VALUE=40, LOW_VALUES=41, NULL=42, NULLS=43, 
+		NUMBER=44, NUMERIC=45, OCCURS=46, ON=47, PACKED_DECIMAL=48, PIC=49, PICTURE=50, 
+		QUOTE=51, QUOTES=52, REDEFINES=53, RENAMES=54, RIGHT=55, SEPARATE=56, 
+		SKIP1=57, SKIP2=58, SKIP3=59, SIGN=60, SPACE=61, SPACES=62, THROUGH=63, 
+		THRU=64, TIMES=65, TO=66, TRAILING=67, TRUE=68, USAGE=69, USING=70, VALUE=71, 
+		VALUES=72, WHEN=73, ZERO=74, ZEROS=75, ZEROES=76, DOUBLEQUOTE=77, COMMACHAR=78, 
+		DOT=79, LPARENCHAR=80, MINUSCHAR=81, PLUSCHAR=82, RPARENCHAR=83, SINGLEQUOTE=84, 
+		SLASHCHAR=85, TERMINAL=86, COMMENT=87, NINES=88, A_S=89, P_S=90, X_S=91, 
+		S_S=92, Z_S=93, PRECISION_9_EXPLICIT_DOT=94, PRECISION_9_DECIMAL_SCALED=95, 
+		PRECISION_9_SCALED=96, PRECISION_9_SCALED_LEAD=97, PRECISION_Z_EXPLICIT_DOT=98, 
+		PRECISION_Z_DECIMAL_SCALED=99, PRECISION_Z_SCALED=100, LENGTH_TYPE_9=101, 
+		LENGTH_TYPE_A=102, LENGTH_TYPE_P=103, LENGTH_TYPE_X=104, LENGTH_TYPE_Z=105, 
+		STRINGLITERAL=106, LEVEL_ROOT=107, LEVEL_REGULAR=108, LEVEL_NUMBER_66=109, 
+		LEVEL_NUMBER_77=110, LEVEL_NUMBER_88=111, INTEGERLITERAL=112, NUMERICLITERAL=113, 
+		SINGLE_QUOTED_IDENTIFIER=114, IDENTIFIER=115, CONTROL_Z=116, WS=117;
 	public static final int
 		RULE_main = 0, RULE_literal = 1, RULE_numericLiteral = 2, RULE_integerLiteral = 3, 
 		RULE_booleanLiteral = 4, RULE_identifier = 5, RULE_thru = 6, RULE_values = 7, 
@@ -71,35 +71,35 @@ public class copybook_parser extends Parser {
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, "'\"'", "','", "'.'", "'('", "'-'", "'+'", "')'", "'''", 
-			"'/'", null, null, null, null, null, null, null, null, null, null, null, 
-			null, null, null, null, null, null, null, null, null, null, "'01'", null, 
-			"'66'", "'77'", "'88'", null, null, null, null, "'\u001A'"
+			null, null, null, null, null, "'\"'", "','", "'.'", "'('", "'-'", "'+'", 
+			"')'", "'''", "'/'", null, null, null, null, null, null, null, null, 
+			null, null, null, null, null, null, null, null, null, null, null, null, 
+			null, "'01'", null, "'66'", "'77'", "'88'", null, null, null, null, "'\u001A'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
 	private static String[] makeSymbolicNames() {
 		return new String[] {
 			null, "THRU_OR_THROUGH", "ALL", "ARE", "ASCENDING", "BINARY", "BLANK", 
-			"BY", "CHARACTER", "CHARACTERS", "COMP", "COMP_1", "COMP_2", "COMP_3", 
-			"COMP_4", "COMP_5", "COMPUTATIONAL", "COMPUTATIONAL_1", "COMPUTATIONAL_2", 
-			"COMPUTATIONAL_3", "COMPUTATIONAL_4", "COMPUTATIONAL_5", "COPY", "DEPENDING", 
-			"DESCENDING", "DISPLAY", "EXTERNAL", "FALSE", "FROM", "HIGH_VALUE", "HIGH_VALUES", 
-			"INDEXED", "IS", "JUST", "JUSTIFIED", "KEY", "LEADING", "LEFT", "LOW_VALUE", 
-			"LOW_VALUES", "NULL", "NULLS", "NUMBER", "NUMERIC", "OCCURS", "ON", "PACKED_DECIMAL", 
-			"PIC", "PICTURE", "QUOTE", "QUOTES", "REDEFINES", "RENAMES", "RIGHT", 
-			"SEPARATE", "SKIP1", "SKIP2", "SKIP3", "SIGN", "SPACE", "SPACES", "THROUGH", 
-			"THRU", "TIMES", "TO", "TRAILING", "TRUE", "USAGE", "USING", "VALUE", 
-			"VALUES", "WHEN", "ZERO", "ZEROS", "ZEROES", "DOUBLEQUOTE", "COMMACHAR", 
-			"DOT", "LPARENCHAR", "MINUSCHAR", "PLUSCHAR", "RPARENCHAR", "SINGLEQUOTE", 
-			"SLASHCHAR", "TERMINAL", "COMMENT", "NINES", "A_S", "P_S", "X_S", "S_S", 
-			"Z_S", "PRECISION_9_EXPLICIT_DOT", "PRECISION_9_DECIMAL_SCALED", "PRECISION_9_SCALED", 
-			"PRECISION_9_SCALED_LEAD", "PRECISION_Z_EXPLICIT_DOT", "PRECISION_Z_DECIMAL_SCALED", 
-			"PRECISION_Z_SCALED", "LENGTH_TYPE_9", "LENGTH_TYPE_A", "LENGTH_TYPE_P", 
-			"LENGTH_TYPE_X", "LENGTH_TYPE_Z", "STRINGLITERAL", "LEVEL_ROOT", "LEVEL_REGULAR", 
-			"LEVEL_NUMBER_66", "LEVEL_NUMBER_77", "LEVEL_NUMBER_88", "INTEGERLITERAL", 
-			"NUMERICLITERAL", "SINGLE_QUOTED_IDENTIFIER", "IDENTIFIER", "CONTROL_Z", 
-			"WS"
+			"BY", "CHARACTER", "CHARACTERS", "COMP", "COMP_0", "COMP_1", "COMP_2", 
+			"COMP_3", "COMP_4", "COMP_5", "COMPUTATIONAL", "COMPUTATIONAL_0", "COMPUTATIONAL_1", 
+			"COMPUTATIONAL_2", "COMPUTATIONAL_3", "COMPUTATIONAL_4", "COMPUTATIONAL_5", 
+			"COPY", "DEPENDING", "DESCENDING", "DISPLAY", "EXTERNAL", "FALSE", "FROM", 
+			"HIGH_VALUE", "HIGH_VALUES", "INDEXED", "IS", "JUST", "JUSTIFIED", "KEY", 
+			"LEADING", "LEFT", "LOW_VALUE", "LOW_VALUES", "NULL", "NULLS", "NUMBER", 
+			"NUMERIC", "OCCURS", "ON", "PACKED_DECIMAL", "PIC", "PICTURE", "QUOTE", 
+			"QUOTES", "REDEFINES", "RENAMES", "RIGHT", "SEPARATE", "SKIP1", "SKIP2", 
+			"SKIP3", "SIGN", "SPACE", "SPACES", "THROUGH", "THRU", "TIMES", "TO", 
+			"TRAILING", "TRUE", "USAGE", "USING", "VALUE", "VALUES", "WHEN", "ZERO", 
+			"ZEROS", "ZEROES", "DOUBLEQUOTE", "COMMACHAR", "DOT", "LPARENCHAR", "MINUSCHAR", 
+			"PLUSCHAR", "RPARENCHAR", "SINGLEQUOTE", "SLASHCHAR", "TERMINAL", "COMMENT", 
+			"NINES", "A_S", "P_S", "X_S", "S_S", "Z_S", "PRECISION_9_EXPLICIT_DOT", 
+			"PRECISION_9_DECIMAL_SCALED", "PRECISION_9_SCALED", "PRECISION_9_SCALED_LEAD", 
+			"PRECISION_Z_EXPLICIT_DOT", "PRECISION_Z_DECIMAL_SCALED", "PRECISION_Z_SCALED", 
+			"LENGTH_TYPE_9", "LENGTH_TYPE_A", "LENGTH_TYPE_P", "LENGTH_TYPE_X", "LENGTH_TYPE_Z", 
+			"STRINGLITERAL", "LEVEL_ROOT", "LEVEL_REGULAR", "LEVEL_NUMBER_66", "LEVEL_NUMBER_77", 
+			"LEVEL_NUMBER_88", "INTEGERLITERAL", "NUMERICLITERAL", "SINGLE_QUOTED_IDENTIFIER", 
+			"IDENTIFIER", "CONTROL_Z", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -193,7 +193,7 @@ public class copybook_parser extends Parser {
 				setState(79); 
 				_errHandler.sync(this);
 				_la = _input.LA(1);
-			} while ( ((((_la - 55)) & ~0x3f) == 0 && ((1L << (_la - 55)) & ((1L << (SKIP1 - 55)) | (1L << (SKIP2 - 55)) | (1L << (SKIP3 - 55)) | (1L << (TERMINAL - 55)) | (1L << (COMMENT - 55)) | (1L << (LEVEL_ROOT - 55)) | (1L << (LEVEL_REGULAR - 55)) | (1L << (LEVEL_NUMBER_66 - 55)) | (1L << (LEVEL_NUMBER_88 - 55)))) != 0) );
+			} while ( ((((_la - 57)) & ~0x3f) == 0 && ((1L << (_la - 57)) & ((1L << (SKIP1 - 57)) | (1L << (SKIP2 - 57)) | (1L << (SKIP3 - 57)) | (1L << (TERMINAL - 57)) | (1L << (COMMENT - 57)) | (1L << (LEVEL_ROOT - 57)) | (1L << (LEVEL_REGULAR - 57)) | (1L << (LEVEL_NUMBER_66 - 57)) | (1L << (LEVEL_NUMBER_88 - 57)))) != 0) );
 			setState(82);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
@@ -399,7 +399,7 @@ public class copybook_parser extends Parser {
 			{
 			setState(103);
 			_la = _input.LA(1);
-			if ( !(((((_la - 86)) & ~0x3f) == 0 && ((1L << (_la - 86)) & ((1L << (NINES - 86)) | (1L << (LEVEL_ROOT - 86)) | (1L << (LEVEL_REGULAR - 86)) | (1L << (LEVEL_NUMBER_66 - 86)) | (1L << (LEVEL_NUMBER_77 - 86)) | (1L << (LEVEL_NUMBER_88 - 86)) | (1L << (INTEGERLITERAL - 86)))) != 0)) ) {
+			if ( !(((((_la - 88)) & ~0x3f) == 0 && ((1L << (_la - 88)) & ((1L << (NINES - 88)) | (1L << (LEVEL_ROOT - 88)) | (1L << (LEVEL_REGULAR - 88)) | (1L << (LEVEL_NUMBER_66 - 88)) | (1L << (LEVEL_NUMBER_77 - 88)) | (1L << (LEVEL_NUMBER_88 - 88)) | (1L << (INTEGERLITERAL - 88)))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -493,7 +493,7 @@ public class copybook_parser extends Parser {
 			{
 			setState(107);
 			_la = _input.LA(1);
-			if ( !(_la==THRU_OR_THROUGH || ((((_la - 87)) & ~0x3f) == 0 && ((1L << (_la - 87)) & ((1L << (A_S - 87)) | (1L << (P_S - 87)) | (1L << (X_S - 87)) | (1L << (S_S - 87)) | (1L << (Z_S - 87)) | (1L << (SINGLE_QUOTED_IDENTIFIER - 87)) | (1L << (IDENTIFIER - 87)))) != 0)) ) {
+			if ( !(_la==THRU_OR_THROUGH || ((((_la - 89)) & ~0x3f) == 0 && ((1L << (_la - 89)) & ((1L << (A_S - 89)) | (1L << (P_S - 89)) | (1L << (X_S - 89)) | (1L << (S_S - 89)) | (1L << (Z_S - 89)) | (1L << (SINGLE_QUOTED_IDENTIFIER - 89)) | (1L << (IDENTIFIER - 89)))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -1380,12 +1380,14 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class UsageLiteralContext extends ParserRuleContext {
+		public TerminalNode COMPUTATIONAL_0() { return getToken(copybook_parser.COMPUTATIONAL_0, 0); }
 		public TerminalNode COMPUTATIONAL_1() { return getToken(copybook_parser.COMPUTATIONAL_1, 0); }
 		public TerminalNode COMPUTATIONAL_2() { return getToken(copybook_parser.COMPUTATIONAL_2, 0); }
 		public TerminalNode COMPUTATIONAL_3() { return getToken(copybook_parser.COMPUTATIONAL_3, 0); }
 		public TerminalNode COMPUTATIONAL_4() { return getToken(copybook_parser.COMPUTATIONAL_4, 0); }
 		public TerminalNode COMPUTATIONAL_5() { return getToken(copybook_parser.COMPUTATIONAL_5, 0); }
 		public TerminalNode COMPUTATIONAL() { return getToken(copybook_parser.COMPUTATIONAL, 0); }
+		public TerminalNode COMP_0() { return getToken(copybook_parser.COMP_0, 0); }
 		public TerminalNode COMP_1() { return getToken(copybook_parser.COMP_1, 0); }
 		public TerminalNode COMP_2() { return getToken(copybook_parser.COMP_2, 0); }
 		public TerminalNode COMP_3() { return getToken(copybook_parser.COMP_3, 0); }
@@ -1415,7 +1417,7 @@ public class copybook_parser extends Parser {
 			{
 			setState(208);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BINARY) | (1L << COMP) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << PACKED_DECIMAL))) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BINARY) | (1L << COMP) | (1L << COMP_0) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_0) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << PACKED_DECIMAL))) != 0)) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -2246,7 +2248,7 @@ public class copybook_parser extends Parser {
 					setState(275);
 					_errHandler.sync(this);
 					_la = _input.LA(1);
-					if (((((_la - 5)) & ~0x3f) == 0 && ((1L << (_la - 5)) & ((1L << (BINARY - 5)) | (1L << (COMP - 5)) | (1L << (COMP_1 - 5)) | (1L << (COMP_2 - 5)) | (1L << (COMP_3 - 5)) | (1L << (COMP_4 - 5)) | (1L << (COMP_5 - 5)) | (1L << (COMPUTATIONAL - 5)) | (1L << (COMPUTATIONAL_1 - 5)) | (1L << (COMPUTATIONAL_2 - 5)) | (1L << (COMPUTATIONAL_3 - 5)) | (1L << (COMPUTATIONAL_4 - 5)) | (1L << (COMPUTATIONAL_5 - 5)) | (1L << (DISPLAY - 5)) | (1L << (PACKED_DECIMAL - 5)) | (1L << (USAGE - 5)))) != 0)) {
+					if ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BINARY) | (1L << COMP) | (1L << COMP_0) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_0) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << PACKED_DECIMAL))) != 0) || _la==USAGE) {
 						{
 						setState(274);
 						usage();
@@ -2416,7 +2418,7 @@ public class copybook_parser extends Parser {
 			setState(293);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while (((((_la - 5)) & ~0x3f) == 0 && ((1L << (_la - 5)) & ((1L << (BINARY - 5)) | (1L << (COMP - 5)) | (1L << (COMP_1 - 5)) | (1L << (COMP_2 - 5)) | (1L << (COMP_3 - 5)) | (1L << (COMP_4 - 5)) | (1L << (COMP_5 - 5)) | (1L << (COMPUTATIONAL - 5)) | (1L << (COMPUTATIONAL_1 - 5)) | (1L << (COMPUTATIONAL_2 - 5)) | (1L << (COMPUTATIONAL_3 - 5)) | (1L << (COMPUTATIONAL_4 - 5)) | (1L << (COMPUTATIONAL_5 - 5)) | (1L << (DISPLAY - 5)) | (1L << (OCCURS - 5)) | (1L << (PACKED_DECIMAL - 5)) | (1L << (REDEFINES - 5)) | (1L << (USAGE - 5)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << BINARY) | (1L << COMP) | (1L << COMP_0) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_0) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << OCCURS) | (1L << PACKED_DECIMAL) | (1L << REDEFINES))) != 0) || _la==USAGE) {
 				{
 				setState(291);
 				_errHandler.sync(this);
@@ -2429,12 +2431,14 @@ public class copybook_parser extends Parser {
 					break;
 				case BINARY:
 				case COMP:
+				case COMP_0:
 				case COMP_1:
 				case COMP_2:
 				case COMP_3:
 				case COMP_4:
 				case COMP_5:
 				case COMPUTATIONAL:
+				case COMPUTATIONAL_0:
 				case COMPUTATIONAL_1:
 				case COMPUTATIONAL_2:
 				case COMPUTATIONAL_3:
@@ -2557,7 +2561,7 @@ public class copybook_parser extends Parser {
 			setState(309);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ALL) | (1L << BINARY) | (1L << COMP) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << FALSE) | (1L << HIGH_VALUE) | (1L << HIGH_VALUES) | (1L << JUST) | (1L << JUSTIFIED) | (1L << LOW_VALUE) | (1L << LOW_VALUES) | (1L << NULL) | (1L << NULLS) | (1L << OCCURS) | (1L << PACKED_DECIMAL) | (1L << PIC) | (1L << PICTURE) | (1L << QUOTE) | (1L << QUOTES) | (1L << REDEFINES) | (1L << SIGN) | (1L << SPACE) | (1L << SPACES))) != 0) || ((((_la - 66)) & ~0x3f) == 0 && ((1L << (_la - 66)) & ((1L << (TRUE - 66)) | (1L << (USAGE - 66)) | (1L << (VALUE - 66)) | (1L << (VALUES - 66)) | (1L << (ZERO - 66)) | (1L << (ZEROS - 66)) | (1L << (ZEROES - 66)) | (1L << (MINUSCHAR - 66)) | (1L << (PLUSCHAR - 66)) | (1L << (NINES - 66)) | (1L << (STRINGLITERAL - 66)) | (1L << (LEVEL_ROOT - 66)) | (1L << (LEVEL_REGULAR - 66)) | (1L << (LEVEL_NUMBER_66 - 66)) | (1L << (LEVEL_NUMBER_77 - 66)) | (1L << (LEVEL_NUMBER_88 - 66)) | (1L << (INTEGERLITERAL - 66)) | (1L << (NUMERICLITERAL - 66)))) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << ALL) | (1L << BINARY) | (1L << COMP) | (1L << COMP_0) | (1L << COMP_1) | (1L << COMP_2) | (1L << COMP_3) | (1L << COMP_4) | (1L << COMP_5) | (1L << COMPUTATIONAL) | (1L << COMPUTATIONAL_0) | (1L << COMPUTATIONAL_1) | (1L << COMPUTATIONAL_2) | (1L << COMPUTATIONAL_3) | (1L << COMPUTATIONAL_4) | (1L << COMPUTATIONAL_5) | (1L << DISPLAY) | (1L << FALSE) | (1L << HIGH_VALUE) | (1L << HIGH_VALUES) | (1L << JUST) | (1L << JUSTIFIED) | (1L << LOW_VALUE) | (1L << LOW_VALUES) | (1L << NULL) | (1L << NULLS) | (1L << OCCURS) | (1L << PACKED_DECIMAL) | (1L << PIC) | (1L << PICTURE) | (1L << QUOTE) | (1L << QUOTES) | (1L << REDEFINES) | (1L << SIGN) | (1L << SPACE) | (1L << SPACES))) != 0) || ((((_la - 68)) & ~0x3f) == 0 && ((1L << (_la - 68)) & ((1L << (TRUE - 68)) | (1L << (USAGE - 68)) | (1L << (VALUE - 68)) | (1L << (VALUES - 68)) | (1L << (ZERO - 68)) | (1L << (ZEROS - 68)) | (1L << (ZEROES - 68)) | (1L << (MINUSCHAR - 68)) | (1L << (PLUSCHAR - 68)) | (1L << (NINES - 68)) | (1L << (STRINGLITERAL - 68)) | (1L << (LEVEL_ROOT - 68)) | (1L << (LEVEL_REGULAR - 68)) | (1L << (LEVEL_NUMBER_66 - 68)) | (1L << (LEVEL_NUMBER_77 - 68)) | (1L << (LEVEL_NUMBER_88 - 68)) | (1L << (INTEGERLITERAL - 68)) | (1L << (NUMERICLITERAL - 68)))) != 0)) {
 				{
 				setState(307);
 				_errHandler.sync(this);
@@ -2590,12 +2594,14 @@ public class copybook_parser extends Parser {
 					break;
 				case BINARY:
 				case COMP:
+				case COMP_0:
 				case COMP_1:
 				case COMP_2:
 				case COMP_3:
 				case COMP_4:
 				case COMP_5:
 				case COMPUTATIONAL:
+				case COMPUTATIONAL_0:
 				case COMPUTATIONAL_1:
 				case COMPUTATIONAL_2:
 				case COMPUTATIONAL_3:
@@ -2893,7 +2899,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3u\u0157\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3w\u0157\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -2919,8 +2925,8 @@ public class copybook_parser extends Parser {
 		"$\u0139\13$\3$\3$\5$\u013d\n$\3$\5$\u0140\n$\3$\3$\3%\3%\3%\3%\3%\3&\3"+
 		"&\3&\3&\3&\3\'\3\'\3\'\3\'\3\'\3\'\3\'\5\'\u0155\n\'\3\'\2\2(\2\4\6\b"+
 		"\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDFHJL\2\r\4"+
-		"\2XXkp\4\2\35\35DD\5\2\3\3Y]rs\4\2\6\6\32\32\6\2\7\7\f\27\33\33\60\60"+
-		"\4\2&&CC\3\2#$\4\2[[hh\3\2\61\62\3\2kl\3\29;\2\u0181\2O\3\2\2\2\4\\\3"+
+		"\2ZZmr\4\2\37\37FF\5\2\3\3[_tu\4\2\6\6\34\34\6\2\7\7\f\31\35\35\62\62"+
+		"\4\2((EE\3\2%&\4\2]]jj\3\2\63\64\3\2mn\3\2;=\2\u0181\2O\3\2\2\2\4\\\3"+
 		"\2\2\2\6g\3\2\2\2\bi\3\2\2\2\nk\3\2\2\2\fm\3\2\2\2\16o\3\2\2\2\20y\3\2"+
 		"\2\2\22\u0085\3\2\2\2\24\u0089\3\2\2\2\26\u008b\3\2\2\2\30\u009d\3\2\2"+
 		"\2\32\u009f\3\2\2\2\34\u00a8\3\2\2\2\36\u00ab\3\2\2\2 \u00b1\3\2\2\2\""+
@@ -2929,96 +2935,96 @@ public class copybook_parser extends Parser {
 		"\u00fb\3\2\2\2\66\u0105\3\2\2\28\u0107\3\2\2\2:\u0109\3\2\2\2<\u010b\3"+
 		"\2\2\2>\u010d\3\2\2\2@\u011c\3\2\2\2B\u011e\3\2\2\2D\u0120\3\2\2\2F\u012c"+
 		"\3\2\2\2H\u0143\3\2\2\2J\u0148\3\2\2\2L\u0154\3\2\2\2NP\5L\'\2ON\3\2\2"+
-		"\2PQ\3\2\2\2QO\3\2\2\2QR\3\2\2\2RT\3\2\2\2SU\7t\2\2TS\3\2\2\2TU\3\2\2"+
-		"\2UV\3\2\2\2VW\7\2\2\3W\3\3\2\2\2X]\7j\2\2Y]\5\6\4\2Z]\5\n\6\2[]\5\30"+
+		"\2PQ\3\2\2\2QO\3\2\2\2QR\3\2\2\2RT\3\2\2\2SU\7v\2\2TS\3\2\2\2TU\3\2\2"+
+		"\2UV\3\2\2\2VW\7\2\2\3W\3\3\2\2\2X]\7l\2\2Y]\5\6\4\2Z]\5\n\6\2[]\5\30"+
 		"\r\2\\X\3\2\2\2\\Y\3\2\2\2\\Z\3\2\2\2\\[\3\2\2\2]\5\3\2\2\2^`\5\62\32"+
-		"\2_^\3\2\2\2_`\3\2\2\2`a\3\2\2\2ah\7q\2\2bh\7J\2\2ce\5\62\32\2dc\3\2\2"+
+		"\2_^\3\2\2\2_`\3\2\2\2`a\3\2\2\2ah\7s\2\2bh\7L\2\2ce\5\62\32\2dc\3\2\2"+
 		"\2de\3\2\2\2ef\3\2\2\2fh\5\b\5\2g_\3\2\2\2gb\3\2\2\2gd\3\2\2\2h\7\3\2"+
 		"\2\2ij\t\2\2\2j\t\3\2\2\2kl\t\3\2\2l\13\3\2\2\2mn\t\4\2\2n\r\3\2\2\2o"+
-		"p\7\3\2\2p\17\3\2\2\2qs\7G\2\2rt\7\"\2\2sr\3\2\2\2st\3\2\2\2tz\3\2\2\2"+
-		"uw\7H\2\2vx\7\5\2\2wv\3\2\2\2wx\3\2\2\2xz\3\2\2\2yq\3\2\2\2yu\3\2\2\2"+
-		"yz\3\2\2\2z{\3\2\2\2{\u0082\5\22\n\2|~\7N\2\2}|\3\2\2\2}~\3\2\2\2~\177"+
+		"p\7\3\2\2p\17\3\2\2\2qs\7I\2\2rt\7$\2\2sr\3\2\2\2st\3\2\2\2tz\3\2\2\2"+
+		"uw\7J\2\2vx\7\5\2\2wv\3\2\2\2wx\3\2\2\2xz\3\2\2\2yq\3\2\2\2yu\3\2\2\2"+
+		"yz\3\2\2\2z{\3\2\2\2{\u0082\5\22\n\2|~\7P\2\2}|\3\2\2\2}~\3\2\2\2~\177"+
 		"\3\2\2\2\177\u0081\5\22\n\2\u0080}\3\2\2\2\u0081\u0084\3\2\2\2\u0082\u0080"+
 		"\3\2\2\2\u0082\u0083\3\2\2\2\u0083\21\3\2\2\2\u0084\u0082\3\2\2\2\u0085"+
 		"\u0087\5\24\13\2\u0086\u0088\5\26\f\2\u0087\u0086\3\2\2\2\u0087\u0088"+
 		"\3\2\2\2\u0088\23\3\2\2\2\u0089\u008a\5\4\3\2\u008a\25\3\2\2\2\u008b\u008c"+
 		"\5\16\b\2\u008c\u008d\5\4\3\2\u008d\27\3\2\2\2\u008e\u008f\7\4\2\2\u008f"+
-		"\u009e\5\4\3\2\u0090\u009e\7\37\2\2\u0091\u009e\7 \2\2\u0092\u009e\7("+
-		"\2\2\u0093\u009e\7)\2\2\u0094\u009e\7*\2\2\u0095\u009e\7+\2\2\u0096\u009e"+
-		"\7\63\2\2\u0097\u009e\7\64\2\2\u0098\u009e\7=\2\2\u0099\u009e\7>\2\2\u009a"+
-		"\u009e\7J\2\2\u009b\u009e\7K\2\2\u009c\u009e\7L\2\2\u009d\u008e\3\2\2"+
+		"\u009e\5\4\3\2\u0090\u009e\7!\2\2\u0091\u009e\7\"\2\2\u0092\u009e\7*\2"+
+		"\2\u0093\u009e\7+\2\2\u0094\u009e\7,\2\2\u0095\u009e\7-\2\2\u0096\u009e"+
+		"\7\65\2\2\u0097\u009e\7\66\2\2\u0098\u009e\7?\2\2\u0099\u009e\7@\2\2\u009a"+
+		"\u009e\7L\2\2\u009b\u009e\7M\2\2\u009c\u009e\7N\2\2\u009d\u008e\3\2\2"+
 		"\2\u009d\u0090\3\2\2\2\u009d\u0091\3\2\2\2\u009d\u0092\3\2\2\2\u009d\u0093"+
 		"\3\2\2\2\u009d\u0094\3\2\2\2\u009d\u0095\3\2\2\2\u009d\u0096\3\2\2\2\u009d"+
 		"\u0097\3\2\2\2\u009d\u0098\3\2\2\2\u009d\u0099\3\2\2\2\u009d\u009a\3\2"+
 		"\2\2\u009d\u009b\3\2\2\2\u009d\u009c\3\2\2\2\u009e\31\3\2\2\2\u009f\u00a1"+
-		"\t\5\2\2\u00a0\u00a2\7%\2\2\u00a1\u00a0\3\2\2\2\u00a1\u00a2\3\2\2\2\u00a2"+
-		"\u00a4\3\2\2\2\u00a3\u00a5\7\"\2\2\u00a4\u00a3\3\2\2\2\u00a4\u00a5\3\2"+
+		"\t\5\2\2\u00a0\u00a2\7\'\2\2\u00a1\u00a0\3\2\2\2\u00a1\u00a2\3\2\2\2\u00a2"+
+		"\u00a4\3\2\2\2\u00a3\u00a5\7$\2\2\u00a4\u00a3\3\2\2\2\u00a4\u00a5\3\2"+
 		"\2\2\u00a5\u00a6\3\2\2\2\u00a6\u00a7\5\f\7\2\u00a7\33\3\2\2\2\u00a8\u00a9"+
-		"\7B\2\2\u00a9\u00aa\5\b\5\2\u00aa\35\3\2\2\2\u00ab\u00ad\7\31\2\2\u00ac"+
-		"\u00ae\7/\2\2\u00ad\u00ac\3\2\2\2\u00ad\u00ae\3\2\2\2\u00ae\u00af\3\2"+
-		"\2\2\u00af\u00b0\5\f\7\2\u00b0\37\3\2\2\2\u00b1\u00b3\7!\2\2\u00b2\u00b4"+
+		"\7D\2\2\u00a9\u00aa\5\b\5\2\u00aa\35\3\2\2\2\u00ab\u00ad\7\33\2\2\u00ac"+
+		"\u00ae\7\61\2\2\u00ad\u00ac\3\2\2\2\u00ad\u00ae\3\2\2\2\u00ae\u00af\3"+
+		"\2\2\2\u00af\u00b0\5\f\7\2\u00b0\37\3\2\2\2\u00b1\u00b3\7#\2\2\u00b2\u00b4"+
 		"\7\t\2\2\u00b3\u00b2\3\2\2\2\u00b3\u00b4\3\2\2\2\u00b4\u00b5\3\2\2\2\u00b5"+
-		"\u00b6\5\f\7\2\u00b6!\3\2\2\2\u00b7\u00b8\7.\2\2\u00b8\u00ba\5\b\5\2\u00b9"+
-		"\u00bb\5\34\17\2\u00ba\u00b9\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb\u00bd\3"+
-		"\2\2\2\u00bc\u00be\7A\2\2\u00bd\u00bc\3\2\2\2\u00bd\u00be\3\2\2\2\u00be"+
+		"\u00b6\5\f\7\2\u00b6!\3\2\2\2\u00b7\u00b8\7\60\2\2\u00b8\u00ba\5\b\5\2"+
+		"\u00b9\u00bb\5\34\17\2\u00ba\u00b9\3\2\2\2\u00ba\u00bb\3\2\2\2\u00bb\u00bd"+
+		"\3\2\2\2\u00bc\u00be\7C\2\2\u00bd\u00bc\3\2\2\2\u00bd\u00be\3\2\2\2\u00be"+
 		"\u00c0\3\2\2\2\u00bf\u00c1\5\36\20\2\u00c0\u00bf\3\2\2\2\u00c0\u00c1\3"+
 		"\2\2\2\u00c1\u00c3\3\2\2\2\u00c2\u00c4\5\32\16\2\u00c3\u00c2\3\2\2\2\u00c3"+
 		"\u00c4\3\2\2\2\u00c4\u00c6\3\2\2\2\u00c5\u00c7\5 \21\2\u00c6\u00c5\3\2"+
-		"\2\2\u00c6\u00c7\3\2\2\2\u00c7#\3\2\2\2\u00c8\u00c9\7\65\2\2\u00c9\u00ca"+
-		"\5\f\7\2\u00ca%\3\2\2\2\u00cb\u00cc\7\66\2\2\u00cc\u00d0\5\f\7\2\u00cd"+
-		"\u00ce\5\16\b\2\u00ce\u00cf\5\f\7\2\u00cf\u00d1\3\2\2\2\u00d0\u00cd\3"+
-		"\2\2\2\u00d0\u00d1\3\2\2\2\u00d1\'\3\2\2\2\u00d2\u00d3\t\6\2\2\u00d3)"+
-		"\3\2\2\2\u00d4\u00d6\7E\2\2\u00d5\u00d7\7\"\2\2\u00d6\u00d5\3\2\2\2\u00d6"+
-		"\u00d7\3\2\2\2\u00d7\u00d9\3\2\2\2\u00d8\u00d4\3\2\2\2\u00d8\u00d9\3\2"+
-		"\2\2\u00d9\u00da\3\2\2\2\u00da\u00db\5(\25\2\u00db+\3\2\2\2\u00dc\u00de"+
-		"\7<\2\2\u00dd\u00df\7\"\2\2\u00de\u00dd\3\2\2\2\u00de\u00df\3\2\2\2\u00df"+
-		"\u00e0\3\2\2\2\u00e0\u00e2\t\7\2\2\u00e1\u00e3\78\2\2\u00e2\u00e1\3\2"+
-		"\2\2\u00e2\u00e3\3\2\2\2\u00e3\u00e5\3\2\2\2\u00e4\u00e6\7\n\2\2\u00e5"+
-		"\u00e4\3\2\2\2\u00e5\u00e6\3\2\2\2\u00e6-\3\2\2\2\u00e7\u00e9\t\b\2\2"+
-		"\u00e8\u00ea\7\67\2\2\u00e9\u00e8\3\2\2\2\u00e9\u00ea\3\2\2\2\u00ea/\3"+
-		"\2\2\2\u00eb\u00ec\7V\2\2\u00ec\61\3\2\2\2\u00ed\u00f0\7R\2\2\u00ee\u00f0"+
-		"\7Q\2\2\u00ef\u00ed\3\2\2\2\u00ef\u00ee\3\2\2\2\u00f0\63\3\2\2\2\u00f1"+
-		"\u00fc\7X\2\2\u00f2\u00fc\7\\\2\2\u00f3\u00fc\7]\2\2\u00f4\u00fc\7^\2"+
-		"\2\u00f5\u00fc\7_\2\2\u00f6\u00fc\7`\2\2\u00f7\u00fc\7a\2\2\u00f8\u00fc"+
-		"\7b\2\2\u00f9\u00fc\7c\2\2\u00fa\u00fc\7d\2\2\u00fb\u00f1\3\2\2\2\u00fb"+
-		"\u00f2\3\2\2\2\u00fb\u00f3\3\2\2\2\u00fb\u00f4\3\2\2\2\u00fb\u00f5\3\2"+
-		"\2\2\u00fb\u00f6\3\2\2\2\u00fb\u00f7\3\2\2\2\u00fb\u00f8\3\2\2\2\u00fb"+
-		"\u00f9\3\2\2\2\u00fb\u00fa\3\2\2\2\u00fc\65\3\2\2\2\u00fd\u00ff\5\62\32"+
-		"\2\u00fe\u00fd\3\2\2\2\u00fe\u00ff\3\2\2\2\u00ff\u0100\3\2\2\2\u0100\u0106"+
-		"\5\64\33\2\u0101\u0103\5\64\33\2\u0102\u0104\5\62\32\2\u0103\u0102\3\2"+
-		"\2\2\u0103\u0104\3\2\2\2\u0104\u0106\3\2\2\2\u0105\u00fe\3\2\2\2\u0105"+
-		"\u0101\3\2\2\2\u0106\67\3\2\2\2\u0107\u0108\t\t\2\2\u01089\3\2\2\2\u0109"+
-		"\u010a\t\t\2\2\u010a;\3\2\2\2\u010b\u010c\t\n\2\2\u010c=\3\2\2\2\u010d"+
-		"\u011a\5<\37\2\u010e\u011b\58\35\2\u010f\u011b\5:\36\2\u0110\u0112\5\66"+
-		"\34\2\u0111\u0113\5*\26\2\u0112\u0111\3\2\2\2\u0112\u0113\3\2\2\2\u0113"+
-		"\u0119\3\2\2\2\u0114\u0116\5*\26\2\u0115\u0114\3\2\2\2\u0115\u0116\3\2"+
-		"\2\2\u0116\u0117\3\2\2\2\u0117\u0119\5\66\34\2\u0118\u0110\3\2\2\2\u0118"+
-		"\u0115\3\2\2\2\u0119\u011b\3\2\2\2\u011a\u010e\3\2\2\2\u011a\u010f\3\2"+
-		"\2\2\u011a\u0118\3\2\2\2\u011b?\3\2\2\2\u011c\u011d\t\13\2\2\u011dA\3"+
-		"\2\2\2\u011e\u011f\t\f\2\2\u011fC\3\2\2\2\u0120\u0121\5@!\2\u0121\u0127"+
-		"\5\f\7\2\u0122\u0126\5$\23\2\u0123\u0126\5*\26\2\u0124\u0126\5\"\22\2"+
-		"\u0125\u0122\3\2\2\2\u0125\u0123\3\2\2\2\u0125\u0124\3\2\2\2\u0126\u0129"+
-		"\3\2\2\2\u0127\u0125\3\2\2\2\u0127\u0128\3\2\2\2\u0128\u012a\3\2\2\2\u0129"+
-		"\u0127\3\2\2\2\u012a\u012b\5\60\31\2\u012bE\3\2\2\2\u012c\u012d\5@!\2"+
-		"\u012d\u0137\5\f\7\2\u012e\u0136\5.\30\2\u012f\u0136\5\"\22\2\u0130\u0136"+
-		"\5> \2\u0131\u0136\5$\23\2\u0132\u0136\5*\26\2\u0133\u0136\5\20\t\2\u0134"+
-		"\u0136\5,\27\2\u0135\u012e\3\2\2\2\u0135\u012f\3\2\2\2\u0135\u0130\3\2"+
-		"\2\2\u0135\u0131\3\2\2\2\u0135\u0132\3\2\2\2\u0135\u0133\3\2\2\2\u0135"+
-		"\u0134\3\2\2\2\u0136\u0139\3\2\2\2\u0137\u0135\3\2\2\2\u0137\u0138\3\2"+
-		"\2\2\u0138\u013f\3\2\2\2\u0139\u0137\3\2\2\2\u013a\u013c\7\b\2\2\u013b"+
-		"\u013d\7I\2\2\u013c\u013b\3\2\2\2\u013c\u013d\3\2\2\2\u013d\u013e\3\2"+
-		"\2\2\u013e\u0140\7J\2\2\u013f\u013a\3\2\2\2\u013f\u0140\3\2\2\2\u0140"+
-		"\u0141\3\2\2\2\u0141\u0142\5\60\31\2\u0142G\3\2\2\2\u0143\u0144\7m\2\2"+
-		"\u0144\u0145\5\f\7\2\u0145\u0146\5&\24\2\u0146\u0147\5\60\31\2\u0147I"+
-		"\3\2\2\2\u0148\u0149\7o\2\2\u0149\u014a\5\f\7\2\u014a\u014b\5\20\t\2\u014b"+
-		"\u014c\5\60\31\2\u014cK\3\2\2\2\u014d\u0155\7W\2\2\u014e\u0155\5D#\2\u014f"+
-		"\u0155\5F$\2\u0150\u0155\5H%\2\u0151\u0155\5J&\2\u0152\u0155\5B\"\2\u0153"+
-		"\u0155\5\60\31\2\u0154\u014d\3\2\2\2\u0154\u014e\3\2\2\2\u0154\u014f\3"+
-		"\2\2\2\u0154\u0150\3\2\2\2\u0154\u0151\3\2\2\2\u0154\u0152\3\2\2\2\u0154"+
-		"\u0153\3\2\2\2\u0155M\3\2\2\2/QT\\_dgswy}\u0082\u0087\u009d\u00a1\u00a4"+
-		"\u00ad\u00b3\u00ba\u00bd\u00c0\u00c3\u00c6\u00d0\u00d6\u00d8\u00de\u00e2"+
-		"\u00e5\u00e9\u00ef\u00fb\u00fe\u0103\u0105\u0112\u0115\u0118\u011a\u0125"+
-		"\u0127\u0135\u0137\u013c\u013f\u0154";
+		"\2\2\u00c6\u00c7\3\2\2\2\u00c7#\3\2\2\2\u00c8\u00c9\7\67\2\2\u00c9\u00ca"+
+		"\5\f\7\2\u00ca%\3\2\2\2\u00cb\u00cc\78\2\2\u00cc\u00d0\5\f\7\2\u00cd\u00ce"+
+		"\5\16\b\2\u00ce\u00cf\5\f\7\2\u00cf\u00d1\3\2\2\2\u00d0\u00cd\3\2\2\2"+
+		"\u00d0\u00d1\3\2\2\2\u00d1\'\3\2\2\2\u00d2\u00d3\t\6\2\2\u00d3)\3\2\2"+
+		"\2\u00d4\u00d6\7G\2\2\u00d5\u00d7\7$\2\2\u00d6\u00d5\3\2\2\2\u00d6\u00d7"+
+		"\3\2\2\2\u00d7\u00d9\3\2\2\2\u00d8\u00d4\3\2\2\2\u00d8\u00d9\3\2\2\2\u00d9"+
+		"\u00da\3\2\2\2\u00da\u00db\5(\25\2\u00db+\3\2\2\2\u00dc\u00de\7>\2\2\u00dd"+
+		"\u00df\7$\2\2\u00de\u00dd\3\2\2\2\u00de\u00df\3\2\2\2\u00df\u00e0\3\2"+
+		"\2\2\u00e0\u00e2\t\7\2\2\u00e1\u00e3\7:\2\2\u00e2\u00e1\3\2\2\2\u00e2"+
+		"\u00e3\3\2\2\2\u00e3\u00e5\3\2\2\2\u00e4\u00e6\7\n\2\2\u00e5\u00e4\3\2"+
+		"\2\2\u00e5\u00e6\3\2\2\2\u00e6-\3\2\2\2\u00e7\u00e9\t\b\2\2\u00e8\u00ea"+
+		"\79\2\2\u00e9\u00e8\3\2\2\2\u00e9\u00ea\3\2\2\2\u00ea/\3\2\2\2\u00eb\u00ec"+
+		"\7X\2\2\u00ec\61\3\2\2\2\u00ed\u00f0\7T\2\2\u00ee\u00f0\7S\2\2\u00ef\u00ed"+
+		"\3\2\2\2\u00ef\u00ee\3\2\2\2\u00f0\63\3\2\2\2\u00f1\u00fc\7Z\2\2\u00f2"+
+		"\u00fc\7^\2\2\u00f3\u00fc\7_\2\2\u00f4\u00fc\7`\2\2\u00f5\u00fc\7a\2\2"+
+		"\u00f6\u00fc\7b\2\2\u00f7\u00fc\7c\2\2\u00f8\u00fc\7d\2\2\u00f9\u00fc"+
+		"\7e\2\2\u00fa\u00fc\7f\2\2\u00fb\u00f1\3\2\2\2\u00fb\u00f2\3\2\2\2\u00fb"+
+		"\u00f3\3\2\2\2\u00fb\u00f4\3\2\2\2\u00fb\u00f5\3\2\2\2\u00fb\u00f6\3\2"+
+		"\2\2\u00fb\u00f7\3\2\2\2\u00fb\u00f8\3\2\2\2\u00fb\u00f9\3\2\2\2\u00fb"+
+		"\u00fa\3\2\2\2\u00fc\65\3\2\2\2\u00fd\u00ff\5\62\32\2\u00fe\u00fd\3\2"+
+		"\2\2\u00fe\u00ff\3\2\2\2\u00ff\u0100\3\2\2\2\u0100\u0106\5\64\33\2\u0101"+
+		"\u0103\5\64\33\2\u0102\u0104\5\62\32\2\u0103\u0102\3\2\2\2\u0103\u0104"+
+		"\3\2\2\2\u0104\u0106\3\2\2\2\u0105\u00fe\3\2\2\2\u0105\u0101\3\2\2\2\u0106"+
+		"\67\3\2\2\2\u0107\u0108\t\t\2\2\u01089\3\2\2\2\u0109\u010a\t\t\2\2\u010a"+
+		";\3\2\2\2\u010b\u010c\t\n\2\2\u010c=\3\2\2\2\u010d\u011a\5<\37\2\u010e"+
+		"\u011b\58\35\2\u010f\u011b\5:\36\2\u0110\u0112\5\66\34\2\u0111\u0113\5"+
+		"*\26\2\u0112\u0111\3\2\2\2\u0112\u0113\3\2\2\2\u0113\u0119\3\2\2\2\u0114"+
+		"\u0116\5*\26\2\u0115\u0114\3\2\2\2\u0115\u0116\3\2\2\2\u0116\u0117\3\2"+
+		"\2\2\u0117\u0119\5\66\34\2\u0118\u0110\3\2\2\2\u0118\u0115\3\2\2\2\u0119"+
+		"\u011b\3\2\2\2\u011a\u010e\3\2\2\2\u011a\u010f\3\2\2\2\u011a\u0118\3\2"+
+		"\2\2\u011b?\3\2\2\2\u011c\u011d\t\13\2\2\u011dA\3\2\2\2\u011e\u011f\t"+
+		"\f\2\2\u011fC\3\2\2\2\u0120\u0121\5@!\2\u0121\u0127\5\f\7\2\u0122\u0126"+
+		"\5$\23\2\u0123\u0126\5*\26\2\u0124\u0126\5\"\22\2\u0125\u0122\3\2\2\2"+
+		"\u0125\u0123\3\2\2\2\u0125\u0124\3\2\2\2\u0126\u0129\3\2\2\2\u0127\u0125"+
+		"\3\2\2\2\u0127\u0128\3\2\2\2\u0128\u012a\3\2\2\2\u0129\u0127\3\2\2\2\u012a"+
+		"\u012b\5\60\31\2\u012bE\3\2\2\2\u012c\u012d\5@!\2\u012d\u0137\5\f\7\2"+
+		"\u012e\u0136\5.\30\2\u012f\u0136\5\"\22\2\u0130\u0136\5> \2\u0131\u0136"+
+		"\5$\23\2\u0132\u0136\5*\26\2\u0133\u0136\5\20\t\2\u0134\u0136\5,\27\2"+
+		"\u0135\u012e\3\2\2\2\u0135\u012f\3\2\2\2\u0135\u0130\3\2\2\2\u0135\u0131"+
+		"\3\2\2\2\u0135\u0132\3\2\2\2\u0135\u0133\3\2\2\2\u0135\u0134\3\2\2\2\u0136"+
+		"\u0139\3\2\2\2\u0137\u0135\3\2\2\2\u0137\u0138\3\2\2\2\u0138\u013f\3\2"+
+		"\2\2\u0139\u0137\3\2\2\2\u013a\u013c\7\b\2\2\u013b\u013d\7K\2\2\u013c"+
+		"\u013b\3\2\2\2\u013c\u013d\3\2\2\2\u013d\u013e\3\2\2\2\u013e\u0140\7L"+
+		"\2\2\u013f\u013a\3\2\2\2\u013f\u0140\3\2\2\2\u0140\u0141\3\2\2\2\u0141"+
+		"\u0142\5\60\31\2\u0142G\3\2\2\2\u0143\u0144\7o\2\2\u0144\u0145\5\f\7\2"+
+		"\u0145\u0146\5&\24\2\u0146\u0147\5\60\31\2\u0147I\3\2\2\2\u0148\u0149"+
+		"\7q\2\2\u0149\u014a\5\f\7\2\u014a\u014b\5\20\t\2\u014b\u014c\5\60\31\2"+
+		"\u014cK\3\2\2\2\u014d\u0155\7Y\2\2\u014e\u0155\5D#\2\u014f\u0155\5F$\2"+
+		"\u0150\u0155\5H%\2\u0151\u0155\5J&\2\u0152\u0155\5B\"\2\u0153\u0155\5"+
+		"\60\31\2\u0154\u014d\3\2\2\2\u0154\u014e\3\2\2\2\u0154\u014f\3\2\2\2\u0154"+
+		"\u0150\3\2\2\2\u0154\u0151\3\2\2\2\u0154\u0152\3\2\2\2\u0154\u0153\3\2"+
+		"\2\2\u0155M\3\2\2\2/QT\\_dgswy}\u0082\u0087\u009d\u00a1\u00a4\u00ad\u00b3"+
+		"\u00ba\u00bd\u00c0\u00c3\u00c6\u00d0\u00d6\u00d8\u00de\u00e2\u00e5\u00e9"+
+		"\u00ef\u00fb\u00fe\u0103\u0105\u0112\u0115\u0118\u011a\u0125\u0127\u0135"+
+		"\u0137\u013c\u013f\u0154";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

@@ -268,7 +268,7 @@ class ParserVisitor(enc: Encoding,
 
   override def visitUsage(ctx: copybook_parser.UsageContext): UsageExpr = {
     ctx.usageLiteral().getText match {
-      case "COMP" | "COMPUTATIONAL" => UsageExpr(COMP())
+      case "COMP" | "COMPUTATIONAL" | "COMP-0" | "COMPUTATIONAL-0" => UsageExpr(COMP())
       case "COMP-1" | "COMPUTATIONAL-1" => UsageExpr(COMP1())
       case "COMP-2" | "COMPUTATIONAL-2" => UsageExpr(COMP2())
       case "COMP-3" | "COMPUTATIONAL-3" | "PACKED-DECIMAL" => UsageExpr(COMP3())
