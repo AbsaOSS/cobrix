@@ -101,9 +101,23 @@ usageLiteral:
     )
     ;
 
+groupUsageLiteral:
+    (
+      COMPUTATIONAL_0 | COMPUTATIONAL_3 | COMPUTATIONAL_4 | COMPUTATIONAL_5 | COMPUTATIONAL
+    | COMP_0 | COMP_3 | COMP_4 | COMP_5 | COMP
+    | DISPLAY
+    | BINARY
+    | PACKED_DECIMAL
+    )
+    ;
+
 // storage
 usage:
     (USAGE IS?)? usageLiteral
+    ;
+
+usage_group:
+    (USAGE IS?)? groupUsageLiteral
     ;
 
 separate_sign:
@@ -165,6 +179,8 @@ pic:
       | usage? sign_precision_9
       )
     )
+    | COMP_1
+    | COMP_2
     ;
 
 section:
@@ -177,7 +193,7 @@ skipLiteral:
     ;
 
 group:
-    section identifier (redefines | usage | occurs)* term
+    section identifier (redefines | usage_group | occurs)* term
     ;
 
 primitive:

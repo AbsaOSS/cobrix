@@ -133,11 +133,23 @@ public interface copybook_parserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitUsageLiteral(copybook_parser.UsageLiteralContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link copybook_parser#groupUsageLiteral}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitGroupUsageLiteral(copybook_parser.GroupUsageLiteralContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link copybook_parser#usage}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitUsage(copybook_parser.UsageContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link copybook_parser#usage_group}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUsage_group(copybook_parser.Usage_groupContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link copybook_parser#separate_sign}.
 	 * @param ctx the parse tree

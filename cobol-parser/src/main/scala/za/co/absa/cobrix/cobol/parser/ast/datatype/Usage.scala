@@ -4,6 +4,7 @@ package za.co.absa.cobrix.cobol.parser.ast.datatype
 trait Usage
 
 case class COMP() extends Usage
+case class COMP0() extends Usage
 case class COMP1() extends Usage
 case class COMP2() extends Usage
 case class COMP3() extends Usage

@@ -121,7 +121,7 @@ object CopybookParser {
     }
 
     def getUsageModifiers(modifiers: Map[String, String]): Option[Usage] = {
-      getComactLevel(modifiers) match {
+      getCompactLevel(modifiers) match {
         case Some(1) => Some(datatype.COMP1())
         case Some(2) => Some(datatype.COMP2())
         case Some(3) => Some(datatype.COMP3())
@@ -141,7 +141,7 @@ object CopybookParser {
 
     val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
     fields.foldLeft[Statement](root)((element, field) => {
-      val comp = getComactLevel(field.modifiers).getOrElse(-1)
+      val comp = getCompactLevel(field.modifiers).getOrElse(-1)
       val keywords = field.modifiers.keys.toList
       val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
       val redefines = field.modifiers.get(REDEFINES)
@@ -612,7 +612,7 @@ object CopybookParser {
                                lineNumber: Int,
                                fieldName: String
                              )(enc: Encoding): CobolType = {
-    val compDefined = getComactLevel(modifiers)
+    val compDefined = getCompactLevel(modifiers)
     val compInherited: Option[Int] = groupModifiers match{
       case Some(datatype.COMP1()) => Some(1)
       case Some(datatype.COMP2()) => Some(2)
@@ -752,7 +752,7 @@ object CopybookParser {
   }
 
   /** Returns compact level of a binary field */
-  private def getComactLevel(modifiers: Map[String, String]): Option[Int] = {
+  private def getCompactLevel(modifiers: Map[String, String]): Option[Int] = {
     val keywords = modifiers.keys.toList
     val comp: Option[Int] =
       if (keywords.contains(COMP123))
