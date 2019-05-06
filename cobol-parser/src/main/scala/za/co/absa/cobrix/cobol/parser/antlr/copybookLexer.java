@@ -1,6 +1,6 @@
 package za.co.absa.cobrix.cobol.parser.antlr;
 
-// Generated from copybook_lexer.g4 by ANTLR 4.7.2
+// Generated from copybookLexer.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;
@@ -11,7 +11,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class copybook_lexer extends Lexer {
+public class copybookLexer extends Lexer {
 	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -150,13 +150,13 @@ public class copybook_lexer extends Lexer {
 	}
 
 
-	public copybook_lexer(CharStream input) {
+	public copybookLexer(CharStream input) {
 		super(input);
 		_interp = new LexerATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
 	@Override
-	public String getGrammarFileName() { return "copybook_lexer.g4"; }
+	public String getGrammarFileName() { return "copybookLexer.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }

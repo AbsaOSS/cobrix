@@ -14,9 +14,9 @@ object ANTLRParser {
     val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage)
 
     val charStream = CharStreams.fromString(copyBookContents)
-    val lexer = new copybook_lexer(charStream)
+    val lexer = new copybookLexer(charStream)
     val tokens = new CommonTokenStream(lexer)
-    val parser = new copybook_parser(tokens)
+    val parser = new copybookParser(tokens)
     parser.setErrorHandler(new BailErrorStrategy())
 
     visitor.visitMain(parser.main())

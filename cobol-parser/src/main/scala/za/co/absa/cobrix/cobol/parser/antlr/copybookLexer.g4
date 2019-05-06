@@ -1,4 +1,4 @@
-lexer grammar copybook_lexer;
+lexer grammar copybookLexer;
 
 
 THRU_OR_THROUGH:

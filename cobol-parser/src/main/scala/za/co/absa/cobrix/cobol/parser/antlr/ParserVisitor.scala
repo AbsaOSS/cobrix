@@ -26,7 +26,7 @@ sealed trait Expr
 
 class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
-                    ebcdicCodePage: CodePage) extends copybook_parserBaseVisitor[Expr] {
+                    ebcdicCodePage: CodePage) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class NoOpExpr()
   case class Field(value: Statement) extends Expr
@@ -373,7 +373,7 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
-  override def visitMain(ctx: copybook_parser.MainContext): Expr = {
+  override def visitMain(ctx: copybookParser.MainContext): Expr = {
     // initialize AST
     ast = Group.root.copy(children = mutable.ArrayBuffer())(None)
     levels = Stack(Level(0, ast))
@@ -381,7 +381,7 @@ class ParserVisitor(enc: Encoding,
     visitChildren(ctx)
   }
 
-  override def visitIdentifier(ctx: copybook_parser.IdentifierContext): IdentifierExpr = {
+  override def visitIdentifier(ctx: copybookParser.IdentifierContext): IdentifierExpr = {
     IdentifierExpr(
       CopybookParser.transformIdentifier(
         ctx.getText.replace("'", "").replace("\"", "")
@@ -389,13 +389,13 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
-  override def visitOccurs(ctx: copybook_parser.OccursContext): OccursExpr = {
+  override def visitOccurs(ctx: copybookParser.OccursContext): OccursExpr = {
     val m = ctx.integerLiteral.getText.toInt
-    val M: Option[Int] = ctx.occurs_to() match {
+    val M: Option[Int] = ctx.occursTo() match {
       case null => None
       case x => Some(x.getText.toInt)
     }
-    val dep: Option[String] = ctx.depending_on() match {
+    val dep: Option[String] = ctx.dependingOn() match {
       case null => None
       case x => Some(visitIdentifier(x.identifier()).value)
     }
@@ -403,24 +403,24 @@ class ParserVisitor(enc: Encoding,
     OccursExpr(m, M, dep)
   }
 
-  override def visitUsage(ctx: copybook_parser.UsageContext): UsageExpr = {
+  override def visitUsage(ctx: copybookParser.UsageContext): UsageExpr = {
     UsageExpr(
       usageFromText(ctx.usageLiteral().getText)
     )
   }
 
-  override def visitUsage_group(ctx: copybook_parser.Usage_groupContext): UsageExpr = {
+  override def visitUsageGroup(ctx: copybookParser.UsageGroupContext): UsageExpr = {
     UsageExpr(
       usageFromText(ctx.groupUsageLiteral().getText)
     )
   }
 
-  override def visitGroup(ctx: copybook_parser.GroupContext): Expr = {
+  override def visitGroup(ctx: copybookParser.GroupContext): Expr = {
     val section = ctx.section.getText.toInt
     val parent: Group = getParentFromLevel(section)
 
     assert(ctx.redefines.size() < 2)
-    assert(ctx.usage_group.size() < 2)
+    assert(ctx.usageGroup.size() < 2)
     assert(ctx.occurs.size() < 2)
 
     val identifier = visitIdentifier(ctx.identifier()).value
@@ -435,9 +435,9 @@ class ParserVisitor(enc: Encoding,
       case x :: _ => Some(visitOccurs(x))
     }
 
-    val usage: Option[Usage] = ctx.usage_group.asScala.toList match {
+    val usage: Option[Usage] = ctx.usageGroup.asScala.toList match {
       case Nil => None
-      case x :: _ => Some(visitUsage_group(x).value)
+      case x :: _ => Some(visitUsageGroup(x).value)
     }
 
     val grp = Group(
@@ -460,12 +460,12 @@ class ParserVisitor(enc: Encoding,
     visitChildren(ctx)
   }
 
-  override def visitPic(ctx: copybook_parser.PicContext): PicExpr = {
-    if (ctx.alpha_x() != null) {
-      visitAlpha_x(ctx.alpha_x())
+  override def visitPic(ctx: copybookParser.PicContext): PicExpr = {
+    if (ctx.alphaX() != null) {
+      visitAlphaX(ctx.alphaX())
     }
-    else if (ctx.alpha_x() != null) {
-      visitAlpha_x(ctx.alpha_x())
+    else if (ctx.alphaX() != null) {
+      visitAlphaX(ctx.alphaX())
     }
     else if (ctx.COMP_1() != null || ctx.COMP_2() != null) {
       PicExpr(
@@ -484,7 +484,7 @@ class ParserVisitor(enc: Encoding,
       )
     }
     else {
-      val numeric = replaceDecimal0(visit(ctx.sign_precision_9()).asInstanceOf[PicExpr])
+      val numeric = replaceDecimal0(visit(ctx.signPrecision9()).asInstanceOf[PicExpr])
       ctx.usage() match {
         case null => numeric
         case x => replaceUsage(numeric, visitUsage(x).value)
@@ -492,42 +492,42 @@ class ParserVisitor(enc: Encoding,
     }
   }
 
-  override def visitAlpha_x(ctx: copybook_parser.Alpha_xContext): PicExpr = {
+  override def visitAlphaX(ctx: copybookParser.AlphaXContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
     PicExpr(AlphaNumeric(char, len, None, Some(enc), Some(ctx.getText)))
   }
 
-  override def visitAlpha_a(ctx: copybook_parser.Alpha_aContext): PicExpr = {
+  override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
     PicExpr(AlphaNumeric(char, len, None, Some(enc), Some(ctx.getText)))
   }
 
-  override def visitTrailing_sign(ctx: copybook_parser.Trailing_signContext): PicExpr = {
-    val prec = visit(ctx.precision_9()).asInstanceOf[PicExpr]
-    ctx.plus_minus() match {
+  override def visitTrailingSign(ctx: copybookParser.TrailingSignContext): PicExpr = {
+    val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
+    ctx.plusMinus() match {
       case null => prec
-      case _ => replaceSign(prec, 'T', ctx.plus_minus().getText.charAt(0))
+      case _ => replaceSign(prec, 'T', ctx.plusMinus().getText.charAt(0))
     }
   }
 
-  override def visitLeading_sign(ctx: copybook_parser.Leading_signContext): PicExpr = {
-    val prec = visit(ctx.precision_9()).asInstanceOf[PicExpr]
-    ctx.plus_minus() match {
+  override def visitLeadingSign(ctx: copybookParser.LeadingSignContext): PicExpr = {
+    val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
+    ctx.plusMinus() match {
       case null => prec
-      case x => replaceSign(prec, 'L', ctx.plus_minus().getText.charAt(0))
+      case x => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0))
     }
   }
 
-  override def visitSeparate_sign(ctx: copybook_parser.Separate_signContext): SepSignExpr = {
+  override def visitSeparateSign(ctx: copybookParser.SeparateSignContext): SepSignExpr = {
     if(ctx.LEADING() != null)
       SepSignExpr('L')
     else
       SepSignExpr('T')
   }
 
-  override def visitPrecision_9_nines(ctx: copybook_parser.Precision_9_ninesContext): PicExpr = {
+  override def visitPrecision9Nines(ctx: copybookParser.Precision9NinesContext): PicExpr = {
     val pic = ctx.getText
     PicExpr(
       Integral(
@@ -543,7 +543,7 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
-  override def visitPrecision_9_ss(ctx: copybook_parser.Precision_9_ssContext): PicExpr = {
+  override def visitPrecision9Ss(ctx: copybookParser.Precision9SsContext): PicExpr = {
     if (ctx.getText contains "P")
       throw new RuntimeException("Scaled numbers not supported yet")
 
@@ -565,7 +565,7 @@ class ParserVisitor(enc: Encoding,
     }
   }
 
-  override def visitPrecision_9_zs(ctx: copybook_parser.Precision_9_zsContext): PicExpr = {
+  override def visitPrecision9Zs(ctx: copybookParser.Precision9ZsContext): PicExpr = {
     if (ctx.getText contains "P")
       throw new RuntimeException("Scaled numbers not supported yet")
 
@@ -587,14 +587,14 @@ class ParserVisitor(enc: Encoding,
     }
   }
 
-  override def visitPrecision_9_explicit_dot(ctx: copybook_parser.Precision_9_explicit_dotContext): PicExpr = {
+  override def visitPrecision9ExplicitDot(ctx: copybookParser.Precision9ExplicitDotContext): PicExpr = {
     val numericSPicRegexExplicitDot(s, nine1, nine2) = ctx.getText
     PicExpr(
       fromNumericSPicRegexExplicitDot(s, nine1, nine2).copy(originalPic = Some(ctx.getText))
     )
   }
 
-  override def visitPrecision_9_decimal_scaled(ctx: copybook_parser.Precision_9_decimal_scaledContext): PicExpr = {
+  override def visitPrecision9DecimalScaled(ctx: copybookParser.Precision9DecimalScaledContext): PicExpr = {
     if (ctx.getText contains "P")
       throw new RuntimeException("Scaled numbers not supported yet")
 
@@ -604,7 +604,7 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
-  override def visitPrecision_9_scaled(ctx: copybook_parser.Precision_9_scaledContext): PicExpr = {
+  override def visitPrecision9Scaled(ctx: copybookParser.Precision9ScaledContext): PicExpr = {
     if (ctx.getText contains "P")
       throw new RuntimeException("Scaled numbers not supported yet")
 
@@ -614,28 +614,28 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
-  override def visitPrecision_9_scaled_lead(ctx: copybook_parser.Precision_9_scaled_leadContext): PicExpr = {
+  override def visitPrecision9ScaledLead(ctx: copybookParser.Precision9ScaledLeadContext): PicExpr = {
     val numericSPicRegexDecimalScaledLead(s, scale, nine) = ctx.getText
     PicExpr(
       fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
     )
   }
 
-  override def visitPrecision_z_explicit_dot(ctx: copybook_parser.Precision_z_explicit_dotContext): PicExpr = {
+  override def visitPrecisionZExplicitDot(ctx: copybookParser.PrecisionZExplicitDotContext): PicExpr = {
     val numericZPicRegexExplicitDot(z1, nine1, nine2, z2) = ctx.getText
     PicExpr(
       fromNumericZPicRegexExplicitDot(z1, nine1, nine2, z2).copy(originalPic = Some(ctx.getText))
     )
   }
 
-  override def visitPrecision_z_decimal_scaled(ctx: copybook_parser.Precision_z_decimal_scaledContext): PicExpr = {
+  override def visitPrecisionZDecimalScaled(ctx: copybookParser.PrecisionZDecimalScaledContext): PicExpr = {
     val numericZPicRegexDecimalScaled(z1, nine1, scale, nine2, z2) = ctx.getText
     PicExpr(
       fromNumericZPicRegexDecimalScaled(z1, nine1, scale, nine2, z2)
     )
   }
 
-  override def visitPrecision_z_scaled(ctx: copybook_parser.Precision_z_scaledContext): PicExpr = {
+  override def visitPrecisionZScaled(ctx: copybookParser.PrecisionZScaledContext): PicExpr = {
     val numericZPicRegexScaled(z, nine, scale) = ctx.getText
     PicExpr(
       fromNumericZPicRegexScaled(z, nine, scale)
@@ -643,14 +643,14 @@ class ParserVisitor(enc: Encoding,
   }
 
 
-  override def visitPrimitive(ctx: copybook_parser.PrimitiveContext): Expr = {
+  override def visitPrimitive(ctx: copybookParser.PrimitiveContext): Expr = {
     val section = ctx.section.getText.toInt
     val parent: Group = getParentFromLevel(section)
 
     assert(ctx.redefines.size() < 2)
     assert(ctx.usage.size() < 2)
     assert(ctx.occurs.size() < 2)
-    assert(ctx.separate_sign.size() < 2)
+    assert(ctx.separateSign.size() < 2)
     assert(ctx.pic.size() == 1)
 
     val identifier = visitIdentifier(ctx.identifier()).value
@@ -673,9 +673,9 @@ class ParserVisitor(enc: Encoding,
       case x :: _ => replaceUsage(pic, visitUsage(x).value)
     }
 
-    pic = ctx.separate_sign().asScala.toList match {
+    pic = ctx.separateSign().asScala.toList match {
       case Nil => pic
-      case x :: _ if !isSignSeparate(pic.value) => replaceSign(pic, visitSeparate_sign(x).value, '-')
+      case x :: _ if !isSignSeparate(pic.value) => replaceSign(pic, visitSeparateSign(x).value, '-')
       case _ => throw new RuntimeException("Cannot mix explicit signs and SEPARATE clauses")
     }
 
@@ -699,7 +699,7 @@ class ParserVisitor(enc: Encoding,
     PrimitiveExpr(prim)
   }
 
-  override def visitLevel66statement(ctx: copybook_parser.Level66statementContext): Expr = {
+  override def visitLevel66statement(ctx: copybookParser.Level66statementContext): Expr = {
     throw new RuntimeException("Renames not supported yet")
   }
 }

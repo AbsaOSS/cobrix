@@ -1,6 +1,6 @@
-parser grammar copybook_parser;
+parser grammar copybookParser;
 
-options { tokenVocab=copybook_lexer; }
+options { tokenVocab=copybookLexer; }
 
 // main rule
 main:
@@ -14,7 +14,7 @@ literal:
     ;
 
 numericLiteral:
-    plus_minus? NUMERICLITERAL | ZERO | plus_minus? integerLiteral
+    plusMinus? NUMERICLITERAL | ZERO | plusMinus? integerLiteral
     ;
 
 integerLiteral:
@@ -65,20 +65,20 @@ specialValues:
 sorts:
     (ASCENDING | DESCENDING) KEY? IS? identifier;
 
-occurs_to:
+occursTo:
     TO integerLiteral
     ;
 
-depending_on:
+dependingOn:
     DEPENDING ON? identifier
     ;
 
-indexed_by:
+indexedBy:
     INDEXED BY? identifier
     ;
 
 occurs:
-    OCCURS integerLiteral occurs_to? TIMES? depending_on? sorts? indexed_by?
+    OCCURS integerLiteral occursTo? TIMES? dependingOn? sorts? indexedBy?
     ;
 
 // redefines
@@ -116,11 +116,11 @@ usage:
     (USAGE IS?)? usageLiteral
     ;
 
-usage_group:
+usageGroup:
     (USAGE IS?)? groupUsageLiteral
     ;
 
-separate_sign:
+separateSign:
     SIGN IS? (LEADING | TRAILING) SEPARATE? CHARACTER?
     ;
 
@@ -132,35 +132,35 @@ term:
     TERMINAL
     ;
 
-plus_minus:
+plusMinus:
       PLUSCHAR      #plus
     | MINUSCHAR     #minus
     ;
 
-precision_9:
-      NINES                         #precision_9_nines
-    | S_S                           #precision_9_ss
-    | Z_S                           #precision_9_zs
-    | PRECISION_9_EXPLICIT_DOT      #precision_9_explicit_dot
-    | PRECISION_9_DECIMAL_SCALED    #precision_9_decimal_scaled
-    | PRECISION_9_SCALED            #precision_9_scaled
-    | PRECISION_9_SCALED_LEAD       #precision_9_scaled_lead
-    | PRECISION_Z_EXPLICIT_DOT      #precision_z_explicit_dot
-    | PRECISION_Z_DECIMAL_SCALED    #precision_z_decimal_scaled
-    | PRECISION_Z_SCALED            #precision_z_scaled
+precision9:
+      NINES                         #precision9Nines
+    | S_S                           #precision9Ss
+    | Z_S                           #precision9Zs
+    | PRECISION_9_EXPLICIT_DOT      #precision9ExplicitDot
+    | PRECISION_9_DECIMAL_SCALED    #precision9DecimalScaled
+    | PRECISION_9_SCALED            #precision9Scaled
+    | PRECISION_9_SCALED_LEAD       #precision9ScaledLead
+    | PRECISION_Z_EXPLICIT_DOT      #precisionZExplicitDot
+    | PRECISION_Z_DECIMAL_SCALED    #precisionZDecimalScaled
+    | PRECISION_Z_SCALED            #precisionZScaled
     ;
 
-sign_precision_9:
-      (plus_minus? precision_9)     #leading_sign
-    | (precision_9 plus_minus?)     #trailing_sign
+signPrecision9:
+      (plusMinus? precision9)     #leadingSign
+    | (precision9 plusMinus?)     #trailingSign
     ;
 
-alpha_x:
+alphaX:
       X_S
     | LENGTH_TYPE_X
     ;
 
-alpha_a:
+alphaA:
       X_S
     | LENGTH_TYPE_X
     ;
@@ -172,11 +172,11 @@ pictureLiteral:
 pic:
     pictureLiteral
     (
-      alpha_x
-    | alpha_a
+      alphaX
+    | alphaA
     | (
-        sign_precision_9 usage?
-      | usage? sign_precision_9
+        signPrecision9 usage?
+      | usage? signPrecision9
       )
     )
     | COMP_1
@@ -193,12 +193,12 @@ skipLiteral:
     ;
 
 group:
-    section identifier (redefines | usage_group | occurs)* term
+    section identifier (redefines | usageGroup | occurs)* term
     ;
 
 primitive:
     section identifier
-    (justified | occurs | pic | redefines | usage | values | separate_sign)*
+    (justified | occurs | pic | redefines | usage | values | separateSign)*
     (BLANK WHEN? ZERO)?
     term
     ;

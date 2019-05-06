@@ -1,6 +1,6 @@
 package za.co.absa.cobrix.cobol.parser.antlr;
 
-// Generated from copybook_parser.g4 by ANTLR 4.7.2
+// Generated from copybookParser.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;
@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.ArrayList;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
-public class copybook_parser extends Parser {
+public class copybookParser extends Parser {
 	static { RuntimeMetaData.checkVersion("4.7.2", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
@@ -43,11 +43,11 @@ public class copybook_parser extends Parser {
 		RULE_main = 0, RULE_literal = 1, RULE_numericLiteral = 2, RULE_integerLiteral = 3, 
 		RULE_booleanLiteral = 4, RULE_identifier = 5, RULE_thru = 6, RULE_values = 7, 
 		RULE_valuesFromTo = 8, RULE_valuesFrom = 9, RULE_valuesTo = 10, RULE_specialValues = 11, 
-		RULE_sorts = 12, RULE_occurs_to = 13, RULE_depending_on = 14, RULE_indexed_by = 15, 
+		RULE_sorts = 12, RULE_occursTo = 13, RULE_dependingOn = 14, RULE_indexedBy = 15, 
 		RULE_occurs = 16, RULE_redefines = 17, RULE_renames = 18, RULE_usageLiteral = 19, 
-		RULE_groupUsageLiteral = 20, RULE_usage = 21, RULE_usage_group = 22, RULE_separate_sign = 23, 
-		RULE_justified = 24, RULE_term = 25, RULE_plus_minus = 26, RULE_precision_9 = 27, 
-		RULE_sign_precision_9 = 28, RULE_alpha_x = 29, RULE_alpha_a = 30, RULE_pictureLiteral = 31, 
+		RULE_groupUsageLiteral = 20, RULE_usage = 21, RULE_usageGroup = 22, RULE_separateSign = 23, 
+		RULE_justified = 24, RULE_term = 25, RULE_plusMinus = 26, RULE_precision9 = 27, 
+		RULE_signPrecision9 = 28, RULE_alphaX = 29, RULE_alphaA = 30, RULE_pictureLiteral = 31, 
 		RULE_pic = 32, RULE_section = 33, RULE_skipLiteral = 34, RULE_group = 35, 
 		RULE_primitive = 36, RULE_level66statement = 37, RULE_level88statement = 38, 
 		RULE_item = 39;
@@ -55,12 +55,12 @@ public class copybook_parser extends Parser {
 		return new String[] {
 			"main", "literal", "numericLiteral", "integerLiteral", "booleanLiteral", 
 			"identifier", "thru", "values", "valuesFromTo", "valuesFrom", "valuesTo", 
-			"specialValues", "sorts", "occurs_to", "depending_on", "indexed_by", 
-			"occurs", "redefines", "renames", "usageLiteral", "groupUsageLiteral", 
-			"usage", "usage_group", "separate_sign", "justified", "term", "plus_minus", 
-			"precision_9", "sign_precision_9", "alpha_x", "alpha_a", "pictureLiteral", 
-			"pic", "section", "skipLiteral", "group", "primitive", "level66statement", 
-			"level88statement", "item"
+			"specialValues", "sorts", "occursTo", "dependingOn", "indexedBy", "occurs", 
+			"redefines", "renames", "usageLiteral", "groupUsageLiteral", "usage", 
+			"usageGroup", "separateSign", "justified", "term", "plusMinus", "precision9", 
+			"signPrecision9", "alphaX", "alphaA", "pictureLiteral", "pic", "section", 
+			"skipLiteral", "group", "primitive", "level66statement", "level88statement", 
+			"item"
 		};
 	}
 	public static final String[] ruleNames = makeRuleNames();
@@ -139,7 +139,7 @@ public class copybook_parser extends Parser {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "copybook_parser.g4"; }
+	public String getGrammarFileName() { return "copybookParser.g4"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -150,27 +150,27 @@ public class copybook_parser extends Parser {
 	@Override
 	public ATN getATN() { return _ATN; }
 
-	public copybook_parser(TokenStream input) {
+	public copybookParser(TokenStream input) {
 		super(input);
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
 	public static class MainContext extends ParserRuleContext {
-		public TerminalNode EOF() { return getToken(copybook_parser.EOF, 0); }
+		public TerminalNode EOF() { return getToken(copybookParser.EOF, 0); }
 		public List<ItemContext> item() {
 			return getRuleContexts(ItemContext.class);
 		}
 		public ItemContext item(int i) {
 			return getRuleContext(ItemContext.class,i);
 		}
-		public TerminalNode CONTROL_Z() { return getToken(copybook_parser.CONTROL_Z, 0); }
+		public TerminalNode CONTROL_Z() { return getToken(copybookParser.CONTROL_Z, 0); }
 		public MainContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_main; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitMain(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitMain(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -222,7 +222,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class LiteralContext extends ParserRuleContext {
-		public TerminalNode STRINGLITERAL() { return getToken(copybook_parser.STRINGLITERAL, 0); }
+		public TerminalNode STRINGLITERAL() { return getToken(copybookParser.STRINGLITERAL, 0); }
 		public NumericLiteralContext numericLiteral() {
 			return getRuleContext(NumericLiteralContext.class,0);
 		}
@@ -238,7 +238,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_literal; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -292,11 +292,11 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class NumericLiteralContext extends ParserRuleContext {
-		public TerminalNode NUMERICLITERAL() { return getToken(copybook_parser.NUMERICLITERAL, 0); }
-		public Plus_minusContext plus_minus() {
-			return getRuleContext(Plus_minusContext.class,0);
+		public TerminalNode NUMERICLITERAL() { return getToken(copybookParser.NUMERICLITERAL, 0); }
+		public PlusMinusContext plusMinus() {
+			return getRuleContext(PlusMinusContext.class,0);
 		}
-		public TerminalNode ZERO() { return getToken(copybook_parser.ZERO, 0); }
+		public TerminalNode ZERO() { return getToken(copybookParser.ZERO, 0); }
 		public IntegerLiteralContext integerLiteral() {
 			return getRuleContext(IntegerLiteralContext.class,0);
 		}
@@ -306,7 +306,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_numericLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitNumericLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitNumericLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -328,7 +328,7 @@ public class copybook_parser extends Parser {
 				if (_la==MINUSCHAR || _la==PLUSCHAR) {
 					{
 					setState(96);
-					plus_minus();
+					plusMinus();
 					}
 				}
 
@@ -352,7 +352,7 @@ public class copybook_parser extends Parser {
 				if (_la==MINUSCHAR || _la==PLUSCHAR) {
 					{
 					setState(101);
-					plus_minus();
+					plusMinus();
 					}
 				}
 
@@ -374,20 +374,20 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class IntegerLiteralContext extends ParserRuleContext {
-		public TerminalNode INTEGERLITERAL() { return getToken(copybook_parser.INTEGERLITERAL, 0); }
-		public TerminalNode NINES() { return getToken(copybook_parser.NINES, 0); }
-		public TerminalNode LEVEL_ROOT() { return getToken(copybook_parser.LEVEL_ROOT, 0); }
-		public TerminalNode LEVEL_REGULAR() { return getToken(copybook_parser.LEVEL_REGULAR, 0); }
-		public TerminalNode LEVEL_NUMBER_66() { return getToken(copybook_parser.LEVEL_NUMBER_66, 0); }
-		public TerminalNode LEVEL_NUMBER_77() { return getToken(copybook_parser.LEVEL_NUMBER_77, 0); }
-		public TerminalNode LEVEL_NUMBER_88() { return getToken(copybook_parser.LEVEL_NUMBER_88, 0); }
+		public TerminalNode INTEGERLITERAL() { return getToken(copybookParser.INTEGERLITERAL, 0); }
+		public TerminalNode NINES() { return getToken(copybookParser.NINES, 0); }
+		public TerminalNode LEVEL_ROOT() { return getToken(copybookParser.LEVEL_ROOT, 0); }
+		public TerminalNode LEVEL_REGULAR() { return getToken(copybookParser.LEVEL_REGULAR, 0); }
+		public TerminalNode LEVEL_NUMBER_66() { return getToken(copybookParser.LEVEL_NUMBER_66, 0); }
+		public TerminalNode LEVEL_NUMBER_77() { return getToken(copybookParser.LEVEL_NUMBER_77, 0); }
+		public TerminalNode LEVEL_NUMBER_88() { return getToken(copybookParser.LEVEL_NUMBER_88, 0); }
 		public IntegerLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_integerLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitIntegerLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitIntegerLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -423,15 +423,15 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class BooleanLiteralContext extends ParserRuleContext {
-		public TerminalNode TRUE() { return getToken(copybook_parser.TRUE, 0); }
-		public TerminalNode FALSE() { return getToken(copybook_parser.FALSE, 0); }
+		public TerminalNode TRUE() { return getToken(copybookParser.TRUE, 0); }
+		public TerminalNode FALSE() { return getToken(copybookParser.FALSE, 0); }
 		public BooleanLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_booleanLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitBooleanLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitBooleanLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -467,21 +467,21 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class IdentifierContext extends ParserRuleContext {
-		public TerminalNode IDENTIFIER() { return getToken(copybook_parser.IDENTIFIER, 0); }
-		public TerminalNode THRU_OR_THROUGH() { return getToken(copybook_parser.THRU_OR_THROUGH, 0); }
-		public TerminalNode A_S() { return getToken(copybook_parser.A_S, 0); }
-		public TerminalNode P_S() { return getToken(copybook_parser.P_S, 0); }
-		public TerminalNode X_S() { return getToken(copybook_parser.X_S, 0); }
-		public TerminalNode S_S() { return getToken(copybook_parser.S_S, 0); }
-		public TerminalNode Z_S() { return getToken(copybook_parser.Z_S, 0); }
-		public TerminalNode SINGLE_QUOTED_IDENTIFIER() { return getToken(copybook_parser.SINGLE_QUOTED_IDENTIFIER, 0); }
+		public TerminalNode IDENTIFIER() { return getToken(copybookParser.IDENTIFIER, 0); }
+		public TerminalNode THRU_OR_THROUGH() { return getToken(copybookParser.THRU_OR_THROUGH, 0); }
+		public TerminalNode A_S() { return getToken(copybookParser.A_S, 0); }
+		public TerminalNode P_S() { return getToken(copybookParser.P_S, 0); }
+		public TerminalNode X_S() { return getToken(copybookParser.X_S, 0); }
+		public TerminalNode S_S() { return getToken(copybookParser.S_S, 0); }
+		public TerminalNode Z_S() { return getToken(copybookParser.Z_S, 0); }
+		public TerminalNode SINGLE_QUOTED_IDENTIFIER() { return getToken(copybookParser.SINGLE_QUOTED_IDENTIFIER, 0); }
 		public IdentifierContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_identifier; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitIdentifier(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitIdentifier(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -517,14 +517,14 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class ThruContext extends ParserRuleContext {
-		public TerminalNode THRU_OR_THROUGH() { return getToken(copybook_parser.THRU_OR_THROUGH, 0); }
+		public TerminalNode THRU_OR_THROUGH() { return getToken(copybookParser.THRU_OR_THROUGH, 0); }
 		public ThruContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_thru; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitThru(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitThru(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -557,13 +557,13 @@ public class copybook_parser extends Parser {
 		public ValuesFromToContext valuesFromTo(int i) {
 			return getRuleContext(ValuesFromToContext.class,i);
 		}
-		public TerminalNode VALUE() { return getToken(copybook_parser.VALUE, 0); }
-		public TerminalNode VALUES() { return getToken(copybook_parser.VALUES, 0); }
-		public TerminalNode IS() { return getToken(copybook_parser.IS, 0); }
-		public TerminalNode ARE() { return getToken(copybook_parser.ARE, 0); }
-		public List<TerminalNode> COMMACHAR() { return getTokens(copybook_parser.COMMACHAR); }
+		public TerminalNode VALUE() { return getToken(copybookParser.VALUE, 0); }
+		public TerminalNode VALUES() { return getToken(copybookParser.VALUES, 0); }
+		public TerminalNode IS() { return getToken(copybookParser.IS, 0); }
+		public TerminalNode ARE() { return getToken(copybookParser.ARE, 0); }
+		public List<TerminalNode> COMMACHAR() { return getTokens(copybookParser.COMMACHAR); }
 		public TerminalNode COMMACHAR(int i) {
-			return getToken(copybook_parser.COMMACHAR, i);
+			return getToken(copybookParser.COMMACHAR, i);
 		}
 		public ValuesContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -571,7 +571,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_values; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitValues(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitValues(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -704,7 +704,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_valuesFromTo; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitValuesFromTo(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitValuesFromTo(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -751,7 +751,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_valuesFrom; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitValuesFrom(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitValuesFrom(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -790,7 +790,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_valuesTo; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitValuesTo(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitValuesTo(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -819,30 +819,30 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class SpecialValuesContext extends ParserRuleContext {
-		public TerminalNode ALL() { return getToken(copybook_parser.ALL, 0); }
+		public TerminalNode ALL() { return getToken(copybookParser.ALL, 0); }
 		public LiteralContext literal() {
 			return getRuleContext(LiteralContext.class,0);
 		}
-		public TerminalNode HIGH_VALUE() { return getToken(copybook_parser.HIGH_VALUE, 0); }
-		public TerminalNode HIGH_VALUES() { return getToken(copybook_parser.HIGH_VALUES, 0); }
-		public TerminalNode LOW_VALUE() { return getToken(copybook_parser.LOW_VALUE, 0); }
-		public TerminalNode LOW_VALUES() { return getToken(copybook_parser.LOW_VALUES, 0); }
-		public TerminalNode NULL() { return getToken(copybook_parser.NULL, 0); }
-		public TerminalNode NULLS() { return getToken(copybook_parser.NULLS, 0); }
-		public TerminalNode QUOTE() { return getToken(copybook_parser.QUOTE, 0); }
-		public TerminalNode QUOTES() { return getToken(copybook_parser.QUOTES, 0); }
-		public TerminalNode SPACE() { return getToken(copybook_parser.SPACE, 0); }
-		public TerminalNode SPACES() { return getToken(copybook_parser.SPACES, 0); }
-		public TerminalNode ZERO() { return getToken(copybook_parser.ZERO, 0); }
-		public TerminalNode ZEROS() { return getToken(copybook_parser.ZEROS, 0); }
-		public TerminalNode ZEROES() { return getToken(copybook_parser.ZEROES, 0); }
+		public TerminalNode HIGH_VALUE() { return getToken(copybookParser.HIGH_VALUE, 0); }
+		public TerminalNode HIGH_VALUES() { return getToken(copybookParser.HIGH_VALUES, 0); }
+		public TerminalNode LOW_VALUE() { return getToken(copybookParser.LOW_VALUE, 0); }
+		public TerminalNode LOW_VALUES() { return getToken(copybookParser.LOW_VALUES, 0); }
+		public TerminalNode NULL() { return getToken(copybookParser.NULL, 0); }
+		public TerminalNode NULLS() { return getToken(copybookParser.NULLS, 0); }
+		public TerminalNode QUOTE() { return getToken(copybookParser.QUOTE, 0); }
+		public TerminalNode QUOTES() { return getToken(copybookParser.QUOTES, 0); }
+		public TerminalNode SPACE() { return getToken(copybookParser.SPACE, 0); }
+		public TerminalNode SPACES() { return getToken(copybookParser.SPACES, 0); }
+		public TerminalNode ZERO() { return getToken(copybookParser.ZERO, 0); }
+		public TerminalNode ZEROS() { return getToken(copybookParser.ZEROS, 0); }
+		public TerminalNode ZEROES() { return getToken(copybookParser.ZEROES, 0); }
 		public SpecialValuesContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_specialValues; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitSpecialValues(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitSpecialValues(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -973,17 +973,17 @@ public class copybook_parser extends Parser {
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode ASCENDING() { return getToken(copybook_parser.ASCENDING, 0); }
-		public TerminalNode DESCENDING() { return getToken(copybook_parser.DESCENDING, 0); }
-		public TerminalNode KEY() { return getToken(copybook_parser.KEY, 0); }
-		public TerminalNode IS() { return getToken(copybook_parser.IS, 0); }
+		public TerminalNode ASCENDING() { return getToken(copybookParser.ASCENDING, 0); }
+		public TerminalNode DESCENDING() { return getToken(copybookParser.DESCENDING, 0); }
+		public TerminalNode KEY() { return getToken(copybookParser.KEY, 0); }
+		public TerminalNode IS() { return getToken(copybookParser.IS, 0); }
 		public SortsContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_sorts; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitSorts(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitSorts(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1040,25 +1040,25 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Occurs_toContext extends ParserRuleContext {
-		public TerminalNode TO() { return getToken(copybook_parser.TO, 0); }
+	public static class OccursToContext extends ParserRuleContext {
+		public TerminalNode TO() { return getToken(copybookParser.TO, 0); }
 		public IntegerLiteralContext integerLiteral() {
 			return getRuleContext(IntegerLiteralContext.class,0);
 		}
-		public Occurs_toContext(ParserRuleContext parent, int invokingState) {
+		public OccursToContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_occurs_to; }
+		@Override public int getRuleIndex() { return RULE_occursTo; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitOccurs_to(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitOccursTo(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Occurs_toContext occurs_to() throws RecognitionException {
-		Occurs_toContext _localctx = new Occurs_toContext(_ctx, getState());
-		enterRule(_localctx, 26, RULE_occurs_to);
+	public final OccursToContext occursTo() throws RecognitionException {
+		OccursToContext _localctx = new OccursToContext(_ctx, getState());
+		enterRule(_localctx, 26, RULE_occursTo);
 		try {
 			enterOuterAlt(_localctx, 1);
 			{
@@ -1079,26 +1079,26 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Depending_onContext extends ParserRuleContext {
-		public TerminalNode DEPENDING() { return getToken(copybook_parser.DEPENDING, 0); }
+	public static class DependingOnContext extends ParserRuleContext {
+		public TerminalNode DEPENDING() { return getToken(copybookParser.DEPENDING, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode ON() { return getToken(copybook_parser.ON, 0); }
-		public Depending_onContext(ParserRuleContext parent, int invokingState) {
+		public TerminalNode ON() { return getToken(copybookParser.ON, 0); }
+		public DependingOnContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_depending_on; }
+		@Override public int getRuleIndex() { return RULE_dependingOn; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitDepending_on(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitDependingOn(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Depending_onContext depending_on() throws RecognitionException {
-		Depending_onContext _localctx = new Depending_onContext(_ctx, getState());
-		enterRule(_localctx, 28, RULE_depending_on);
+	public final DependingOnContext dependingOn() throws RecognitionException {
+		DependingOnContext _localctx = new DependingOnContext(_ctx, getState());
+		enterRule(_localctx, 28, RULE_dependingOn);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -1130,26 +1130,26 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Indexed_byContext extends ParserRuleContext {
-		public TerminalNode INDEXED() { return getToken(copybook_parser.INDEXED, 0); }
+	public static class IndexedByContext extends ParserRuleContext {
+		public TerminalNode INDEXED() { return getToken(copybookParser.INDEXED, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
-		public TerminalNode BY() { return getToken(copybook_parser.BY, 0); }
-		public Indexed_byContext(ParserRuleContext parent, int invokingState) {
+		public TerminalNode BY() { return getToken(copybookParser.BY, 0); }
+		public IndexedByContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_indexed_by; }
+		@Override public int getRuleIndex() { return RULE_indexedBy; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitIndexed_by(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitIndexedBy(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Indexed_byContext indexed_by() throws RecognitionException {
-		Indexed_byContext _localctx = new Indexed_byContext(_ctx, getState());
-		enterRule(_localctx, 30, RULE_indexed_by);
+	public final IndexedByContext indexedBy() throws RecognitionException {
+		IndexedByContext _localctx = new IndexedByContext(_ctx, getState());
+		enterRule(_localctx, 30, RULE_indexedBy);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -1182,22 +1182,22 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class OccursContext extends ParserRuleContext {
-		public TerminalNode OCCURS() { return getToken(copybook_parser.OCCURS, 0); }
+		public TerminalNode OCCURS() { return getToken(copybookParser.OCCURS, 0); }
 		public IntegerLiteralContext integerLiteral() {
 			return getRuleContext(IntegerLiteralContext.class,0);
 		}
-		public Occurs_toContext occurs_to() {
-			return getRuleContext(Occurs_toContext.class,0);
+		public OccursToContext occursTo() {
+			return getRuleContext(OccursToContext.class,0);
 		}
-		public TerminalNode TIMES() { return getToken(copybook_parser.TIMES, 0); }
-		public Depending_onContext depending_on() {
-			return getRuleContext(Depending_onContext.class,0);
+		public TerminalNode TIMES() { return getToken(copybookParser.TIMES, 0); }
+		public DependingOnContext dependingOn() {
+			return getRuleContext(DependingOnContext.class,0);
 		}
 		public SortsContext sorts() {
 			return getRuleContext(SortsContext.class,0);
 		}
-		public Indexed_byContext indexed_by() {
-			return getRuleContext(Indexed_byContext.class,0);
+		public IndexedByContext indexedBy() {
+			return getRuleContext(IndexedByContext.class,0);
 		}
 		public OccursContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
@@ -1205,7 +1205,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_occurs; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitOccurs(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitOccurs(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1227,7 +1227,7 @@ public class copybook_parser extends Parser {
 			if (_la==TO) {
 				{
 				setState(187);
-				occurs_to();
+				occursTo();
 				}
 			}
 
@@ -1247,7 +1247,7 @@ public class copybook_parser extends Parser {
 			if (_la==DEPENDING) {
 				{
 				setState(193);
-				depending_on();
+				dependingOn();
 				}
 			}
 
@@ -1267,7 +1267,7 @@ public class copybook_parser extends Parser {
 			if (_la==INDEXED) {
 				{
 				setState(199);
-				indexed_by();
+				indexedBy();
 				}
 			}
 
@@ -1285,7 +1285,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class RedefinesContext extends ParserRuleContext {
-		public TerminalNode REDEFINES() { return getToken(copybook_parser.REDEFINES, 0); }
+		public TerminalNode REDEFINES() { return getToken(copybookParser.REDEFINES, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -1295,7 +1295,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_redefines; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitRedefines(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitRedefines(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1324,7 +1324,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class RenamesContext extends ParserRuleContext {
-		public TerminalNode RENAMES() { return getToken(copybook_parser.RENAMES, 0); }
+		public TerminalNode RENAMES() { return getToken(copybookParser.RENAMES, 0); }
 		public List<IdentifierContext> identifier() {
 			return getRuleContexts(IdentifierContext.class);
 		}
@@ -1340,7 +1340,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_renames; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitRenames(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitRenames(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1382,30 +1382,30 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class UsageLiteralContext extends ParserRuleContext {
-		public TerminalNode COMPUTATIONAL_0() { return getToken(copybook_parser.COMPUTATIONAL_0, 0); }
-		public TerminalNode COMPUTATIONAL_1() { return getToken(copybook_parser.COMPUTATIONAL_1, 0); }
-		public TerminalNode COMPUTATIONAL_2() { return getToken(copybook_parser.COMPUTATIONAL_2, 0); }
-		public TerminalNode COMPUTATIONAL_3() { return getToken(copybook_parser.COMPUTATIONAL_3, 0); }
-		public TerminalNode COMPUTATIONAL_4() { return getToken(copybook_parser.COMPUTATIONAL_4, 0); }
-		public TerminalNode COMPUTATIONAL_5() { return getToken(copybook_parser.COMPUTATIONAL_5, 0); }
-		public TerminalNode COMPUTATIONAL() { return getToken(copybook_parser.COMPUTATIONAL, 0); }
-		public TerminalNode COMP_0() { return getToken(copybook_parser.COMP_0, 0); }
-		public TerminalNode COMP_1() { return getToken(copybook_parser.COMP_1, 0); }
-		public TerminalNode COMP_2() { return getToken(copybook_parser.COMP_2, 0); }
-		public TerminalNode COMP_3() { return getToken(copybook_parser.COMP_3, 0); }
-		public TerminalNode COMP_4() { return getToken(copybook_parser.COMP_4, 0); }
-		public TerminalNode COMP_5() { return getToken(copybook_parser.COMP_5, 0); }
-		public TerminalNode COMP() { return getToken(copybook_parser.COMP, 0); }
-		public TerminalNode DISPLAY() { return getToken(copybook_parser.DISPLAY, 0); }
-		public TerminalNode BINARY() { return getToken(copybook_parser.BINARY, 0); }
-		public TerminalNode PACKED_DECIMAL() { return getToken(copybook_parser.PACKED_DECIMAL, 0); }
+		public TerminalNode COMPUTATIONAL_0() { return getToken(copybookParser.COMPUTATIONAL_0, 0); }
+		public TerminalNode COMPUTATIONAL_1() { return getToken(copybookParser.COMPUTATIONAL_1, 0); }
+		public TerminalNode COMPUTATIONAL_2() { return getToken(copybookParser.COMPUTATIONAL_2, 0); }
+		public TerminalNode COMPUTATIONAL_3() { return getToken(copybookParser.COMPUTATIONAL_3, 0); }
+		public TerminalNode COMPUTATIONAL_4() { return getToken(copybookParser.COMPUTATIONAL_4, 0); }
+		public TerminalNode COMPUTATIONAL_5() { return getToken(copybookParser.COMPUTATIONAL_5, 0); }
+		public TerminalNode COMPUTATIONAL() { return getToken(copybookParser.COMPUTATIONAL, 0); }
+		public TerminalNode COMP_0() { return getToken(copybookParser.COMP_0, 0); }
+		public TerminalNode COMP_1() { return getToken(copybookParser.COMP_1, 0); }
+		public TerminalNode COMP_2() { return getToken(copybookParser.COMP_2, 0); }
+		public TerminalNode COMP_3() { return getToken(copybookParser.COMP_3, 0); }
+		public TerminalNode COMP_4() { return getToken(copybookParser.COMP_4, 0); }
+		public TerminalNode COMP_5() { return getToken(copybookParser.COMP_5, 0); }
+		public TerminalNode COMP() { return getToken(copybookParser.COMP, 0); }
+		public TerminalNode DISPLAY() { return getToken(copybookParser.DISPLAY, 0); }
+		public TerminalNode BINARY() { return getToken(copybookParser.BINARY, 0); }
+		public TerminalNode PACKED_DECIMAL() { return getToken(copybookParser.PACKED_DECIMAL, 0); }
 		public UsageLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_usageLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitUsageLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitUsageLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1441,26 +1441,26 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class GroupUsageLiteralContext extends ParserRuleContext {
-		public TerminalNode COMPUTATIONAL_0() { return getToken(copybook_parser.COMPUTATIONAL_0, 0); }
-		public TerminalNode COMPUTATIONAL_3() { return getToken(copybook_parser.COMPUTATIONAL_3, 0); }
-		public TerminalNode COMPUTATIONAL_4() { return getToken(copybook_parser.COMPUTATIONAL_4, 0); }
-		public TerminalNode COMPUTATIONAL_5() { return getToken(copybook_parser.COMPUTATIONAL_5, 0); }
-		public TerminalNode COMPUTATIONAL() { return getToken(copybook_parser.COMPUTATIONAL, 0); }
-		public TerminalNode COMP_0() { return getToken(copybook_parser.COMP_0, 0); }
-		public TerminalNode COMP_3() { return getToken(copybook_parser.COMP_3, 0); }
-		public TerminalNode COMP_4() { return getToken(copybook_parser.COMP_4, 0); }
-		public TerminalNode COMP_5() { return getToken(copybook_parser.COMP_5, 0); }
-		public TerminalNode COMP() { return getToken(copybook_parser.COMP, 0); }
-		public TerminalNode DISPLAY() { return getToken(copybook_parser.DISPLAY, 0); }
-		public TerminalNode BINARY() { return getToken(copybook_parser.BINARY, 0); }
-		public TerminalNode PACKED_DECIMAL() { return getToken(copybook_parser.PACKED_DECIMAL, 0); }
+		public TerminalNode COMPUTATIONAL_0() { return getToken(copybookParser.COMPUTATIONAL_0, 0); }
+		public TerminalNode COMPUTATIONAL_3() { return getToken(copybookParser.COMPUTATIONAL_3, 0); }
+		public TerminalNode COMPUTATIONAL_4() { return getToken(copybookParser.COMPUTATIONAL_4, 0); }
+		public TerminalNode COMPUTATIONAL_5() { return getToken(copybookParser.COMPUTATIONAL_5, 0); }
+		public TerminalNode COMPUTATIONAL() { return getToken(copybookParser.COMPUTATIONAL, 0); }
+		public TerminalNode COMP_0() { return getToken(copybookParser.COMP_0, 0); }
+		public TerminalNode COMP_3() { return getToken(copybookParser.COMP_3, 0); }
+		public TerminalNode COMP_4() { return getToken(copybookParser.COMP_4, 0); }
+		public TerminalNode COMP_5() { return getToken(copybookParser.COMP_5, 0); }
+		public TerminalNode COMP() { return getToken(copybookParser.COMP, 0); }
+		public TerminalNode DISPLAY() { return getToken(copybookParser.DISPLAY, 0); }
+		public TerminalNode BINARY() { return getToken(copybookParser.BINARY, 0); }
+		public TerminalNode PACKED_DECIMAL() { return getToken(copybookParser.PACKED_DECIMAL, 0); }
 		public GroupUsageLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_groupUsageLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitGroupUsageLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitGroupUsageLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1499,15 +1499,15 @@ public class copybook_parser extends Parser {
 		public UsageLiteralContext usageLiteral() {
 			return getRuleContext(UsageLiteralContext.class,0);
 		}
-		public TerminalNode USAGE() { return getToken(copybook_parser.USAGE, 0); }
-		public TerminalNode IS() { return getToken(copybook_parser.IS, 0); }
+		public TerminalNode USAGE() { return getToken(copybookParser.USAGE, 0); }
+		public TerminalNode IS() { return getToken(copybookParser.IS, 0); }
 		public UsageContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_usage; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitUsage(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitUsage(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1554,26 +1554,26 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Usage_groupContext extends ParserRuleContext {
+	public static class UsageGroupContext extends ParserRuleContext {
 		public GroupUsageLiteralContext groupUsageLiteral() {
 			return getRuleContext(GroupUsageLiteralContext.class,0);
 		}
-		public TerminalNode USAGE() { return getToken(copybook_parser.USAGE, 0); }
-		public TerminalNode IS() { return getToken(copybook_parser.IS, 0); }
-		public Usage_groupContext(ParserRuleContext parent, int invokingState) {
+		public TerminalNode USAGE() { return getToken(copybookParser.USAGE, 0); }
+		public TerminalNode IS() { return getToken(copybookParser.IS, 0); }
+		public UsageGroupContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_usage_group; }
+		@Override public int getRuleIndex() { return RULE_usageGroup; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitUsage_group(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitUsageGroup(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Usage_groupContext usage_group() throws RecognitionException {
-		Usage_groupContext _localctx = new Usage_groupContext(_ctx, getState());
-		enterRule(_localctx, 44, RULE_usage_group);
+	public final UsageGroupContext usageGroup() throws RecognitionException {
+		UsageGroupContext _localctx = new UsageGroupContext(_ctx, getState());
+		enterRule(_localctx, 44, RULE_usageGroup);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -1613,27 +1613,27 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Separate_signContext extends ParserRuleContext {
-		public TerminalNode SIGN() { return getToken(copybook_parser.SIGN, 0); }
-		public TerminalNode LEADING() { return getToken(copybook_parser.LEADING, 0); }
-		public TerminalNode TRAILING() { return getToken(copybook_parser.TRAILING, 0); }
-		public TerminalNode IS() { return getToken(copybook_parser.IS, 0); }
-		public TerminalNode SEPARATE() { return getToken(copybook_parser.SEPARATE, 0); }
-		public TerminalNode CHARACTER() { return getToken(copybook_parser.CHARACTER, 0); }
-		public Separate_signContext(ParserRuleContext parent, int invokingState) {
+	public static class SeparateSignContext extends ParserRuleContext {
+		public TerminalNode SIGN() { return getToken(copybookParser.SIGN, 0); }
+		public TerminalNode LEADING() { return getToken(copybookParser.LEADING, 0); }
+		public TerminalNode TRAILING() { return getToken(copybookParser.TRAILING, 0); }
+		public TerminalNode IS() { return getToken(copybookParser.IS, 0); }
+		public TerminalNode SEPARATE() { return getToken(copybookParser.SEPARATE, 0); }
+		public TerminalNode CHARACTER() { return getToken(copybookParser.CHARACTER, 0); }
+		public SeparateSignContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_separate_sign; }
+		@Override public int getRuleIndex() { return RULE_separateSign; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitSeparate_sign(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitSeparateSign(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Separate_signContext separate_sign() throws RecognitionException {
-		Separate_signContext _localctx = new Separate_signContext(_ctx, getState());
-		enterRule(_localctx, 46, RULE_separate_sign);
+	public final SeparateSignContext separateSign() throws RecognitionException {
+		SeparateSignContext _localctx = new SeparateSignContext(_ctx, getState());
+		enterRule(_localctx, 46, RULE_separateSign);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -1694,16 +1694,16 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class JustifiedContext extends ParserRuleContext {
-		public TerminalNode JUSTIFIED() { return getToken(copybook_parser.JUSTIFIED, 0); }
-		public TerminalNode JUST() { return getToken(copybook_parser.JUST, 0); }
-		public TerminalNode RIGHT() { return getToken(copybook_parser.RIGHT, 0); }
+		public TerminalNode JUSTIFIED() { return getToken(copybookParser.JUSTIFIED, 0); }
+		public TerminalNode JUST() { return getToken(copybookParser.JUST, 0); }
+		public TerminalNode RIGHT() { return getToken(copybookParser.RIGHT, 0); }
 		public JustifiedContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_justified; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitJustified(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitJustified(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1749,14 +1749,14 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class TermContext extends ParserRuleContext {
-		public TerminalNode TERMINAL() { return getToken(copybook_parser.TERMINAL, 0); }
+		public TerminalNode TERMINAL() { return getToken(copybookParser.TERMINAL, 0); }
 		public TermContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_term; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitTerm(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitTerm(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -1782,39 +1782,39 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Plus_minusContext extends ParserRuleContext {
-		public Plus_minusContext(ParserRuleContext parent, int invokingState) {
+	public static class PlusMinusContext extends ParserRuleContext {
+		public PlusMinusContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_plus_minus; }
+		@Override public int getRuleIndex() { return RULE_plusMinus; }
 	 
-		public Plus_minusContext() { }
-		public void copyFrom(Plus_minusContext ctx) {
+		public PlusMinusContext() { }
+		public void copyFrom(PlusMinusContext ctx) {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class MinusContext extends Plus_minusContext {
-		public TerminalNode MINUSCHAR() { return getToken(copybook_parser.MINUSCHAR, 0); }
-		public MinusContext(Plus_minusContext ctx) { copyFrom(ctx); }
+	public static class MinusContext extends PlusMinusContext {
+		public TerminalNode MINUSCHAR() { return getToken(copybookParser.MINUSCHAR, 0); }
+		public MinusContext(PlusMinusContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitMinus(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitMinus(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class PlusContext extends Plus_minusContext {
-		public TerminalNode PLUSCHAR() { return getToken(copybook_parser.PLUSCHAR, 0); }
-		public PlusContext(Plus_minusContext ctx) { copyFrom(ctx); }
+	public static class PlusContext extends PlusMinusContext {
+		public TerminalNode PLUSCHAR() { return getToken(copybookParser.PLUSCHAR, 0); }
+		public PlusContext(PlusMinusContext ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPlus(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPlus(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Plus_minusContext plus_minus() throws RecognitionException {
-		Plus_minusContext _localctx = new Plus_minusContext(_ctx, getState());
-		enterRule(_localctx, 52, RULE_plus_minus);
+	public final PlusMinusContext plusMinus() throws RecognitionException {
+		PlusMinusContext _localctx = new PlusMinusContext(_ctx, getState());
+		enterRule(_localctx, 52, RULE_plusMinus);
 		try {
 			setState(251);
 			_errHandler.sync(this);
@@ -1850,117 +1850,117 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Precision_9Context extends ParserRuleContext {
-		public Precision_9Context(ParserRuleContext parent, int invokingState) {
+	public static class Precision9Context extends ParserRuleContext {
+		public Precision9Context(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_precision_9; }
+		@Override public int getRuleIndex() { return RULE_precision9; }
 	 
-		public Precision_9Context() { }
-		public void copyFrom(Precision_9Context ctx) {
+		public Precision9Context() { }
+		public void copyFrom(Precision9Context ctx) {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class Precision_9_zsContext extends Precision_9Context {
-		public TerminalNode Z_S() { return getToken(copybook_parser.Z_S, 0); }
-		public Precision_9_zsContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9ZsContext extends Precision9Context {
+		public TerminalNode Z_S() { return getToken(copybookParser.Z_S, 0); }
+		public Precision9ZsContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_zs(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9Zs(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_scaled_leadContext extends Precision_9Context {
-		public TerminalNode PRECISION_9_SCALED_LEAD() { return getToken(copybook_parser.PRECISION_9_SCALED_LEAD, 0); }
-		public Precision_9_scaled_leadContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9ScaledLeadContext extends Precision9Context {
+		public TerminalNode PRECISION_9_SCALED_LEAD() { return getToken(copybookParser.PRECISION_9_SCALED_LEAD, 0); }
+		public Precision9ScaledLeadContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_scaled_lead(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9ScaledLead(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_ninesContext extends Precision_9Context {
-		public TerminalNode NINES() { return getToken(copybook_parser.NINES, 0); }
-		public Precision_9_ninesContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class PrecisionZExplicitDotContext extends Precision9Context {
+		public TerminalNode PRECISION_Z_EXPLICIT_DOT() { return getToken(copybookParser.PRECISION_Z_EXPLICIT_DOT, 0); }
+		public PrecisionZExplicitDotContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_nines(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecisionZExplicitDot(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_ssContext extends Precision_9Context {
-		public TerminalNode S_S() { return getToken(copybook_parser.S_S, 0); }
-		public Precision_9_ssContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9NinesContext extends Precision9Context {
+		public TerminalNode NINES() { return getToken(copybookParser.NINES, 0); }
+		public Precision9NinesContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_ss(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9Nines(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_decimal_scaledContext extends Precision_9Context {
-		public TerminalNode PRECISION_9_DECIMAL_SCALED() { return getToken(copybook_parser.PRECISION_9_DECIMAL_SCALED, 0); }
-		public Precision_9_decimal_scaledContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9ExplicitDotContext extends Precision9Context {
+		public TerminalNode PRECISION_9_EXPLICIT_DOT() { return getToken(copybookParser.PRECISION_9_EXPLICIT_DOT, 0); }
+		public Precision9ExplicitDotContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_decimal_scaled(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9ExplicitDot(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_z_explicit_dotContext extends Precision_9Context {
-		public TerminalNode PRECISION_Z_EXPLICIT_DOT() { return getToken(copybook_parser.PRECISION_Z_EXPLICIT_DOT, 0); }
-		public Precision_z_explicit_dotContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class PrecisionZScaledContext extends Precision9Context {
+		public TerminalNode PRECISION_Z_SCALED() { return getToken(copybookParser.PRECISION_Z_SCALED, 0); }
+		public PrecisionZScaledContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_z_explicit_dot(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecisionZScaled(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_explicit_dotContext extends Precision_9Context {
-		public TerminalNode PRECISION_9_EXPLICIT_DOT() { return getToken(copybook_parser.PRECISION_9_EXPLICIT_DOT, 0); }
-		public Precision_9_explicit_dotContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9ScaledContext extends Precision9Context {
+		public TerminalNode PRECISION_9_SCALED() { return getToken(copybookParser.PRECISION_9_SCALED, 0); }
+		public Precision9ScaledContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_explicit_dot(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9Scaled(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_z_scaledContext extends Precision_9Context {
-		public TerminalNode PRECISION_Z_SCALED() { return getToken(copybook_parser.PRECISION_Z_SCALED, 0); }
-		public Precision_z_scaledContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9DecimalScaledContext extends Precision9Context {
+		public TerminalNode PRECISION_9_DECIMAL_SCALED() { return getToken(copybookParser.PRECISION_9_DECIMAL_SCALED, 0); }
+		public Precision9DecimalScaledContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_z_scaled(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9DecimalScaled(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_9_scaledContext extends Precision_9Context {
-		public TerminalNode PRECISION_9_SCALED() { return getToken(copybook_parser.PRECISION_9_SCALED, 0); }
-		public Precision_9_scaledContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class PrecisionZDecimalScaledContext extends Precision9Context {
+		public TerminalNode PRECISION_Z_DECIMAL_SCALED() { return getToken(copybookParser.PRECISION_Z_DECIMAL_SCALED, 0); }
+		public PrecisionZDecimalScaledContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_9_scaled(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecisionZDecimalScaled(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Precision_z_decimal_scaledContext extends Precision_9Context {
-		public TerminalNode PRECISION_Z_DECIMAL_SCALED() { return getToken(copybook_parser.PRECISION_Z_DECIMAL_SCALED, 0); }
-		public Precision_z_decimal_scaledContext(Precision_9Context ctx) { copyFrom(ctx); }
+	public static class Precision9SsContext extends Precision9Context {
+		public TerminalNode S_S() { return getToken(copybookParser.S_S, 0); }
+		public Precision9SsContext(Precision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrecision_z_decimal_scaled(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrecision9Ss(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Precision_9Context precision_9() throws RecognitionException {
-		Precision_9Context _localctx = new Precision_9Context(_ctx, getState());
-		enterRule(_localctx, 54, RULE_precision_9);
+	public final Precision9Context precision9() throws RecognitionException {
+		Precision9Context _localctx = new Precision9Context(_ctx, getState());
+		enterRule(_localctx, 54, RULE_precision9);
 		try {
 			setState(263);
 			_errHandler.sync(this);
 			switch (_input.LA(1)) {
 			case NINES:
-				_localctx = new Precision_9_ninesContext(_localctx);
+				_localctx = new Precision9NinesContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				setState(253);
@@ -1968,7 +1968,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case S_S:
-				_localctx = new Precision_9_ssContext(_localctx);
+				_localctx = new Precision9SsContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				setState(254);
@@ -1976,7 +1976,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case Z_S:
-				_localctx = new Precision_9_zsContext(_localctx);
+				_localctx = new Precision9ZsContext(_localctx);
 				enterOuterAlt(_localctx, 3);
 				{
 				setState(255);
@@ -1984,7 +1984,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_9_EXPLICIT_DOT:
-				_localctx = new Precision_9_explicit_dotContext(_localctx);
+				_localctx = new Precision9ExplicitDotContext(_localctx);
 				enterOuterAlt(_localctx, 4);
 				{
 				setState(256);
@@ -1992,7 +1992,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_9_DECIMAL_SCALED:
-				_localctx = new Precision_9_decimal_scaledContext(_localctx);
+				_localctx = new Precision9DecimalScaledContext(_localctx);
 				enterOuterAlt(_localctx, 5);
 				{
 				setState(257);
@@ -2000,7 +2000,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_9_SCALED:
-				_localctx = new Precision_9_scaledContext(_localctx);
+				_localctx = new Precision9ScaledContext(_localctx);
 				enterOuterAlt(_localctx, 6);
 				{
 				setState(258);
@@ -2008,7 +2008,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_9_SCALED_LEAD:
-				_localctx = new Precision_9_scaled_leadContext(_localctx);
+				_localctx = new Precision9ScaledLeadContext(_localctx);
 				enterOuterAlt(_localctx, 7);
 				{
 				setState(259);
@@ -2016,7 +2016,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_Z_EXPLICIT_DOT:
-				_localctx = new Precision_z_explicit_dotContext(_localctx);
+				_localctx = new PrecisionZExplicitDotContext(_localctx);
 				enterOuterAlt(_localctx, 8);
 				{
 				setState(260);
@@ -2024,7 +2024,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_Z_DECIMAL_SCALED:
-				_localctx = new Precision_z_decimal_scaledContext(_localctx);
+				_localctx = new PrecisionZDecimalScaledContext(_localctx);
 				enterOuterAlt(_localctx, 9);
 				{
 				setState(261);
@@ -2032,7 +2032,7 @@ public class copybook_parser extends Parser {
 				}
 				break;
 			case PRECISION_Z_SCALED:
-				_localctx = new Precision_z_scaledContext(_localctx);
+				_localctx = new PrecisionZScaledContext(_localctx);
 				enterOuterAlt(_localctx, 10);
 				{
 				setState(262);
@@ -2054,56 +2054,56 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Sign_precision_9Context extends ParserRuleContext {
-		public Sign_precision_9Context(ParserRuleContext parent, int invokingState) {
+	public static class SignPrecision9Context extends ParserRuleContext {
+		public SignPrecision9Context(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_sign_precision_9; }
+		@Override public int getRuleIndex() { return RULE_signPrecision9; }
 	 
-		public Sign_precision_9Context() { }
-		public void copyFrom(Sign_precision_9Context ctx) {
+		public SignPrecision9Context() { }
+		public void copyFrom(SignPrecision9Context ctx) {
 			super.copyFrom(ctx);
 		}
 	}
-	public static class Trailing_signContext extends Sign_precision_9Context {
-		public Precision_9Context precision_9() {
-			return getRuleContext(Precision_9Context.class,0);
+	public static class TrailingSignContext extends SignPrecision9Context {
+		public Precision9Context precision9() {
+			return getRuleContext(Precision9Context.class,0);
 		}
-		public Plus_minusContext plus_minus() {
-			return getRuleContext(Plus_minusContext.class,0);
+		public PlusMinusContext plusMinus() {
+			return getRuleContext(PlusMinusContext.class,0);
 		}
-		public Trailing_signContext(Sign_precision_9Context ctx) { copyFrom(ctx); }
+		public TrailingSignContext(SignPrecision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitTrailing_sign(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitTrailingSign(this);
 			else return visitor.visitChildren(this);
 		}
 	}
-	public static class Leading_signContext extends Sign_precision_9Context {
-		public Precision_9Context precision_9() {
-			return getRuleContext(Precision_9Context.class,0);
+	public static class LeadingSignContext extends SignPrecision9Context {
+		public Precision9Context precision9() {
+			return getRuleContext(Precision9Context.class,0);
 		}
-		public Plus_minusContext plus_minus() {
-			return getRuleContext(Plus_minusContext.class,0);
+		public PlusMinusContext plusMinus() {
+			return getRuleContext(PlusMinusContext.class,0);
 		}
-		public Leading_signContext(Sign_precision_9Context ctx) { copyFrom(ctx); }
+		public LeadingSignContext(SignPrecision9Context ctx) { copyFrom(ctx); }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitLeading_sign(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitLeadingSign(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Sign_precision_9Context sign_precision_9() throws RecognitionException {
-		Sign_precision_9Context _localctx = new Sign_precision_9Context(_ctx, getState());
-		enterRule(_localctx, 56, RULE_sign_precision_9);
+	public final SignPrecision9Context signPrecision9() throws RecognitionException {
+		SignPrecision9Context _localctx = new SignPrecision9Context(_ctx, getState());
+		enterRule(_localctx, 56, RULE_signPrecision9);
 		int _la;
 		try {
 			setState(273);
 			_errHandler.sync(this);
 			switch ( getInterpreter().adaptivePredict(_input,35,_ctx) ) {
 			case 1:
-				_localctx = new Leading_signContext(_localctx);
+				_localctx = new LeadingSignContext(_localctx);
 				enterOuterAlt(_localctx, 1);
 				{
 				{
@@ -2113,29 +2113,29 @@ public class copybook_parser extends Parser {
 				if (_la==MINUSCHAR || _la==PLUSCHAR) {
 					{
 					setState(265);
-					plus_minus();
+					plusMinus();
 					}
 				}
 
 				setState(268);
-				precision_9();
+				precision9();
 				}
 				}
 				break;
 			case 2:
-				_localctx = new Trailing_signContext(_localctx);
+				_localctx = new TrailingSignContext(_localctx);
 				enterOuterAlt(_localctx, 2);
 				{
 				{
 				setState(269);
-				precision_9();
+				precision9();
 				setState(271);
 				_errHandler.sync(this);
 				switch ( getInterpreter().adaptivePredict(_input,34,_ctx) ) {
 				case 1:
 					{
 					setState(270);
-					plus_minus();
+					plusMinus();
 					}
 					break;
 				}
@@ -2155,23 +2155,23 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Alpha_xContext extends ParserRuleContext {
-		public TerminalNode X_S() { return getToken(copybook_parser.X_S, 0); }
-		public TerminalNode LENGTH_TYPE_X() { return getToken(copybook_parser.LENGTH_TYPE_X, 0); }
-		public Alpha_xContext(ParserRuleContext parent, int invokingState) {
+	public static class AlphaXContext extends ParserRuleContext {
+		public TerminalNode X_S() { return getToken(copybookParser.X_S, 0); }
+		public TerminalNode LENGTH_TYPE_X() { return getToken(copybookParser.LENGTH_TYPE_X, 0); }
+		public AlphaXContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_alpha_x; }
+		@Override public int getRuleIndex() { return RULE_alphaX; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitAlpha_x(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitAlphaX(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Alpha_xContext alpha_x() throws RecognitionException {
-		Alpha_xContext _localctx = new Alpha_xContext(_ctx, getState());
-		enterRule(_localctx, 58, RULE_alpha_x);
+	public final AlphaXContext alphaX() throws RecognitionException {
+		AlphaXContext _localctx = new AlphaXContext(_ctx, getState());
+		enterRule(_localctx, 58, RULE_alphaX);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2199,23 +2199,23 @@ public class copybook_parser extends Parser {
 		return _localctx;
 	}
 
-	public static class Alpha_aContext extends ParserRuleContext {
-		public TerminalNode X_S() { return getToken(copybook_parser.X_S, 0); }
-		public TerminalNode LENGTH_TYPE_X() { return getToken(copybook_parser.LENGTH_TYPE_X, 0); }
-		public Alpha_aContext(ParserRuleContext parent, int invokingState) {
+	public static class AlphaAContext extends ParserRuleContext {
+		public TerminalNode X_S() { return getToken(copybookParser.X_S, 0); }
+		public TerminalNode LENGTH_TYPE_X() { return getToken(copybookParser.LENGTH_TYPE_X, 0); }
+		public AlphaAContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
-		@Override public int getRuleIndex() { return RULE_alpha_a; }
+		@Override public int getRuleIndex() { return RULE_alphaA; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitAlpha_a(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitAlphaA(this);
 			else return visitor.visitChildren(this);
 		}
 	}
 
-	public final Alpha_aContext alpha_a() throws RecognitionException {
-		Alpha_aContext _localctx = new Alpha_aContext(_ctx, getState());
-		enterRule(_localctx, 60, RULE_alpha_a);
+	public final AlphaAContext alphaA() throws RecognitionException {
+		AlphaAContext _localctx = new AlphaAContext(_ctx, getState());
+		enterRule(_localctx, 60, RULE_alphaA);
 		int _la;
 		try {
 			enterOuterAlt(_localctx, 1);
@@ -2244,15 +2244,15 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class PictureLiteralContext extends ParserRuleContext {
-		public TerminalNode PICTURE() { return getToken(copybook_parser.PICTURE, 0); }
-		public TerminalNode PIC() { return getToken(copybook_parser.PIC, 0); }
+		public TerminalNode PICTURE() { return getToken(copybookParser.PICTURE, 0); }
+		public TerminalNode PIC() { return getToken(copybookParser.PIC, 0); }
 		public PictureLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_pictureLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPictureLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPictureLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2291,27 +2291,27 @@ public class copybook_parser extends Parser {
 		public PictureLiteralContext pictureLiteral() {
 			return getRuleContext(PictureLiteralContext.class,0);
 		}
-		public Alpha_xContext alpha_x() {
-			return getRuleContext(Alpha_xContext.class,0);
+		public AlphaXContext alphaX() {
+			return getRuleContext(AlphaXContext.class,0);
 		}
-		public Alpha_aContext alpha_a() {
-			return getRuleContext(Alpha_aContext.class,0);
+		public AlphaAContext alphaA() {
+			return getRuleContext(AlphaAContext.class,0);
 		}
-		public Sign_precision_9Context sign_precision_9() {
-			return getRuleContext(Sign_precision_9Context.class,0);
+		public SignPrecision9Context signPrecision9() {
+			return getRuleContext(SignPrecision9Context.class,0);
 		}
 		public UsageContext usage() {
 			return getRuleContext(UsageContext.class,0);
 		}
-		public TerminalNode COMP_1() { return getToken(copybook_parser.COMP_1, 0); }
-		public TerminalNode COMP_2() { return getToken(copybook_parser.COMP_2, 0); }
+		public TerminalNode COMP_1() { return getToken(copybookParser.COMP_1, 0); }
+		public TerminalNode COMP_2() { return getToken(copybookParser.COMP_2, 0); }
 		public PicContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_pic; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPic(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPic(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2336,13 +2336,13 @@ public class copybook_parser extends Parser {
 				case 1:
 					{
 					setState(282);
-					alpha_x();
+					alphaX();
 					}
 					break;
 				case 2:
 					{
 					setState(283);
-					alpha_a();
+					alphaA();
 					}
 					break;
 				case 3:
@@ -2353,7 +2353,7 @@ public class copybook_parser extends Parser {
 					case 1:
 						{
 						setState(284);
-						sign_precision_9();
+						signPrecision9();
 						setState(286);
 						_errHandler.sync(this);
 						switch ( getInterpreter().adaptivePredict(_input,36,_ctx) ) {
@@ -2379,7 +2379,7 @@ public class copybook_parser extends Parser {
 						}
 
 						setState(291);
-						sign_precision_9();
+						signPrecision9();
 						}
 						break;
 					}
@@ -2418,15 +2418,15 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class SectionContext extends ParserRuleContext {
-		public TerminalNode LEVEL_ROOT() { return getToken(copybook_parser.LEVEL_ROOT, 0); }
-		public TerminalNode LEVEL_REGULAR() { return getToken(copybook_parser.LEVEL_REGULAR, 0); }
+		public TerminalNode LEVEL_ROOT() { return getToken(copybookParser.LEVEL_ROOT, 0); }
+		public TerminalNode LEVEL_REGULAR() { return getToken(copybookParser.LEVEL_REGULAR, 0); }
 		public SectionContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_section; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitSection(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitSection(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2462,16 +2462,16 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class SkipLiteralContext extends ParserRuleContext {
-		public TerminalNode SKIP1() { return getToken(copybook_parser.SKIP1, 0); }
-		public TerminalNode SKIP2() { return getToken(copybook_parser.SKIP2, 0); }
-		public TerminalNode SKIP3() { return getToken(copybook_parser.SKIP3, 0); }
+		public TerminalNode SKIP1() { return getToken(copybookParser.SKIP1, 0); }
+		public TerminalNode SKIP2() { return getToken(copybookParser.SKIP2, 0); }
+		public TerminalNode SKIP3() { return getToken(copybookParser.SKIP3, 0); }
 		public SkipLiteralContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_skipLiteral; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitSkipLiteral(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitSkipLiteral(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2522,11 +2522,11 @@ public class copybook_parser extends Parser {
 		public RedefinesContext redefines(int i) {
 			return getRuleContext(RedefinesContext.class,i);
 		}
-		public List<Usage_groupContext> usage_group() {
-			return getRuleContexts(Usage_groupContext.class);
+		public List<UsageGroupContext> usageGroup() {
+			return getRuleContexts(UsageGroupContext.class);
 		}
-		public Usage_groupContext usage_group(int i) {
-			return getRuleContext(Usage_groupContext.class,i);
+		public UsageGroupContext usageGroup(int i) {
+			return getRuleContext(UsageGroupContext.class,i);
 		}
 		public List<OccursContext> occurs() {
 			return getRuleContexts(OccursContext.class);
@@ -2540,7 +2540,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_group; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitGroup(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitGroup(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2586,7 +2586,7 @@ public class copybook_parser extends Parser {
 				case USAGE:
 					{
 					setState(307);
-					usage_group();
+					usageGroup();
 					}
 					break;
 				case OCCURS:
@@ -2664,22 +2664,22 @@ public class copybook_parser extends Parser {
 		public ValuesContext values(int i) {
 			return getRuleContext(ValuesContext.class,i);
 		}
-		public List<Separate_signContext> separate_sign() {
-			return getRuleContexts(Separate_signContext.class);
+		public List<SeparateSignContext> separateSign() {
+			return getRuleContexts(SeparateSignContext.class);
 		}
-		public Separate_signContext separate_sign(int i) {
-			return getRuleContext(Separate_signContext.class,i);
+		public SeparateSignContext separateSign(int i) {
+			return getRuleContext(SeparateSignContext.class,i);
 		}
-		public TerminalNode BLANK() { return getToken(copybook_parser.BLANK, 0); }
-		public TerminalNode ZERO() { return getToken(copybook_parser.ZERO, 0); }
-		public TerminalNode WHEN() { return getToken(copybook_parser.WHEN, 0); }
+		public TerminalNode BLANK() { return getToken(copybookParser.BLANK, 0); }
+		public TerminalNode ZERO() { return getToken(copybookParser.ZERO, 0); }
+		public TerminalNode WHEN() { return getToken(copybookParser.WHEN, 0); }
 		public PrimitiveContext(ParserRuleContext parent, int invokingState) {
 			super(parent, invokingState);
 		}
 		@Override public int getRuleIndex() { return RULE_primitive; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitPrimitive(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitPrimitive(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2742,7 +2742,7 @@ public class copybook_parser extends Parser {
 				case 7:
 					{
 					setState(324);
-					separate_sign();
+					separateSign();
 					}
 					break;
 				}
@@ -2789,7 +2789,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class Level66statementContext extends ParserRuleContext {
-		public TerminalNode LEVEL_NUMBER_66() { return getToken(copybook_parser.LEVEL_NUMBER_66, 0); }
+		public TerminalNode LEVEL_NUMBER_66() { return getToken(copybookParser.LEVEL_NUMBER_66, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -2805,7 +2805,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_level66statement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitLevel66statement(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitLevel66statement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2838,7 +2838,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class Level88statementContext extends ParserRuleContext {
-		public TerminalNode LEVEL_NUMBER_88() { return getToken(copybook_parser.LEVEL_NUMBER_88, 0); }
+		public TerminalNode LEVEL_NUMBER_88() { return getToken(copybookParser.LEVEL_NUMBER_88, 0); }
 		public IdentifierContext identifier() {
 			return getRuleContext(IdentifierContext.class,0);
 		}
@@ -2854,7 +2854,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_level88statement; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitLevel88statement(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitLevel88statement(this);
 			else return visitor.visitChildren(this);
 		}
 	}
@@ -2887,7 +2887,7 @@ public class copybook_parser extends Parser {
 	}
 
 	public static class ItemContext extends ParserRuleContext {
-		public TerminalNode COMMENT() { return getToken(copybook_parser.COMMENT, 0); }
+		public TerminalNode COMMENT() { return getToken(copybookParser.COMMENT, 0); }
 		public GroupContext group() {
 			return getRuleContext(GroupContext.class,0);
 		}
@@ -2912,7 +2912,7 @@ public class copybook_parser extends Parser {
 		@Override public int getRuleIndex() { return RULE_item; }
 		@Override
 		public <T> T accept(ParseTreeVisitor<? extends T> visitor) {
-			if ( visitor instanceof copybook_parserVisitor ) return ((copybook_parserVisitor<? extends T>)visitor).visitItem(this);
+			if ( visitor instanceof copybookParserVisitor ) return ((copybookParserVisitor<? extends T>)visitor).visitItem(this);
 			else return visitor.visitChildren(this);
 		}
 	}
