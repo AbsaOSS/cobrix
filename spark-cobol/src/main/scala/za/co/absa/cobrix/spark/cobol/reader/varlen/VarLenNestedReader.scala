@@ -105,7 +105,7 @@ final class VarLenNestedReader(copybookContents: String,
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers,
-      segmentRedefines, readerProperties.stringTrimmingPolicy, codePage)
+      segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, Nil)
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
