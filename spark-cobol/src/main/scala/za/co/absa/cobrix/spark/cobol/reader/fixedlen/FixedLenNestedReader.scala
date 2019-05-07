@@ -41,7 +41,9 @@ final class FixedLenNestedReader(copyBookContents: String,
                                  endOffset: Int = 0,
                                  schemaRetentionPolicy: SchemaRetentionPolicy,
                                  stringTrimmingPolicy: StringTrimmingPolicy,
-                                 dropGroupFillers: Boolean)
+                                 dropGroupFillers: Boolean,
+                                 nonTerminals: Seq[String]
+                                 )
   extends FixedLenReader with Serializable {
 
   private val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
@@ -78,7 +80,7 @@ final class FixedLenNestedReader(copyBookContents: String,
 
   private def loadCopyBook(copyBookContents: String): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil, stringTrimmingPolicy, ebcdicCodePage, nonTerminals = Nil)
+    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil, stringTrimmingPolicy, ebcdicCodePage, nonTerminals = nonTerminals)
     new CobolSchema(schema, schemaRetentionPolicy, false)
   }
 
