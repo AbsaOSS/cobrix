@@ -70,5 +70,6 @@ case class CobolParameters(
                             multisegmentParams:    Option[MultisegmentParameters],
                             improveLocality:       Boolean,
                             optimizeAllocation:    Boolean,
-                            dropGroupFillers:      Boolean
+                            dropGroupFillers:      Boolean,
+                            nonTerminals:          Seq[String]
                           )

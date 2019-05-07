@@ -191,10 +191,13 @@ object CopybookParser {
       stmt match {
         case s: Primitive => newCopybook.append(s)
         case g: Group => {
-          newCopybook.append(
-            g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage))(g.parent)
-          )
           if (nonTerminals contains g.name) {
+            newCopybook.append(
+              g.copy(
+                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage),
+                isRedefined = true
+              )(g.parent)
+            )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
             val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
@@ -208,6 +211,10 @@ object CopybookParser {
               )(g.parent)
             )
           }
+          else
+            newCopybook.append(
+              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage))(g.parent)
+            )
         }
       }
     }
