@@ -193,7 +193,7 @@ skipLiteral:
     ;
 
 group:
-    section identifier (redefines | usageGroup | occurs)* term
+    section identifier (redefines | usageGroup | occurs | values)* term
     ;
 
 primitive:

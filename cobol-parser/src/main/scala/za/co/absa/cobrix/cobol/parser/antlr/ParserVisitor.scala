@@ -422,6 +422,7 @@ class ParserVisitor(enc: Encoding,
     assert(ctx.redefines.size() < 2)
     assert(ctx.usageGroup.size() < 2)
     assert(ctx.occurs.size() < 2)
+    assert(ctx.values.size() < 2)
 
     val identifier = visitIdentifier(ctx.identifier()).value
 
