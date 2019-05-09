@@ -20,19 +20,23 @@ import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
+import scala.collection.mutable.ArrayBuffer
+
 
 class NonTerminalsSpec extends FunSuite {
-  val copyBookContents: String =
-    """        01  RECORD.
-      |           05  GROUP-1.
-      |              06  FIELD-1            PIC X(10).
-      |              06  FILLER             PIC X(5).
-      |              06  GROUP-2.
-      |                 10  NESTED-FIELD-1  PIC 9(10).
-      |                 10  FILLER          PIC 9(5).
-      |""".stripMargin
+
 
   test("Test non-terminal fields") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           05  GROUP-1.
+        |              06  FIELD-1            PIC X(10).
+        |              06  FILLER             PIC X(5).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(10).
+        |                 10  FILLER          PIC 9(5).
+        |""".stripMargin
+
     val copybook1 = CopybookParser.parseTree(copyBookContents)
     val copybook2 = CopybookParser.parseTree(copyBookContents, nonTerminals = Seq("GROUP-1"))
     val copybook3 = CopybookParser.parseTree(copyBookContents, nonTerminals = Seq("GROUP-1", "GROUP-2"))
@@ -58,9 +62,50 @@ class NonTerminalsSpec extends FunSuite {
     assert(copybook3.ast.children.head.asInstanceOf[Group].children.head.asInstanceOf[Group].children.size == 4)
     assert(copybook3.ast.children.head.asInstanceOf[Group].children.head.asInstanceOf[Group].children.last.asInstanceOf[Primitive].binaryProperties.actualSize == 15)
     assert(copybook3.ast.children.head.asInstanceOf[Group].children.head.asInstanceOf[Group].children.last.asInstanceOf[Primitive].dataType.pic == "X(15)")
+  }
 
-    // read data
+  test("Test non-terminal fields - repeated names") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           05  GROUP-A.
+        |              06  FIELD-1            PIC X(10).
+        |              06  FILLER             PIC X(5).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(10).
+        |                 10  FILLER          PIC 9(5).
+        |           05  GROUP-B.
+        |              06  FIELD-1            PIC X(10).
+        |              06  FILLER             PIC X(5).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(10).
+        |                 10  FILLER          PIC 9(5).
+        |           05  GROUP-A-NT            PIC X.
+        |           05  GROUP-B-NT            PIC X.
+        |           05  GROUP-B-NT1           PIC X.
+        |           05  GROUP-B-NT2           PIC X.
+        |           05  GROUP-B-NT3           PIC X.
+        |           05  GROUP-B-NT4           PIC X.
+        |""".stripMargin
 
+    val copybook1 = CopybookParser.parseTree(copyBookContents)
+    val copybook2 = CopybookParser.parseTree(copyBookContents, nonTerminals = Seq("GROUP-A"))
+    val copybook3 = CopybookParser.parseTree(copyBookContents, nonTerminals = Seq("GROUP-B", "GROUP-2"))
 
+    def flattenNames(g: Group): ArrayBuffer[String] = {
+      g.name +: g.children.flatMap {
+        case p: Primitive => ArrayBuffer(p.name)
+        case g: Group => flattenNames(g)
+      }
+    }
+
+    val names1 = flattenNames(copybook1.ast)
+    val names2 = flattenNames(copybook2.ast)
+    val names3 = flattenNames(copybook3.ast)
+
+    assert(names1(8) == "GROUP_B")
+    assert(names2(8) == "GROUP_A_NT1")
+    assert(names3(8) == "GROUP_2_NT")
+    assert(names3(15) == "GROUP_2_NT")
+    assert(names3(16) == "GROUP_B_NT5")
   }
 }

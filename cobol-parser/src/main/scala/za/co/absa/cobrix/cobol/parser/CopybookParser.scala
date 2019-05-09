@@ -186,6 +186,22 @@ object CopybookParser {
                               stringTrimmingPolicy: StringTrimmingPolicy,
                               ebcdicCodePage: CodePage
                              ): MutableCopybook = {
+
+    def getNonTerminalName(name: String, parent: Group): String = {
+      val existingNames = parent.children.map{
+        case x: Primitive => x.name
+        case x: Group => x.name
+      }
+
+      var modifier = 0
+      var wantedName = name + Constants.nonTerminalsPostfix
+      while (existingNames contains wantedName) {
+        modifier += 1
+        wantedName = name + Constants.nonTerminalsPostfix + modifier.toString
+      }
+      wantedName
+    }
+
     val newCopybook: MutableCopybook = new ArrayBuffer()
     for(stmt <- copybook) {
       stmt match {
@@ -201,9 +217,10 @@ object CopybookParser {
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
             val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+            val newName = getNonTerminalName(g.name, g.parent.get)
             newCopybook.append(
               Primitive(
-                g.level, g.name + "_NT", g.lineNumber,
+                g.level, newName, g.lineNumber,
                 dataType,
                 redefines = Some(g.name),
                 decode = decode,
