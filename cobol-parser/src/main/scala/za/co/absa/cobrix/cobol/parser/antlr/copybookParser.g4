@@ -152,7 +152,7 @@ precision9:
 
 signPrecision9:
       (plusMinus? precision9)     #leadingSign
-    | (precision9 plusMinus?)     #trailingSign
+    | (precision9 plusMinus)      #trailingSign
     ;
 
 alphaX:
@@ -161,8 +161,8 @@ alphaX:
     ;
 
 alphaA:
-      X_S
-    | LENGTH_TYPE_X
+      A_S
+    | LENGTH_TYPE_A
     ;
 
 pictureLiteral:
