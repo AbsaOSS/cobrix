@@ -71,4 +71,7 @@ object Constants {
   val fileIdField = "File_Id"
   val recordIdField = "Record_Id"
 
+  // Non-terminals
+  val nonTerminalsPostfix = "_NT"
+
 }
