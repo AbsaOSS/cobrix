@@ -110,22 +110,14 @@ class CobolSchema(val copybook: Copybook,
           parseGroup(group)
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
-            case Decimal(_, scale, precision, scaleFactor, _, _, _, _, comp, _) =>
-              val computation = comp.getOrElse(-1)
+            case d: Decimal =>
+              val computation = d.compact.getOrElse(-1)
               if (computation == 1) {
                 FloatType
               } else if (computation == 2) {
                 DoubleType
               } else {
-                val realPrecision = precision + Math.abs(scaleFactor)
-                val realScale =
-                  if (scaleFactor > 0)
-                    0
-                  else if (scaleFactor < 0)
-                    realPrecision
-                  else
-                    scale
-                DecimalType(realPrecision, realScale)
+                DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
               }
             case _: AlphaNumeric => StringType
             case dt: Integral =>
@@ -172,16 +164,8 @@ class CobolSchema(val copybook: Copybook,
           }
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
-            case Decimal(_, scale, precision, scaleFactor, _, _, _, _, _, _) =>
-              val realPrecision = precision + Math.abs(scaleFactor)
-              val realScale =
-                if (scaleFactor > 0)
-                  0
-                else if (scaleFactor < 0)
-                  realPrecision
-                else
-                  scale
-              DecimalType(realPrecision, realScale)
+            case d: Decimal =>
+              DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
             case _: AlphaNumeric => StringType
             case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
