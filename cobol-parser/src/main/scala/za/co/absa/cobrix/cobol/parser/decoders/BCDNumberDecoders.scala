@@ -153,8 +153,7 @@ object BCDNumberDecoders {
       } else {
         val zeros = "0" * scaleFactor
         chars.insert(0, sign)
-        val k = s"${chars.toString}$zeros"
-        k
+        s"${chars.toString}$zeros"
       }
     }
   }

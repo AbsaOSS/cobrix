@@ -230,6 +230,18 @@
           10  COMMON-UPI5DDC      PIC 9(5)PPP     COMP-3.
           10  COMMON-SPI5DDC      PIC S99999PPP   COMP-3.
 
+          10  COMMON-UPC5DISP     PIC SPPP9(5).
+          10  COMMON-UPI5DISP     PIC S9(5)PPP.
+
+          10  COMMON-UPC1BIN      PIC SPPP9       COMP.
+          10  COMMON-UPI1BIN      PIC S9PPP       COMP.
+          10  COMMON-UPC3BIN      PIC SPPP9(3)    COMP.
+          10  COMMON-UPI3BIN      PIC S9(3)PPP    COMP.
+          10  COMMON-UPC5BIN      PIC SPPP9(5)    COMP.
+          10  COMMON-UPI5BIN      PIC S9(5)PPP    COMP.
+          10  COMMON-UPC10BIN     PIC SPPP9(10)   COMP.
+          10  COMMON-UPI10BIN     PIC S9(10)PPP   COMP.
+
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
 ***********************************************************************
