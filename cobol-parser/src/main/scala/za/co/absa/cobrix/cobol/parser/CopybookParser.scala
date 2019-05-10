@@ -711,7 +711,7 @@ object CopybookParser {
         AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
       case s if s.contains('V') || s.contains(',') || s.contains('P') =>
         CopybookParser.decimalLength(s) match {
-          case (integralDigits, 0) =>
+          case (integralDigits, 0, 0) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Integral(
               picOrigin,
