@@ -41,4 +41,22 @@ case class Decimal(
                     compact: Option[Int] = None,
                     enc: Option[Encoding] = None
                   )
-  extends CobolType
+  extends CobolType {
+
+  /** Returns the precision of the actual number after scale factor is applied */
+  def getEffectivePrecision: Int = precision + Math.abs(scaleFactor)
+
+  /** Returns the scale of the actual number after scale factor is applied */
+  def getEffectiveScale: Int = {
+    if (scaleFactor > 0)
+      // If scale factor is positive a 10^scaleFactor multiplier is used so the data type is effectively a big integer
+      0
+    else if (scaleFactor < 0)
+      // If scale factor is negative the number looks like 0.aaaBBB where 'aaa' zeros according to the scale and 'BBB' are digits of an encoded number.
+      getEffectivePrecision
+    else
+      // If scale factor is not specified, numbers are interpreted normally
+      scale
+  }
+
+}
