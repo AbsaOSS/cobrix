@@ -1,6 +1,6 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-RECORD                                                       1   1423   1423
+RECORD                                                       1   1465   1465
   10 ID                                               1      1      4      4
   10 STRING_VAL                                       2      5     14     10
   10 NUM_STR_INT01                                    3     15     15      1
@@ -175,10 +175,20 @@ RECORD                                                       1   1423   1423
   10 COMMON_SPC5DDC                                 172   1351   1353      3
   10 COMMON_UPI5DDC                                 173   1354   1356      3
   10 COMMON_SPI5DDC                                 174   1357   1359      3
-  10 EX_NUM_INT01                                   175   1360   1368      9
-  10 EX_NUM_INT02                                   176   1369   1377      9
-  10 EX_NUM_INT03                                   177   1378   1386      9
-  10 EX_NUM_INT04                                   178   1387   1395      9
-  10 EX_NUM_DEC01                                   179   1396   1404      9
-  10 EX_NUM_DEC02                                   180   1405   1413      9
-  10 EX_NUM_DEC03                                   181   1414   1423     10
+  10 COMMON_UPC5DISP                                175   1360   1364      5
+  10 COMMON_UPI5DISP                                176   1365   1369      5
+  10 COMMON_UPC1BIN                                 177   1370   1371      2
+  10 COMMON_UPI1BIN                                 178   1372   1373      2
+  10 COMMON_UPC3BIN                                 179   1374   1375      2
+  10 COMMON_UPI3BIN                                 180   1376   1377      2
+  10 COMMON_UPC5BIN                                 181   1378   1381      4
+  10 COMMON_UPI5BIN                                 182   1382   1385      4
+  10 COMMON_UPC10BIN                                183   1386   1393      8
+  10 COMMON_UPI10BIN                                184   1394   1401      8
+  10 EX_NUM_INT01                                   185   1402   1410      9
+  10 EX_NUM_INT02                                   186   1411   1419      9
+  10 EX_NUM_INT03                                   187   1420   1428      9
+  10 EX_NUM_INT04                                   188   1429   1437      9
+  10 EX_NUM_DEC01                                   189   1438   1446      9
+  10 EX_NUM_DEC02                                   190   1447   1455      9
+  10 EX_NUM_DEC03                                   191   1456   1465     10
