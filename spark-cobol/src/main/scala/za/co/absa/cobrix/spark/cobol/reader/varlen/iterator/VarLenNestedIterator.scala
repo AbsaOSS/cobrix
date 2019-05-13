@@ -116,7 +116,6 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
               activeSegmentRedefine = segmentRedefine
             ))
 
-            byteIndex += data.length
             recordFetched = true
           }
       }
@@ -160,16 +159,31 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def fetchRecordUsingRdwHeaders(): Option[Array[Byte]] = {
     val rdwHeaderBlock = recordHeaderParser.getHeaderLength
 
-    val binaryDataStart = dataStream.next(rdwHeaderBlock)
+    var isValidRecord = false
+    var isEndOfFile = false
+    var headerBytes = Array[Byte]()
+    var recordBytes = Array[Byte]()
 
-    // ToDo skip records for which `isValid` is set to `false` in metadata
-    val recordMetadata = recordHeaderParser.getRecordMetadata(binaryDataStart, byteIndex)
-    val recordLength = recordMetadata.recordLength
+    while (!isValidRecord && !isEndOfFile) {
+      headerBytes = dataStream.next(rdwHeaderBlock)
 
-    byteIndex += binaryDataStart.length
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, byteIndex)
+      val recordLength = recordMetadata.recordLength
 
-    if (recordLength > 0) {
-      Some(dataStream.next(recordLength))
+      byteIndex += headerBytes.length
+
+      if (recordLength > 0) {
+        recordBytes = dataStream.next(recordLength)
+        byteIndex += recordBytes.length
+      } else {
+        isEndOfFile = true
+      }
+
+      isValidRecord = recordMetadata.isValid
+    }
+
+    if (!isEndOfFile) {
+      Some(recordBytes)
     } else {
       None
     }

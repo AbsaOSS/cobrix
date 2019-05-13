@@ -158,7 +158,7 @@ object TestDataGen10CustomRDW {
         byteArray1(0) = 1 // isValid = true
         byteArray1(1) = 0
         byteArray1(2) = 0
-        putShortToArray(byteArray1, 65, 3, 4) // record size = 65
+        putShortToArray(byteArray1, 64, 3, 4) // record size = 64
 
         // Common values
         putStringToArray(byteArray1, segments(0), 5, 9) // 5
@@ -199,7 +199,7 @@ object TestDataGen10CustomRDW {
           byteArray2(0) = 1 // isValid = true
           byteArray2(1) = 0
           byteArray2(2) = 0
-          putShortToArray(byteArray2, 61, 3, 4) // record size = 61
+          putShortToArray(byteArray2, 60, 3, 4) // record size = 60
 
           // Common values
           putStringToArray(byteArray2, segments(1), 5, 9) // 5

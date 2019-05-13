@@ -151,12 +151,8 @@ final class VarLenNestedReader(copybookContents: String,
   }
 
   private def getRecordHeaderParser: RecordHeaderParser = {
-    readerProperties.multisegment match {
-      case Some(multisegment) =>
-        multisegment.recordHeaderParser match {
-          case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser)
-          case None => getDefaultRecordHeaderParser
-        }
+    readerProperties.recordHeaderParser match {
+      case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser)
       case None => getDefaultRecordHeaderParser
     }
   }

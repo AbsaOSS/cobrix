@@ -139,7 +139,8 @@ object CobolParametersParser {
       parseMultisegmentParameters(params),
       params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
       params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
-      params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean
+      params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
+      params.get(PARAM_RECORD_HEADER_PARSER)
     )
   }
 
@@ -172,8 +173,7 @@ object CobolParametersParser {
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
-        getSegmentIdRedefineMapping(params),
-        params.get(PARAM_RECORD_HEADER_PARSER)
+        getSegmentIdRedefineMapping(params)
       ))
     }
     else {
