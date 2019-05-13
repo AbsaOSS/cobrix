@@ -803,6 +803,12 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
 
+##### Modifier options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
+
 ##### Multisegment indexing options
 
 |            Option (usage example)          |                           Description |

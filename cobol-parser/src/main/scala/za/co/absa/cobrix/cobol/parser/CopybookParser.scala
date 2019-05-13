@@ -64,8 +64,9 @@ object CopybookParser {
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-                ebcdicCodePage: CodePage = new CodePageCommon): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage)
+                ebcdicCodePage: CodePage = new CodePageCommon,
+                nonTerminals: Seq[String] = Nil): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, nonTerminals)
   }
 
   /**
@@ -85,7 +86,8 @@ object CopybookParser {
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
-                ebcdicCodePage: CodePage): Copybook = {
+                ebcdicCodePage: CodePage,
+                nonTerminals: Seq[String]): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -170,13 +172,78 @@ object CopybookParser {
     val schema: MutableCopybook = ArrayBuffer(root)
     val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage))
 
+    val nonTerms: Set[String] = (for (id <- nonTerminals)
+      yield transformIdentifier(id)
+    ).toSet
+
     val newTrees = if (dropGroupFillers) {
-      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schemaANTLR))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(
+        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+      )), segmentRedefines))
     } else {
-      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schemaANTLR))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(
+        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+      )), segmentRedefines))
     }
 
     new Copybook(newTrees.head.asInstanceOf[Group])
+  }
+
+  private def addNonTerminals(copybook: MutableCopybook, nonTerminals: Set[String],
+                              enc: Encoding,
+                              stringTrimmingPolicy: StringTrimmingPolicy,
+                              ebcdicCodePage: CodePage
+                             ): MutableCopybook = {
+
+    def getNonTerminalName(name: String, parent: Group): String = {
+      val existingNames = parent.children.map{
+        case x: Primitive => x.name
+        case x: Group => x.name
+      }
+
+      var modifier = 0
+      var wantedName = name + Constants.nonTerminalsPostfix
+      while (existingNames contains wantedName) {
+        modifier += 1
+        wantedName = name + Constants.nonTerminalsPostfix + modifier.toString
+      }
+      wantedName
+    }
+
+    val newCopybook: MutableCopybook = new ArrayBuffer()
+    for(stmt <- copybook) {
+      stmt match {
+        case s: Primitive => newCopybook.append(s)
+        case g: Group => {
+          if (nonTerminals contains g.name) {
+            newCopybook.append(
+              g.copy(
+                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage),
+                isRedefined = true
+              )(g.parent)
+            )
+            val sz = g.binaryProperties.actualSize
+            val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+            val newName = getNonTerminalName(g.name, g.parent.get)
+            newCopybook.append(
+              Primitive(
+                g.level, newName, g.lineNumber,
+                dataType,
+                redefines = Some(g.name),
+                decode = decode,
+                binaryProperties = g.binaryProperties
+              )(g.parent)
+            )
+          }
+          else
+            newCopybook.append(
+              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage))(g.parent)
+            )
+        }
+      }
+    }
+    newCopybook
   }
 
   private def CreateCopybookLine(lineTokens: StatementTokens, modifiers: Map[String, String]): CopybookLine = {
@@ -658,6 +725,16 @@ object CopybookParser {
         AlphaNumeric(picOrigin, s.length, wordAligned = if (sync) Some(position.Left) else None, Some(enc))
       case s if s.contains('V') || s.contains(',') =>
         CopybookParser.decimalLength(s) match {
+          case (integralDigits, 0) =>
+            //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
+            Integral(
+              picOrigin,
+              integralDigits,
+              if (s.startsWith("S")) Some(position.Left) else None,
+              isSignSeparate = isSignSeparate,
+              if (sync) Some(position.Right) else None,
+              comp,
+              Some(enc))
           case (integralDigits, fractureDigits) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Decimal(

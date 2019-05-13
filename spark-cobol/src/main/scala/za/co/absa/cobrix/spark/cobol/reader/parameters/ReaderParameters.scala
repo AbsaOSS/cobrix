@@ -59,5 +59,6 @@ case class ReaderParameters(
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment:            Option[MultisegmentParameters],
-                             dropGroupFillers:        Boolean
+                             dropGroupFillers:        Boolean,
+                             nonTerminals:            Seq[String] = Nil
                            )
