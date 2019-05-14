@@ -29,7 +29,7 @@ import scala.util.Random
   * This program generates a custom RDW header that consists of 1 byte for a validity flag and 4 bytes for record length.
   * It is used for custom record header parser testing.
   */
-object TestDataGen10CustomRDW {
+object TestDataGen11CustomRDW {
 
   val numberOfRecordsToGenerate = 1000
 

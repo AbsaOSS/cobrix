@@ -34,21 +34,21 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 import scala.collection.JavaConversions._
 
 //noinspection NameBooleanParameters
-class Test10CustomRDWParser extends FunSuite with SparkTestBase {
+class Test11CustomRDWParser extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test10(custom record header parser)"
-  private val inputCopybookPath = "file://../data/test10_copybook.cob"
-  private val inputCopybookFSPath = "../data/test10_copybook.cob"
-  private val inputDataPath = "../data/test10_data"
+  private val inputCopybookPath = "file://../data/test11_copybook.cob"
+  private val inputCopybookFSPath = "../data/test11_copybook.cob"
+  private val inputDataPath = "../data/test11_data"
 
   test(s"Integration test on $exampleName - segment ids, ebcdic") {
 
-    val expectedLayoutPath = "../data/test10_expected/test10_layout.txt"
-    val actualLayoutPath = "../data/test10_expected/test10_layout_actual.txt"
-    val expectedSchemaPath = "../data/test10_expected/test10_schema.json"
-    val actualSchemaPath = "../data/test10_expected/test10_schema_actual.json"
-    val expectedResultsPath = "../data/test10_expected/test10.txt"
-    val actualResultsPath = "../data/test10_expected/test10_actual.txt"
+    val expectedLayoutPath = "../data/test11_expected/test11_layout.txt"
+    val actualLayoutPath = "../data/test11_expected/test11_layout_actual.txt"
+    val expectedSchemaPath = "../data/test11_expected/test11_schema.json"
+    val actualSchemaPath = "../data/test11_expected/test11_schema_actual.json"
+    val expectedResultsPath = "../data/test11_expected/test11.txt"
+    val actualResultsPath = "../data/test11_expected/test11_actual.txt"
 
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val cobolSchema = CopybookParser.parseTree(copybookContents)
