@@ -89,87 +89,87 @@ object CopybookParser {
                 ebcdicCodePage: CodePage,
                 nonTerminals: Seq[String]): Copybook = {
 
-    // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
-    def getBreakpoints(lines: Seq[CopybookLine]) = {
-      // miniumum level
-      val minLevel = lines.map(line => line.level).min
-      // create a tuple of index value and root names for all the 01 levels
-      val recordStartLines: Seq[(String, Int)] = lines.zipWithIndex.collect {
-        case (CopybookLine(`minLevel`, name: String, _, _), i: Int) => (name, i)
-      }
-      val recordChangeLines: Seq[Int] = recordStartLines.drop(1).map(_._2) :+ lines.length
-      val recordBeginEnd: Seq[((String, Int), Int)] = recordStartLines.zip(recordChangeLines)
-      val breakpoints: Seq[RecordBoundary] = recordBeginEnd.map {
-        case ((recordName, startLine), endLine) => RecordBoundary(recordName, startLine, endLine)
-      }
-      breakpoints
-    }
+//    // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
+//    def getBreakpoints(lines: Seq[CopybookLine]) = {
+//      // miniumum level
+//      val minLevel = lines.map(line => line.level).min
+//      // create a tuple of index value and root names for all the 01 levels
+//      val recordStartLines: Seq[(String, Int)] = lines.zipWithIndex.collect {
+//        case (CopybookLine(`minLevel`, name: String, _, _), i: Int) => (name, i)
+//      }
+//      val recordChangeLines: Seq[Int] = recordStartLines.drop(1).map(_._2) :+ lines.length
+//      val recordBeginEnd: Seq[((String, Int), Int)] = recordStartLines.zip(recordChangeLines)
+//      val breakpoints: Seq[RecordBoundary] = recordBeginEnd.map {
+//        case ((recordName, startLine), endLine) => RecordBoundary(recordName, startLine, endLine)
+//      }
+//      breakpoints
+//    }
 
-    def getMatchingGroup(element: Statement, newElementLevel: Int): Group = {
-      newElementLevel match {
-        case level if level < 1 =>
-          throw new SyntaxErrorException(element.lineNumber, element.name, s"Couldn't find matching level.")
-        case level if level > element.level =>
-          element match {
-            case g: Group => g
-            case s: Primitive =>
-              throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
-            case c: Statement =>
-              throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
-          }
-        case level if level <= element.level =>
-          getMatchingGroup(element.up().get, level)
-      }
-    }
+//    def getMatchingGroup(element: Statement, newElementLevel: Int): Group = {
+//      newElementLevel match {
+//        case level if level < 1 =>
+//          throw new SyntaxErrorException(element.lineNumber, element.name, s"Couldn't find matching level.")
+//        case level if level > element.level =>
+//          element match {
+//            case g: Group => g
+//            case s: Primitive =>
+//              throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
+//            case c: Statement =>
+//              throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
+//          }
+//        case level if level <= element.level =>
+//          getMatchingGroup(element.up().get, level)
+//      }
+//    }
 
-    def getUsageModifiers(modifiers: Map[String, String]): Option[Usage] = {
-      getCompactLevel(modifiers) match {
-        case Some(1) => Some(datatype.COMP1())
-        case Some(2) => Some(datatype.COMP2())
-        case Some(3) => Some(datatype.COMP3())
-        case Some(4) => Some(datatype.COMP())
-        case _ => None
-      }
-    }
+//    def getUsageModifiers(modifiers: Map[String, String]): Option[Usage] = {
+//      getCompactLevel(modifiers) match {
+//        case Some(1) => Some(datatype.COMP1())
+//        case Some(2) => Some(datatype.COMP2())
+//        case Some(3) => Some(datatype.COMP3())
+//        case Some(4) => Some(datatype.COMP())
+//        case _ => None
+//      }
+//    }
 
-    val tokens = tokenize(copyBookContents)
-    val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
+//    val tokens = tokenize(copyBookContents)
+//    val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
 
-    val fields: Seq[CopybookLine] =
-      tokens.zip(lexedLines)
-        .map { case (lineTokens, modifiers) =>
-          CreateCopybookLine(lineTokens, modifiers)
-        }
+//    val fields: Seq[CopybookLine] =
+//      tokens.zip(lexedLines)
+//        .map { case (lineTokens, modifiers) =>
+//          CreateCopybookLine(lineTokens, modifiers)
+//        }
 
-    val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
-    fields.foldLeft[Statement](root)((element, field) => {
-      val comp = getCompactLevel(field.modifiers).getOrElse(-1)
-      val keywords = field.modifiers.keys.toList
-      val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
-      val redefines = field.modifiers.get(REDEFINES)
-      val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
-      val to = field.modifiers.get(TO).map(i => i.toInt)
-      val dependingOn = field.modifiers.get(DEPENDING)
-      val attachLevel = getMatchingGroup(element, field.level)
-      val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
-
-      val newElement = if (isLeaf) {
-        val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
-        Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
-          dependingOn, isFiller = isFiller, decode = decode)(None)
-      }
-      else {
-        val groupUsage = getUsageModifiers(field.modifiers)
-        Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
-          isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
-      }
-
-      attachLevel.add(newElement)
-    })
-
-
-    val schema: MutableCopybook = ArrayBuffer(root)
+//    val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
+//    fields.foldLeft[Statement](root)((element, field) => {
+//      val comp = getCompactLevel(field.modifiers).getOrElse(-1)
+//      val keywords = field.modifiers.keys.toList
+//      val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
+//      val redefines = field.modifiers.get(REDEFINES)
+//      val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
+//      val to = field.modifiers.get(TO).map(i => i.toInt)
+//      val dependingOn = field.modifiers.get(DEPENDING)
+//      val attachLevel = getMatchingGroup(element, field.level)
+//      val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
+//
+//      val newElement = if (isLeaf) {
+//        val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
+//        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+//        Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
+//          dependingOn, isFiller = isFiller, decode = decode)(None)
+//      }
+//      else {
+//        val groupUsage = getUsageModifiers(field.modifiers)
+//        Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
+//          isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
+//      }
+//
+//      attachLevel.add(newElement)
+//    })
+//
+//
+//    val schema: MutableCopybook = ArrayBuffer(root)
     val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage))
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
@@ -723,9 +723,9 @@ object CopybookParser {
     val dataType = pic match {
       case s if s.contains('X') || s.contains('A') =>
         AlphaNumeric(picOrigin, s.length, wordAligned = if (sync) Some(position.Left) else None, Some(enc))
-      case s if s.contains('V') || s.contains(',') =>
+      case s if s.contains('V') || s.contains(',') || s.contains('P') =>
         CopybookParser.decimalLength(s) match {
-          case (integralDigits, 0) =>
+          case (integralDigits, 0, 0) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Integral(
               picOrigin,
@@ -735,12 +735,13 @@ object CopybookParser {
               if (sync) Some(position.Right) else None,
               comp,
               Some(enc))
-          case (integralDigits, fractureDigits) =>
+          case (integralDigits, fractureDigits, scaleFactor) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Decimal(
               picOrigin,
               fractureDigits,
               integralDigits + fractureDigits,
+              scaleFactor,
               s.contains(','),
               if (s.startsWith("S")) Some(position.Left) else None,
               isSignSeparate = isSignSeparate,
@@ -1025,14 +1026,42 @@ object CopybookParser {
     * Get number of decimal digits given a PIC of a numeric field
     *
     * @param s A PIC string
-    * @return A pair specifying the number of digits before and after decimal separator
+    * @return A tuple specifying the number of digits before and after decimal separator and the scale factor
     */
-  def decimalLength(s: String): (Int, Int) = {
+  def decimalLength(s: String): (Int, Int, Int) = {
     var str = expandPic(s)
     val separator = if (str.contains('V')) 'V' else if (str.contains(',')) ',' else '.'
     val parts = str.split(separator)
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
-    (nines1, nines2)
+    val scaleFactor = getScaleFactor(str)
+    (nines1, nines2, scaleFactor)
+  }
+
+  private def getScaleFactor(s: String): Int = {
+    val scaleFactorSymbolCount = s.count(_ == 'P')
+    var scalePositive = false
+    if (scaleFactorSymbolCount == 0) {
+      0
+    } else {
+      var nineEncountered = false
+      var scaleEncountered = false
+      var i = 0
+      while (i < s.length) {
+        if (!nineEncountered && !scaleEncountered) {
+          if (s.charAt(i) == '9') {
+            nineEncountered = true
+          }
+          if (s.charAt(i) == 'P') {
+            scaleEncountered = true
+          }
+        }
+        if (nineEncountered && !scaleEncountered) {
+          scalePositive = true
+        }
+        i += 1
+      }
+    }
+    if (scalePositive) scaleFactorSymbolCount else -scaleFactorSymbolCount
   }
 }

@@ -187,32 +187,53 @@ object BinaryUtils {
     *
     * @param intValue A number as an integer
     * @param scale    A scale - the number of digits to the right of decimal point separator
+    * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A string representation of decimal
     */
-  private[cobol] def addDecimalPoint(intValue: String, scale: Int): String = {
+  private[cobol] def addDecimalPoint(intValue: String, scale: Int, scaleFactor: Int): String = {
     if (scale < 0) {
       throw new IllegalArgumentException(s"Invalid scele=$scale, should be greater or equal to zero.")
     }
-    if (scale == 0) {
-      intValue
-    } else {
-      val isNegative = intValue.length > 0 && intValue(0) == '-'
-      if (isNegative) {
-        if (intValue.length - 1 > scale) {
-          val (part1, part2) = intValue.splitAt(intValue.length - scale)
-          part1 + '.' + part2
-        } else {
-          "-" + "0." + "0" * (scale - intValue.length + 1) + intValue.splitAt(1)._2
-        }
+
+    val isNegative = intValue.length > 0 && intValue(0) == '-'
+
+    if (scaleFactor == 0) {
+      if (scale == 0) {
+        intValue
       } else {
-        if (intValue.length > scale) {
-          val (part1, part2) = intValue.splitAt(intValue.length - scale)
-          part1 + '.' + part2
+
+        if (isNegative) {
+          if (intValue.length - 1 > scale) {
+            val (part1, part2) = intValue.splitAt(intValue.length - scale)
+            part1 + '.' + part2
+          } else {
+            "-0." + "0" * (scale - intValue.length + 1) + intValue.splitAt(1)._2
+          }
         } else {
-          "0." + "0" * (scale - intValue.length) + intValue.splitAt(0)._2
+          if (intValue.length > scale) {
+            val (part1, part2) = intValue.splitAt(intValue.length - scale)
+            part1 + '.' + part2
+          } else {
+            "0." + "0" * (scale - intValue.length) + intValue.splitAt(0)._2
+          }
         }
       }
+    } else {
+      if (scaleFactor < 0) {
+        val sign = if (isNegative) "-" else ""
+        val valueNoSign = if (intValue.length>0 && (intValue(0) == '-' || intValue(0) == '+')) {
+          intValue.drop(1)
+        }  else {
+          intValue
+        }
+        val zeros = "0" * (-scaleFactor)
+        s"${sign}0.$zeros$valueNoSign"
+      } else {
+        val zeros = "0" * scaleFactor
+        s"$intValue$zeros"
+      }
     }
+
   }
 
   /** A generic decoder for 2s compliment binary numbers aka COMP
@@ -220,7 +241,7 @@ object BinaryUtils {
     * @param bytes A byte array that represents the binary data
     * @return A string representation of the binary data
     */
-  def decodeBinaryNumber(bytes: Array[Byte], bigEndian: Boolean, signed: Boolean, scale: Int = 0): String = {
+  def decodeBinaryNumber(bytes: Array[Byte], bigEndian: Boolean, signed: Boolean, scale: Int = 0, scaleFactor: Int = 0): String = {
     if (bytes.length == 0) {
       return "0"
     }
@@ -250,7 +271,7 @@ object BinaryUtils {
         }
         bigInt
     }
-    addDecimalPoint(value.toString, scale)
+    addDecimalPoint(value.toString, scale, scaleFactor)
   }
 
   /**

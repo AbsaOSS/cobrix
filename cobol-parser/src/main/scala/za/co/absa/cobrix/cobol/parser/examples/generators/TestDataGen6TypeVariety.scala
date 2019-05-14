@@ -246,6 +246,24 @@ object TestDataGen6TypeVariety {
           10  COMMON-S03DDC       PIC SV9(5)      COMP-3.
           10  COMMON-U03DDC       PIC V9(5)       COMP-3.
 
+          10  COMMON-UPC5DDC      PIC PPP9(5)     COMP-3.
+          10  COMMON-SPC5DDC      PIC SPP99999    COMP-3.
+          10  COMMON-UPI5DDC      PIC 9(5)PPP     COMP-3.
+          10  COMMON-SPI5DDC      PIC S99999PPP   COMP-3.
+
+          10  COMMON-UPC5DISP     PIC SPPP9(5).
+          10  COMMON-UPI5DISP     PIC S9(5)PPP.
+
+          10  COMMON-UPC1BIN      PIC SPPP9       COMP.
+          10  COMMON-UPI1BIN      PIC S9PPP       COMP.
+          10  COMMON-UPC3BIN      PIC SPPP9(3)    COMP.
+          10  COMMON-UPI3BIN      PIC S9(3)PPP    COMP.
+          10  COMMON-UPC5BIN      PIC SPPP9(5)    COMP.
+          10  COMMON-UPI5BIN      PIC S9(5)PPP    COMP.
+          10  COMMON-UPC10BIN     PIC SPPP9(10)   COMP.
+          10  COMMON-UPI10BIN     PIC S9(10)PPP   COMP.
+
+
 ***********************************************************************
 *******            EXOTIC AND COMPILER SPECIFIC
 ***********************************************************************
@@ -537,7 +555,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1411)
+    val byteArray: Array[Byte] = new Array[Byte](1465)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -747,6 +765,23 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S910DCC3", byteArray, bigNum, offset, 13, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-S03DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-U03DDC", byteArray, bigNum, offset, 5, signed = false)
+
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-UPC5DDC", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-SPC5DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-UPI5DDC", byteArray, bigNum, offset, 5, signed = false)
+      offset = putEncodedNumStrToArray(encodeBcdSigned, "COMMON-SPI5DDC", byteArray, bigNum, offset, 5, signed = true, isNegative)
+
+      offset = putNumStrToArray("COMMON-UPC5DISP", byteArray, bigNum, offset, 5, signed = true, isNegative)
+      offset = putNumStrToArray("COMMON-UPI5DISP", byteArray, bigNum, offset, 5, signed = true, isNegative)
+
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPC1BIN", byteArray, bigNum, offset, 1, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPI1BIN", byteArray, bigNum, offset, 1, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPC3BIN", byteArray, bigNum, offset, 3, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPI3BIN", byteArray, bigNum, offset, 3, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPC5BIN", byteArray, bigNum, offset, 5, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPI5BIN", byteArray, bigNum, offset, 5, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPC10BIN", byteArray, bigNum, offset, 10, signed = true)
+      offset = putEncodedNumStrToArray(encodeBinSigned, "COMMON-UPI10BIN", byteArray, bigNum, offset, 10, signed = true)
 
       offset = putNumStrToArray("EX-NUM-INT01", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("EX-NUM-INT02", byteArray, bigNum, offset, 8, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)

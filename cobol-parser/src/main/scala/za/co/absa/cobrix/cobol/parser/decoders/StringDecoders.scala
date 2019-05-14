@@ -226,30 +226,32 @@ object StringDecoders {
   }
 
   /**
-    * Decode integral number from an EBCDIC string converting it to a big decimal
+    * Decode a number from an EBCDIC string converting it to a big decimal
     *
     * @param bytes A byte array that represents the binary data
     * @param scale A decimal scale in case decimal number with implicit decimal point is expected
+    * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0): BigDecimal = {
+  def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned), scale))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
   }
 
   /**
-    * Decode integral number from an ASCII string converting it to a big decimal
+    * Decode a number from an ASCII string converting it to a big decimal
     *
     * @param bytes A byte array that represents the binary data
     * @param scale A decimal scale in case decimal number with implicit decimal point is expected
+    * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0): BigDecimal = {
+  def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned), scale))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }

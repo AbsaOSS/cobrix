@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
@@ -33,6 +34,9 @@ class FieldSizeSpec extends FunSuite {
       |           10  DECIMAL-NUM2       PIC S9(09)V99 BINARY.
       |           10  LONG_LEAD_SIG1     PIC S9(9) SIGN LEADING SEPARATE.
       |           10  DECIMAL_LEAD_SIG1  PIC S9(9)V99 SIGN LEADING SEPARATE.
+      |           10  DECIMAL_P1         PIC S9(9)PPP.
+      |           10  DECIMAL_P2         PIC SPPP9(9).
+      |           10  DECIMAL_P3         PIC SVPP9(5).
       |""".stripMargin
 
   def fieldsize(index: Int, cpy: Copybook): Int = {
@@ -42,6 +46,19 @@ class FieldSizeSpec extends FunSuite {
       case stat: Primitive => stat.binaryProperties.actualSize
     }
     sizebits
+  }
+
+  def scale(index: Int, cpy: Copybook): (Int, Int) = {
+    val item = cpy.ast.children.head.asInstanceOf[Group].children(index)
+    item match {
+      case _: Group => (0, 0)
+      case stat: Primitive => {
+        stat.dataType match {
+          case x: Decimal => (x.scale, x.scaleFactor)
+          case _ => (0, 0)
+        }
+      }
+    }
   }
 
   test("Test field sizes are correctly calculated") {
@@ -54,6 +71,9 @@ class FieldSizeSpec extends FunSuite {
     val size_s9_11_v_binary = fieldsize(5, copybook)
     val size_s9_long_sign_leading_separate = fieldsize(6, copybook)
     val size_s11_decimal_sign_leading_separate = fieldsize(7, copybook)
+    val size_s9_decimal_ppp_1 = fieldsize(8, copybook)
+    val size_s9_decimal_ppp_2 = fieldsize(9, copybook)
+    val size_s9_decimal_ppp_3 = fieldsize(10, copybook)
 
     assert(size_s9_2_comp == 2)
     assert(size_x10 == 10)
@@ -63,5 +83,11 @@ class FieldSizeSpec extends FunSuite {
     assert(size_s9_11_v_binary == 8)
     assert(size_s9_long_sign_leading_separate == 10)
     assert(size_s11_decimal_sign_leading_separate == 12)
+    assert(size_s9_decimal_ppp_1 == 9)
+    assert(scale(8, copybook) == (0, 3))
+    assert(size_s9_decimal_ppp_2 == 9)
+    assert(scale(9, copybook) == (0, -3))
+    assert(size_s9_decimal_ppp_3 == 5)
+    assert(scale(10, copybook) == (5, 2))
   }
 }
