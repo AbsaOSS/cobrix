@@ -71,6 +71,9 @@ object Constants {
   val fileIdField = "File_Id"
   val recordIdField = "Record_Id"
 
+  // Non-terminals
+  val nonTerminalsPostfix = "_NT"
+
   // Types of built-in record header parsers
   val RhXcom = "xcom"
   val RhRdw = "rdw"

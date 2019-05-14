@@ -53,8 +53,8 @@ class CobolSchema(val copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-    val records = for (record <- copybook.ast) yield {
-      parseGroup(record)
+    val records = for (record <- copybook.ast.children) yield {
+      parseGroup(record.asInstanceOf[Group])
     }
     val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot) {
       // Expand root group fields
@@ -83,9 +83,9 @@ class CobolSchema(val copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkFlatSchema = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-    val arraySchema = copybook.ast.toArray
+    val arraySchema = copybook.ast.children.toArray
     val records = arraySchema.flatMap(record => {
-      parseGroupFlat(record, s"${record.name}_")
+      parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
     })
     StructType(records)
   }
@@ -110,14 +110,14 @@ class CobolSchema(val copybook: Copybook,
           parseGroup(group)
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
-            case Decimal(_, scale, precision, _, _, _, _, comp, _) =>
-              val computation = comp.getOrElse(-1)
+            case d: Decimal =>
+              val computation = d.compact.getOrElse(-1)
               if (computation == 1) {
                 FloatType
               } else if (computation == 2) {
                 DoubleType
               } else {
-                DecimalType(precision, scale)
+                DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
               }
             case _: AlphaNumeric => StringType
             case dt: Integral =>
@@ -164,7 +164,8 @@ class CobolSchema(val copybook: Copybook,
           }
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
-            case Decimal(_, scale, precision, _, _, _, _, _, _) => DecimalType(precision, scale)
+            case d: Decimal =>
+              DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
             case _: AlphaNumeric => StringType
             case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {

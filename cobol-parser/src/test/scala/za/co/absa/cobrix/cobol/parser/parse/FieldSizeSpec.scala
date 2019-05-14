@@ -36,7 +36,7 @@ class FieldSizeSpec extends FunSuite {
       |""".stripMargin
 
   def fieldsize(index: Int, cpy: Copybook): Int = {
-    val item = cpy.ast.head.children(index)
+    val item = cpy.ast.children.head.asInstanceOf[Group].children(index)
     val sizebits = item match {
       case grp: Group => grp.binaryProperties.actualSize
       case stat: Primitive => stat.binaryProperties.actualSize

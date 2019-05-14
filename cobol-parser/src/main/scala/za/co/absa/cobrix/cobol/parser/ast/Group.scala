@@ -94,3 +94,7 @@ case class Group(
   }
 
 }
+
+object Group {
+  val root: Group = Group(level=0, name="_ROOT_", lineNumber = -1)()
+}

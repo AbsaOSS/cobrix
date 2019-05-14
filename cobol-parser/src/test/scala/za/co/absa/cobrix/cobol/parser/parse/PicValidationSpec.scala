@@ -81,6 +81,12 @@ class PicValidationSpec extends FunSuite {
     CobolValidators.validatePic(0, "A", "Z(5)")
     CobolValidators.validatePic(0, "A", "Z(5)VZZ")
     CobolValidators.validatePic(0, "A", "SV99")
+    CobolValidators.validatePic(0, "A", "PPP999")
+    CobolValidators.validatePic(0, "A", "S999PPP")
+    CobolValidators.validatePic(0, "A", "P(3)999")
+    CobolValidators.validatePic(0, "A", "S9(3)PPP")
+    CobolValidators.validatePic(0, "A", "P(3)9(3)")
+    CobolValidators.validatePic(0, "A", "S9(3)P(3)")
   }
 
   test("Test various malformed PICs") {
@@ -105,6 +111,11 @@ class PicValidationSpec extends FunSuite {
     intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(10)VV9") }
     intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "S9(5)V(5)") }
     intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(100000)") }
+    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9P9") }
+    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(5)P(5)9(5)") }
+    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "P(5)") }
+    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "SP(5)") }
+    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "S9P(5)9") }
   }
 
 

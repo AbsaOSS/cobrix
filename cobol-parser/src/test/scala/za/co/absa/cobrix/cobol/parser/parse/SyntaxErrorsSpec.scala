@@ -184,7 +184,8 @@ class SyntaxErrorsSpec extends FunSuite {
     // COMP-ACCOUNT-I is a valid field name. The parser should not be confused parsing it
     // although it contains 'COMP-'
     val copyBookContents =
-      """        12  ACCOUNT-DETAIL    OCCURS 80
+      """        12  NUMBER-OF-ACCTS      PIC 9(2).
+        |        12  ACCOUNT-DETAIL    OCCURS 80
         |               DEPENDING ON NUMBER-OF-ACCTS
         |               INDEXED BY COMP-ACCOUNT-I.
         |          15  ACCOUNT-NUMBER     PIC X(24).

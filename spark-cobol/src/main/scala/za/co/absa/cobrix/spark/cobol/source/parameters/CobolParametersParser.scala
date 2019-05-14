@@ -45,6 +45,7 @@ object CobolParametersParser {
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
+  val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
 
   // Data parsing parameters
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
@@ -140,6 +141,7 @@ object CobolParametersParser {
       params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
       params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
+      params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       params.get(PARAM_RECORD_HEADER_PARSER)
     )
   }

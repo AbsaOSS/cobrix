@@ -92,13 +92,13 @@ object DecoderSelector {
             StringDecoders.decodeAsciiBigDecimal(_, !isSigned)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, decimalType.scale)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, decimalType.scale, decimalType.scaleFactor)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, decimalType.scale)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, decimalType.scale, decimalType.scaleFactor)
         }
       case Some(Constants.compBinary1) =>
         // COMP aka BINARY encoded number
-        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
+        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case Some(Constants.compFloat) =>
         // COMP-1 aka 32-bit floating point number
         BinaryUtils.decodeFloat
@@ -107,16 +107,16 @@ object DecoderSelector {
         BinaryUtils.decodeDouble
       case Some(Constants.compBCD) =>
         // COMP-3 aka BCD-encoded number
-        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale)
+        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
       case Some(Constants.compBinary2) =>
         // COMP aka BINARY encoded number
-        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
+        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case Some(Constants.compBinaryBinCutoff) =>
         // COMP aka BINARY encoded number
-        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale))
+        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case Some(Constants.compBinaryLittleEndian) =>
         // COMP aka BINARY encoded number
-        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = false, signed = isSigned, decimalType.scale))
+        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = false, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (COMP-${decimalType.compact}).")
     }
@@ -221,7 +221,7 @@ object DecoderSelector {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a)
       } else {
         a: Array[Byte] =>
-          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0)
+          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0, 0)
           if (bcdDecoded != null)
             BigDecimal(bcdDecoded)
           else

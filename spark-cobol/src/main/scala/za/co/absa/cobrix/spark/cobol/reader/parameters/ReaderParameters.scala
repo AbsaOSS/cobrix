@@ -61,5 +61,6 @@ case class ReaderParameters(
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment:            Option[MultisegmentParameters],
                              dropGroupFillers:        Boolean,
+                             nonTerminals:            Seq[String],
                              recordHeaderParser: Option[String]
                            )

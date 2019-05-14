@@ -27,7 +27,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
   def getCobolSchema: CopybookAST = ast
 
   lazy val getRecordSize: Int = {
-    val last = ast.last
+    val last = ast
     val sizeInBytes = last.binaryProperties.offset + last.binaryProperties.actualSize
     sizeInBytes
   }
@@ -60,7 +60,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
     def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
       val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
-      schema.flatMap(grp => getFieldByNameInGroup(grp, transformedFieldName))
+      schema.children.flatMap(grp => getFieldByNameInGroup(grp.asInstanceOf[Group], transformedFieldName))
     }
 
     def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
@@ -84,7 +84,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
     def pathBeginsWithRoot(ast: CopybookAST, fieldPath: Array[String]): Boolean = {
       val rootFieldName = CopybookParser.transformIdentifier(fieldPath.head)
-      ast.foldLeft(false)( (b: Boolean, grp: Group) => {
+      ast.children.foldLeft(false)( (b: Boolean, grp: Statement) => {
         grp.name.equalsIgnoreCase(rootFieldName)
       } )
     }
@@ -92,13 +92,13 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     def getFielByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
       val origPath = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
       val path = if (!pathBeginsWithRoot(ast, origPath)) {
-        ast.head.name +: origPath
+        ast.children.head.name +: origPath
       } else {
         origPath
       }
-      ast.flatMap(grp =>
+      ast.children.flatMap(grp =>
         if (grp.name.equalsIgnoreCase(path.head))
-          getFieldByPathInGroup(grp, path.drop(1))
+          getFieldByPathInGroup(grp.asInstanceOf[Group], path.drop(1))
         else
           Seq()
       )
@@ -222,11 +222,11 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       fieldStrings.mkString("\n")
     }
 
-    val strings = for (grp <- ast) yield {
+    val strings = for (grp <- ast.children) yield {
       val start = grp.binaryProperties.offset + 1
       val length = grp.binaryProperties.actualSize
       val end = start + length - 1
-      val groupStr = generateGroupLayutPositions(grp)
+      val groupStr = generateGroupLayutPositions(grp.asInstanceOf[Group])
       val namePart = alignLeft(s"${grp.name}", 55)
       val fieldStartPart = alignRight(s"$start", 7)
       val fieldEndPart = alignRight(s"$end", 7)

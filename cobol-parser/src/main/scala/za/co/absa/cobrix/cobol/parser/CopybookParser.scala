@@ -38,7 +38,7 @@ object CopybookParser {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   type MutableCopybook = mutable.ArrayBuffer[Statement]
-  type CopybookAST = Seq[Group]
+  type CopybookAST = Group
 
   import za.co.absa.cobrix.cobol.parser.common.ReservedWords._
 
@@ -62,8 +62,9 @@ object CopybookParser {
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-                ebcdicCodePage: CodePage = new CodePageCommon): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage)
+                ebcdicCodePage: CodePage = new CodePageCommon,
+                nonTerminals: Seq[String] = Nil): Copybook = {
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, nonTerminals)
   }
 
   /**
@@ -83,7 +84,8 @@ object CopybookParser {
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
-                ebcdicCodePage: CodePage): Copybook = {
+                ebcdicCodePage: CodePage,
+                nonTerminals: Seq[String]): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
     def getBreakpoints(lines: Seq[CopybookLine]) = {
@@ -128,68 +130,112 @@ object CopybookParser {
     val tokens = tokenize(copyBookContents)
     val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
 
-    val lines: Seq[CopybookLine] =
+    val fields: Seq[CopybookLine] =
       tokens.zip(lexedLines)
         .map { case (lineTokens, modifiers) =>
           CreateCopybookLine(lineTokens, modifiers)
         }
 
-    val breakpoints: Seq[RecordBoundary] = getBreakpoints(lines)
+    val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
+    fields.foldLeft[Statement](root)((element, field) => {
+      val comp = getComactLevel(field.modifiers).getOrElse(-1)
+      val keywords = field.modifiers.keys.toList
+      val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
+      val redefines = field.modifiers.get(REDEFINES)
+      val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
+      val to = field.modifiers.get(TO).map(i => i.toInt)
+      val dependingOn = field.modifiers.get(DEPENDING)
+      val attachLevel = getMatchingGroup(element, field.level)
+      val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
 
-    // A forest can only have multiple items if there is a duplicate newElementLevel
-    val forest: Seq[Seq[CopybookLine]] = breakpoints.map(p => lines.slice(p.begin, p.end))
-
-    val schema: MutableCopybook = new MutableCopybook()
-    forest.foreach { fields =>
-      val rootElement = fields.head
-      if (rootElement.modifiers.keys.toList.contains(PIC)) {
-        throw new SyntaxErrorException(rootElement.lineNumber, "", s"Error in '${rootElement.name}' field definition. All top level fields need to be GROUPs. " +
-          s"Non-group elements at the top level are not supported.")
+      val newElement = if (isLeaf) {
+        val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
+        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+        Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
+          dependingOn, isFiller = isFiller, decode = decode)(None)
+      }
+      else {
+        val groupUsage = getUsageModifiers(field.modifiers)
+        Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
+          isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
       }
 
-      val root = Group(1,
-        rootElement.name,
-        rootElement.lineNumber,
-        mutable.ArrayBuffer(),
-        redefines = None)(None)
-      val trees = fields
-        .drop(1) // root already added so drop first line
-        .foldLeft[Statement](root)((element, field) => {
-        val comp = getComactLevel(field.modifiers).getOrElse(-1)
-        val keywords = field.modifiers.keys.toList
-        val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
-        val redefines = field.modifiers.get(REDEFINES)
-        val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
-        val to = field.modifiers.get(TO).map(i => i.toInt)
-        val dependingOn = field.modifiers.get(DEPENDING)
-        val attachLevel = getMatchingGroup(element, field.level)
-        val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
+      attachLevel.add(newElement)
+    })
+    val schema: MutableCopybook = ArrayBuffer(root)
 
-        val newElement = if (isLeaf) {
-          val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-          val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
-          Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
-            dependingOn, isFiller = isFiller, decode = decode)(None)
-        }
-        else {
-          val groupUsage = getUsageModifiers(field.modifiers)
-          Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
-            isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
-        }
-
-        attachLevel.add(newElement)
-      })
-      schema += root
-    }
+    val nonTerms: Set[String] = (for (id <- nonTerminals)
+      yield transformIdentifier(id)
+    ).toSet
 
     val newTrees = if (dropGroupFillers) {
-      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(
+        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+      )), segmentRedefines))
     } else {
-      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(calculateBinaryProperties(schema))), segmentRedefines))
+      calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(
+        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+      )), segmentRedefines))
     }
 
-    val ast: CopybookAST = newTrees.map(grp => grp.asInstanceOf[Group])
-    new Copybook(ast)
+    new Copybook(newTrees.head.asInstanceOf[Group])
+  }
+
+  private def addNonTerminals(copybook: MutableCopybook, nonTerminals: Set[String],
+                              enc: Encoding,
+                              stringTrimmingPolicy: StringTrimmingPolicy,
+                              ebcdicCodePage: CodePage
+                             ): MutableCopybook = {
+
+    def getNonTerminalName(name: String, parent: Group): String = {
+      val existingNames = parent.children.map{
+        case x: Primitive => x.name
+        case x: Group => x.name
+      }
+
+      var modifier = 0
+      var wantedName = name + Constants.nonTerminalsPostfix
+      while (existingNames contains wantedName) {
+        modifier += 1
+        wantedName = name + Constants.nonTerminalsPostfix + modifier.toString
+      }
+      wantedName
+    }
+
+    val newCopybook: MutableCopybook = new ArrayBuffer()
+    for(stmt <- copybook) {
+      stmt match {
+        case s: Primitive => newCopybook.append(s)
+        case g: Group => {
+          if (nonTerminals contains g.name) {
+            newCopybook.append(
+              g.copy(
+                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage),
+                isRedefined = true
+              )(g.parent)
+            )
+            val sz = g.binaryProperties.actualSize
+            val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+            val newName = getNonTerminalName(g.name, g.parent.get)
+            newCopybook.append(
+              Primitive(
+                g.level, newName, g.lineNumber,
+                dataType,
+                redefines = Some(g.name),
+                decode = decode,
+                binaryProperties = g.binaryProperties
+              )(g.parent)
+            )
+          }
+          else
+            newCopybook.append(
+              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage))(g.parent)
+            )
+        }
+      }
+    }
+    newCopybook
   }
 
   private def CreateCopybookLine(lineTokens: StatementTokens, modifiers: Map[String, String]): CopybookLine = {
@@ -286,7 +332,7 @@ object CopybookParser {
   }
 
   /**
-    * Calculate binary offsets for a mutble Cobybook schema which is just an array of AST objects
+    * Calculate binary offsets for a mutable Cobybook schema which is just an array of AST objects
     *
     * @param subSchema An array of AST objects
     * @return The same AST with all offsets set for every field
@@ -467,9 +513,9 @@ object CopybookParser {
     if (segmentRedefines.isEmpty) {
       originalSchema
     } else {
-      val newSchema = processRootLevelFields(originalSchema)
+      val newSchema = processRootLevelFields(originalSchema.head.asInstanceOf[Group].children)
       validateAllSegmentsFound()
-      newSchema
+      ArrayBuffer(originalSchema.head.asInstanceOf[Group].copy(children=newSchema)(None))
     }
   }
 
@@ -663,14 +709,25 @@ object CopybookParser {
     val dataType = pic match {
       case s if s.contains('X') || s.contains('A') =>
         AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
-      case s if s.contains('V') || s.contains(',') =>
+      case s if s.contains('V') || s.contains(',') || s.contains('P') =>
         CopybookParser.decimalLength(s) match {
-          case (integralDigits, fractureDigits) =>
+          case (integralDigits, 0, 0) =>
+            //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
+            Integral(
+              picOrigin,
+              integralDigits,
+              if (s.startsWith("S")) Some(position.Left) else None,
+              isSignSeparate = isSignSeparate,
+              if (sync) Some(position.Right) else None,
+              comp,
+              Some(enc))
+          case (integralDigits, fractureDigits, scaleFactor) =>
             //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
             Decimal(
               picOrigin,
               fractureDigits,
               integralDigits + fractureDigits,
+              scaleFactor,
               s.contains(','),
               if (s.startsWith("S")) Some(position.Left) else None,
               isSignSeparate = isSignSeparate,
@@ -955,14 +1012,42 @@ object CopybookParser {
     * Get number of decimal digits given a PIC of a numeric field
     *
     * @param s A PIC string
-    * @return A pair specifying the number of digits before and after decimal separator
+    * @return A tuple specifying the number of digits before and after decimal separator and the scale factor
     */
-  def decimalLength(s: String): (Int, Int) = {
+  def decimalLength(s: String): (Int, Int, Int) = {
     var str = expandPic(s)
     val separator = if (str.contains('V')) 'V' else if (str.contains(',')) ',' else '.'
     val parts = str.split(separator)
     val nines1 = parts.head.count(_ == '9')
     val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
-    (nines1, nines2)
+    val scaleFactor = getScaleFactor(str)
+    (nines1, nines2, scaleFactor)
+  }
+
+  private def getScaleFactor(s: String): Int = {
+    val scaleFactorSymbolCount = s.count(_ == 'P')
+    var scalePositive = false
+    if (scaleFactorSymbolCount == 0) {
+      0
+    } else {
+      var nineEncountered = false
+      var scaleEncountered = false
+      var i = 0
+      while (i < s.length) {
+        if (!nineEncountered && !scaleEncountered) {
+          if (s.charAt(i) == '9') {
+            nineEncountered = true
+          }
+          if (s.charAt(i) == 'P') {
+            scaleEncountered = true
+          }
+        }
+        if (nineEncountered && !scaleEncountered) {
+          scalePositive = true
+        }
+        i += 1
+      }
+    }
+    if (scalePositive) scaleFactorSymbolCount else -scaleFactorSymbolCount
   }
 }

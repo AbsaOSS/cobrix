@@ -53,7 +53,7 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
     val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, binaryData, offset, policy, generateRecordId = false)
 
     // Advance byte index to the next record
-    val lastRecord = cobolSchema.getCobolSchema.ast.last
+    val lastRecord = cobolSchema.getCobolSchema.ast.children.last
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
     byteIndex += lastRecordActualSize + endOffset
 

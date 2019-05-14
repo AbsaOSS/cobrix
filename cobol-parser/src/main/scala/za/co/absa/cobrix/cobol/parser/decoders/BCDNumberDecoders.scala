@@ -77,9 +77,10 @@ object BCDNumberDecoders {
     *
     * @param bytes A byte array that represents the binary data
     * @param scale A decimal scale if a number is a decimal. Should be greater or equal to zero
+    * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A string representation of the binary data, null if the data is not properly formatted
     */
-  def decodeBigBCDNumber(bytes: Array[Byte], scale: Int): String = {
+  def decodeBigBCDNumber(bytes: Array[Byte], scale: Int, scaleFactor: Int): String = {
     if (scale < 0) {
       throw new IllegalArgumentException(s"Invalid scale=$scale, should be greater or equal to zero.")
     }
@@ -141,15 +142,26 @@ object BCDNumberDecoders {
       }
       i = i + 1
     }
-    if (scale > 0) chars.insert(decimalPointPosition, '.')
-    chars.insert(0, sign)
-    chars.toString
+    if (scaleFactor == 0) {
+      if (scale > 0) chars.insert(decimalPointPosition, '.')
+      chars.insert(0, sign)
+      chars.toString
+    } else {
+      if (scaleFactor < 0) {
+        val zeros = "0" * (-scaleFactor)
+        s"${sign}0.$zeros${chars.toString}"
+      } else {
+        val zeros = "0" * scaleFactor
+        chars.insert(0, sign)
+        s"${chars.toString}$zeros"
+      }
+    }
   }
 
   /** Malformed data does not cause exceptions in Spark. Null values are returned instead */
-  def decodeBigBCDDecimal(binBytes: Array[Byte], scale: Int): BigDecimal = {
+  def decodeBigBCDDecimal(binBytes: Array[Byte], scale: Int, scaleFactor: Int): BigDecimal = {
     try {
-      BigDecimal(decodeBigBCDNumber(binBytes, scale))
+      BigDecimal(decodeBigBCDNumber(binBytes, scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }

@@ -31,7 +31,8 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
@@ -48,7 +49,8 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
@@ -65,7 +67,8 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
@@ -82,7 +85,8 @@ class UsageInheritanceSpec extends FunSuite {
         |""".stripMargin
 
     val copybook = CopybookParser.parseTree(copyBookContents)
-    val primitive = copybook.ast.head.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
+    val firstRecord = copybook.ast.children.head.asInstanceOf[Group]
+    val primitive = firstRecord.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
 
     val dataType = primitive.dataType
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact

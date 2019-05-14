@@ -90,7 +90,8 @@ class DefaultSource
       parameters.recordEndOffset,
       parameters.schemaRetentionPolicy,
       parameters.stringTrimmingPolicy,
-      parameters.dropGroupFillers
+      parameters.dropGroupFillers,
+      parameters.nonTerminals
     )
   }
 
@@ -140,6 +141,7 @@ class DefaultSource
           stringTrimmingPolicy = parameters.stringTrimmingPolicy,
           parameters.multisegmentParams,
           parameters.dropGroupFillers,
+          parameters.nonTerminals,
           parameters.recordHeaderParser
         )
       )
