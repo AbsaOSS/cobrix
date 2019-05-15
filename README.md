@@ -425,6 +425,16 @@ For example:
 ```
 will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
 
+### Custom record headers parser
+
+If your variable length file does not have RDW headers, but has fields that can be used for determining record lengths
+you can provide a custom record header parser that takes starting bytes of each record and returns record lengths.
+In order to do that you need to create a class inheriting `RecordHeaderParser` and `Serializable` traits and provide a
+fully qualified class name to the following option:
+```
+.option("record_header_parser", "com.example.record.header.parser")
+```
+
 ## <a id="ims"/>Reading hierarchical data sets
 
 Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different

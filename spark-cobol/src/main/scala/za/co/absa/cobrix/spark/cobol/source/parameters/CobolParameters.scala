@@ -71,5 +71,6 @@ case class CobolParameters(
                             improveLocality:       Boolean,
                             optimizeAllocation:    Boolean,
                             dropGroupFillers:      Boolean,
-                            nonTerminals:          Seq[String]
+                            nonTerminals:          Seq[String],
+                            recordHeaderParser:    Option[String]
                           )
