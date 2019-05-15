@@ -41,6 +41,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param stringTrimmingPolicy     Specifies if and how strings should be trimmed when parsed.
   * @param multisegment             Parameters specific to reading multisegment files
   * @param dropGroupFillers         If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
+  * @param recordHeaderParser       A parser used to parse data field record headers
   */
 case class ReaderParameters(
                              isEbcdic:                Boolean = true,
@@ -60,5 +61,6 @@ case class ReaderParameters(
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment:            Option[MultisegmentParameters],
                              dropGroupFillers:        Boolean,
-                             nonTerminals:            Seq[String] = Nil
+                             nonTerminals:            Seq[String],
+                             recordHeaderParser: Option[String]
                            )

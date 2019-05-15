@@ -141,8 +141,9 @@ class DefaultSource
           stringTrimmingPolicy = parameters.stringTrimmingPolicy,
           parameters.multisegmentParams,
           parameters.dropGroupFillers,
-          parameters.nonTerminals
-         )
+          parameters.nonTerminals,
+          parameters.recordHeaderParser
+        )
       )
     }
   }

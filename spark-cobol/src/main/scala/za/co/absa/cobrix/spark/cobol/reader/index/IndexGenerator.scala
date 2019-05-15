@@ -18,8 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.index
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.common.DataExtractors
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
@@ -27,11 +26,10 @@ import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import scala.collection.mutable.ArrayBuffer
 
 object IndexGenerator {
-  private val rdwHeaderBlock = 4
-
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
                            isRdwBigEndian: Boolean,
+                           recordHeaderParser: RecordHeaderParser,
                            recordsPerIndexEntry: Option[Int] = None,
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
@@ -55,14 +53,17 @@ object IndexGenerator {
 
     var endOfFileReached = false
     while (!endOfFileReached) {
-      val recordSize = getNextRecordSize(dataStream, isRdwBigEndian)
+      val headerSize = recordHeaderParser.getHeaderLength
+      val headerBytes = dataStream.next(headerSize)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, byteIndex)
+      val recordSize = recordMetadata.recordLength
       if (recordSize <= 0) {
         endOfFileReached = true
       } else {
         val record = dataStream.next(recordSize)
         if (record.length < recordSize) {
           endOfFileReached = true
-        } else {
+        } else if (recordMetadata.isValid) {
           if (isHierarchical && rootRecordId.isEmpty) {
             val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
             if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
@@ -90,10 +91,10 @@ object IndexGenerator {
           }
         }
       }
-      byteIndex += rdwHeaderBlock + recordSize
+      byteIndex += headerSize + recordSize
       recordIndex += 1
       recordsInChunk += 1
-      bytesInChunk += rdwHeaderBlock + recordSize
+      bytesInChunk += headerSize + recordSize
     }
     if (isHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
       throw new IllegalStateException(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
@@ -131,9 +132,6 @@ object IndexGenerator {
       rootRecordId == getSegmentId(copybook, segmentField, record)
     }
   }
-
-  private def getNextRecordSize(dataStream: SimpleStream, isRdwBigEndian: Boolean): Int =
-    BinaryUtils.extractRdwRecordSize(dataStream.next(rdwHeaderBlock), isRdwBigEndian)
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
     val v = copybook.extractPrimitiveField(segmentIdField, data)

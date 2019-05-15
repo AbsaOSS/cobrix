@@ -20,8 +20,10 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
+import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
@@ -47,6 +49,10 @@ final class VarLenNestedReader(copybookContents: String,
 
   private val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
+  private val recordHeaderParser: RecordHeaderParser = {
+    getRecordHeaderParser
+  }
+
   checkInputArgumentsValidity()
 
   override def getCobolSchema: CobolSchema = cobolSchema
@@ -57,8 +63,12 @@ final class VarLenNestedReader(copybookContents: String,
 
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
 
-  override def getRowIterator(binaryData: SimpleStream, startingFileOffset: Long, fileNumber: Int, startingRecordIndex: Long): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+  override def getRowIterator(binaryData: SimpleStream,
+                              startingFileOffset: Long,
+                              fileNumber: Int,
+                              startingRecordIndex: Long): Iterator[Row] =
+    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+      fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.
@@ -94,9 +104,9 @@ final class VarLenNestedReader(copybookContents: String,
 
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
       case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        inputSplitSizeRecords, inputSplitSizeMB)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB)
     }
   }
 
@@ -137,6 +147,21 @@ final class VarLenNestedReader(copybookContents: String,
     codePageClass match {
       case Some(c) => CodePage.getCodePageByClass(c)
       case None => CodePage.getCodePageByName(codePageName)
+    }
+  }
+
+  private def getRecordHeaderParser: RecordHeaderParser = {
+    readerProperties.recordHeaderParser match {
+      case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser)
+      case None => getDefaultRecordHeaderParser
+    }
+  }
+
+  private def getDefaultRecordHeaderParser: RecordHeaderParser = {
+    if (isRdwBigEndian) {
+      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwBigEndian)
+    } else {
+      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
     }
   }
 }

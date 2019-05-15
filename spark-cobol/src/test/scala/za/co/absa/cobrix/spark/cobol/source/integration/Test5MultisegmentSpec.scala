@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.FileSystem
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
@@ -211,8 +213,10 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
 
     val stream = new FileStreamer("../data/test5_data/COMP.DETAILS.SEP30.DATA.dat", FileSystem.get(new Configuration()))
 
-    val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false, recordsPerIndexEntry = Some(10),
-      sizePerIndexEntryMB = None, copybook = Some(copybook), segmentField = Some(segmentIdField), rootSegmentId = segmentIdRootValue)
+    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
+    val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+      recordHeaderParser = recordHeaderParser, recordsPerIndexEntry = Some(10),  sizePerIndexEntryMB = None,
+      copybook = Some(copybook), segmentField = Some(segmentIdField), rootSegmentId = segmentIdRootValue)
     assert(indexes.length == 88)
   }
 
