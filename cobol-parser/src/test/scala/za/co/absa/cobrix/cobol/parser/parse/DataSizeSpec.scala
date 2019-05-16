@@ -16,38 +16,71 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.antlr.{ParserVisitor, ThrowErrorStrategy, copybookLexer, copybookParser}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.encoding.ASCII
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 
 class DataSizeSpec extends FunSuite {
+  private def parse(pic: String): Primitive = {
+    val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
+      CodePage.getCodePageByName("common"))
 
-  test("Test PIC values are expanded correctly") {
-    assert(CopybookParser.expandPic("99999V99") == "99999V99")
-    assert(CopybookParser.expandPic("9(3)") == "999")
-    assert(CopybookParser.expandPic("X(3)XXX") == "XXXXXX")
-    assert(CopybookParser.expandPic("X(3)XX(5)X") == "XXXXXXXXXX")
-    assert(CopybookParser.expandPic("XX(3)X.X(5)X") == "XXXXX.XXXXXX")
+    val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
+    val lexer = new copybookLexer(charStream)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new copybookParser(tokens)
+    parser.setErrorHandler(new ThrowErrorStrategy())
+    visitor.visit(parser.main())
+    visitor.ast.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]
+  }
+
+  private def decimalLength(pic: String) = {
+    parse(pic).dataType match {
+      case dec: Decimal => (dec.precision - dec.scale, dec.scale, dec.scaleFactor)
+      case int: Integral => (int.precision, 0, 0)
+    }
+  }
+
+  private def compressPic(pic: String): String = {
+    parse(pic).dataType.pic
+  }
+
+
+  test("Test PIC values are compressed correctly") {
+    assert(compressPic("99999V99") == "9(5)V9(2)")
+    assert(compressPic("S9") == "S9(1)")
+    assert(compressPic("9(3)") == "9(3)")
+    assert(compressPic("999") == "9(3)")
+    assert(compressPic("X(3)XXX") == "X(6)")
+    assert(compressPic("X(3)XX(5)X") == "X(10)")
+    assert(compressPic("99(3)9.9(5)9") == "9(5).9(6)")
   }
 
   test("Test Number of Decimal digits are reported correctly for a given PIC") {
-    assert(CopybookParser.decimalLength("99999V99") == (5, 2, 0))
-    assert(CopybookParser.decimalLength("9(13)V99") == (13, 2, 0))
-    assert(CopybookParser.decimalLength("9(13)V9(2)") == (13, 2, 0))
-    assert(CopybookParser.decimalLength("9999999999V9(2)") == (10, 2, 0))
-    assert(CopybookParser.decimalLength("99(5)V99(2)") == (6, 3, 0))
-    assert(CopybookParser.decimalLength("99(5)99V99(2)99") == (8, 5, 0))
+    assert(decimalLength("99999V99") == (5, 2, 0))
+    assert(decimalLength("99999V99") == (5, 2, 0))
+    assert(decimalLength("9(13)V99") == (13, 2, 0))
+    assert(decimalLength("9(13)V9(2)") == (13, 2, 0))
+    assert(decimalLength("9999999999V9(2)") == (10, 2, 0))
+    assert(decimalLength("99(5)V99(2)") == (6, 3, 0))
+    assert(decimalLength("99(5)99V99(2)99") == (8, 5, 0))
 
-    assert(CopybookParser.decimalLength("99999.99") == (5, 2, 0))
-    assert(CopybookParser.decimalLength("9(13).99") == (13, 2, 0))
-    assert(CopybookParser.decimalLength("9(13)V") == (13, 0, 0))
-    assert(CopybookParser.decimalLength("9(13).9(2)") == (13, 2, 0))
-    assert(CopybookParser.decimalLength("9999999999.9(2)") == (10, 2, 0))
-    assert(CopybookParser.decimalLength("99(5).99(2)") == (6, 3, 0))
-    assert(CopybookParser.decimalLength("99(5)99.99(2)99") == (8, 5, 0))
+    assert(decimalLength("99999.99") == (5, 2, 0))
+    assert(decimalLength("9(13).99") == (13, 2, 0))
+    assert(decimalLength("9(13)V") == (13, 0, 0))
+    assert(decimalLength("9(13).9(2)") == (13, 2, 0))
+    assert(decimalLength("9999999999.9(2)") == (10, 2, 0))
+    assert(decimalLength("99(5).99(2)") == (6, 3, 0))
+    assert(decimalLength("99(5)99.99(2)99") == (8, 5, 0))
 
-    assert(CopybookParser.decimalLength("PPP99999") == (5, 0, -3))
-    assert(CopybookParser.decimalLength("P(3)9(10)") == (10, 0, -3))
-    assert(CopybookParser.decimalLength("9(10)PPP") == (10, 0, 3))
+    assert(decimalLength("PPP99999") == (5, 0, -3))
+    assert(decimalLength("P(3)9(10)") == (10, 0, -3))
+    assert(decimalLength("9(10)PPP") == (10, 0, 3))
   }
 
 }

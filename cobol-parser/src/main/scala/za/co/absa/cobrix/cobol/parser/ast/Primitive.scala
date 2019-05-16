@@ -17,7 +17,6 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 

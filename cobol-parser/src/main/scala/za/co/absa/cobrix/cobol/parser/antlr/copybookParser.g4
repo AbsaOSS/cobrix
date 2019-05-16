@@ -42,7 +42,7 @@ thru:
 
 // values
 values:
-    (VALUE IS? | VALUES ARE?)? valuesFromTo (COMMACHAR? valuesFromTo)*
+    (VALUE IS? | VALUES ARE?) valuesFromTo (COMMACHAR? valuesFromTo)*
     ;
 
 valuesFromTo:
@@ -140,6 +140,7 @@ plusMinus:
 precision9:
       NINES                         #precision9Nines
     | S_S                           #precision9Ss
+    | P_S                           #precision9Ps
     | Z_S                           #precision9Zs
     | PRECISION_9_EXPLICIT_DOT      #precision9ExplicitDot
     | PRECISION_9_DECIMAL_SCALED    #precision9DecimalScaled

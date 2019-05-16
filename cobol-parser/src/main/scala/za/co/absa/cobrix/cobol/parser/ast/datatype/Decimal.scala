@@ -38,7 +38,7 @@ case class Decimal(
                     signPosition: Option[Position] = None,
                     isSignSeparate: Boolean = false,
                     wordAlligned: Option[Position] = None,
-                    compact: Option[Int] = None,
+                    compact: Option[Usage] = None,
                     enc: Option[Encoding] = None,
                     originalPic: Option[String] = None
                   )

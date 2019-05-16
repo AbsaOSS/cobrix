@@ -57,15 +57,6 @@ object Constants {
   val floatSize = 4
   val doubleSize = 8
 
-  // COMPRESSION values
-  val compBinary1 = 0 // COMP
-  val compBinary2 = 4 // COMP-4
-  val compFloat = 1
-  val compDouble = 2
-  val compBCD = 3
-  val compBinaryBinCutoff= 5
-  val compBinaryLittleEndian= 9
-
   // The fields that can be automatically generated
   val segmentIdField = "Seg_Id"
   val fileIdField = "File_Id"
@@ -79,4 +70,7 @@ object Constants {
   val RhRdw = "rdw"
   val RhRdwBigEndian = "rdw_big_endian"
   val RhRdwLittleEndian = "rdw_little_endian"
+
+  // Reserved Words
+  val FILLER = "FILLER"
 }

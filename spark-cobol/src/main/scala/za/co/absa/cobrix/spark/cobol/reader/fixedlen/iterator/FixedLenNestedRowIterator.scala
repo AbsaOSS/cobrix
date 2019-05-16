@@ -17,15 +17,10 @@
 package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
-import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * This is an iterator traversing contents of Cobol binary data

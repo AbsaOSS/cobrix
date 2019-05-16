@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable.ArrayBuffer
