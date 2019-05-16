@@ -57,7 +57,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.4.2</version>
+      <version>0.5.0</version>
 </dependency>
 ```
 
@@ -170,8 +170,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.4.2.jar
-* cobol-parser-0.4.2.jar
+* spark-cobol-0.5.0.jar
+* cobol-parser-0.5.0.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -819,15 +819,24 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
 
-##### Multisegment indexing options
+##### Variable record length files options
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("is_xcom", "true")                 | Indexing is supported only on files having XCOM headers at the moment.        |
+| .option("is_record_sequence", "true")      | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
+| .option("is_rdw_big_endian", "true")       | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
+| .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
+
+
+##### Multisegment files options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
+| .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so teh option keys are unique. |
 | .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
 | .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
 | .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. |
-| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
 
 ##### Helper fields generation options    
 
@@ -932,10 +941,23 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.0 released 17 May 2019
+  - This is a minor feature release.
+  - Cobrix now handles top level REDEFINES (Thanks Tiago Requeijo).
+  - Added support for extracting non-terminal fields (GROUPs) as string columns (Thanks Tiago Requeijo).
+    (see 'non_terminals' option)
+  - Added support for decimal scale 'P' in PICs.
+  - Added ability to specify custom record header parsers for variable record length files
+    (see 'record_header_parser' option)
+  - Interpret Decimal values with no fractional digits as Integral (Thanks Tiago Requeijo).
+  - Fixed OCCURS depending on non-integer fields (Thanks Tiago Requeijo).
+  - Fixed code duplication in AST traversal routines (Thanks Tiago Requeijo).
+  - Fixed handling number PICs that start with implicit decimal point (e.g. 'SV9(5)')
+  - Fixed unit tests failure when built in Windows
 
 - #### 0.4.2 released 29 Mar 2019
   - This is a minor feature release.
-  - Add ability for a user to provide a custom EBCDIC code page to Unicode conversion table. 
+  - Added ability for a user to provide a custom EBCDIC code page to Unicode conversion table. 
   - Fixed generated record id and 'segment id fields inconsistencies.
 
 - #### 0.4.1 released 15 Mar 2019
