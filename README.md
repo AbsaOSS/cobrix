@@ -47,6 +47,14 @@ Among the motivations for this project, it is possible to highlight:
 
 - The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines
 
+## Videos
+
+We have presented Cobrix at DataWorks Summit 2019 and Spark Summit 2019 conferences. The screencasts are available here:
+
+DataWorks Summit 2019 (General Cobrix workflow for hierarchical databases): https://www.youtube.com/watch?v=o_up7X3ZL24
+
+Spark Summit 2019 (More detailed overview of performance optimizations): https://www.youtube.com/watch?v=BOBIdGf3Tm0
+
 #### Linking
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
