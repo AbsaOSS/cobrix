@@ -58,6 +58,8 @@ class DataSizeSpec extends FunSuite {
     assert(compressPic("999") == "9(3)")
     assert(compressPic("X(3)XXX") == "X(6)")
     assert(compressPic("X(3)XX(5)X") == "X(10)")
+    assert(compressPic("A(3)AAA") == "A(6)")
+    assert(compressPic("A(3)AA(5)A") == "A(10)")
     assert(compressPic("99(3)9.9(5)9") == "9(5).9(6)")
   }
 
@@ -81,6 +83,9 @@ class DataSizeSpec extends FunSuite {
     assert(decimalLength("PPP99999") == (5, 0, -3))
     assert(decimalLength("P(3)9(10)") == (10, 0, -3))
     assert(decimalLength("9(10)PPP") == (10, 0, 3))
+    assert(decimalLength("SPPP99999") == (5, 0, -3))
+    assert(decimalLength("SP(3)9(10)") == (10, 0, -3))
+    assert(decimalLength("S9(10)PPP") == (10, 0, 3))
 
     assert(decimalLength("ZZZ99(5)") == (9, 0, 0))
     assert(decimalLength("ZZZ999") == (6, 0, 0))

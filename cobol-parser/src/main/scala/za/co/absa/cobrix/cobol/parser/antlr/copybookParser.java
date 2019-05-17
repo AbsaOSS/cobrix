@@ -39,8 +39,8 @@ public class copybookParser extends Parser {
 		LENGTH_TYPE_P_1=106, LENGTH_TYPE_X=107, LENGTH_TYPE_X_1=108, LENGTH_TYPE_Z=109, 
 		LENGTH_TYPE_Z_1=110, STRINGLITERAL=111, LEVEL_ROOT=112, LEVEL_REGULAR=113, 
 		LEVEL_NUMBER_66=114, LEVEL_NUMBER_77=115, LEVEL_NUMBER_88=116, INTEGERLITERAL=117, 
-		NUMERICLITERAL=118, SINGLE_QUOTED_IDENTIFIER=119, IDENTIFIER=120, CONTROL_Z=121, 
-		WS=122;
+		POSITIVELITERAL=118, NUMERICLITERAL=119, SINGLE_QUOTED_IDENTIFIER=120, 
+		IDENTIFIER=121, CONTROL_Z=122, WS=123;
 	public static final int
 		RULE_main = 0, RULE_literal = 1, RULE_numericLiteral = 2, RULE_integerLiteral = 3, 
 		RULE_booleanLiteral = 4, RULE_identifier = 5, RULE_thru = 6, RULE_values = 7, 
@@ -79,7 +79,7 @@ public class copybookParser extends Parser {
 			"')'", "'''", "'/'", null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, null, null, null, null, null, null, 
 			null, null, null, null, null, null, "'01'", null, "'66'", "'77'", "'88'", 
-			null, null, null, null, "'\u001A'"
+			null, null, null, null, null, "'\u001A'"
 		};
 	}
 	private static final String[] _LITERAL_NAMES = makeLiteralNames();
@@ -105,8 +105,8 @@ public class copybookParser extends Parser {
 			"LENGTH_TYPE_P", "LENGTH_TYPE_P_1", "LENGTH_TYPE_X", "LENGTH_TYPE_X_1", 
 			"LENGTH_TYPE_Z", "LENGTH_TYPE_Z_1", "STRINGLITERAL", "LEVEL_ROOT", "LEVEL_REGULAR", 
 			"LEVEL_NUMBER_66", "LEVEL_NUMBER_77", "LEVEL_NUMBER_88", "INTEGERLITERAL", 
-			"NUMERICLITERAL", "SINGLE_QUOTED_IDENTIFIER", "IDENTIFIER", "CONTROL_Z", 
-			"WS"
+			"POSITIVELITERAL", "NUMERICLITERAL", "SINGLE_QUOTED_IDENTIFIER", "IDENTIFIER", 
+			"CONTROL_Z", "WS"
 		};
 	}
 	private static final String[] _SYMBOLIC_NAMES = makeSymbolicNames();
@@ -3017,7 +3017,7 @@ public class copybookParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3|\u016a\4\2\t\2\4"+
+		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3}\u016a\4\2\t\2\4"+
 		"\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t"+
 		"\13\4\f\t\f\4\r\t\r\4\16\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22"+
 		"\4\23\t\23\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31\t\31"+
@@ -3044,7 +3044,7 @@ public class copybookParser extends Parser {
 		"\3&\3&\3&\3&\3&\3&\7&\u0149\n&\f&\16&\u014c\13&\3&\3&\5&\u0150\n&\3&\5"+
 		"&\u0153\n&\3&\3&\3\'\3\'\3\'\3\'\3\'\3(\3(\3(\3(\3(\3)\3)\3)\3)\3)\3)"+
 		"\3)\5)\u0168\n)\3)\2\2*\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36 \"$&(*"+
-		",.\60\62\64\668:<>@BDFHJLNP\2\17\4\2ZZrw\4\2\37\37FF\5\2\3\3[_yz\4\2\6"+
+		",.\60\62\64\668:<>@BDFHJLNP\2\17\4\2ZZrw\4\2\37\37FF\5\2\3\3[_z{\4\2\6"+
 		"\6\34\34\6\2\7\7\f\31\35\35\62\62\b\2\7\7\f\r\20\24\27\31\35\35\62\62"+
 		"\4\2((EE\3\2%&\4\2]]mm\4\2[[ii\3\2\63\64\3\2rs\3\2;=\2\u0196\2S\3\2\2"+
 		"\2\4`\3\2\2\2\6k\3\2\2\2\bm\3\2\2\2\no\3\2\2\2\fq\3\2\2\2\16s\3\2\2\2"+
@@ -3056,9 +3056,9 @@ public class copybookParser extends Parser {
 		"\3\2\2\2>\u0117\3\2\2\2@\u0119\3\2\2\2B\u012c\3\2\2\2D\u012e\3\2\2\2F"+
 		"\u0130\3\2\2\2H\u0132\3\2\2\2J\u013f\3\2\2\2L\u0156\3\2\2\2N\u015b\3\2"+
 		"\2\2P\u0167\3\2\2\2RT\5P)\2SR\3\2\2\2TU\3\2\2\2US\3\2\2\2UV\3\2\2\2VX"+
-		"\3\2\2\2WY\7{\2\2XW\3\2\2\2XY\3\2\2\2YZ\3\2\2\2Z[\7\2\2\3[\3\3\2\2\2\\"+
+		"\3\2\2\2WY\7|\2\2XW\3\2\2\2XY\3\2\2\2YZ\3\2\2\2Z[\7\2\2\3[\3\3\2\2\2\\"+
 		"a\7q\2\2]a\5\6\4\2^a\5\n\6\2_a\5\30\r\2`\\\3\2\2\2`]\3\2\2\2`^\3\2\2\2"+
-		"`_\3\2\2\2a\5\3\2\2\2bd\5\66\34\2cb\3\2\2\2cd\3\2\2\2de\3\2\2\2el\7x\2"+
+		"`_\3\2\2\2a\5\3\2\2\2bd\5\66\34\2cb\3\2\2\2cd\3\2\2\2de\3\2\2\2el\7y\2"+
 		"\2fl\7L\2\2gi\5\66\34\2hg\3\2\2\2hi\3\2\2\2ij\3\2\2\2jl\5\b\5\2kc\3\2"+
 		"\2\2kf\3\2\2\2kh\3\2\2\2l\7\3\2\2\2mn\t\2\2\2n\t\3\2\2\2op\t\3\2\2p\13"+
 		"\3\2\2\2qr\t\4\2\2r\r\3\2\2\2st\7\3\2\2t\17\3\2\2\2uw\7I\2\2vx\7$\2\2"+

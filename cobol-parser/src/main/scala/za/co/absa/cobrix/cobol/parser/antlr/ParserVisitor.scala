@@ -46,7 +46,7 @@ class ParserVisitor(enc: Encoding,
     s"((?:$char\\(\\d+\\)|$char)$question)"
   }
 
-  val lengthRegex: Regex = "([9XPZ])\\((\\d+)\\)|([9XPZ])".r
+  val lengthRegex: Regex = "([9XPZA])\\((\\d+)\\)|([9XPZA])".r
   val numericSPicRegexScaled: Regex = ("(S?)"
                                        + genericLengthRegex('9')
                                        + genericLengthRegex('P', optional = true)
@@ -524,10 +524,6 @@ class ParserVisitor(enc: Encoding,
         if (x.compact.isDefined && x.explicitDecimal)
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
             s"Explicit decimal point in 'PIC ${expr.value.originalPic.get}' is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
-        if (x.precision < 1 || x.precision >= Constants.maxFieldLength)
-          throw new IllegalStateException(s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${
-            Constants.maxFieldLength
-          }.")
       case x: Integral =>
         if (x.isSignSeparate && x.compact.isDefined) {
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
@@ -539,12 +535,11 @@ class ParserVisitor(enc: Encoding,
         }
         if (x.precision < 1 || x.precision >= Constants.maxFieldLength)
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
-            s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
+            s"Incorrect field size of ${x.precision} for PIC ${expr.value.originalPic.get}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
       case x: AlphaNumeric =>
         if (x.length < 1 || x.length >= Constants.maxFieldLength)
-          throw new IllegalStateException(s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${
-            Constants.maxFieldLength
-          }.")
+          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+            s"Incorrect field size of ${x.length} for PIC ${expr.value.originalPic.get}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
     }
     expr
   }

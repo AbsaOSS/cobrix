@@ -198,4 +198,65 @@ class SyntaxErrorsSpec extends FunSuite {
     CopybookParser.parseTree(copyBookContents)
   }
 
+  test("Test precision too large: Alpha") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC X(100001).
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("Incorrect field size of 100001 for PIC X(100001)."))
+  }
+
+  test("Test precision too large: Integral") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC 9(99999)99.
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("Incorrect field size of 100001 for PIC 9(99999)99."))
+  }
+
+  test("Test precision too large: COMP4 Integral") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC 9(99999)99 COMP-4.
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("BINARY-encoded integers with precision bigger than 38 are not supported."))
+  }
+
+
 }
