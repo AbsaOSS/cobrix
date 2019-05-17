@@ -212,4 +212,35 @@ class MergeCopybooksSpec extends FunSuite {
     assert(exception.getMessage.contains("Copybook segments must redefine top segment"))
   }
 
+  test("Test merge copybooks: name clash with merge area") {
+    val copyBookContents1: String =
+      """        01  MERGE-RECORD-AREA.
+        |           02  FIELD-1            PIC X(10).
+        |""".stripMargin
+    val copyBookContents2: String =
+      """        01  MERGE-RECORD-AREA-0.
+        |           02  FIELD-1            PIC X(20).
+        |""".stripMargin
+
+    val copybook1 = CopybookParser.parseTree(copyBookContents1)
+    val copybook2 = CopybookParser.parseTree(copyBookContents2)
+
+    assert(copybook1.getRecordSize == 10)
+    assert(copybook2.getRecordSize == 20)
+
+    val copybook12 = Copybook.merge(List(copybook1, copybook2))
+    assert(copybook12.getRecordSize == 20)
+
+    assert(copybook12.generateRecordLayoutPositions ==
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |MERGE_RECORD_AREA_1                                          1     20     20
+        |  2 DATA                                              1      1     20     20
+        |MERGE_RECORD_AREA                                            1     20     20
+        |  2 FIELD_1                                           2      1     10     10
+        |MERGE_RECORD_AREA_0                                          1     20     20
+        |  2 FIELD_1                                           3      1     20     20""".stripMargin)
+  }
+
+
 }

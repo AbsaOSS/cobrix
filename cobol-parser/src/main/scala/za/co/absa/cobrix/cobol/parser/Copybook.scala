@@ -270,7 +270,7 @@ object Copybook {
     var targetName = Constants.mergedRecordsPrefix
     var i: Int = 0
     while( namesSet.contains(targetName) ) {
-      targetName = Constants.mergedRecordsPrefix + "-%d".format(i)
+      targetName = Constants.mergedRecordsPrefix + "_%d".format(i)
       i += 1
     }
 
