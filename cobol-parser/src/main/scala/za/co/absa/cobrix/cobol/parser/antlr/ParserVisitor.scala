@@ -7,7 +7,7 @@ import scala.util.matching.Regex
 import scala.collection.JavaConverters._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, CobolType, Decimal, Integral, Usage}
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
@@ -19,7 +19,6 @@ import za.co.absa.cobrix.cobol.parser.position.Left
 import za.co.absa.cobrix.cobol.parser.position.Right
 
 import scala.collection.mutable
-import scala.collection.mutable.Stack
 
 
 sealed trait Expr
@@ -29,8 +28,6 @@ class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
                     ebcdicCodePage: CodePage) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
-  case class NoOpExpr()
-  case class Field(value: Statement) extends Expr
   case class IdentifierExpr(value: String) extends Expr
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
   case class UsageExpr(value: Option[Usage]) extends Expr
@@ -40,7 +37,7 @@ class ParserVisitor(enc: Encoding,
 
   /* aux classes */
   case class Level(n: Int, el: Group, context: ParserRuleContext, children: Option[Int] = None)
-  private var levels: Stack[Level] = Stack()
+  private var levels: mutable.Stack[Level] = mutable.Stack()
   var ast: CopybookAST = Group.root
 
   /* regex */
@@ -125,24 +122,21 @@ class ParserVisitor(enc: Encoding,
   def replaceUsage(ctx: ParserRuleContext, pic: PicExpr, usage: Option[Usage]): PicExpr = {
     usage match {
       case None => pic
-      case Some(usageVal) => {
+      case Some(usageVal) =>
         PicExpr(
           pic.value match {
-            case x: Decimal => {
+            case x: Decimal =>
               val dec = x.asInstanceOf[Decimal]
               if (dec.compact.isDefined && !dec.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${dec.compact.get}) doesn't match group's USAGE ($usageVal).")
               dec.copy(compact=usage)
-            }
-            case x: Integral => {
+            case x: Integral =>
               val int = x.asInstanceOf[Integral]
               if (int.compact.isDefined && !int.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
               int.copy(compact=usage)
-            }
           }
         )
-      }
     }
   }
 
@@ -311,7 +305,7 @@ class ParserVisitor(enc: Encoding,
   }
 
   def fromNumericZPicRegexExplicitDot(z1: String, nine1: String, nine2: String, z2: String): Decimal = {
-    val (char_z1, len_z1) = length(z1)
+    val (_, len_z1) = length(z1)
     val (char_n1, len_n1) = nine1 match {
       case "" => ('9', 0)
       case _ => length(nine1)
@@ -325,7 +319,7 @@ class ParserVisitor(enc: Encoding,
       case _ => length(z2)
     }
 
-    val pic = (s"Z(${len_z1.toString})"
+    val pic = (s"(${len_z1.toString})"
       + (if (len_n1 > 0) char_n1 + "(" + len_n1.toString + ")" else "")
       + "."
       + (if (len_n2 > 0) char_n2 + "(" + len_n2.toString + ")" else "")
@@ -347,7 +341,7 @@ class ParserVisitor(enc: Encoding,
   }
 
   def fromNumericZPicRegexDecimalScaled(z1: String, nine1: String, scale: String, nine2: String, z2: String): Decimal = {
-    val (char_z1, len_z1) = length(z1)
+    val (_, len_z1) = length(z1)
     val (char_n1, len_n1) = nine1 match {
       case "" => ('9', 0)
       case _ => length(nine1)
@@ -389,7 +383,7 @@ class ParserVisitor(enc: Encoding,
   }
 
   def fromNumericZPicRegexScaled(z: String, nine: String, scale: String): Decimal = {
-    val (char_z, len_z) = length(z)
+    val (_, len_z) = length(z)
     val (char_n, len_n) = nine match {
       case "" => ('9', 0)
       case _ => length(nine)
@@ -422,7 +416,7 @@ class ParserVisitor(enc: Encoding,
   override def visitMain(ctx: copybookParser.MainContext): Expr = {
     // initialize AST
     ast = Group.root.copy(children = mutable.ArrayBuffer())(None)
-    levels = Stack(Level(0, ast, ctx))
+    levels = mutable.Stack(Level(0, ast, ctx))
 
     visitChildren(ctx)
   }
@@ -517,7 +511,7 @@ class ParserVisitor(enc: Encoding,
 
   def checkBounds(ctx: ParserRuleContext, expr: PicExpr): PicExpr = {
     expr.value match {
-      case x: Decimal => {
+      case x: Decimal =>
         if (x.isSignSeparate && x.compact.isDefined)
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
             s"SIGN SEPARATE clause is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
@@ -534,8 +528,7 @@ class ParserVisitor(enc: Encoding,
           throw new IllegalStateException(s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${
             Constants.maxFieldLength
           }.")
-      }
-      case x: Integral => {
+      case x: Integral =>
         if (x.isSignSeparate && x.compact.isDefined) {
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
             s"SIGN SEPARATE clause is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
@@ -547,13 +540,11 @@ class ParserVisitor(enc: Encoding,
         if (x.precision < 1 || x.precision >= Constants.maxFieldLength)
           throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
             s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
-      }
-      case x: AlphaNumeric => {
+      case x: AlphaNumeric =>
         if (x.length < 1 || x.length >= Constants.maxFieldLength)
           throw new IllegalStateException(s"Incorrect field size of ${expr.value.originalPic}. Supported size is in range from 1 to ${
             Constants.maxFieldLength
           }.")
-      }
     }
     expr
   }
@@ -562,8 +553,8 @@ class ParserVisitor(enc: Encoding,
     if (ctx.alphaX() != null) {
       visitAlphaX(ctx.alphaX())
     }
-    else if (ctx.alphaX() != null) {
-      visitAlphaX(ctx.alphaX())
+    else if (ctx.alphaA() != null) {
+      visitAlphaA(ctx.alphaA())
     }
     else if (ctx.COMP_1() != null || ctx.COMP_2() != null) {
       PicExpr(
@@ -615,7 +606,7 @@ class ParserVisitor(enc: Encoding,
     val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
     ctx.plusMinus() match {
       case null => prec
-      case x => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0))
+      case _ => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0))
     }
   }
 
@@ -644,20 +635,16 @@ class ParserVisitor(enc: Encoding,
 
   override def visitPrecision9Ss(ctx: copybookParser.Precision9SsContext): PicExpr = {
     ctx.getText match {
-      case numericSPicRegexExplicitDot(s, nine1, nine2) => PicExpr(
-        fromNumericSPicRegexExplicitDot(s, nine1, nine2)
+      case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
       )
-      case x => x match {
-          case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-            fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
-          )
-          case y => y match {
-              case numericSPicRegexScaled(z, nine, scale) => PicExpr(
-                fromNumericSPicRegexScaled(z, nine, scale)
-              )
-              case _ => throw new RuntimeException("Error reading PIC " + y)
-            }
-        }
+      case numericSPicRegexScaled(z, nine, scale) => PicExpr(
+        fromNumericSPicRegexScaled(z, nine, scale)
+      )
+      case numericSPicRegexDecimalScaledLead(s, scale, nine) => PicExpr(
+        fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+      )
+      case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
   }
 
@@ -670,20 +657,13 @@ class ParserVisitor(enc: Encoding,
 
   override def visitPrecision9Zs(ctx: copybookParser.Precision9ZsContext): PicExpr = {
     ctx.getText match {
-      case numericZPicRegexExplicitDot(s, nine, scale) => PicExpr(
-        fromNumericSPicRegexScaled(s, nine, scale)
+      case numericZPicRegexDecimalScaled(z1, nine1, scale, nine2, z2) => PicExpr(
+        fromNumericZPicRegexDecimalScaled(z1, nine1, scale, nine2, z2)
       )
-      case x => x match {
-        case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-          fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
-        )
-        case y => y match {
-          case numericSPicRegexDecimalScaledLead(s, scale, nine) => PicExpr(
-            fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
-          )
-          case _ => throw new RuntimeException("Error reading PIC " + y)
-        }
-      }
+      case numericZPicRegexScaled(z, nine, scale) => PicExpr(
+        fromNumericZPicRegexScaled(z, nine, scale)
+      )
+      case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
   }
 

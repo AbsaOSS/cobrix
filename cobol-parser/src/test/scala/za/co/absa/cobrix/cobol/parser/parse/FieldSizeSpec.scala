@@ -37,6 +37,7 @@ class FieldSizeSpec extends FunSuite {
       |           10  DECIMAL_P1         PIC S9(9)PPP.
       |           10  DECIMAL_P2         PIC SPPP9(9).
       |           10  DECIMAL_P3         PIC SVPP9(5).
+      |           10  DECIMAL_P4         PIC SPP9999.
       |""".stripMargin
 
   def fieldsize(index: Int, cpy: Copybook): Int = {
@@ -74,6 +75,7 @@ class FieldSizeSpec extends FunSuite {
     val size_s9_decimal_ppp_1 = fieldsize(8, copybook)
     val size_s9_decimal_ppp_2 = fieldsize(9, copybook)
     val size_s9_decimal_ppp_3 = fieldsize(10, copybook)
+    val size_s9_decimal_ppp_4 = fieldsize(11, copybook)
 
     assert(size_s9_2_comp == 2)
     assert(size_x10 == 10)
@@ -89,5 +91,7 @@ class FieldSizeSpec extends FunSuite {
     assert(scale(9, copybook) == (0, -3))
     assert(size_s9_decimal_ppp_3 == 5)
     assert(scale(10, copybook) == (5, 2))
+    assert(size_s9_decimal_ppp_4 == 4)
+    assert(scale(11, copybook) == (0, -2))
   }
 }
