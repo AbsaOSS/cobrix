@@ -74,6 +74,9 @@ object Constants {
   // Non-terminals
   val nonTerminalsPostfix = "_NT"
 
+  // Copybook operations
+  val mergedRecordsPrefix = "MERGE_RECORD_AREA"
+
   // Types of built-in record header parsers
   val RhXcom = "xcom"
   val RhRdw = "rdw"
