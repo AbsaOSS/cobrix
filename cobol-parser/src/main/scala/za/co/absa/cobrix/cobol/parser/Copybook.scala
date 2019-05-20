@@ -266,14 +266,6 @@ object Copybook {
     if (namesSet.size != rootNames.size)
       throw new RuntimeException("Cannot merge copybooks with repeated segment identifiers")
 
-    // find a unique name for the top segment
-    var targetName = Constants.mergedRecordsPrefix
-    var i: Int = 0
-    while( namesSet.contains(targetName) ) {
-      targetName = Constants.mergedRecordsPrefix + "_%d".format(i)
-      i += 1
-    }
-
     // if there are more than one segment on any copybook, they must redefine the first one
     for(cb <- copybooks) {
       if(cb.ast.children.size > 1) {
@@ -283,21 +275,24 @@ object Copybook {
       }
     }
 
-    // create synthetic top level segment
-    val maxSize = copybooks.foldLeft(0) {(m, cb) => Math.max(m, cb.getRecordSize)}
-    val targetCopybook: Copybook = CopybookParser.parseTree(
-      s"      ${"%02d".format(rootLevel)} $targetName.\n       ${"%02d".format(rootLevel+1)} DATA PIC X($maxSize).\n"
-    )
+    val newRoot = Group.root.copy(children = new ArrayBuffer[Statement]())(None)
 
-    val newRoot = Group.root.copy(
-      children = targetCopybook.ast.children.map((x: Statement) => x.asInstanceOf[Group].copy(isRedefined = true)(x.parent))
-    )(None)
+    val targetName = copybooks.head.ast.children.head.name
 
-    // every segment should redefine the synthetic one
-    for(cb <- copybooks) {
+    // every segment should redefine the first one of the head copybook
+    newRoot.children += (copybooks.head.ast.children.head match {
+      case x: Group => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
+      case x: Primitive => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
+    })
+    newRoot.children ++= copybooks.head.ast.children.tail.map({
+      case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+      case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+    }).toBuffer[Statement]
+
+    for(cb <- copybooks.tail) {
       newRoot.children ++= cb.ast.children.map({
-        case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(x.parent)
-        case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(x.parent)
+        case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+        case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
       }).toBuffer[Statement]
     }
 
