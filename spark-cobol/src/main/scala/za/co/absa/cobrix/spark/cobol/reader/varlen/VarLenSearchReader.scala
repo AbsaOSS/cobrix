@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
@@ -53,7 +53,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 @throws(classOf[IllegalArgumentException])
 @deprecated("This class is deprecated. It will be removed in future versions")
-final class VarLenSearchReader(copybookContents: String,
+final class VarLenSearchReader(copybookContents: Seq[String],
                          signatureFieldName: String,
                          signatureFieldValue: String,
                          lengthFieldName: Option[String],
@@ -85,8 +85,13 @@ final class VarLenSearchReader(copybookContents: String,
     val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
     IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian, recordHeaderParser)
   }
-  private def loadCopyBook(copyBookContents: String): CobolSchema = {
-    val schema = CopybookParser.parseTree(copyBookContents)
+  private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
+    val schema = if (copyBookContents.size == 1)
+      CopybookParser.parseTree(copyBookContents.head)
+    else
+      Copybook.merge(copyBookContents.map(
+        CopybookParser.parseTree(_)
+      ))
     new CobolSchema(schema, policy, generateRecordId)
   }
 

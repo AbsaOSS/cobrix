@@ -24,7 +24,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * This class holds parameters for the job.
   *
   * @param copybookPath           String containing the path to the copybook in a given file system.
-  * @param copybookContent        String containing the actual content of the copybook. Either this or the copybookPath parameter must be specified.
+  * @param multiCopybookPath      Sequence containing the paths to the copybooks.
+  * @param copybookContent        String containing the actual content of the copybook. Either this, the copybookPath, or multiCopybookPath parameter must be specified.
   * @param sourcePath             String containing the path to the Cobol file to be parsed.
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
@@ -49,6 +50,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   */
 case class CobolParameters(
                             copybookPath:          Option[String],
+                            multiCopybookPath:     Seq[String],
                             copybookContent:       Option[String],
                             sourcePath:            Option[String],
                             isEbcdic:              Boolean,

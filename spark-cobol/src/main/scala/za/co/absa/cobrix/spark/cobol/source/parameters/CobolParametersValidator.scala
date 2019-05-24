@@ -38,7 +38,7 @@ object CobolParametersValidator {
       throw new IllegalArgumentException("Data source path must be specified.")
     }
 
-    if (params.copybookPath.isEmpty && params.copybookContent.isEmpty) {
+    if (params.copybookPath.isEmpty && params.copybookContent.isEmpty && params.multiCopybookPath.isEmpty) {
       throw new IllegalArgumentException("Either, copybook path or copybook content must be specified.")
     }
   }
@@ -53,34 +53,46 @@ object CobolParametersValidator {
     val hdfs = FileSystem.get(hadoopConf)
     val copyBookContents = parameters.get(PARAM_COPYBOOK_CONTENTS)
     val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
+    val copyBookMultiPathFileNames = parameters.get(PARAM_MULTI_COPYBOOK_PATH)
 
     parameters.getOrElse(PARAM_SOURCE_PATH, throw new IllegalStateException(s"Cannot define path to source files: missing " +
       s"parameter: '$PARAM_SOURCE_PATH'"))
 
-    (copyBookContents, copyBookPathFileName) match {
-      case (Some(contents), Some(fileName)) =>
-        throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
-      case (Some(contents), None) =>
-      // This is fine
-      case (None, Some(fileName)) =>
-        val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(parameters(PARAM_COPYBOOK_PATH))
-        if (isLocalFS) {
-          if (!Files.exists(Paths.get(copyBookFileName))) {
-            throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
-          }
-          if (!Files.isReadable(Paths.get(copyBookFileName))) {
-            throw new InvalidParameterException(s"Value does not point at a valid Copybook file: $copyBookFileName")
-          }
-        } else {
-          if (!hdfs.exists(new Path(copyBookFileName))) {
-            throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
-          }
-          if (!hdfs.isFile(new Path(copyBookFileName))) {
-            throw new InvalidParameterException(s"Please specify copybook file location via '$PARAM_COPYBOOK_PATH' option or provide copybook " +
-              s"contents via '$PARAM_COPYBOOK_CONTENTS' option.")
-          }
+    def validatePath(fileName: String): Unit = {
+      val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)
+      if (isLocalFS) {
+        if (!Files.exists(Paths.get(copyBookFileName))) {
+          throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
-      case (None, None) =>
+        if (!Files.isReadable(Paths.get(copyBookFileName))) {
+          throw new InvalidParameterException(s"Value does not point at a valid Copybook file: $copyBookFileName")
+        }
+      } else {
+        if (!hdfs.exists(new Path(copyBookFileName))) {
+          throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
+        }
+        if (!hdfs.isFile(new Path(copyBookFileName))) {
+          throw new InvalidParameterException(s"Please specify copybook file location via '$fileName' option or provide copybook " +
+            s"contents via '$PARAM_COPYBOOK_CONTENTS' option.")
+        }
+      }
+    }
+
+    (copyBookContents, copyBookPathFileName, copyBookMultiPathFileNames) match {
+      case (Some(contents), Some(fileName), _) =>
+        throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
+      case (Some(contents), _, Some(filenames)) =>
+        throw new IllegalStateException(s"Both '$PARAM_MULTI_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
+      case (_, Some(filename), Some(filenames)) =>
+        throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_MULTI_COPYBOOK_PATH' options cannot be specified at the same time")
+      case (Some(contents), None, None) =>
+      // This is fine
+      case (None, Some(fileName), None) => validatePath(fileName)
+      // This is fine
+      case (None, None, Some(fileNames)) =>
+        for(fileName <-fileNames.split(","))
+          validatePath(fileName)
+      case (None, None, None) =>
         throw new IllegalStateException(s"Cannot define path to source files: missing parameter: '$PARAM_SOURCE_PATH'")
     }
   }
