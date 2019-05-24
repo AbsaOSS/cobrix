@@ -29,20 +29,32 @@ import scala.collection.JavaConverters._
 
 object CopybookContentLoader {
 
-  def load(parameters: CobolParameters, hadoopConf: Configuration): String = {
+  def load(parameters: CobolParameters, hadoopConf: Configuration): Seq[String] = {
 
     val copyBookContents = parameters.copybookContent
     val copyBookPathFileName = parameters.copybookPath
 
-    copyBookContents match {
-      case Some(contents) => contents
-      case None =>
+    (copyBookContents, copyBookPathFileName) match {
+      case (Some(contents), _) => Seq(contents)
+      case (None, Some(_)) =>
         val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(copyBookPathFileName.get)
-        if (isLocalFS) {
-          loadCopybookFromLocalFS(copyBookFileName)
-        } else {
-          loadCopybookFromHDFS(hadoopConf, copyBookFileName)
+        Seq(
+          if (isLocalFS) {
+            loadCopybookFromLocalFS(copyBookFileName)
+          } else {
+            loadCopybookFromHDFS(hadoopConf, copyBookFileName)
+          }
+        )
+      case (None, None) => parameters.multiCopybookPath.map(
+        fileName => {
+          val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)
+          if (isLocalFS) {
+            loadCopybookFromLocalFS(copyBookFileName)
+          } else {
+            loadCopybookFromHDFS(hadoopConf, copyBookFileName)
+          }
         }
+      )
     }
   }
 

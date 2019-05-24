@@ -106,6 +106,38 @@ class MergeCopybooksSpec extends FunSuite {
         |      10 FILLER                                      24     76     90     15""".stripMargin)
   }
 
+  test("Test merge one copybook only") {
+    val copyBookContents1: String =
+      """        01  RECORD-COPYBOOK-1.
+        |           05  GROUP-1.
+        |              06  FIELD-1            PIC X(10).
+        |              06  FILLER             PIC X(5).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(10).
+        |                 10  FILLER          PIC 9(5).
+        |""".stripMargin
+
+    val copybook1 = CopybookParser.parseTree(copyBookContents1)
+
+    assert(copybook1.getRecordSize == 30)
+
+    val copybook1M = Copybook.merge(List(copybook1))
+    assert(copybook1M.getRecordSize == 30)
+
+    assert(copybook1M.generateRecordLayoutPositions == copybook1.generateRecordLayoutPositions)
+    assert(copybook1M.generateRecordLayoutPositions ==
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |RECORD_COPYBOOK_1                                            1     30     30
+        |  5 GROUP_1                                           6      1     30     30
+        |    6 FIELD_1                                         2      1     10     10
+        |    6 FILLER                                          3     11     15      5
+        |    6 GROUP_2                                         6     16     30     15
+        |      10 NESTED_FIELD_1                               5     16     25     10
+        |      10 FILLER                                       6     26     30      5""".stripMargin)
+  }
+
+
   test("Test merge copybooks fail: differing levels") {
     val copyBookContents1: String =
       """        01  RECORD-COPYBOOK-1.

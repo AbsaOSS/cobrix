@@ -32,6 +32,7 @@ object CobolParametersParser {
 
   val SHORT_NAME                      = "cobol"
   val PARAM_COPYBOOK_PATH             = "copybook"
+  val PARAM_MULTI_COPYBOOK_PATH       = "copybooks"
   val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
   val PARAM_SOURCE_PATH               = "path"
   val PARAM_ENCODING                  = "encoding"
@@ -119,6 +120,7 @@ object CobolParametersParser {
 
     CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
+      params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
       isEbcdic,

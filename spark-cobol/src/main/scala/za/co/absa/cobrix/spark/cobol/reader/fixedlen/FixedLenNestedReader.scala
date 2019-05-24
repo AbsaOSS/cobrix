@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
@@ -34,7 +34,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
   * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
-final class FixedLenNestedReader(copyBookContents: String,
+final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  isEbcdic: Boolean = true,
                                  ebcdicCodePage: CodePage,
                                  startOffset: Int = 0,
@@ -78,9 +78,17 @@ final class FixedLenNestedReader(copyBookContents: String,
     cobolSchema.getRecordSize + startOffset + endOffset
   }
 
-  private def loadCopyBook(copyBookContents: String): CobolSchema = {
+  private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, dropGroupFillers, segmentRedefines = Nil, stringTrimmingPolicy, ebcdicCodePage, nonTerminals = nonTerminals)
+    val schema = if (copyBookContents.size == 1)
+      CopybookParser.parseTree(encoding, copyBookContents.head, dropGroupFillers, segmentRedefines = Nil, stringTrimmingPolicy, ebcdicCodePage, nonTerminals = nonTerminals)
+    else
+      Copybook.merge(
+        copyBookContents.map(
+          CopybookParser.parseTree(encoding, _, dropGroupFillers, segmentRedefines = Nil,
+            stringTrimmingPolicy, ebcdicCodePage, nonTerminals = nonTerminals)
+        )
+      )
     new CobolSchema(schema, schemaRetentionPolicy, false)
   }
 
