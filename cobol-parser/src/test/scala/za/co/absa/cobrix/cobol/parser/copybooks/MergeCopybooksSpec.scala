@@ -103,7 +103,8 @@ class MergeCopybooksSpec extends FunSuite {
         |    6 FILLER                                         21     31     45     15
         |    6 GROUP_2                                        24     46     90     45
         |      10 NESTED_FIELD_1                              23     46     75     30
-        |      10 FILLER                                      24     76     90     15""".stripMargin)
+        |      10 FILLER                                      24     76     90     15"""
+        .stripMargin.replace("\r\n", "\n"))
   }
 
   test("Test merge one copybook only") {
@@ -134,7 +135,8 @@ class MergeCopybooksSpec extends FunSuite {
         |    6 FILLER                                          3     11     15      5
         |    6 GROUP_2                                         6     16     30     15
         |      10 NESTED_FIELD_1                               5     16     25     10
-        |      10 FILLER                                       6     26     30      5""".stripMargin)
+        |      10 FILLER                                       6     26     30      5"""
+        .stripMargin.replace("\r\n", "\n"))
   }
 
 
