@@ -19,8 +19,9 @@ package za.co.absa.cobrix.cobol.parser
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.{Constants}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -238,6 +239,28 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     }
     val header = "-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH\n\n"
     header + strings.mkString("\n")
+  }
+
+  def dropRoot(): Copybook = {
+    if (ast.children.isEmpty)
+      throw new RuntimeException("Cannot drop the root of an empty copybook.")
+    if (ast.children.size > 1)
+      throw new RuntimeException("Cannot drop the root of a copybook with more than one root segment.")
+    if (ast.children.head.asInstanceOf[Group].children.exists(_.isInstanceOf[Primitive]))
+      throw new RuntimeException("All elements of the root element must be record groups.")
+
+    val newRoot = ast.children.head.asInstanceOf[Group].copy()(None)
+    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+    new Copybook(schema.head.asInstanceOf[Group])
+  }
+
+  def restrictTo(fieldName: String): Copybook = {
+    val stmt = getFieldByName(fieldName)
+    if (stmt.isInstanceOf[Primitive])
+      throw new RuntimeException("Can only restrict the copybook to a group element.")
+    val newRoot = Group.root.copy(children = mutable.ArrayBuffer(stmt))(None)
+    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+    new Copybook(schema.head.asInstanceOf[Group])
   }
 }
 
