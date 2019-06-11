@@ -22,7 +22,7 @@
     <groupId>za.co.absa.cobrix</groupId>
     <artifactId>cobrix</artifactId>
 
-    <version>0.4.3-SNAPSHOT</version>
+    <version>0.5.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 

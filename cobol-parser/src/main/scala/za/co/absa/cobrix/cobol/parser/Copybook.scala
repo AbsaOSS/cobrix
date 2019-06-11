@@ -17,9 +17,13 @@
 package za.co.absa.cobrix.cobol.parser
 
 import org.slf4j.LoggerFactory
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.common.Constants
+
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+
 
 class Copybook(val ast: CopybookAST) extends Serializable {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -182,7 +186,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       }
     }
 
-    def generateGroupLayutPositions(group: Group, path: String = "  "): String = {
+    def generateGroupLayoutPositions(group: Group, path: String = "  "): String = {
       val fieldStrings = for (field <- group.children) yield {
         fieldCounter += 1
         val isRedefines = if (field.redefines.nonEmpty) "R" else ""
@@ -192,7 +196,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
         field match {
           case grp: Group =>
             val modifiers = s"$isRedefinedByStr$isRedefines$isArray"
-            val groupStr = generateGroupLayutPositions(grp, path + "  ")
+            val groupStr = generateGroupLayoutPositions(grp, path + "  ")
             val start = grp.binaryProperties.offset + 1
             val length = grp.binaryProperties.actualSize
             val end = start + length - 1
@@ -226,7 +230,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       val start = grp.binaryProperties.offset + 1
       val length = grp.binaryProperties.actualSize
       val end = start + length - 1
-      val groupStr = generateGroupLayutPositions(grp.asInstanceOf[Group])
+      val groupStr = generateGroupLayoutPositions(grp.asInstanceOf[Group])
       val namePart = alignLeft(s"${grp.name}", 55)
       val fieldStartPart = alignRight(s"$start", 7)
       val fieldEndPart = alignRight(s"$end", 7)
@@ -237,4 +241,87 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     header + strings.mkString("\n")
   }
 
+  def dropRoot(): Copybook = {
+    if (ast.children.isEmpty)
+      throw new RuntimeException("Cannot drop the root of an empty copybook.")
+    if (ast.children.size > 1)
+      throw new RuntimeException("Cannot drop the root of a copybook with more than one root segment.")
+    if (ast.children.head.asInstanceOf[Group].children.exists(_.isInstanceOf[Primitive]))
+      throw new RuntimeException("All elements of the root element must be record groups.")
+
+    val newRoot = ast.children.head.asInstanceOf[Group].copy()(None)
+    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+    new Copybook(schema.head.asInstanceOf[Group])
+  }
+
+  def restrictTo(fieldName: String): Copybook = {
+    val stmt = getFieldByName(fieldName)
+    if (stmt.isInstanceOf[Primitive])
+      throw new RuntimeException("Can only restrict the copybook to a group element.")
+    val newRoot = Group.root.copy(children = mutable.ArrayBuffer(stmt))(None)
+    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+    new Copybook(schema.head.asInstanceOf[Group])
+  }
+}
+
+
+object Copybook {
+  def merge(copybooks: Iterable[Copybook]): Copybook = {
+    if (copybooks.isEmpty)
+      throw new RuntimeException("Cannot merge an empty iterable of copybooks.")
+
+    // make sure all segments are the same level
+    val rootLevels: Set[Int] = copybooks.flatMap(cb => cb.ast.children.map({
+      case x: Group => x.level
+      case x: Primitive => x.level
+      case _ => 0
+    })).toSet[Int]
+    if (rootLevels.size > 1)
+      throw new RuntimeException("Cannot merge copybooks with differing root levels")
+    val rootLevel = rootLevels.last
+
+    // make sure segments have different names
+    val rootNames: List[String] = copybooks.flatMap(cb => cb.ast.children.map({
+      case x: Group => x.name
+      case x: Primitive => x.name
+    })).toList
+    val namesSet = rootNames.toSet
+    if (namesSet.size != rootNames.size)
+      throw new RuntimeException("Cannot merge copybooks with repeated segment identifiers")
+
+    // if there are more than one segment on any copybook, they must redefine the first one
+    for(cb <- copybooks) {
+      if(cb.ast.children.size > 1) {
+        val head = cb.ast.children.head
+        if( !head.isRedefined || cb.ast.children.tail.exists(x => !x.redefines.contains(head.name)))
+          throw new RuntimeException("Copybook segments must redefine top segment.")
+      }
+    }
+
+    val newRoot = Group.root.copy(children = new ArrayBuffer[Statement]())(None)
+
+    val targetName = copybooks.head.ast.children.head.name
+
+    // every segment should redefine the first one of the head copybook
+    newRoot.children += (copybooks.head.ast.children.head match {
+      case x: Group => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
+      case x: Primitive => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
+    })
+    newRoot.children ++= copybooks.head.ast.children.tail.map({
+      case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+      case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+    }).toBuffer[Statement]
+
+    for(cb <- copybooks.tail) {
+      newRoot.children ++= cb.ast.children.map({
+        case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+        case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
+      }).toBuffer[Statement]
+    }
+
+    // recompute sizes
+    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+
+    new Copybook(schema.head.asInstanceOf[Group])
+  }
 }

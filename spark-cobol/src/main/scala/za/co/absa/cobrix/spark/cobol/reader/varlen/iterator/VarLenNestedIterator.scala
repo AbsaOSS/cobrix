@@ -183,7 +183,11 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     }
 
     if (!isEndOfFile) {
-      Some(recordBytes)
+      if (recordHeaderParser.isHeaderDefinedInCopybook) {
+        Some(headerBytes ++ recordBytes)
+      } else {
+        Some(recordBytes)
+      }
     } else {
       None
     }

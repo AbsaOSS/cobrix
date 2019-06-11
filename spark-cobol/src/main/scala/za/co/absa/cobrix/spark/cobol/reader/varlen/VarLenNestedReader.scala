@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
@@ -42,7 +42,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param readerProperties      Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
-final class VarLenNestedReader(copybookContents: String,
+final class VarLenNestedReader(copybookContents: Seq[String],
                          readerProperties: ReaderParameters) extends VarLenReader {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -110,12 +110,18 @@ final class VarLenNestedReader(copybookContents: String,
     }
   }
 
-  private def loadCopyBook(copyBookContents: String): CobolSchema = {
+  private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
-    val schema = CopybookParser.parseTree(encoding, copyBookContents, readerProperties.dropGroupFillers,
-      segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+    val schema = if (copyBookContents.size == 1)
+      CopybookParser.parseTree(encoding, copyBookContents.head, readerProperties.dropGroupFillers,
+                               segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+    else
+      Copybook.merge(copyBookContents.map(
+        CopybookParser.parseTree(encoding, _, readerProperties.dropGroupFillers,
+          segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+      ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
