@@ -253,6 +253,9 @@ object CobolValidators {
           }
         case DECIMAL_POINT =>
           c match {
+            case 'P' =>
+              scaleEncountered = true
+              state = SCALE
             case '9' | 'Z' =>
               state = NUMBER
             case 'A' =>
