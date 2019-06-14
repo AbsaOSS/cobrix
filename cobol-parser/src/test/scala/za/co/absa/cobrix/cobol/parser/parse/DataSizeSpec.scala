@@ -27,6 +27,9 @@ class DataSizeSpec extends FunSuite {
     assert(CopybookParser.expandPic("X(3)XXX") == "XXXXXX")
     assert(CopybookParser.expandPic("X(3)XX(5)X") == "XXXXXXXXXX")
     assert(CopybookParser.expandPic("XX(3)X.X(5)X") == "XXXXX.XXXXXX")
+    assert(CopybookParser.expandPic("S9(9)V9(6)") == "S999999999V999999")
+    assert(CopybookParser.expandPic("S9(15)V9(2)") == "S999999999999999V99")
+    assert(CopybookParser.expandPic("S9(15)V99") == "S999999999999999V99")
   }
 
   test("Test Number of Decimal digits are reported correctly for a given PIC") {
