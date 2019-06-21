@@ -24,6 +24,10 @@ class TestStringStream extends SimpleStream{
   val str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   val sz: Int = str.length
 
+  override def size: Long = sz
+
+  override def offset: Long = position
+
   override def next(numberOfBytes: Int): Array[Byte] = {
     if (position + numberOfBytes < sz) {
       val s = str.substring(position, position+numberOfBytes)

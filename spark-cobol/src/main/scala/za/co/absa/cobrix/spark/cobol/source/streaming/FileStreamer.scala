@@ -20,6 +20,7 @@ import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
+import org.apache.hadoop.fs.ContentSummary
 
 /**
   * This class provides methods for streaming bytes from an HDFS file.
@@ -37,10 +38,16 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
-  private var offset = startOffset
+  private var byteIndex = startOffset
 
   // Use a buffer to read the data from HDFS in big chunks
   private var buferredStream = new BufferedFSDataInputStream(getHDFSPath(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+
+  private val fileSize = getHDFSFileSize(getHDFSPath(filePath))
+
+  override def size: Long = if (maximumBytes == 0) Math.min(fileSize, maximumBytes + startOffset) else fileSize
+
+  override def offset: Long = byteIndex
 
   /**
     * Retrieves a given number of bytes.
@@ -55,7 +62,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     * @return
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
-    if ((maximumBytes > 0 && offset - startOffset >= maximumBytes) || buferredStream.isClosed) {
+    if ((maximumBytes > 0 && byteIndex - startOffset >= maximumBytes) || buferredStream.isClosed) {
       close()
       new Array[Byte](0)
     } else {
@@ -65,7 +72,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
       var readBytes = buferredStream.readFully(buffer, 0, numberOfBytes)
 
       if (readBytes > 0) {
-        offset = offset + readBytes
+        byteIndex = byteIndex + readBytes
       }
 
       if (readBytes == numberOfBytes) {
@@ -113,5 +120,10 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
       throw new IllegalArgumentException(s"Inexistent file: $path")
     }
     hdfsPath
+  }
+
+  private def getHDFSFileSize(hdfsPath: Path): Long = {
+    val cSummary: ContentSummary = fileSystem.getContentSummary(hdfsPath)
+    cSummary.getLength
   }
 }
