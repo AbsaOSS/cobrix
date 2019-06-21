@@ -75,6 +75,9 @@ object CobolParametersParser {
   val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
   val PARAM_IMPROVE_LOCALITY          = "improve_locality"
 
+  // Parameters for debugging
+  val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
+
   private def getSchemaRetentionPolicy(params: Map[String,String]): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
@@ -144,7 +147,8 @@ object CobolParametersParser {
       params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
-      params.get(PARAM_RECORD_HEADER_PARSER)
+      params.get(PARAM_RECORD_HEADER_PARSER),
+      params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
   }
 
