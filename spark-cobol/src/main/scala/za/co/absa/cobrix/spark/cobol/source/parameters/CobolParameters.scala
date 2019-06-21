@@ -74,5 +74,6 @@ case class CobolParameters(
                             optimizeAllocation:    Boolean,
                             dropGroupFillers:      Boolean,
                             nonTerminals:          Seq[String],
-                            recordHeaderParser:    Option[String]
+                            recordHeaderParser:    Option[String],
+                            debugIgnoreFileSize:   Boolean
                           )

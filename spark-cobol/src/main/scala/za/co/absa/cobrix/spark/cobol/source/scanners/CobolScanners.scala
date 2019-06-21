@@ -75,6 +75,7 @@ private [source] object CobolScanners {
 
   private[source] def buildScanForFixedLength(reader: FixedLenReader, sourceDir: String,
                                               recordParser: (FixedLenReader,RDD[Array[Byte]]) => RDD[Row],
+                                              debugIgnoreFileSize: Boolean,
                                               sqlContext: SQLContext): RDD[Row] = {
     // This reads whole text files as RDD[String]
     // binaryRecords() for fixed size records
@@ -83,7 +84,7 @@ private [source] object CobolScanners {
 
     val recordSize = reader.getCobolSchema.getRecordSize + reader.getRecordStartOffset + reader.getRecordEndOffset
 
-    if (areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
+    if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
       throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
     }
 

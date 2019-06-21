@@ -16,24 +16,24 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.mapred.FileInputFormat
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapred.FileInputFormat
+import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanners
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import scala.util.control.NonFatal
 
@@ -64,7 +64,11 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
   *
   * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
-class CobolRelation(sourceDir: String, cobolReader: Reader, localityParams: LocalityParameters)(@transient val sqlContext: SQLContext)
+class CobolRelation(sourceDir: String,
+                    cobolReader: Reader,
+                    localityParams: LocalityParameters,
+                    debugIgnoreFileSize: Boolean
+                   )(@transient val sqlContext: SQLContext)
   extends BaseRelation
   with Serializable
   with TableScan {
@@ -82,10 +86,14 @@ class CobolRelation(sourceDir: String, cobolReader: Reader, localityParams: Loca
   override def buildScan(): RDD[Row] = {
 
     cobolReader match {
-      case blockReader: FixedLenReader => CobolScanners.buildScanForFixedLength(blockReader, sourceDir, parseRecords, sqlContext)
-      case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded => CobolScanners.buildScanForVarLenIndex(streamReader, indexes, filesList, sqlContext)
-      case streamReader: VarLenReader => CobolScanners.buildScanForVariableLength(streamReader, filesList, sqlContext)
-      case _ => throw new IllegalStateException("Invalid reader object $cobolReader.")
+      case blockReader: FixedLenReader =>
+        CobolScanners.buildScanForFixedLength(blockReader, sourceDir, parseRecords, debugIgnoreFileSize, sqlContext)
+      case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded =>
+        CobolScanners.buildScanForVarLenIndex(streamReader, indexes, filesList, sqlContext)
+      case streamReader: VarLenReader =>
+        CobolScanners.buildScanForVariableLength(streamReader, filesList, sqlContext)
+      case _ =>
+        throw new IllegalStateException("Invalid reader object $cobolReader.")
     }
   }
 

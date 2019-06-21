@@ -857,6 +857,12 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
 | .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
 
+##### Debug helper options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("debug_ignore_file_size", "false") | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file. |
+
 ## Performance Analysis
 
 Performance tests were performed on synthetic datasets. The setup and results are as follows.
