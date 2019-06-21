@@ -198,6 +198,10 @@
 		                          TRAILING SEPARATE.
           10  NUM-ST-STR-DEC01    PIC 99V99 SIGN
                          TRAILING SEPARATE.
+          10  NUM-SLI-STR-DEC01   PIC SV9(7) SIGN LEADING.
+          10  NUM-STI-STR-DEC01   PIC SV9(7) SIGN TRAILING.
+          10  NUM-SLI-DEBUG       PIC X(7).
+          10  NUM-STI-DEBUG       PIC X(7).
 
 ***********************************************************************
 *******               FLOATING POINT TYPES

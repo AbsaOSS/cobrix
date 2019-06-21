@@ -219,6 +219,10 @@ object TestDataGen6TypeVariety {
 		                          TRAILING SEPARATE.
           10  NUM-ST-STR-DEC01    PIC 99V99 SIGN
                          TRAILING SEPARATE.
+          10  NUM-SLI-STR-DEC01   PIC SV9(7) SIGN LEADING.
+          10  NUM-STI-STR-DEC01   PIC SV9(7) SIGN TRAILING.
+          10  NUM-SLI-DEBUG       PIC X(7).
+          10  NUM-STI-DEBUG       PIC X(7).
 
 ***********************************************************************
 *******               FLOATING POINT TYPES
@@ -325,6 +329,7 @@ object TestDataGen6TypeVariety {
                                isNegative: Boolean = false,
                                isSignSeparate: Boolean = false,
                                isSignLeading: Boolean = true,
+                               isSignPunching: Boolean = true,
                                explicitDecimalPosition: Int = -1): Int = {
 
     val explicitDecimalChars = if (explicitDecimalPosition >= 0) 1 else 0
@@ -363,6 +368,7 @@ object TestDataGen6TypeVariety {
     }
 
     var j = 0
+    //var firstDigit = true
     while (j < binLength) {
       if (j == explicitDecimalPosition) {
         bytes(i) = Constants.dotCharEBCIDIC
@@ -375,7 +381,7 @@ object TestDataGen6TypeVariety {
     newOffset
   }
 
-  def encodeUncompressed(numStr: String, targetLength: Int, isSigned: Boolean, signPunch: Boolean): Array[Byte] = {
+  def encodeUncompressed(numStr: String, targetLength: Int, isSigned: Boolean, signPunch: Boolean, isSignLeading: Boolean): Array[Byte] = {
     val sign = if (isSigned && numStr(0) == '-') '-' else '+'
     val str = if (numStr(0) == '-') numStr.drop(1) else numStr
     var j = 0
@@ -383,7 +389,8 @@ object TestDataGen6TypeVariety {
     while (j < targetLength) {
       if (j < str.length) {
         var c = BinaryUtils.asciiToEbcdic(str.charAt(j))
-        if (j==str.length-1 && isSigned && signPunch) {
+        val punchSignal = (isSignLeading && j==0) || (!isSignLeading && j==str.length-1)
+        if (punchSignal && isSigned && signPunch) {
           val num = if (sign == '-') {
             str.charAt(j).toInt - 0x30 + 0xD0
           } else {
@@ -492,8 +499,8 @@ object TestDataGen6TypeVariety {
                        isSignSeparate: Boolean = false,
                        isSignLeading: Boolean = false,
                        explicitDecimalPosition: Int = -1): Int = {
-    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length, signed, !isSignSeparate),
-      fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, explicitDecimalPosition)
+    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length, signed, !isSignSeparate, isSignLeading),
+      fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, !isSignSeparate, explicitDecimalPosition)
   }
 
   def putFloat(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
@@ -555,7 +562,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1465)
+    val byteArray: Array[Byte] = new Array[Byte](1493)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -737,11 +744,15 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
 
-      // Sign separate numbers
+      // Sign separate  numbers
       offset = putNumStrToArray("NUM-SL-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-SL-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-ST-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
       offset = putNumStrToArray("NUM-ST-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("NUM-SLI-STR-DEC01", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = true)
+      offset = putNumStrToArray("NUM-STI-STR-DEC01", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = false)
+      offset = putNumStrToArray("NUM-SLI-DEBUG", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = true)
+      offset = putNumStrToArray("NUM-STI-DEBUG", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = false)
 
       offset = putFloat("FLOAT-01", byteArray, bigNum, offset, isNegative)
       offset = putDouble("DOUBLE-01", byteArray, bigNum, offset, isNegative)
