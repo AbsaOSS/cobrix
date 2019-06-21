@@ -1,6 +1,6 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-RECORD                                                       1   1465   1465
+RECORD                                                       1   1493   1493
   10 ID                                               1      1      4      4
   10 STRING_VAL                                       2      5     14     10
   10 NUM_STR_INT01                                    3     15     15      1
@@ -154,41 +154,45 @@ RECORD                                                       1   1465   1465
   10 NUM_SL_STR_DEC01                               151   1244   1248      5
   10 NUM_ST_STR_INT01                               152   1249   1258     10
   10 NUM_ST_STR_DEC01                               153   1259   1263      5
-  10 FLOAT_01                                       154   1264   1267      4
-  10 DOUBLE_01                                      155   1268   1275      8
-  10 COMMON_8_BIN                                   156   1276   1279      4
-  10 COMMON_S3_BIN                                  157   1280   1281      2
-  10 COMMON_S94COMP                                 158   1282   1283      2
-  10 COMMON_S8_BIN                                  159   1284   1287      4
-  10 COMMON_DDC97_BIN                               160   1288   1291      4
-  10 COMMON_97COMP3                                 161   1292   1295      4
-  10 COMMON_915COMP3                                162   1296   1303      8
-  10 COMMON_S95COMP3                                163   1304   1306      3
-  10 COMMON_S999DCCOMP3                             164   1307   1312      6
-  10 COMMON_S913COMP3                               165   1313   1319      7
-  10 COMMON_S913DCCOMP3                             166   1320   1327      8
-  10 COMMON_S911DCC2                                167   1328   1334      7
-  10 COMMON_S910DCC3                                168   1335   1341      7
-  10 COMMON_S03DDC                                  169   1342   1344      3
-  10 COMMON_U03DDC                                  170   1345   1347      3
-  10 COMMON_UPC5DDC                                 171   1348   1350      3
-  10 COMMON_SPC5DDC                                 172   1351   1353      3
-  10 COMMON_UPI5DDC                                 173   1354   1356      3
-  10 COMMON_SPI5DDC                                 174   1357   1359      3
-  10 COMMON_UPC5DISP                                175   1360   1364      5
-  10 COMMON_UPI5DISP                                176   1365   1369      5
-  10 COMMON_UPC1BIN                                 177   1370   1371      2
-  10 COMMON_UPI1BIN                                 178   1372   1373      2
-  10 COMMON_UPC3BIN                                 179   1374   1375      2
-  10 COMMON_UPI3BIN                                 180   1376   1377      2
-  10 COMMON_UPC5BIN                                 181   1378   1381      4
-  10 COMMON_UPI5BIN                                 182   1382   1385      4
-  10 COMMON_UPC10BIN                                183   1386   1393      8
-  10 COMMON_UPI10BIN                                184   1394   1401      8
-  10 EX_NUM_INT01                                   185   1402   1410      9
-  10 EX_NUM_INT02                                   186   1411   1419      9
-  10 EX_NUM_INT03                                   187   1420   1428      9
-  10 EX_NUM_INT04                                   188   1429   1437      9
-  10 EX_NUM_DEC01                                   189   1438   1446      9
-  10 EX_NUM_DEC02                                   190   1447   1455      9
-  10 EX_NUM_DEC03                                   191   1456   1465     10
+  10 NUM_SLI_STR_DEC01                              154   1264   1270      7
+  10 NUM_STI_STR_DEC01                              155   1271   1277      7
+  10 NUM_SLI_DEBUG                                  156   1278   1284      7
+  10 NUM_STI_DEBUG                                  157   1285   1291      7
+  10 FLOAT_01                                       158   1292   1295      4
+  10 DOUBLE_01                                      159   1296   1303      8
+  10 COMMON_8_BIN                                   160   1304   1307      4
+  10 COMMON_S3_BIN                                  161   1308   1309      2
+  10 COMMON_S94COMP                                 162   1310   1311      2
+  10 COMMON_S8_BIN                                  163   1312   1315      4
+  10 COMMON_DDC97_BIN                               164   1316   1319      4
+  10 COMMON_97COMP3                                 165   1320   1323      4
+  10 COMMON_915COMP3                                166   1324   1331      8
+  10 COMMON_S95COMP3                                167   1332   1334      3
+  10 COMMON_S999DCCOMP3                             168   1335   1340      6
+  10 COMMON_S913COMP3                               169   1341   1347      7
+  10 COMMON_S913DCCOMP3                             170   1348   1355      8
+  10 COMMON_S911DCC2                                171   1356   1362      7
+  10 COMMON_S910DCC3                                172   1363   1369      7
+  10 COMMON_S03DDC                                  173   1370   1372      3
+  10 COMMON_U03DDC                                  174   1373   1375      3
+  10 COMMON_UPC5DDC                                 175   1376   1378      3
+  10 COMMON_SPC5DDC                                 176   1379   1381      3
+  10 COMMON_UPI5DDC                                 177   1382   1384      3
+  10 COMMON_SPI5DDC                                 178   1385   1387      3
+  10 COMMON_UPC5DISP                                179   1388   1392      5
+  10 COMMON_UPI5DISP                                180   1393   1397      5
+  10 COMMON_UPC1BIN                                 181   1398   1399      2
+  10 COMMON_UPI1BIN                                 182   1400   1401      2
+  10 COMMON_UPC3BIN                                 183   1402   1403      2
+  10 COMMON_UPI3BIN                                 184   1404   1405      2
+  10 COMMON_UPC5BIN                                 185   1406   1409      4
+  10 COMMON_UPI5BIN                                 186   1410   1413      4
+  10 COMMON_UPC10BIN                                187   1414   1421      8
+  10 COMMON_UPI10BIN                                188   1422   1429      8
+  10 EX_NUM_INT01                                   189   1430   1438      9
+  10 EX_NUM_INT02                                   190   1439   1447      9
+  10 EX_NUM_INT03                                   191   1448   1456      9
+  10 EX_NUM_INT04                                   192   1457   1465      9
+  10 EX_NUM_DEC01                                   193   1466   1474      9
+  10 EX_NUM_DEC02                                   194   1475   1483      9
+  10 EX_NUM_DEC03                                   195   1484   1493     10
