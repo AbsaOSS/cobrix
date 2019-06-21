@@ -72,7 +72,12 @@ class DefaultSource
 
     val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
 
-    if (cobolParameters.variableLengthParams.isEmpty && !isSearchSignature && !cobolParameters.isRecordSequence && !cobolParameters.generateRecordId) {
+    if (cobolParameters.variableLengthParams.isEmpty &&
+      !isSearchSignature &&
+      !cobolParameters.isRecordSequence &&
+      !cobolParameters.generateRecordId &&
+      cobolParameters.fileStartOffset == 0L &&
+      cobolParameters.fileEndOffset == 0L) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -139,6 +144,8 @@ class DefaultSource
           hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
           startOffset = parameters.recordStartOffset,
           endOffset = parameters.recordEndOffset,
+          fileStartOffset = parameters.fileStartOffset,
+          fileEndOffset = parameters.fileEndOffset,
           generateRecordId = parameters.generateRecordId,
           schemaPolicy = parameters.schemaRetentionPolicy,
           stringTrimmingPolicy = parameters.stringTrimmingPolicy,
