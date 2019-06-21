@@ -37,6 +37,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
+  * @param fileStartOffset        A number of bytes to skip at the beginning of each file
+  * @param fileEndOffset          A number of bytes to skip at the end of each file
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   *                               If None, the records will be assumed to be fixed-length.
   * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
@@ -63,6 +65,8 @@ case class CobolParameters(
                             inputSplitSizeMB:      Option[Int],
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
+                            fileStartOffset:       Long,
+                            fileEndOffset:         Long,
                             variableLengthParams:  Option[VariableLengthParameters],
                             generateRecordId:      Boolean,
                             schemaRetentionPolicy: SchemaRetentionPolicy,

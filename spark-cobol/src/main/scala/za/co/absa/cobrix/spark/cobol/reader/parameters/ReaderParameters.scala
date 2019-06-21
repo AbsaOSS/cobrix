@@ -36,6 +36,8 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param hdfsDefaultBlockSize     Default HDFS block size for the HDFS filesystem used. This value is used as the default split size if inputSplitSizeMB is not specified
   * @param startOffset              An offset to the start of the record in each binary data block.
   * @param endOffset                An offset from the end of the record to the end of the binary data block.
+  * @param fileStartOffset        A number of bytes to skip at the beginning of each file
+  * @param fileEndOffset          A number of bytes to skip at the end of each file
   * @param generateRecordId         If true, a record id field will be prepended to each record.
   * @param schemaPolicy             Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param stringTrimmingPolicy     Specifies if and how strings should be trimmed when parsed.
@@ -56,6 +58,8 @@ case class ReaderParameters(
                              hdfsDefaultBlockSize:    Option[Int] = None,
                              startOffset:             Int = 0,
                              endOffset:               Int = 0,
+                             fileStartOffset:         Long = 0,
+                             fileEndOffset:           Long = 0,
                              generateRecordId:        Boolean = false,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,

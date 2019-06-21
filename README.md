@@ -813,6 +813,15 @@ You can change this behaviour if you would like to drop such filler groups by pr
 
 ## Summary of all available options
 
+##### File reading options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
+| .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
+| .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
+| .option("record_end_offset", "0")          | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data. |
+
 ##### Data parsing options
 
 |            Option (usage example)          |                           Description |
@@ -826,6 +835,7 @@ You can change this behaviour if you would like to drop such filler groups by pr
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
+| .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
 
 ##### Variable record length files options
 

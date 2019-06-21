@@ -41,6 +41,8 @@ object CobolParametersParser {
   val PARAM_RECORD_LENGTH_MAX         = "record_length_max"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
+  val PARAM_FILE_START_OFFSET         = "file_start_offset"
+  val PARAM_FILE_END_OFFSET           = "file_end_offset"
 
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
@@ -136,6 +138,8 @@ object CobolParametersParser {
       params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
+      params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt,
+      params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
       params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
       schemaRetentionPolicy,
