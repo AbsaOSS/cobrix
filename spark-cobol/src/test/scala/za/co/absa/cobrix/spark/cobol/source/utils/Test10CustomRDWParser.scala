@@ -32,12 +32,13 @@ class Test10CustomRDWParser extends Serializable with RecordHeaderParser {
   /**
     * Given a raw values of a record header returns metadata sufficient to parse the record.
     *
-    * @param header    A record header as an array of bytes
-    * @param byteIndex The index of the header in a mainframe file. This is provided for error messages generation
-    *                  purposes
+    * @param header A record header as an array of bytes
+    * @param offset An offset from the beginning of the underlying file
+    * @param size   A size of the underlying file
+    *
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], byteIndex: Long = 0L): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], offset: Long = 0L, size: Long = 0L): RecordMetadata = {
     val rdwHeaderBlock = getHeaderLength
     if (header.length < rdwHeaderBlock) {
       RecordMetadata(-1, isValid = false)
@@ -49,12 +50,12 @@ class Test10CustomRDWParser extends Serializable with RecordHeaderParser {
       if (recordLength > 0) {
         if (recordLength > Constants.maxRdWRecordSize) {
           val rdwHeaders = header.map(_ & 0xFF).mkString(",")
-          throw new IllegalStateException(s"Custom RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $byteIndex.")
+          throw new IllegalStateException(s"Custom RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $offset.")
         }
         RecordMetadata(recordLength, isValid)
       } else {
         val rdwHeaders = header.map(_ & 0xFF).mkString(",")
-        throw new IllegalStateException(s"Custom RDW headers should never be zero ($rdwHeaders). Found zero size record at $byteIndex.")
+        throw new IllegalStateException(s"Custom RDW headers should never be zero ($rdwHeaders). Found zero size record at $offset.")
       }
     }
   }

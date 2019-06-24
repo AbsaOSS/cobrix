@@ -22,7 +22,10 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 object RecordHeaderParserFactory {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def createRecordHeaderParser(parserTypeOrClass: String): RecordHeaderParser = {
+  def createRecordHeaderParser(parserTypeOrClass: String,
+                               recordLength: Int,
+                               fileStartOffset: Int,
+                               fileEndOffset: Int): RecordHeaderParser = {
     val parserTypeLowerCase = parserTypeOrClass.toLowerCase
 
     parserTypeLowerCase match {
@@ -30,6 +33,7 @@ object RecordHeaderParserFactory {
       case Constants.RhRdw => new RecordHeaderParserRDW(isBigEndian = false)
       case Constants.RhRdwBigEndian => new RecordHeaderParserRDW(isBigEndian = true)
       case Constants.RhRdwLittleEndian => new RecordHeaderParserRDW(isBigEndian = false)
+      case Constants.RhRdwFixedLength => new RecordHeaderParserFixedLen(recordLength, fileStartOffset, fileEndOffset)
       case _ =>
         logger.info(s"Using custom record parser class '$parserTypeOrClass'...")
         Class.forName(parserTypeOrClass)

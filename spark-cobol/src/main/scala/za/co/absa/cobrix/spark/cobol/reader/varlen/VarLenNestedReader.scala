@@ -158,16 +158,34 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
   private def getRecordHeaderParser: RecordHeaderParser = {
     readerProperties.recordHeaderParser match {
-      case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser)
+      case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser,
+        cobolSchema.getRecordSize,
+        readerProperties.fileStartOffset,
+        readerProperties.fileEndOffset)
       case None => getDefaultRecordHeaderParser
     }
   }
 
   private def getDefaultRecordHeaderParser: RecordHeaderParser = {
-    if (isRdwBigEndian) {
-      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwBigEndian)
+    if (readerProperties.isRecordSequence) {
+      // RDW record parsers
+      if (isRdwBigEndian) {
+        RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwBigEndian,
+          cobolSchema.getRecordSize,
+          readerProperties.fileStartOffset,
+          readerProperties.fileEndOffset)
+      } else {
+        RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian,
+          cobolSchema.getRecordSize,
+          readerProperties.fileStartOffset,
+          readerProperties.fileEndOffset)
+      }
     } else {
-      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian)
+      // Fixed record length record parser
+      RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength,
+        cobolSchema.getRecordSize,
+        readerProperties.fileStartOffset,
+        readerProperties.fileEndOffset)
     }
   }
 }

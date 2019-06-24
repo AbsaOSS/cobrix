@@ -55,7 +55,7 @@ object IndexGenerator {
     while (!endOfFileReached) {
       val headerSize = recordHeaderParser.getHeaderLength
       val headerBytes = dataStream.next(headerSize)
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, byteIndex)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size)
       val recordSize = recordMetadata.recordLength
       if (recordSize <= 0) {
         endOfFileReached = true

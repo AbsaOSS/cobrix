@@ -79,4 +79,5 @@ object Constants {
   val RhRdw = "rdw"
   val RhRdwBigEndian = "rdw_big_endian"
   val RhRdwLittleEndian = "rdw_little_endian"
+  val RhRdwFixedLength = "fixed_length"
 }

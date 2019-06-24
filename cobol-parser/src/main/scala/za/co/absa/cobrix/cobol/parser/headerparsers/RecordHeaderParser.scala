@@ -50,7 +50,10 @@ trait RecordHeaderParser {
     * Given a raw values of a record header returns metadata sufficient to parse the record.
     *
     * @param header A record header as an array of bytes
+    * @param offset An offset from the beginning of the underlying file
+    * @param size   A size of the underlying file
+    *
     * @return A parsed record metadata
     */
-  def getRecordMetadata(header: Array[Byte], byteIndex: Long): RecordMetadata
+  def getRecordMetadata(header: Array[Byte], offset: Long, size: Long): RecordMetadata
 }
