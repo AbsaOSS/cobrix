@@ -59,7 +59,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
   override def getSparkSchema: StructType = cobolSchema.getSparkSchema
 
-  override def isIndexGenerationNeeded: Boolean = readerProperties.isRecordSequence && readerProperties.isIndexGenerationNeeded
+  override def isIndexGenerationNeeded: Boolean = (readerProperties.lengthFieldName.isEmpty || readerProperties.isRecordSequence) && readerProperties.isIndexGenerationNeeded
 
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
 
