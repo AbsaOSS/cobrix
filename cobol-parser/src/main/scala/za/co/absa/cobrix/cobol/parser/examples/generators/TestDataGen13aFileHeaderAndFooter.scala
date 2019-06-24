@@ -29,7 +29,7 @@ import scala.util.Random
   *
   * The output file will contain a file headerof 10 bytes and footer of 12 bytes.
   */
-object TestDataGen13FileHeaderAndFooter {
+object TestDataGen13aFileHeaderAndFooter {
 
   val numberOfRecordsToGenerate = 50
 
@@ -78,8 +78,6 @@ object TestDataGen13FileHeaderAndFooter {
           i += 1
         }
     }
-
-
   }
 
   val currencies: Seq[String] = CommonLists.currencies

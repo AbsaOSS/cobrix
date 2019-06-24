@@ -25,20 +25,20 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 //noinspection NameBooleanParameters
-class Test13FileHeaderFooterSpec extends FunSuite with SparkTestBase {
+class Test13bVarLenFileHeadersSpec extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test13"
-  private val inputCopybookPath = "../data/test13_file_header_footer.cob"
-  private val inpudDataPath = "../data/test13_data"
+  private val exampleName = "Test13b"
+  private val inputCopybookPath = "../data/test13b_vrl_file_headers.cob"
+  private val inpudDataPath = "../data/test13b_data"
 
-  private val expectedSchemaPath = "../data/test13_expected/test13_schema.json"
-  private val actualSchemaPath = "../data/test13_expected/test13_schema_actual.json"
-  private val expectedResultsPath = "../data/test13_expected/test13.txt"
-  private val actualResultsPath = "../data/test13_expected/test13_actual.txt"
+  private val expectedSchemaPath = "../data/test13_expected/test13b_schema.json"
+  private val actualSchemaPath = "../data/test13_expected/test13b_schema_actual.json"
+  private val expectedResultsPath = "../data/test13_expected/test13b.txt"
+  private val actualResultsPath = "../data/test13_expected/test13b_actual.txt"
 
   test(s"Test layout created from $exampleName data") {
-    val expectedLayoutPath = "../data/test13_expected/test13_layout.txt"
-    val actualLayoutPath = "../data/test13_expected/test13_layout_actual.txt"
+    val expectedLayoutPath = "../data/test13_expected/test13b_layout.txt"
+    val actualLayoutPath = "../data/test13_expected/test13b_layout_actual.txt"
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -54,22 +54,6 @@ class Test13FileHeaderFooterSpec extends FunSuite with SparkTestBase {
     }
   }
 
-  test("Test failure if file offset options are not specified") {
-    val copybookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val df = spark
-      .read
-      .format("cobol")
-      .option("copybook_contents", copybookContents)
-      .option("schema_retention_policy", "collapse_root")
-      .load(inpudDataPath)
-
-    val exception = intercept[IllegalArgumentException] {
-      df.count
-    }
-
-    assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
-  }
-
   test(s"Test dataframe created from $exampleName data") {
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val df = spark
@@ -77,8 +61,15 @@ class Test13FileHeaderFooterSpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook_contents", copybookContents)
       .option("schema_retention_policy", "collapse_root")
-      .option("file_start_offset", 10)
-      .option("file_end_offset", 12)
+      .option("is_record_sequence", "true")
+      .option("is_rdw_big_endian", "true")
+      .option("segment_field", "SEGMENT_ID")
+      .option("segment_id_level0", "C")
+      .option("segment_id_level1", "P")
+      .option("generate_record_id", "true")
+      .option("segment_id_prefix", "A")
+      .option("file_start_offset", 100)
+      .option("file_end_offset", 120)
       .load(inpudDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
