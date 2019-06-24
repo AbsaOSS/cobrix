@@ -101,4 +101,36 @@ class Test13aFixedLenFileHeadersSpec extends FunSuite with SparkTestBase {
     }
   }
 
+  test(s"Test dataframe created from $exampleName data with sparse index") {
+    val copybookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybookContents)
+      .option("schema_retention_policy", "collapse_root")
+      .option("input_split_records", 10)
+      .option("file_start_offset", 10)
+      .option("file_end_offset", 12)
+      .load(inpudDataPath)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. " +
+        s"Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    val actual = df.toJSON.take(60)
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
+
+    if (!actual.sameElements(expected)) {
+      FileUtils.writeStringsToFile(actual, actualResultsPath)
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. " +
+        s"Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
+    }
+  }
+
 }

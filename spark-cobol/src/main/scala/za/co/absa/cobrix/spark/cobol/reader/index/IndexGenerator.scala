@@ -82,7 +82,7 @@ object IndexGenerator {
               if (isSplitBySize) {
                 // If indexes are split by size subtract the size of the split from the total bytes read.
                 // This way the mismatch between Spark partitions and HDFS blocks won't accumulate.
-                // This wahieves better alignment between Spark partitions and HDFS blocks.
+                // This achieves better alignment between Spark partitions and HDFS blocks.
                 bytesInChunk -= sizePerIndexEntryMB.get.toLong * Constants.megabyte
               } else {
                 bytesInChunk = 0L
