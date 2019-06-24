@@ -70,7 +70,6 @@ class Test13FileHeaderFooterSpec extends FunSuite with SparkTestBase {
     assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
   }
 
-  /*
   test(s"Test dataframe created from $exampleName data") {
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val df = spark
@@ -101,6 +100,5 @@ class Test13FileHeaderFooterSpec extends FunSuite with SparkTestBase {
         s"Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
     }
   }
-  */
 
 }
