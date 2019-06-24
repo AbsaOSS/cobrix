@@ -29,10 +29,10 @@ object RecordHeaderParserFactory {
     val parserTypeLowerCase = parserTypeOrClass.toLowerCase
 
     parserTypeLowerCase match {
-      case Constants.RhXcom => new RecordHeaderParserRDW(isBigEndian = false)
-      case Constants.RhRdw => new RecordHeaderParserRDW(isBigEndian = false)
-      case Constants.RhRdwBigEndian => new RecordHeaderParserRDW(isBigEndian = true)
-      case Constants.RhRdwLittleEndian => new RecordHeaderParserRDW(isBigEndian = false)
+      case Constants.RhXcom => new RecordHeaderParserRDW(isBigEndian = false, fileStartOffset, fileEndOffset)
+      case Constants.RhRdw => new RecordHeaderParserRDW(isBigEndian = false, fileStartOffset, fileEndOffset)
+      case Constants.RhRdwBigEndian => new RecordHeaderParserRDW(isBigEndian = true, fileStartOffset, fileEndOffset)
+      case Constants.RhRdwLittleEndian => new RecordHeaderParserRDW(isBigEndian = false, fileStartOffset, fileEndOffset)
       case Constants.RhRdwFixedLength => new RecordHeaderParserFixedLen(recordLength, fileStartOffset, fileEndOffset)
       case _ =>
         logger.info(s"Using custom record parser class '$parserTypeOrClass'...")

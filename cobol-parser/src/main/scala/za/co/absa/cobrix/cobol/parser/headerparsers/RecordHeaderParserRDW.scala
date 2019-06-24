@@ -21,7 +21,9 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 /**
   * This is a parser for records that contain 4 byte RDW headers.
   */
-class RecordHeaderParserRDW(isBigEndian: Boolean) extends Serializable with RecordHeaderParser {
+class RecordHeaderParserRDW(isBigEndian: Boolean,
+                            fileHeaderBytes: Int,
+                            fileFooterBytes: Int) extends Serializable with RecordHeaderParser {
 
   /** RDW header is a 4 byte header */
   override def getHeaderLength: Int = 4
@@ -39,6 +41,25 @@ class RecordHeaderParserRDW(isBigEndian: Boolean) extends Serializable with Reco
     * @return A parsed record metadata
     */
   override def getRecordMetadata(header: Array[Byte], offset: Long = 0L, size: Long = 0L): RecordMetadata = {
+
+    if (fileHeaderBytes > getHeaderLength && offset == getHeaderLength) {
+      RecordMetadata(fileHeaderBytes - getHeaderLength, isValid = false)
+    } else if (size > 0L && fileFooterBytes > 0 && size - offset <= fileFooterBytes) {
+      RecordMetadata((size - offset).toInt, isValid = false)
+    } else {
+      processRdwHeader(header, offset)
+    }
+  }
+
+  /**
+    * Parses an RDW header.
+    *
+    * @param header A record header as an array of bytes
+    * @param offset An offset from the beginning of the underlying file
+    *
+    * @return A parsed record metadata
+    */
+  private def processRdwHeader(header: Array[Byte], offset: Long): RecordMetadata = {
     val rdwHeaderBlock = getHeaderLength
     if (header.length < rdwHeaderBlock) {
       RecordMetadata(-1, isValid = false)

@@ -1,0 +1,93 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "File_Id",
+    "type" : "integer",
+    "nullable" : false,
+    "metadata" : { }
+  }, {
+    "name" : "Record_Id",
+    "type" : "long",
+    "nullable" : false,
+    "metadata" : { }
+  }, {
+    "name" : "Seg_Id0",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "Seg_Id1",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "SEGMENT_ID",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMPANY_ID",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "STATIC_DETAILS",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "COMPANY_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "ADDRESS",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "TAXPAYER",
+        "type" : {
+          "type" : "struct",
+          "fields" : [ {
+            "name" : "TAXPAYER_TYPE",
+            "type" : "string",
+            "nullable" : true,
+            "metadata" : { }
+          }, {
+            "name" : "TAXPAYER_STR",
+            "type" : "string",
+            "nullable" : true,
+            "metadata" : { }
+          }, {
+            "name" : "TAXPAYER_NUM",
+            "type" : "integer",
+            "nullable" : true,
+            "metadata" : { }
+          } ]
+        },
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "CONTACTS",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "PHONE_NUMBER",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "CONTACT_PERSON",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}
