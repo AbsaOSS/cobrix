@@ -266,6 +266,7 @@ println(copyBook.generateRecordLayoutPositions())
 ```
 
 ### Varialble length records support
+### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
 record header known as Record Descriptor Word (RDW). Such headers are created automatically when a variable record length
