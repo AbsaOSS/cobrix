@@ -165,7 +165,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     while (!isValidRecord && !isEndOfFile) {
       headerBytes = dataStream.next(rdwHeaderBlock)
 
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
       val recordLength = recordMetadata.recordLength
 
       byteIndex += headerBytes.length

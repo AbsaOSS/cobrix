@@ -34,20 +34,19 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
   /**
     * Given a raw values of a record header returns metadata sufficient to parse the record.
     *
-    * @param header A record header as an array of bytes
-    * @param offset An offset from the beginning of the underlying file
-    * @param size   A size of the underlying file
-    *
+    * @param header     A record header as an array of bytes
+    * @param fileOffset An offset from the beginning of the underlying file
+    * @param fileSize   A size of the underlying file
+    * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], offset: Long = 0L, size: Long = 0L): RecordMetadata = {
-
-    if (fileHeaderBytes > getHeaderLength && offset == getHeaderLength) {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+    if (fileHeaderBytes > getHeaderLength && fileOffset == getHeaderLength) {
       RecordMetadata(fileHeaderBytes - getHeaderLength, isValid = false)
-    } else if (size > 0L && fileFooterBytes > 0 && size - offset <= fileFooterBytes) {
-      RecordMetadata((size - offset).toInt, isValid = false)
+    } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
+      RecordMetadata((fileSize - fileOffset).toInt, isValid = false)
     } else {
-      processRdwHeader(header, offset)
+      processRdwHeader(header, fileOffset)
     }
   }
 
