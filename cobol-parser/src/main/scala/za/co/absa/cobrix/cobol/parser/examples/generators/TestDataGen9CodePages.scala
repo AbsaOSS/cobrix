@@ -18,8 +18,8 @@ package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
-import scodec.Attempt.Successful
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.examples.generators.model.CommonLists
+import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
 
 import scala.util.Random
 
@@ -43,58 +43,6 @@ object TestDataGen9CodePages {
               05  AMOUNT            PIC S9(09)V99  BINARY.
    */
 
-  def putStringToArray(bytes: Array[Byte], str: String, index0: Int, index1: Int): Unit = {
-    var i = index0
-    var j = 0
-    while (i <= index1) {
-      if (j < str.length)
-        bytes(i) = BinaryUtils.asciiToEbcdic(str.charAt(j))
-      else bytes(i) = 0
-      i += 1
-      j += 1
-    }
-  }
-
-  def putArrayToArray(bytes: Array[Byte], str: Array[Byte], index0: Int, index1: Int): Unit = {
-    var i = index0
-    var j = 0
-    while (i <= index1) {
-      if (j < str.length)
-        bytes(i) = str(j)
-      else bytes(i) = 0
-      i += 1
-      j += 1
-    }
-  }
-
-  def putDecimalToArray(bytes: Array[Byte], intpart: Long, fractPart: Int, index0: Int, index1: Int): Unit = {
-    val lng = intpart.toLong * 100 + fractPart
-    val coded = scodec.codecs.int64.encode(lng)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
-
-
-  }
-
-  def generateRandomByteArray(length: Int): Array[Byte] = {
-    val array = new Array[Byte](length)
-    rand.nextBytes(array)
-    array
-  }
-
   val currencies: Seq[String] = CommonLists.currencies
 
   def main(args: Array[String]): Unit = {
@@ -107,7 +55,7 @@ object TestDataGen9CodePages {
     val sig = "S9276511"
     while (i < numberOfRecordsToGenerate) {
       val currency = currencies(rand.nextInt(numOfCurrencies))
-      val company = generateRandomByteArray(14)
+      val company = generateRandomByteArray(rand, 14)
 
       putStringToArray(byteArray, currency, 0, 2) // 3
       putStringToArray(byteArray, sig, 3, 10) // 8
