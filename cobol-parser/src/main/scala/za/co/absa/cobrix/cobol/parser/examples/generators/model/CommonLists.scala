@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.examples.generators
-
-import za.co.absa.cobrix.cobol.parser.examples.generators.model.Company
+package za.co.absa.cobrix.cobol.parser.examples.generators.model
 
 object CommonLists {
 
