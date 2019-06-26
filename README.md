@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.0</version>
+      <version>0.5.1</version>
 </dependency>
 ```
 
@@ -178,8 +178,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.0.jar
-* cobol-parser-0.5.0.jar
+* spark-cobol-0.5.1.jar
+* cobol-parser-0.5.1.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -966,6 +966,19 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.1 released 26 June 2019
+  - This is a minor feature release.
+  - Added support for specifying several copybooks. They will be automatically merged into a larger one (Thanks Tiago Requeijo).
+  - Added an option for ignoring file headers and footers ('file_start_offset', 'file_end_offset').
+  - Added the dropRoot and restrictTo operations for the copybooks parser (Thanks Tiago Requeijo).
+  - Added support for explicit decimal point location together with scale factor (Thanks @gd-iborisov)
+  - Added an option to suppress file size check for debugging fixed record length files ('debug_ignore_file_size').
+  - Added support for sparse indexes when fixed record length files require variable record length features.
+    It can be, for example, when a record id generation is requested or when file offsets are used.
+  - Improved custom record header parser interface:
+    - Cobrix now provides file offset, size and record number to record metadata parser. 
+    - Fixed handling the case where record headers are part of the copybook.
+
 - #### 0.5.0 released 17 May 2019
   - This is a minor feature release.
   - Cobrix now handles top level REDEFINES (Thanks Tiago Requeijo).
