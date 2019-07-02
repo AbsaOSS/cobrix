@@ -32,6 +32,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
   * @param isRecordSequence       Does input files have 4 byte record length headers
   * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
+  * @param isRdwPartRecLength     Does RDW count itself as part of record length itself
+  * @param rdwAdjustment          Controls a mismatch between RDW and record length
   * @param isUsingIndex           Is indexing input file before processing is requested
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
@@ -60,6 +62,8 @@ case class CobolParameters(
                             ebcdicCodePageClass:   Option[String],
                             isRecordSequence:      Boolean,
                             isRdwBigEndian:        Boolean,
+                            isRdwPartRecLength:    Boolean,
+                            rdwAdjustment:         Int,
                             isUsingIndex:          Boolean,
                             inputSplitRecords:     Option[Int],
                             inputSplitSizeMB:      Option[Int],

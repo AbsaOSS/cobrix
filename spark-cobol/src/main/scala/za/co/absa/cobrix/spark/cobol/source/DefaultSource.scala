@@ -138,6 +138,8 @@ class DefaultSource
           lengthFieldName = recordLengthField,
           isRecordSequence = parameters.isRecordSequence,
           isRdwBigEndian = parameters.isRdwBigEndian,
+          isRdwPartRecLength = parameters.isRdwPartRecLength,
+          rdwAdjustment = parameters.rdwAdjustment,
           isIndexGenerationNeeded = parameters.isUsingIndex,
           inputSplitRecords = parameters.inputSplitRecords,
           inputSplitSizeMB = parameters.inputSplitSizeMB,

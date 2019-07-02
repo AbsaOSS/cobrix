@@ -23,7 +23,8 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
   */
 class RecordHeaderParserRDW(isBigEndian: Boolean,
                             fileHeaderBytes: Int,
-                            fileFooterBytes: Int) extends Serializable with RecordHeaderParser {
+                            fileFooterBytes: Int,
+                            rdwAdjustment: Int) extends Serializable with RecordHeaderParser {
 
   /** RDW header is a 4 byte header */
   override def getHeaderLength: Int = 4
@@ -65,9 +66,9 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
     }
     else {
       val recordLength = if (isBigEndian) {
-        (header(1) & 0xFF) + 256 * (header(0) & 0xFF)
+        (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwAdjustment
       } else {
-        (header(2) & 0xFF) + 256 * (header(3) & 0xFF)
+        (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwAdjustment
       }
 
       if (recordLength > 0) {

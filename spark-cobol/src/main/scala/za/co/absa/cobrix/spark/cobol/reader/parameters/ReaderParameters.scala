@@ -30,6 +30,8 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param lengthFieldName          A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence         Does input files have 4 byte record length headers
   * @param isRdwBigEndian           Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
+  * @param isRdwPartRecLength     Does RDW count itself as part of record length itself
+  * @param rdwAdjustment          Controls a mismatch between RDW and record length
   * @param isIndexGenerationNeeded  Is indexing input file before processing is requested
   * @param inputSplitRecords        The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param inputSplitSizeMB         A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
@@ -52,6 +54,8 @@ case class ReaderParameters(
                              lengthFieldName:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
                              isRdwBigEndian:          Boolean = false,
+                             isRdwPartRecLength:      Boolean = false,
+                             rdwAdjustment:           Int = 0,
                              isIndexGenerationNeeded: Boolean = false,
                              inputSplitRecords:       Option[Int] = None,
                              inputSplitSizeMB:        Option[Int] = None,

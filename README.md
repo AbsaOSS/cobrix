@@ -840,10 +840,12 @@ You can change this behaviour if you would like to drop such filler groups by pr
 
 ##### Variable record length files options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("is_record_sequence", "true")      | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
-| .option("is_rdw_big_endian", "true")       | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
+|            Option (usage example)             |                           Description |
+| --------------------------------------------- |:----------------------------------------------------------------------------- |
+| .option("is_record_sequence", "true")         | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
+| .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
+| .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. |
+| .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
 | .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
 
 

@@ -82,7 +82,7 @@ final class VarLenSearchReader(copybookContents: Seq[String],
       maximumLength, startOffset, endOffset, generateRecordId, fileNumber, policy)
 
   override def generateIndex(binaryData: SimpleStream, fileNumber: Int, isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
-    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0)
+    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
     IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian, recordHeaderParser)
   }
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {

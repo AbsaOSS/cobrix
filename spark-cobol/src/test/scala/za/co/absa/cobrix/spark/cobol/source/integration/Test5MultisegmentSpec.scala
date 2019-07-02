@@ -213,7 +213,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
 
     val stream = new FileStreamer("../data/test5_data/COMP.DETAILS.SEP30.DATA.dat", FileSystem.get(new Configuration()))
 
-    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0)
+    val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
     val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
       recordHeaderParser = recordHeaderParser, recordsPerIndexEntry = Some(10),  sizePerIndexEntryMB = None,
       copybook = Some(copybook), segmentField = Some(segmentIdField), rootSegmentId = segmentIdRootValue)
