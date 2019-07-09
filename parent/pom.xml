@@ -79,7 +79,6 @@
         <maven.shade.version>2.3</maven.shade.version>
         <maven.sources.version>3.0.1</maven.sources.version>
         <maven.surefire.version>2.18.1</maven.surefire.version>
-        <nexus.staging.plugin.version>1.6.8</nexus.staging.plugin.version>
         <apache.rat.plugin.version>0.12</apache.rat.plugin.version>
         <gpg.plugin.version>1.6</gpg.plugin.version>
 
@@ -396,17 +395,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>${nexus.staging.plugin.version}</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
