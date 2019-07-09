@@ -60,4 +60,14 @@ class Test10CustomRDWParser extends Serializable with RecordHeaderParser {
     }
   }
 
+  override def onReceiveAdditionalInfo(additionalInfo: String): Unit = {
+    Test10CustomRDWParser.additionalInfo = additionalInfo
+  }
+
+}
+/**
+  * The companion object is used for custom record header parser purposes.
+  */
+object Test10CustomRDWParser {
+  var additionalInfo: String = ""
 }

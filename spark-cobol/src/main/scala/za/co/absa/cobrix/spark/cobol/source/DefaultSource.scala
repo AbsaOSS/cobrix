@@ -154,7 +154,8 @@ class DefaultSource
           parameters.multisegmentParams,
           parameters.dropGroupFillers,
           parameters.nonTerminals,
-          parameters.recordHeaderParser
+          parameters.recordHeaderParser,
+          parameters.rhpAdditionalInfo
         )
       )
     }
