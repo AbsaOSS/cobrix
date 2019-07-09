@@ -187,7 +187,8 @@ object FileUtils {
     })
   }
 
-  def getNumberOfFilesInDir(directory: String, fileSystem: FileSystem): Int = fileSystem.listStatus(new Path(directory)).length
+  def getNumberOfFilesInDir(directory: String, fileSystem: FileSystem): Int =
+    expandDirectories(fileSystem, fileSystem.globStatus(new Path(directory), hiddenFileFilter)).length
 
   /**
     * Finds the first file that is non-divisible by a given divisor and logs its name.
@@ -210,7 +211,7 @@ object FileUtils {
     */
   def findAndLogAllNonDivisibleFiles(sourceDir: String, divisor: Long, fileSystem: FileSystem): Long = {
 
-    val allFiles = fileSystem.listStatus(new Path(sourceDir))
+    val allFiles = expandDirectories(fileSystem, fileSystem.globStatus(new Path(sourceDir), hiddenFileFilter))
 
     val allNonDivisibleFiles = allFiles.filter(isNonDivisible(_, divisor))
 
@@ -222,4 +223,19 @@ object FileUtils {
   }
 
   private def isNonDivisible(fileStatus: FileStatus, divisor: Long) = fileStatus.getLen % divisor != 0
+
+  /**
+    * Recursively expends directories listed in the incoming array of file statuses. But goes only 1 level deep
+    * to match Spark's behavior on this.
+    */
+  private def expandDirectories(fileSystem: FileSystem, filesAndDirs: Array[FileStatus]): Array[FileStatus] = {
+    filesAndDirs.flatMap(fileStatus => {
+      if (fileStatus.isDirectory) {
+        val newPath = new Path(fileStatus.getPath, "*")
+        fileSystem.globStatus(newPath, hiddenFileFilter).filter(!_.isDirectory)
+      } else {
+        Array(fileStatus)
+      }
+    })
+  }
 }
