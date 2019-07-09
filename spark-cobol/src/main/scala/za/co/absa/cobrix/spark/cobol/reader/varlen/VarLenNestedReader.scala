@@ -159,7 +159,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
   private def getRecordHeaderParser: RecordHeaderParser = {
     val adjustment1 = if (readerProperties.isRdwPartRecLength) -4 else 0
     val adjustment2 = readerProperties.rdwAdjustment
-    readerProperties.recordHeaderParser match {
+    val rhp = readerProperties.recordHeaderParser match {
       case Some(customRecordParser) => RecordHeaderParserFactory.createRecordHeaderParser(customRecordParser,
         cobolSchema.getRecordSize,
         readerProperties.fileStartOffset,
@@ -167,6 +167,8 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         adjustment1 + adjustment2)
       case None => getDefaultRecordHeaderParser
     }
+    readerProperties.rhpAdditionalInfo.foreach(rhp.onReceiveAdditionalInfo)
+    rhp
   }
 
   private def getDefaultRecordHeaderParser: RecordHeaderParser = {

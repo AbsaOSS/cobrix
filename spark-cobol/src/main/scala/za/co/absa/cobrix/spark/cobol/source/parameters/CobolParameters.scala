@@ -51,6 +51,10 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
   * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
+  * @param nonTerminals           A list of non-terminals (GROUPS) to combine and parse as primitive fields
+  * @param recordHeaderParser     An optional custom record header parser for non-standard RDWs
+  * @param rhpAdditionalInfo      An optional additional option string passed to a custom record header parser
+  * @param debugIgnoreFileSize    If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
   */
 case class CobolParameters(
                             copybookPath:          Option[String],
@@ -83,5 +87,6 @@ case class CobolParameters(
                             dropGroupFillers:      Boolean,
                             nonTerminals:          Seq[String],
                             recordHeaderParser:    Option[String],
+                            rhpAdditionalInfo:     Option[String],
                             debugIgnoreFileSize:   Boolean
                           )

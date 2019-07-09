@@ -19,16 +19,10 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
-import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
+import za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import scala.collection.JavaConversions._
@@ -49,6 +43,7 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
     val actualSchemaPath = "../data/test11_expected/test11_schema_actual.json"
     val expectedResultsPath = "../data/test11_expected/test11.txt"
     val actualResultsPath = "../data/test11_expected/test11_actual.txt"
+    Test10CustomRDWParser.additionalInfo = ""
 
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val cobolSchema = CopybookParser.parseTree(copybookContents)
@@ -70,6 +65,7 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .option("segment_id_prefix", "A")
       .option("record_header_parser", "za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser")
+      .option("rhp_additional_info", "rhp info")
       .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -97,6 +93,8 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
         s"$actualResultsPath for details.")
     }
     Files.delete(Paths.get(actualResultsPath))
+
+    assert(Test10CustomRDWParser.additionalInfo == "rhp info")
   }
 
 }
