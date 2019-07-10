@@ -21,7 +21,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>za.co.absa.cobrix</groupId>
-    <artifactId>cobrix-parent</artifactId>
+    <artifactId>cobrix</artifactId>
 
     <version>0.5.2-SNAPSHOT</version>
 
