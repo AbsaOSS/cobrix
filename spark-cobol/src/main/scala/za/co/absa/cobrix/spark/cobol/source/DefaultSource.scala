@@ -29,7 +29,7 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenRe
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator, LocalityParameters}
-import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
+import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils}
 
 /**
   * This class represents a Cobol data source.
@@ -50,6 +50,8 @@ class DefaultSource
 
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
     CobolParametersValidator.validateOrThrow(parameters, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
+
+    logger.info(s"Cobrix 'spark-cobol' build ${BuildProperties.buildVersion} (${BuildProperties.buildTimestamp}) ")
 
     val cobolParameters = CobolParametersParser.parse(parameters)
     CobolParametersValidator.checkSanity(cobolParameters)

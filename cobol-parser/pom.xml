@@ -27,7 +27,7 @@
         <groupId>za.co.absa.cobrix</groupId>
         <artifactId>cobrix-parent</artifactId>
         <version>0.5.2-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
