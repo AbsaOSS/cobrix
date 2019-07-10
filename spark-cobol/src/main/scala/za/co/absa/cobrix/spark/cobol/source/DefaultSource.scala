@@ -29,7 +29,7 @@ import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenRe
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator, LocalityParameters}
-import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils, Parameters}
 
 /**
   * This class represents a Cobol data source.
@@ -53,7 +53,7 @@ class DefaultSource
 
     logger.info(s"Cobrix 'spark-cobol' build ${BuildProperties.buildVersion} (${BuildProperties.buildTimestamp}) ")
 
-    val cobolParameters = CobolParametersParser.parse(parameters)
+    val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
     CobolParametersValidator.checkSanity(cobolParameters)
 
     new CobolRelation(parameters(PARAM_SOURCE_PATH),

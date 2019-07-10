@@ -875,7 +875,8 @@ You can change this behaviour if you would like to drop such filler groups by pr
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("debug_ignore_file_size", "false") | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file. |
+| .option("pedantic", "false")               | If 'true' (default) Cobrix will throw an exception is an unknown option is encountered. If 'false', unknown options will be logged as an error without failing Spark Application. |
+| .option("debug_ignore_file_size", "true")  | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file. |
 
 ## Performance Analysis
 

@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -102,6 +101,25 @@ class Test1FixedLengthRecordsSpec extends FunSuite with SparkTestBase {
       .load(inpudDataPath)
 
     df1.take(60).foreach(_ => true)
+  }
+
+  test(s"Test failure on unrecognized options") {
+    val copybook =
+      """        01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID           PIC X(5).
+        |            05  COMPANY-ID           PIC X(11).
+        |""".stripMargin
+
+    val exception = intercept[IllegalArgumentException] {
+      val df1 = spark
+        .read
+        .format("cobol")
+        .option("copybook", inputCopybookPath)
+        .option("schema_retention_policy", "collapse_root")
+        .option("dummy", "unknown")
+        .load(inpudDataPath)
+    }
+    assert(exception.getMessage.contains("Redundant or unrecognized option(s) to 'spark-cobol': dummy."))
   }
 
 }
