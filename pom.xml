@@ -62,7 +62,7 @@
 
     <scm>
         <connection>scm:git:git://github.com/AbsaOSS/cobrix.git</connection>
-        <developerConnection>scm:git:ssh://github.com:AbsaOSS/cobrix.git</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/AbsaOSS/cobrix.git</developerConnection>
         <url>http://github.com/AbsaOSS/cobrix/tree/master</url>
         <tag>HEAD</tag>
     </scm>
