@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.1</version>
+      <version>0.5.2</version>
 </dependency>
 ```
 
@@ -178,8 +178,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.1.jar
-* cobol-parser-0.5.1.jar
+* spark-cobol-0.5.2.jar
+* cobol-parser-0.5.2.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -970,6 +970,15 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.2 released 26 June 2019
+  - Added options to adjust record sizes returned by RDW headers. RDWs may or may not include themselves as part of record size.
+  - Added tracking of unrecognized and redundant options. If an option to `spark-cobol` is unrecognized or redundant the
+    Spark Application won't run unless `pedantic = false`.
+  - Added logging of Cobrix version during Spark Application execution.
+  - Improved custom record header parser to support wider range of use cases.
+  - Fixed processing paths that contain wildcards.
+  - Various improvements in the structure of the project, POM files and examples.
+
 - #### 0.5.1 released 26 June 2019
   - This is a minor feature release.
   - Added support for specifying several copybooks. They will be automatically merged into a larger one (Thanks Tiago Requeijo).
