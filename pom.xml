@@ -345,6 +345,9 @@
                 <version>${maven.scoverage.version}</version>
                 <configuration>
                     <scalaVersion>${scala.version}</scalaVersion>
+                    <aggregate>true</aggregate>
+                    <excludedPackages>.*examples.*;.*replication.*</excludedPackages>
+                    <excludedFiles>.*Example.*;Test.*</excludedFiles>
                 </configuration>
             </plugin>
             <plugin>
