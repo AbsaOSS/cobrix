@@ -71,15 +71,7 @@ class DefaultSource
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
   private def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
-
-    val isSearchSignature = cobolParameters.searchSignatureField.isDefined && cobolParameters.searchSignatureValue.isDefined
-
-    if (cobolParameters.variableLengthParams.isEmpty &&
-      !isSearchSignature &&
-      !cobolParameters.isRecordSequence &&
-      !cobolParameters.generateRecordId &&
-      cobolParameters.fileStartOffset == 0L &&
-      cobolParameters.fileEndOffset == 0L) {
+    if (cobolParameters.variableLengthParams.isEmpty) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
@@ -112,55 +104,38 @@ class DefaultSource
     */
   private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
 
-    val recordLengthField = if (parameters.variableLengthParams.isDefined) Some(parameters.variableLengthParams.get.recordLengthField) else None
-    val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    val isSearchSignature = parameters.searchSignatureField.isDefined && parameters.searchSignatureValue.isDefined
+    val variableLengthParams = parameters.variableLengthParams.get
+    val recordLengthField = if (variableLengthParams.recordLengthField.nonEmpty) Some(variableLengthParams.recordLengthField) else None
 
-    if (isSearchSignature) {
-      logger.warn("An experimental 'variable length search reader' is used")
-      new VarLenSearchReader(
-        copybookContent,
-        parameters.searchSignatureField.get,
-        parameters.searchSignatureValue.get,
-        recordLengthField,
-        parameters.variableLengthParams.flatMap(_.minimumLength),
-        parameters.variableLengthParams.flatMap(_.maximumLength),
-        parameters.recordStartOffset,
-        parameters.recordEndOffset,
-        parameters.generateRecordId,
-        parameters.schemaRetentionPolicy,
-        parameters.dropGroupFillers
+    val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    new VarLenNestedReader(
+      copybookContent,
+      ReaderParameters(isEbcdic = parameters.isEbcdic,
+        ebcdicCodePage = parameters.ebcdicCodePage,
+        ebcdicCodePageClass = parameters.ebcdicCodePageClass,
+        lengthFieldName = recordLengthField,
+        isRecordSequence = variableLengthParams.isRecordSequence,
+        isRdwBigEndian = variableLengthParams.isRdwBigEndian,
+        isRdwPartRecLength = variableLengthParams.isRdwPartRecLength,
+        rdwAdjustment = variableLengthParams.rdwAdjustment,
+        isIndexGenerationNeeded = variableLengthParams.isUsingIndex,
+        inputSplitRecords = variableLengthParams.inputSplitRecords,
+        inputSplitSizeMB = variableLengthParams.inputSplitSizeMB,
+        hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
+        startOffset = parameters.recordStartOffset,
+        endOffset = parameters.recordEndOffset,
+        fileStartOffset = variableLengthParams.fileStartOffset,
+        fileEndOffset = variableLengthParams.fileEndOffset,
+        generateRecordId = variableLengthParams.generateRecordId,
+        schemaPolicy = parameters.schemaRetentionPolicy,
+        stringTrimmingPolicy = parameters.stringTrimmingPolicy,
+        parameters.multisegmentParams,
+        parameters.dropGroupFillers,
+        parameters.nonTerminals,
+        variableLengthParams.recordHeaderParser,
+        variableLengthParams.rhpAdditionalInfo
       )
-    } else {
-      new VarLenNestedReader(
-        copybookContent,
-        ReaderParameters(isEbcdic = parameters.isEbcdic,
-          ebcdicCodePage = parameters.ebcdicCodePage,
-          ebcdicCodePageClass = parameters.ebcdicCodePageClass,
-          lengthFieldName = recordLengthField,
-          isRecordSequence = parameters.isRecordSequence,
-          isRdwBigEndian = parameters.isRdwBigEndian,
-          isRdwPartRecLength = parameters.isRdwPartRecLength,
-          rdwAdjustment = parameters.rdwAdjustment,
-          isIndexGenerationNeeded = parameters.isUsingIndex,
-          inputSplitRecords = parameters.inputSplitRecords,
-          inputSplitSizeMB = parameters.inputSplitSizeMB,
-          hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
-          startOffset = parameters.recordStartOffset,
-          endOffset = parameters.recordEndOffset,
-          fileStartOffset = parameters.fileStartOffset,
-          fileEndOffset = parameters.fileEndOffset,
-          generateRecordId = parameters.generateRecordId,
-          schemaPolicy = parameters.schemaRetentionPolicy,
-          stringTrimmingPolicy = parameters.stringTrimmingPolicy,
-          parameters.multisegmentParams,
-          parameters.dropGroupFillers,
-          parameters.nonTerminals,
-          parameters.recordHeaderParser,
-          parameters.rhpAdditionalInfo
-        )
-      )
-    }
+    )
   }
 
   private def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {

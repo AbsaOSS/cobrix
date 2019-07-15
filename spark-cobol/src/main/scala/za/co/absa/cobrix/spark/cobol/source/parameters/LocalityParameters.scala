@@ -20,6 +20,9 @@ case class LocalityParameters(improveLocality: Boolean, optimizeAllocation: Bool
 
 object LocalityParameters {
   def extract(globalParameters: CobolParameters): LocalityParameters = {
-    new LocalityParameters(globalParameters.improveLocality, globalParameters.optimizeAllocation)
+    globalParameters.variableLengthParams match {
+      case Some(param) => new LocalityParameters(param.improveLocality, param.optimizeAllocation)
+      case None =>        new LocalityParameters(true, false)
+    }
   }
 }
