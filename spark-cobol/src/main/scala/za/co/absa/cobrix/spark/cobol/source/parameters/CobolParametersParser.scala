@@ -16,12 +16,14 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.utils.Parameters
 
 import scala.collection.mutable.ListBuffer
 
@@ -29,6 +31,7 @@ import scala.collection.mutable.ListBuffer
   * This class provides methods for parsing the parameters set as Spark options.
   */
 object CobolParametersParser {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   val SHORT_NAME                      = "cobol"
   val PARAM_COPYBOOK_PATH             = "copybook"
@@ -36,11 +39,12 @@ object CobolParametersParser {
   val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
   val PARAM_SOURCE_PATH               = "path"
   val PARAM_ENCODING                  = "encoding"
+  val PARAM_PEDANTIC                  = "pedantic"
   val PARAM_RECORD_LENGTH             = "record_length_field"
-  val PARAM_RECORD_LENGTH_MIN         = "record_length_min"
-  val PARAM_RECORD_LENGTH_MAX         = "record_length_max"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
+  val PARAM_FILE_START_OFFSET         = "file_start_offset"
+  val PARAM_FILE_END_OFFSET           = "file_end_offset"
 
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
@@ -57,15 +61,14 @@ object CobolParametersParser {
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
+  val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
+  val PARAM_RDW_ADJUSTMENT            = "rdw_adjustment"
   val PARAM_SEGMENT_FIELD             = "segment_field"
   val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
   val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
-
-  // Parameters for signature search reader
-  val PARAM_SEARCH_SIGNATURE_FIELD    = "search_field_name"
-  val PARAM_SEARCH_SIGNATURE_VALUE    = "search_field_value"
+  val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
 
   // Indexed multisegment file processing
   val PARAM_ALLOW_INDEXING            = "allow_indexing"
@@ -75,7 +78,10 @@ object CobolParametersParser {
   val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
   val PARAM_IMPROVE_LOCALITY          = "improve_locality"
 
-  private def getSchemaRetentionPolicy(params: Map[String,String]): SchemaRetentionPolicy = {
+  // Parameters for debugging
+  val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
+
+  private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
 
@@ -87,7 +93,7 @@ object CobolParametersParser {
     }
   }
 
-  private def getStringTrimmingPolicy(params: Map[String,String]): StringTrimmingPolicy = {
+  private def getStringTrimmingPolicy(params: Parameters): StringTrimmingPolicy = {
     val stringTrimmingPolicyName = params.getOrElse(PARAM_STRING_TRIMMING_POLICY, "both")
     val stringTrimmingPolicy = StringTrimmingPolicy.withNameOpt(stringTrimmingPolicyName)
 
@@ -99,7 +105,7 @@ object CobolParametersParser {
     }
   }
 
-  def parse(params: Map[String,String]): CobolParameters = {
+  def parse(params: Parameters): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
@@ -118,7 +124,7 @@ object CobolParametersParser {
       }
     }
 
-    CobolParameters(
+    val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
@@ -126,38 +132,52 @@ object CobolParametersParser {
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
-      params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
-      params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
-      params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
-      params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
-      params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
-      params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
-      getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
-      getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),
-      params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
-      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
-      params.get(PARAM_RECORD_HEADER_PARSER)
+      params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
+    validateSparkCobolOptions(params)
+    cobolParameters
   }
 
-  private def parseVariableLengthParameters(params: Map[String,String]): Option[VariableLengthParameters] = {
-    if (params.contains(PARAM_RECORD_LENGTH)) {
+  private def parseVariableLengthParameters(params: Parameters): Option[VariableLengthParameters] = {
+    val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH)
+    val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean
+    val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
+    val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
+    val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
+
+    if (recordLengthFieldOpt.isDefined ||
+      isRecordSequence ||
+      isRecordIdGenerationEnabled ||
+      fileStartOffset > 0 ||
+      fileEndOffset > 0
+    ) {
       Some(VariableLengthParameters
       (
-        params(PARAM_RECORD_LENGTH),
-        params.get(PARAM_RECORD_LENGTH_MIN).map(_.toInt),
-        params.get(PARAM_RECORD_LENGTH_MAX).map(_.toInt)
+        isRecordSequence,
+        params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
+        params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
+        params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
+        params.get(PARAM_RECORD_HEADER_PARSER),
+        params.get(PARAM_RHP_ADDITIONAL_INFO),
+        recordLengthFieldOpt.getOrElse(""),
+        fileStartOffset,
+        fileEndOffset,
+        isRecordIdGenerationEnabled,
+        params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
+        params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
+        params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
+        params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
+        params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean
       ))
-    }
-    else {
+    } else {
       None
     }
   }
@@ -168,7 +188,7 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     * @return Returns a multisegment reader parameters
     */
-  private def parseMultisegmentParameters(params: Map[String,String]): Option[MultisegmentParameters] = {
+  private def parseMultisegmentParameters(params: Parameters): Option[MultisegmentParameters] = {
     if (params.contains(PARAM_SEGMENT_FIELD)) {
       val levels = parseSegmentLevels(params)
       Some(MultisegmentParameters
@@ -208,7 +228,7 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     * @return Returns a sequence of segment ids on the order of hierarchy levels
     */
-  private def parseSegmentLevels(params: Map[String,String]): Seq[String] = {
+  private def parseSegmentLevels(params: Parameters): Seq[String] = {
     val levels = new ListBuffer[String]
     var i = 0
     while (true) {
@@ -225,7 +245,7 @@ object CobolParametersParser {
     levels
   }
 
-  private def getParameter(key: String, params: Map[String,String]): Option[String] = {
+  private def getParameter(key: String, params: Parameters): Option[String] = {
     if (params.contains(key)) {
       Some(params(key))
     }
@@ -257,12 +277,13 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     * @return Returns a sequence of segment ids on the order of hierarchy levels
     */
-  def getSegmentIdRedefineMapping(params: Map[String, String]): Map[String, String] = {
-    params.flatMap {
+  def getSegmentIdRedefineMapping(params: Parameters): Map[String, String] = {
+    params.getMap.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
         if (keyNoCase.startsWith("redefine-segment-id-map") ||
           keyNoCase.startsWith("redefine_segment_id_map")) {
+          params.markUsed(k)
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) !=0) {
             throw new IllegalArgumentException(s"Illegal argument for the 'redefine_segment_id_map' option: '$v'.")
@@ -273,6 +294,33 @@ object CobolParametersParser {
         } else {
           Nil
         }
+    }
+  }
+
+  /**
+    * Validates if all options passed to 'spark-cobol' are recognized.
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    */
+  private def validateSparkCobolOptions(params: Parameters): Unit = {
+    val isPedantic = params.getOrElse(PARAM_PEDANTIC, "true").toBoolean
+    val keysPassed = params.getMap.keys.toSeq
+    val unusedKeys = keysPassed.flatMap(key => {
+      if (params.isKeyUsed(key)) {
+        None
+      } else {
+        Some(key)
+      }
+    })
+    if (unusedKeys.nonEmpty) {
+      val unusedKeyStr = unusedKeys.mkString(",")
+      val msg = s"Redundant or unrecognized option(s) to 'spark-cobol': $unusedKeyStr."
+      if (isPedantic) {
+        throw new IllegalArgumentException(msg)
+      } else {
+        logger.error(msg)
+      }
+
     }
   }
 

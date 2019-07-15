@@ -17,10 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
-
-import scodec.Attempt.Successful
-import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
 
 import scala.util.Random
 
@@ -219,6 +216,10 @@ object TestDataGen6TypeVariety {
 		                          TRAILING SEPARATE.
           10  NUM-ST-STR-DEC01    PIC 99V99 SIGN
                          TRAILING SEPARATE.
+          10  NUM-SLI-STR-DEC01   PIC SV9(7) SIGN LEADING.
+          10  NUM-STI-STR-DEC01   PIC SV9(7) SIGN TRAILING.
+          10  NUM-SLI-DEBUG       PIC X(7).
+          10  NUM-STI-DEBUG       PIC X(7).
 
 ***********************************************************************
 *******               FLOATING POINT TYPES
@@ -278,237 +279,6 @@ object TestDataGen6TypeVariety {
 
   var debugPrint = true
 
-  def putStringToArray(fieldName: String, bytes: Array[Byte], str: String, index0: Int, length: Int): Int = {
-    if (debugPrint) {
-      println(s"Putting string $fieldName to offsets $index0 .. ${index0 + length - 1}. New offset = ${index0 + length}")
-    }
-    var i = index0
-    var j = 0
-    while (i < index0 + length) {
-      if (j < str.length)
-        bytes(i) = BinaryUtils.asciiToEbcdic(str.charAt(j))
-      else bytes(i) = 0
-      i += 1
-      j += 1
-    }
-    index0 + length
-  }
-
-  def putIntToArray(bytes: Array[Byte], number: Int, index0: Int): Int = {
-    val coded = scodec.codecs.int32.encode(number)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i < index0 + 4) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i < index0 + 4) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
-    index0 + 4
-  }
-
-  def putEncodedNumStrToArray(
-                               encoder: String => Array[Byte],
-                               fieldName: String,
-                               bytes: Array[Byte],
-                               bigNumber: String,
-                               index0: Int,
-                               length: Int,
-                               signed: Boolean,
-                               isNegative: Boolean = false,
-                               isSignSeparate: Boolean = false,
-                               isSignLeading: Boolean = true,
-                               explicitDecimalPosition: Int = -1): Int = {
-
-    val explicitDecimalChars = if (explicitDecimalPosition >= 0) 1 else 0
-    val explicitSignChars = if (isSignSeparate) 1 else 0
-    val trailingSignChars = if (isSignSeparate && !isSignLeading) 1 else 0
-    val numLen = length + explicitSignChars
-
-    var str = bigNumber.take(length)
-    if (!isSignSeparate) {
-      if (isNegative) str = "-" + str
-    }
-
-    val encodedValue = encoder(str)
-    val binLength = encodedValue.length
-
-    var i = index0
-    if (isSignSeparate) {
-      if (isSignLeading) {
-        if (isNegative)
-          bytes(i) = Constants.minusCharEBCIDIC
-        else
-          bytes(i) = Constants.plusCharEBCIDIC
-        i += 1
-      } else {
-        if (isNegative)
-          bytes(index0 + binLength + explicitDecimalChars) = Constants.minusCharEBCIDIC
-        else
-          bytes(index0 + binLength + explicitDecimalChars) = Constants.plusCharEBCIDIC
-      }
-    }
-    val index1 = i
-    val newOffset = index1 + binLength + explicitDecimalChars + trailingSignChars
-
-    if (debugPrint) {
-      println(s"Putting number $fieldName <- (size=${newOffset-index0}) '$str' to offsets $index0 .. ${newOffset - 1}. New offset = $newOffset")
-    }
-
-    var j = 0
-    while (j < binLength) {
-      if (j == explicitDecimalPosition) {
-        bytes(i) = Constants.dotCharEBCIDIC
-        i += 1
-      }
-      bytes(i) = encodedValue(j)
-      i += 1
-      j += 1
-    }
-    newOffset
-  }
-
-  def encodeUncompressed(numStr: String, targetLength: Int, isSigned: Boolean, signPunch: Boolean): Array[Byte] = {
-    val sign = if (isSigned && numStr(0) == '-') '-' else '+'
-    val str = if (numStr(0) == '-') numStr.drop(1) else numStr
-    var j = 0
-    val outputArray = new Array[Byte](targetLength)
-    while (j < targetLength) {
-      if (j < str.length) {
-        var c = BinaryUtils.asciiToEbcdic(str.charAt(j))
-        if (j==str.length-1 && isSigned && signPunch) {
-          val num = if (sign == '-') {
-            str.charAt(j).toInt - 0x30 + 0xD0
-          } else {
-            str.charAt(j).toInt - 0x30 + 0xC0
-          }
-          c = num.toByte
-        }
-        outputArray(j) = c
-      }
-      else outputArray(j) = 0
-      j += 1
-    }
-    outputArray
-  }
-
-  def encodeBinSigned(numStr: String): Array[Byte] = {
-    val len = if (numStr(0) == '-') numStr.length - 1 else numStr.length
-    if (len <= Constants.maxShortPrecision) {
-      scodec.codecs.int16.encode(numStr.toInt).require.toByteArray
-    } else if (len <= Constants.maxIntegerPrecision) {
-      scodec.codecs.int32.encode(numStr.toInt).require.toByteArray
-    } else if (len <= Constants.maxLongPrecision) {
-      scodec.codecs.int64.encode(numStr.toLong).require.toByteArray
-    } else {
-      strToBigArray(numStr, isSigned = true)
-    }
-  }
-
-  def encodeBinUnsigned(numStr: String): Array[Byte] = {
-    val len = numStr.length
-    if (len <= Constants.maxShortPrecision) {
-      scodec.codecs.uint16.encode(numStr.toInt).require.toByteArray
-    } else if (len <= Constants.maxIntegerPrecision) {
-      scodec.codecs.uint32.encode(numStr.toLong).require.toByteArray
-    } else if (len <= Constants.maxLongPrecision) {
-      scodec.codecs.int64.encode(BigInt(numStr).toLong).require.toByteArray
-    } else {
-      strToBigArray(numStr, isSigned = false)
-    }
-  }
-
-  def encodeFloat(numStr: String): Array[Byte] = scodec.codecs.float.encode(numStr.toFloat).require.toByteArray
-
-  def encodeDouble(numStr: String): Array[Byte] = scodec.codecs.double.encode(numStr.toDouble).require.toByteArray
-
-  def strToBigArray(numStr: String, isSigned: Boolean): Array[Byte] = {
-    val precision = if (numStr(0) == '-' || numStr(0) == '+') numStr.length-1 else numStr.length
-    val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
-    val expectedNumOfBytes = math.ceil(numberOfBytes).toInt
-
-    val bytes = new Array[Byte](expectedNumOfBytes)
-    val bigIntBytes = BigInt(numStr).toByteArray
-
-    var j = bigIntBytes.length-1
-    var i = bytes.length-1
-
-    while (i>=0 && j>=0) {
-      bytes(i) = bigIntBytes(j)
-      i -= 1
-      j -= 1
-    }
-    if (i>=0) {
-      if (numStr(0) == '-') bytes(0) = -1
-    }
-
-    bytes
-  }
-
-  def encodeBcd(numStr: String, isSigned: Boolean): Array[Byte] = {
-    val isNegative = numStr(0) == '-'
-    val str = if (isNegative) numStr.drop(1) else numStr
-    val outputArray = new Array[Byte](str.length / 2 + 1)
-    var i = 0
-    var j = 0
-    val signNibble: Byte = if (isSigned) {
-      if (isNegative) 13 else 12
-    } else 15
-    if (str.length % 2 == 0) {
-      val highNibble: Byte = (str(i).toByte - 48).toByte
-      outputArray(j) = highNibble
-      i += 1
-      j += 1
-    }
-    while (i < str.length) {
-      val highNibble: Byte = (str(i).toByte - 48).toByte
-      val lowNibble: Byte = if (i == str.length - 1) {
-        signNibble
-      } else {
-        (str(i + 1).toByte - 48).toByte
-      }
-      outputArray(j) = (highNibble * 16 + lowNibble).toByte
-      i += 2
-      j += 1
-    }
-    outputArray
-  }
-
-
-  def putNumStrToArray(fieldName: String,
-                       bytes: Array[Byte],
-                       bigNumber: String,
-                       index0: Int,
-                       length: Int,
-                       signed: Boolean,
-                       isNegative: Boolean = false,
-                       isSignSeparate: Boolean = false,
-                       isSignLeading: Boolean = false,
-                       explicitDecimalPosition: Int = -1): Int = {
-    putEncodedNumStrToArray((str: String) => encodeUncompressed(str, length, signed, !isSignSeparate),
-      fieldName, bytes, bigNumber, index0, length, signed, isNegative, isSignSeparate, isSignLeading, explicitDecimalPosition)
-  }
-
-  def putFloat(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
-    val floatNum: String = bigNumber.take(5) + "." + bigNumber.slice(5, 7)
-    putEncodedNumStrToArray((str: String) => encodeFloat(str),
-      fieldName, bytes, floatNum, index0, 9, signed = true, isNegative = isNegative)
-  }
-
-
-  def putDouble(fieldName: String, bytes: Array[Byte], bigNumber: String, index0: Int, isNegative: Boolean = false): Int = {
-    val floatNum: String = bigNumber.take(10) + "." + bigNumber.slice(10, 14)
-    putEncodedNumStrToArray((str: String) => encodeDouble(str),
-      fieldName, bytes, floatNum, index0, 20, signed = true, isNegative = isNegative)
-  }
-
   val strings = Seq(
     "Jene",
     "Maya",
@@ -555,7 +325,7 @@ object TestDataGen6TypeVariety {
 
   def main(args: Array[String]): Unit = {
 
-    val byteArray: Array[Byte] = new Array[Byte](1465)
+    val byteArray: Array[Byte] = new Array[Byte](1493)
 
     val bos = new BufferedOutputStream(new FileOutputStream("INTEGR.TYPES.NOV28.DATA.dat"))
     var i = 0
@@ -737,11 +507,15 @@ object TestDataGen6TypeVariety {
       offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC09", byteArray, bigNum, offset, 19, signed = true, isNegative)
       offset = putEncodedNumStrToArray(encodeBcdSigned, "NUM-BCD-SDEC10", byteArray, bigNum, offset, 28, signed = true, isNegative)
 
-      // Sign separate numbers
+      // Sign separate  numbers
       offset = putNumStrToArray("NUM-SL-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-SL-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = true)
       offset = putNumStrToArray("NUM-ST-STR-INT01", byteArray, bigNum, offset, 9, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
       offset = putNumStrToArray("NUM-ST-STR-DEC01", byteArray, bigNum, offset, 4, signed = true, isNegative, isSignSeparate = true, isSignLeading = false)
+      offset = putNumStrToArray("NUM-SLI-STR-DEC01", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = true)
+      offset = putNumStrToArray("NUM-STI-STR-DEC01", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = false)
+      offset = putNumStrToArray("NUM-SLI-DEBUG", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = true)
+      offset = putNumStrToArray("NUM-STI-DEBUG", byteArray, bigNum, offset, 7, signed = true, isNegative, isSignSeparate = false, isSignLeading = false)
 
       offset = putFloat("FLOAT-01", byteArray, bigNum, offset, isNegative)
       offset = putDouble("DOUBLE-01", byteArray, bigNum, offset, isNegative)

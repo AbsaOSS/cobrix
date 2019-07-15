@@ -85,7 +85,6 @@ class PicValidationSpec extends FunSuite {
   }
 
   test("Test various correct PICs") {
-
     validatePic("9999")
     validatePic("9(5)")
     validatePic("S99(5)99")
@@ -136,6 +135,5 @@ class PicValidationSpec extends FunSuite {
     intercept[SyntaxErrorException] { validatePic("SP(5)") }
     intercept[SyntaxErrorException] { validatePic("S9P(5)9") }
   }
-
-
+  
 }

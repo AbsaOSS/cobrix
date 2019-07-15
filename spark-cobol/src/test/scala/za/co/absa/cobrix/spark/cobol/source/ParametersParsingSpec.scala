@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser
+import za.co.absa.cobrix.spark.cobol.utils.Parameters
 
 import scala.collection.immutable.HashMap
 
@@ -27,7 +28,7 @@ class ParametersParsingSpec extends FunSuite {
       "redefine-segment-id-map:0" -> "COMPANY => C,D",
       "redefine-segment-id-map:1" -> "CONTACT => P")
 
-    val segmentIdMapping = CobolParametersParser.getSegmentIdRedefineMapping(config)
+    val segmentIdMapping = CobolParametersParser.getSegmentIdRedefineMapping(new Parameters(config))
 
     assert(segmentIdMapping("C") == "COMPANY")
     assert(segmentIdMapping("D") == "COMPANY")

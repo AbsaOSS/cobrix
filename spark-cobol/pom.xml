@@ -19,16 +19,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spark-cobol</artifactId>
-
-	<packaging>jar</packaging>
-
 	<parent>
 		<groupId>za.co.absa.cobrix</groupId>
-		<artifactId>cobrix-parent</artifactId>
-		<version>0.5.1-SNAPSHOT</version>
-		<relativePath>../parent/pom.xml</relativePath>
+		<artifactId>cobrix</artifactId>
+		<version>0.5.3-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
+
+	<artifactId>spark-cobol</artifactId>
+	<packaging>jar</packaging>
 
 	<dependencies>
 		<!-- spark -->
@@ -66,28 +65,12 @@
 	</dependencies>
 
 	<build>
-		<sourceDirectory>src/main/scala</sourceDirectory>
-		<testSourceDirectory>src/test/scala</testSourceDirectory>
-		<plugins>
-			<plugin>
-				<groupId>net.alchim31.maven</groupId>
-				<artifactId>scala-maven-plugin</artifactId>
-				<version>${maven.scala.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.scalatest</groupId>
-				<artifactId>scalatest-maven-plugin</artifactId>
-				<version>${scalatest.maven.version}</version>
-			</plugin>
-		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 	</build>
 
 </project>

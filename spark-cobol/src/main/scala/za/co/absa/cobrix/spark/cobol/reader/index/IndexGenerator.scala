@@ -55,7 +55,7 @@ object IndexGenerator {
     while (!endOfFileReached) {
       val headerSize = recordHeaderParser.getHeaderLength
       val headerBytes = dataStream.next(headerSize)
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, byteIndex)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
       val recordSize = recordMetadata.recordLength
       if (recordSize <= 0) {
         endOfFileReached = true
@@ -82,7 +82,7 @@ object IndexGenerator {
               if (isSplitBySize) {
                 // If indexes are split by size subtract the size of the split from the total bytes read.
                 // This way the mismatch between Spark partitions and HDFS blocks won't accumulate.
-                // This wahieves better alignment between Spark partitions and HDFS blocks.
+                // This achieves better alignment between Spark partitions and HDFS blocks.
                 bytesInChunk -= sizePerIndexEntryMB.get.toLong * Constants.megabyte
               } else {
                 bytesInChunk = 0L

@@ -1,0 +1,90 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "ID",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMPANY",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "SHORT_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "COMPANY_ID_NUM",
+        "type" : "integer",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "COMPANY_ID_STR",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "METADATA",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "CLIENTID",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "REGISTRATION_NUM",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "NUMBER_OF_ACCTS",
+        "type" : "integer",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "ACCOUNT",
+        "type" : {
+          "type" : "struct",
+          "fields" : [ {
+            "name" : "ACCOUNT_DETAIL",
+            "type" : {
+              "type" : "array",
+              "elementType" : {
+                "type" : "struct",
+                "fields" : [ {
+                  "name" : "ACCOUNT_NUMBER",
+                  "type" : "string",
+                  "nullable" : true,
+                  "metadata" : { }
+                }, {
+                  "name" : "ACCOUNT_TYPE_N",
+                  "type" : "integer",
+                  "nullable" : true,
+                  "metadata" : { }
+                }, {
+                  "name" : "ACCOUNT_TYPE_X",
+                  "type" : "string",
+                  "nullable" : true,
+                  "metadata" : { }
+                } ]
+              },
+              "containsNull" : true
+            },
+            "nullable" : true,
+            "metadata" : { }
+          } ]
+        },
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

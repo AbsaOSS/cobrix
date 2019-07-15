@@ -19,6 +19,9 @@ package za.co.absa.cobrix.cobol.parser.stream
 
 /** This trait defines a simple abstraction for processing variable length record data. */
 trait SimpleStream {
+  def size: Long
+
+  def offset: Long
 
   @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
 

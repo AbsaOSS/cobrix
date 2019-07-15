@@ -32,7 +32,7 @@
 		<scalatest.version>3.0.0</scalatest.version>
 		<spark.version>2.3.0</spark.version>
 		<specs.version>2.4.16</specs.version>
-        <spark.cobol.version>0.5.0</spark.cobol.version>
+        <spark.cobol.version>0.5.2</spark.cobol.version>
 	</properties>
 	
 	<dependencies>
@@ -145,6 +145,12 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <transformers>
+                        <!-- This allows to support several library data sources for Spark by referring to them by short name. -->
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                    </transformers>
+                </configuration>
             </plugin>
 			
         </plugins>

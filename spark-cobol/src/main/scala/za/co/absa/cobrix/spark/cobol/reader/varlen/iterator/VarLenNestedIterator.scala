@@ -83,12 +83,10 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def fetchNext(): Unit = {
     var recordFetched = false
     while (!recordFetched) {
-      val binaryData = if (readerProperties.isRecordSequence) {
+      val binaryData = if (readerProperties.isRecordSequence || lengthField.isEmpty) {
         fetchRecordUsingRdwHeaders()
-      } else if (lengthField.isDefined) {
-        fetchRecordUsingRecordLengthField()
       } else {
-        fetchRecordUsingCopybookRecordLength()
+        fetchRecordUsingRecordLengthField()
       }
 
       binaryData match {
@@ -167,7 +165,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     while (!isValidRecord && !isEndOfFile) {
       headerBytes = dataStream.next(rdwHeaderBlock)
 
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, byteIndex)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
       val recordLength = recordMetadata.recordLength
 
       byteIndex += headerBytes.length
@@ -190,18 +188,6 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
       }
     } else {
       None
-    }
-  }
-
-  private def fetchRecordUsingCopybookRecordLength(): Option[Array[Byte]] = {
-    val recordLength = cobolSchema.getRecordSize
-
-    val bytes = dataStream.next(recordLength)
-
-    if (bytes.length < recordLength) {
-      None
-    } else {
-      Some(bytes)
     }
   }
 

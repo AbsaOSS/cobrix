@@ -32,7 +32,7 @@ class CopybooksOperationsSpec extends FunSuite {
         |              06  GROUP-2.
         |                 10  NESTED-FIELD-1  PIC 9(10).
         |                 10  FILLER          PIC 9(5).
-        |""".stripMargin
+        |""".stripMargin.replace("\r\n", "\n")
     val copybook1 = CopybookParser.parseTree(copyBookContents1)
     val copybookDR1 = copybook1.dropRoot()
 
@@ -48,7 +48,8 @@ class CopybooksOperationsSpec extends FunSuite {
         |    6 FILLER                                          3     11     15      5
         |    6 GROUP_2                                         6     16     30     15
         |      10 NESTED_FIELD_1                               5     16     25     10
-        |      10 FILLER                                       6     26     30      5""".stripMargin)
+        |      10 FILLER                                       6     26     30      5"""
+        .stripMargin.replace("\r\n", "\n"))
     assert(copybookDR1.generateRecordLayoutPositions ==
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
@@ -57,7 +58,8 @@ class CopybooksOperationsSpec extends FunSuite {
         |  6 FILLER                                            2     11     15      5
         |  6 GROUP_2                                           5     16     30     15
         |    10 NESTED_FIELD_1                                 4     16     25     10
-        |    10 FILLER                                         5     26     30      5""".stripMargin)
+        |    10 FILLER                                         5     26     30      5"""
+        .stripMargin.replace("\r\n", "\n"))
 
     val exception = intercept[RuntimeException] {
       copybookDR1.dropRoot()
@@ -87,7 +89,7 @@ class CopybooksOperationsSpec extends FunSuite {
         |              06  GROUP-2.
         |                 10  NESTED-FIELD-1  PIC 9(20).
         |                 10  FILLER          PIC 9(10).
-        |""".stripMargin
+        |""".stripMargin.replace("\r\n", "\n")
     val copybook1 = CopybookParser.parseTree(copyBookContents1)
     val exception2 = intercept[RuntimeException] {
        copybook1.dropRoot()
@@ -112,7 +114,7 @@ class CopybooksOperationsSpec extends FunSuite {
         |              06  GROUP-2B.
         |                 10  NESTED-FIELD-1  PIC 9(20).
         |                 10  FILLER          PIC 9(10).
-        |""".stripMargin
+        |""".stripMargin.replace("\r\n", "\n")
     val copybook1 = CopybookParser.parseTree(copyBookContents1)
     val copybookR1 = copybook1.restrictTo("GROUP-1A")
     val copybookR2 = copybook1.restrictTo("GROUP-1B")
@@ -129,7 +131,8 @@ class CopybooksOperationsSpec extends FunSuite {
         |  6 FILLER                                            2     11     15      5
         |  6 GROUP_2A                                          5     16     30     15
         |    10 NESTED_FIELD_1                                 4     16     25     10
-        |    10 FILLER                                         5     26     30      5""".stripMargin)
+        |    10 FILLER                                         5     26     30      5"""
+        .stripMargin.replace("\r\n", "\n"))
     assert(copybookR2.generateRecordLayoutPositions ==
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
@@ -138,7 +141,8 @@ class CopybooksOperationsSpec extends FunSuite {
         |  6 FILLER                                            2     21     30     10
         |  6 GROUP_2B                                          5     31     60     30
         |    10 NESTED_FIELD_1                                 4     31     50     20
-        |    10 FILLER                                         5     51     60     10""".stripMargin)
+        |    10 FILLER                                         5     51     60     10"""
+        .stripMargin.replace("\r\n", "\n"))
 
     val exception1 = intercept[RuntimeException] {
       copybook1.restrictTo("GROUP-1A.FIELD-1")

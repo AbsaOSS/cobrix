@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -45,7 +44,7 @@ class Test1FixedLengthRecordsSpec extends FunSuite with SparkTestBase {
       .load(inpudDataPath)
 
     // This is to print the actual output
-    println(df.schema.json)
+    //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -64,6 +63,63 @@ class Test1FixedLengthRecordsSpec extends FunSuite with SparkTestBase {
       FileUtils.writeStringsToFile(actual, actualResultsPath)
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
     }
+  }
+
+  test(s"Test failure on an invalid copybook") {
+    val copybook =
+      """        01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID           PIC X(5).
+        |            05  COMPANY-ID           PIC X(11).
+        |""".stripMargin
+
+    val df1 = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("schema_retention_policy", "collapse_root")
+      .load(inpudDataPath)
+
+    val exception = intercept[IllegalArgumentException]{
+      df1.take(60).foreach(_ => true)
+    }
+    assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
+  }
+
+  test(s"Test success on an invalid copybook with debug override") {
+    val copybook =
+      """        01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID           PIC X(5).
+        |            05  COMPANY-ID           PIC X(11).
+        |""".stripMargin
+
+    val df1 = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("schema_retention_policy", "collapse_root")
+      .option("debug_ignore_file_size", "true")
+      .load(inpudDataPath)
+
+    df1.take(60).foreach(_ => true)
+  }
+
+  test(s"Test failure on unrecognized options") {
+    val copybook =
+      """        01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID           PIC X(5).
+        |            05  COMPANY-ID           PIC X(11).
+        |""".stripMargin
+
+    val exception = intercept[IllegalArgumentException] {
+      val df1 = spark
+        .read
+        .format("cobol")
+        .option("copybook", inputCopybookPath)
+        .option("schema_retention_policy", "collapse_root")
+        .option("dummy", "unknown")
+        .load(inpudDataPath)
+    }
+    assert(exception.getMessage.contains("Redundant or unrecognized option(s) to 'spark-cobol': dummy."))
   }
 
 }

@@ -16,11 +16,18 @@
 
 package za.co.absa.cobrix.cobol.parser.stream
 
-import java.io.{BufferedInputStream, FileInputStream, IOException}
+import java.io.{BufferedInputStream, File, FileInputStream, IOException}
 
 class FSStream (fileName: String) extends SimpleStream {
   val bytesStream = new BufferedInputStream(new FileInputStream(fileName))
   private var isClosed = false
+
+  private val fileSize: Long = new File(fileName).length()
+  private var byteIndex = 0L
+
+  override def size: Long = fileSize
+
+  override def offset: Long = byteIndex
 
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[IOException])
@@ -32,6 +39,7 @@ class FSStream (fileName: String) extends SimpleStream {
       close()
       new Array[Byte](0)
     } else {
+      byteIndex += actual
       b.take(actual)
     }
   }

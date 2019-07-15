@@ -21,7 +21,10 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 /**
   * This is a parser for records that contain 4 byte RDW headers.
   */
-class RecordHeaderParserRDW(isBigEndian: Boolean) extends Serializable with RecordHeaderParser {
+class RecordHeaderParserRDW(isBigEndian: Boolean,
+                            fileHeaderBytes: Int,
+                            fileFooterBytes: Int,
+                            rdwAdjustment: Int) extends Serializable with RecordHeaderParser {
 
   /** RDW header is a 4 byte header */
   override def getHeaderLength: Int = 4
@@ -32,32 +35,51 @@ class RecordHeaderParserRDW(isBigEndian: Boolean) extends Serializable with Reco
   /**
     * Given a raw values of a record header returns metadata sufficient to parse the record.
     *
-    * @param header    A record header as an array of bytes
-    * @param byteIndex The index of the header in a mainframe file. This is provided for error messages generation
-    *                  purposes
+    * @param header     A record header as an array of bytes
+    * @param fileOffset An offset from the beginning of the underlying file
+    * @param fileSize   A size of the underlying file
+    * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], byteIndex: Long = 0L): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+    if (fileHeaderBytes > getHeaderLength && fileOffset == getHeaderLength) {
+      RecordMetadata(fileHeaderBytes - getHeaderLength, isValid = false)
+    } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
+      RecordMetadata((fileSize - fileOffset).toInt, isValid = false)
+    } else {
+      processRdwHeader(header, fileOffset)
+    }
+  }
+
+  /**
+    * Parses an RDW header.
+    *
+    * @param header A record header as an array of bytes
+    * @param offset An offset from the beginning of the underlying file
+    *
+    * @return A parsed record metadata
+    */
+  private def processRdwHeader(header: Array[Byte], offset: Long): RecordMetadata = {
     val rdwHeaderBlock = getHeaderLength
     if (header.length < rdwHeaderBlock) {
       RecordMetadata(-1, isValid = false)
     }
     else {
       val recordLength = if (isBigEndian) {
-        (header(1) & 0xFF) + 256 * (header(0) & 0xFF)
+        (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwAdjustment
       } else {
-        (header(2) & 0xFF) + 256 * (header(3) & 0xFF)
+        (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwAdjustment
       }
 
       if (recordLength > 0) {
         if (recordLength > Constants.maxRdWRecordSize) {
           val rdwHeaders = header.map(_ & 0xFF).mkString(",")
-          throw new IllegalStateException(s"RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $byteIndex.")
+          throw new IllegalStateException(s"RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $offset.")
         }
         RecordMetadata(recordLength, isValid = true)
       } else {
         val rdwHeaders = header.map(_ & 0xFF).mkString(",")
-        throw new IllegalStateException(s"RDW headers should never be zero ($rdwHeaders). Found zero size record at $byteIndex.")
+        throw new IllegalStateException(s"RDW headers should never be zero ($rdwHeaders). Found zero size record at $offset.")
       }
     }
   }

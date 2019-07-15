@@ -18,9 +18,8 @@ package za.co.absa.cobrix.cobol.parser.examples.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
 
-import scodec.Attempt.Successful
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
-import za.co.absa.cobrix.cobol.parser.examples.generators.model.Company
+import za.co.absa.cobrix.cobol.parser.examples.generators.model.{CommonLists, Company}
+import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
 
 import scala.util.Random
 
@@ -52,77 +51,6 @@ object TestDataGen11CustomRDW {
                  10  PHONE-NUMBER      PIC X(17).
                  10  CONTACT-PERSON    PIC X(28).
    */
-
-  def putStringToArray(bytes: Array[Byte], str: String, index0: Int, index1: Int): Unit = {
-    var i = index0
-    var j = 0
-    while (i <= index1) {
-      if (j < str.length)
-        bytes(i) = BinaryUtils.asciiToEbcdic(str.charAt(j))
-      else bytes(i) = 0
-      i += 1
-      j += 1
-    }
-  }
-
-  def putIntToArray(bytes: Array[Byte], number: Int, index0: Int, index1: Int): Unit = {
-    val coded = scodec.codecs.int32.encode(number)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
-  }
-
-  def putShortToArray(bytes: Array[Byte], number: Short, index0: Int, index1: Int): Unit = {
-    val coded = scodec.codecs.int16L.encode(number)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
-  }
-
-  def putDecimalToArray(bytes: Array[Byte], intpart: Long, fractPart: Int, index0: Int, index1: Int): Unit = {
-    val lng = intpart.toLong * 100 + fractPart
-
-    val coded = scodec.codecs.int64.encode(lng)
-
-    coded match {
-      case Successful(a) =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = a.getByte(i - index0)
-          i += 1
-        }
-      case _ =>
-        var i = index0
-        while (i <= index1) {
-          bytes(i) = 0
-          i += 1
-        }
-    }
-  }
 
   val segments: Seq[String] = Seq("C", "P")
 

@@ -59,13 +59,23 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
 
-Coordinates for Maven POM dependency
+Coordinates for Maven POM dependency for the current release:
 
 ```xml
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.0</version>
+      <version>0.5.2</version>
+</dependency>
+```
+
+Snapshot versions corresponding to the current master are available as well:
+
+```xml
+<dependency>
+      <groupId>za.co.absa.cobrix</groupId>
+      <artifactId>spark-cobol</artifactId>
+      <version>0.5.3-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -178,8 +188,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.0.jar
-* cobol-parser-0.5.0.jar
+* spark-cobol-0.5.2.jar
+* cobol-parser-0.5.2.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
@@ -266,6 +276,7 @@ println(copyBook.generateRecordLayoutPositions())
 ```
 
 ### Varialble length records support
+### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
 record header known as Record Descriptor Word (RDW). Such headers are created automatically when a variable record length
@@ -813,6 +824,15 @@ You can change this behaviour if you would like to drop such filler groups by pr
 
 ## Summary of all available options
 
+##### File reading options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
+| .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
+| .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
+| .option("record_end_offset", "0")          | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data. |
+
 ##### Data parsing options
 
 |            Option (usage example)          |                           Description |
@@ -826,14 +846,18 @@ You can change this behaviour if you would like to drop such filler groups by pr
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
+| .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
 
 ##### Variable record length files options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("is_record_sequence", "true")      | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
-| .option("is_rdw_big_endian", "true")       | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
+|            Option (usage example)             |                           Description |
+| --------------------------------------------- |:----------------------------------------------------------------------------- |
+| .option("is_record_sequence", "true")         | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
+| .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
+| .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. |
+| .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
 | .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
+| .option("rhp_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record header parser (RHP). A custom RHP can get that additional info by overriding `onReceiveAdditionalInfo()`  |
 
 
 ##### Multisegment files options
@@ -856,6 +880,13 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
 | .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
 | .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+
+##### Debug helper options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("pedantic", "false")               | If 'true' (default) Cobrix will throw an exception is an unknown option is encountered. If 'false', unknown options will be logged as an error without failing Spark Application. |
+| .option("debug_ignore_file_size", "true")  | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file. |
 
 ## Performance Analysis
 
@@ -949,6 +980,28 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.2 released 26 June 2019
+  - Added options to adjust record sizes returned by RDW headers. RDWs may or may not include themselves as part of record size.
+  - Added tracking of unrecognized and redundant options. If an option to `spark-cobol` is unrecognized or redundant the
+    Spark Application won't run unless `pedantic = false`.
+  - Added logging of Cobrix version during Spark Application execution.
+  - Improved custom record header parser to support wider range of use cases.
+  - Fixed processing paths that contain wildcards.
+  - Various improvements in the structure of the project, POM files and examples.
+
+- #### 0.5.1 released 26 June 2019
+  - This is a minor feature release.
+  - Added support for specifying several copybooks. They will be automatically merged into a larger one (Thanks Tiago Requeijo).
+  - Added an option for ignoring file headers and footers ('file_start_offset', 'file_end_offset').
+  - Added the dropRoot and restrictTo operations for the copybooks parser (Thanks Tiago Requeijo).
+  - Added support for explicit decimal point location together with scale factor (Thanks @gd-iborisov)
+  - Added an option to suppress file size check for debugging fixed record length files ('debug_ignore_file_size').
+  - Added support for sparse indexes when fixed record length files require variable record length features.
+    It can be, for example, when a record id generation is requested or when file offsets are used.
+  - Improved custom record header parser interface:
+    - Cobrix now provides file offset, size and record number to record metadata parser. 
+    - Fixed handling the case where record headers are part of the copybook.
+
 - #### 0.5.0 released 17 May 2019
   - This is a minor feature release.
   - Cobrix now handles top level REDEFINES (Thanks Tiago Requeijo).

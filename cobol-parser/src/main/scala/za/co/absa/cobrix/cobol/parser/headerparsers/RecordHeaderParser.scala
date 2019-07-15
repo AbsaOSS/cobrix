@@ -49,8 +49,28 @@ trait RecordHeaderParser {
   /**
     * Given a raw values of a record header returns metadata sufficient to parse the record.
     *
-    * @param header A record header as an array of bytes
+    * @param header     A record header as an array of bytes
+    * @param fileOffset An offset from the beginning of the underlying file
+    * @param fileSize   A size of the underlying file
+    * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  def getRecordMetadata(header: Array[Byte], byteIndex: Long): RecordMetadata
+  def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata
+
+  /**
+    * Clients of 'spark-cobol' can pass additional information to custom record header parsers using
+    *
+    * ```
+    * .option("rhp_additional_info", "...anything as a string...")
+    * ```
+    *
+    * If a client provides any additional info the method will be executed just after constructing
+    * the record header parser.
+    *
+    * Built-in record header parsers ignore the additional info. This info string is intended for
+    * custom record header parsers.
+    *
+    * @param additionalInfo A string provided by a client for the record header parser.
+    */
+  def onReceiveAdditionalInfo(additionalInfo: String): Unit = { }
 }

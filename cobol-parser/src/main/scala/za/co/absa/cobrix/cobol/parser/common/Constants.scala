@@ -73,4 +73,6 @@ object Constants {
 
   // Reserved Words
   val FILLER = "FILLER"
+
+  val RhRdwFixedLength = "fixed_length"
 }

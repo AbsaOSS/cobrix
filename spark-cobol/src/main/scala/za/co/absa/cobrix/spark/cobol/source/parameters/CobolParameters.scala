@@ -30,23 +30,15 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
-  * @param isRecordSequence       Does input files have 4 byte record length headers
-  * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
-  * @param isUsingIndex           Is indexing input file before processing is requested
-  * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
-  * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
-  *                               If None, the records will be assumed to be fixed-length.
-  * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
-  *                               so that the resulting Spark schema will consist of child elements of that group
   * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
-  * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
-  * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
+  * @param nonTerminals           A list of non-terminals (GROUPS) to combine and parse as primitive fields
+  * @param debugIgnoreFileSize    If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
   */
 case class CobolParameters(
                             copybookPath:          Option[String],
@@ -56,23 +48,13 @@ case class CobolParameters(
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,
                             ebcdicCodePageClass:   Option[String],
-                            isRecordSequence:      Boolean,
-                            isRdwBigEndian:        Boolean,
-                            isUsingIndex:          Boolean,
-                            inputSplitRecords:     Option[Int],
-                            inputSplitSizeMB:      Option[Int],
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],
-                            generateRecordId:      Boolean,
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             stringTrimmingPolicy:  StringTrimmingPolicy,
-                            searchSignatureField:  Option[String],
-                            searchSignatureValue:  Option[String],
                             multisegmentParams:    Option[MultisegmentParameters],
-                            improveLocality:       Boolean,
-                            optimizeAllocation:    Boolean,
                             dropGroupFillers:      Boolean,
                             nonTerminals:          Seq[String],
-                            recordHeaderParser:    Option[String]
+                            debugIgnoreFileSize:   Boolean
                           )
