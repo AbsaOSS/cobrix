@@ -59,13 +59,23 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
 
-Coordinates for Maven POM dependency
+Coordinates for Maven POM dependency for the current release:
 
 ```xml
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
       <version>0.5.2</version>
+</dependency>
+```
+
+Snapshot versions corresponding to the current master are available as well:
+
+```xml
+<dependency>
+      <groupId>za.co.absa.cobrix</groupId>
+      <artifactId>spark-cobol</artifactId>
+      <version>0.5.3-SNAPSHOT</version>
 </dependency>
 ```
 
