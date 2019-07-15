@@ -135,5 +135,5 @@ class PicValidationSpec extends FunSuite {
     intercept[SyntaxErrorException] { validatePic("SP(5)") }
     intercept[SyntaxErrorException] { validatePic("S9P(5)9") }
   }
-  
+
 }
