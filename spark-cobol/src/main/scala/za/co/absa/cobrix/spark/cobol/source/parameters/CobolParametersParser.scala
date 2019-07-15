@@ -41,8 +41,6 @@ object CobolParametersParser {
   val PARAM_ENCODING                  = "encoding"
   val PARAM_PEDANTIC                  = "pedantic"
   val PARAM_RECORD_LENGTH             = "record_length_field"
-  val PARAM_RECORD_LENGTH_MIN         = "record_length_min"
-  val PARAM_RECORD_LENGTH_MAX         = "record_length_max"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
@@ -71,10 +69,6 @@ object CobolParametersParser {
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
   val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
-
-  // Parameters for signature search reader
-  val PARAM_SEARCH_SIGNATURE_FIELD    = "search_field_name"
-  val PARAM_SEARCH_SIGNATURE_VALUE    = "search_field_value"
 
   // Indexed multisegment file processing
   val PARAM_ALLOW_INDEXING            = "allow_indexing"
@@ -138,30 +132,14 @@ object CobolParametersParser {
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
-      params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean,
-      params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
-      params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
-      params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
-      params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
-      params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
-      params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
-      params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt,
-      params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
-      params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
-      getParameter(PARAM_SEARCH_SIGNATURE_FIELD, params),
-      getParameter(PARAM_SEARCH_SIGNATURE_VALUE, params),
       parseMultisegmentParameters(params),
-      params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
-      params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
-      params.get(PARAM_RECORD_HEADER_PARSER),
-      params.get(PARAM_RHP_ADDITIONAL_INFO),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
     validateSparkCobolOptions(params)
@@ -169,15 +147,37 @@ object CobolParametersParser {
   }
 
   private def parseVariableLengthParameters(params: Parameters): Option[VariableLengthParameters] = {
-    if (params.contains(PARAM_RECORD_LENGTH)) {
+    val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH)
+    val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean
+    val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
+    val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
+    val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
+
+    if (recordLengthFieldOpt.isDefined ||
+      isRecordSequence ||
+      isRecordIdGenerationEnabled ||
+      fileStartOffset > 0 ||
+      fileEndOffset > 0
+    ) {
       Some(VariableLengthParameters
       (
-        params(PARAM_RECORD_LENGTH),
-        params.get(PARAM_RECORD_LENGTH_MIN).map(_.toInt),
-        params.get(PARAM_RECORD_LENGTH_MAX).map(_.toInt)
+        isRecordSequence,
+        params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
+        params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
+        params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
+        params.get(PARAM_RECORD_HEADER_PARSER),
+        params.get(PARAM_RHP_ADDITIONAL_INFO),
+        recordLengthFieldOpt.getOrElse(""),
+        fileStartOffset,
+        fileEndOffset,
+        isRecordIdGenerationEnabled,
+        params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
+        params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
+        params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
+        params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
+        params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean
       ))
-    }
-    else {
+    } else {
       None
     }
   }
