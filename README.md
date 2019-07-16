@@ -984,7 +984,7 @@ For multisegment variable lengths tests:
   - Make `peadntic=false` by default so existing workflows won't break.
   - Use `cobrix_build.properties` file for storing Cobrix version instead of `build.properties` to avoid name clashes.
   
-- #### 0.5.2 released 12 June 2019
+- #### 0.5.2 released 12 July 2019
   - Added options to adjust record sizes returned by RDW headers. RDWs may or may not include themselves as part of record size.
   - Added tracking of unrecognized and redundant options. If an option to `spark-cobol` is unrecognized or redundant the
     Spark Application won't run unless `pedantic = false`.
