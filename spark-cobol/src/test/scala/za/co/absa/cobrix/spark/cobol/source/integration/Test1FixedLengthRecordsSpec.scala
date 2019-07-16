@@ -103,7 +103,7 @@ class Test1FixedLengthRecordsSpec extends FunSuite with SparkTestBase {
     df1.take(60).foreach(_ => true)
   }
 
-  test(s"Test failure on unrecognized options") {
+  test(s"Test failure on unrecognized options (pedantic mode on)") {
     val copybook =
       """        01  COMPANY-DETAILS.
         |            05  SEGMENT-ID           PIC X(5).
@@ -117,6 +117,7 @@ class Test1FixedLengthRecordsSpec extends FunSuite with SparkTestBase {
         .option("copybook", inputCopybookPath)
         .option("schema_retention_policy", "collapse_root")
         .option("dummy", "unknown")
+        .option("pedantic", "true")
         .load(inpudDataPath)
     }
     assert(exception.getMessage.contains("Redundant or unrecognized option(s) to 'spark-cobol': dummy."))

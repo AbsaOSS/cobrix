@@ -18,8 +18,8 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -303,7 +303,7 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     */
   private def validateSparkCobolOptions(params: Parameters): Unit = {
-    val isPedantic = params.getOrElse(PARAM_PEDANTIC, "true").toBoolean
+    val isPedantic = params.getOrElse(PARAM_PEDANTIC, "false").toBoolean
     val keysPassed = params.getMap.keys.toSeq
     val unusedKeys = keysPassed.flatMap(key => {
       if (params.isKeyUsed(key)) {

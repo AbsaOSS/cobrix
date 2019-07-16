@@ -32,7 +32,7 @@ object BuildProperties {
   loadConfig()
 
   private def loadConfig(): Unit = {
-    val is = getClass.getResourceAsStream("/build.properties")
+    val is = getClass.getResourceAsStream("/cobrix_build.properties")
     try properties.load(is)
     finally if (is != null) is.close()
   }
