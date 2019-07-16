@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency for the current release:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.2</version>
+      <version>0.5.3</version>
 </dependency>
 ```
 
@@ -75,7 +75,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.3-SNAPSHOT</version>
+      <version>0.5.4-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -188,14 +188,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.2.jar
-* cobol-parser-0.5.2.jar
+* spark-cobol-0.5.3.jar
+* cobol-parser-0.5.3.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.3.0.jar,cobol-parser-0.3.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.3.jar,cobol-parser-0.5.3.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -980,7 +980,11 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 0.5.2 released 26 June 2019
+- #### 0.5.3 released 15 July 2019
+  - Make `peadntic=false` by default so existing workflows won't break.
+  - Use `cobrix_build.properties` file for storing Cobrix version instead of `build.properties` to avoid name clashes.
+  
+- #### 0.5.2 released 12 June 2019
   - Added options to adjust record sizes returned by RDW headers. RDWs may or may not include themselves as part of record size.
   - Added tracking of unrecognized and redundant options. If an option to `spark-cobol` is unrecognized or redundant the
     Spark Application won't run unless `pedantic = false`.
