@@ -49,7 +49,7 @@ class ParserVisitor(enc: Encoding,
   case class UsageExpr(value: Option[Usage]) extends Expr
   case class PicExpr(value: CobolType) extends Expr
   case class PrimitiveExpr(value: Primitive) extends Expr
-  case class SepSignExpr(value: Char) extends Expr
+  case class SepSignExpr(value: Char, separate: Boolean) extends Expr
 
   /* aux classes */
   case class Level(n: Int, el: Group, context: ParserRuleContext, children: Option[Int] = None)
@@ -156,7 +156,7 @@ class ParserVisitor(enc: Encoding,
     }
   }
 
-  def replaceSign(pic: PicExpr, side: Char, sign: Char): PicExpr = {
+  def replaceSign(pic: PicExpr, side: Char, sign: Char, separate: Boolean): PicExpr = {
     val position: Option[Position] = side match {
       case 'L' => Some(Left)
       case 'T' => Some(Right)
@@ -166,8 +166,8 @@ class ParserVisitor(enc: Encoding,
 
     PicExpr(
       pic.value match {
-        case x: Decimal => x.copy(pic=newPic, signPosition=position, isSignSeparate=true)
-        case x: Integral => x.copy(pic=newPic, signPosition=position, isSignSeparate=true)
+        case x: Decimal => x.copy(pic=newPic, signPosition=position, isSignSeparate=separate)
+        case x: Integral => x.copy(pic=newPic, signPosition=position, isSignSeparate=separate)
       }
     )
   }
@@ -609,7 +609,7 @@ class ParserVisitor(enc: Encoding,
     val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
     ctx.plusMinus() match {
       case null => prec
-      case _ => replaceSign(prec, 'T', ctx.plusMinus().getText.charAt(0))
+      case _ => replaceSign(prec, 'T', ctx.plusMinus().getText.charAt(0), false)
     }
   }
 
@@ -617,15 +617,16 @@ class ParserVisitor(enc: Encoding,
     val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
     ctx.plusMinus() match {
       case null => prec
-      case _ => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0))
+      case _ => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0), false)
     }
   }
 
   override def visitSeparateSign(ctx: copybookParser.SeparateSignContext): SepSignExpr = {
+    val separate = ctx.SEPARATE() != null
     if(ctx.LEADING() != null)
-      SepSignExpr('L')
+      SepSignExpr('L', separate)
     else
-      SepSignExpr('T')
+      SepSignExpr('T', separate)
   }
 
   override def visitPrecision9Nines(ctx: copybookParser.Precision9NinesContext): PicExpr = {
@@ -760,7 +761,10 @@ class ParserVisitor(enc: Encoding,
 
     pic = ctx.separateSign().asScala.toList match {
       case Nil => pic
-      case x :: _ if !isSignSeparate(pic.value) => replaceSign(pic, visitSeparateSign(x).value, '-')
+      case x :: _ if !isSignSeparate(pic.value) => {
+        val signExpr = visitSeparateSign(x)
+        replaceSign(pic, signExpr.value, '-', signExpr.separate)
+      }
       case _ => throw new RuntimeException("Cannot mix explicit signs and SEPARATE clauses")
     }
 
