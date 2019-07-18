@@ -609,7 +609,7 @@ class ParserVisitor(enc: Encoding,
     val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
     ctx.plusMinus() match {
       case null => prec
-      case _ => replaceSign(prec, 'T', ctx.plusMinus().getText.charAt(0), false)
+      case _ => replaceSign(prec, 'T', ctx.plusMinus().getText.charAt(0), ctx.plusMinus() != null)
     }
   }
 
@@ -617,7 +617,7 @@ class ParserVisitor(enc: Encoding,
     val prec = visit(ctx.precision9()).asInstanceOf[PicExpr]
     ctx.plusMinus() match {
       case null => prec
-      case _ => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0), false)
+      case _ => replaceSign(prec, 'L', ctx.plusMinus().getText.charAt(0), ctx.plusMinus() != null)
     }
   }
 
