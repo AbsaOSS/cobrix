@@ -20,8 +20,9 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
@@ -63,8 +64,9 @@ object CopybookParser {
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 ebcdicCodePage: CodePage = new CodePageCommon,
+                floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, nonTerminals)
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
   }
 
   /**
@@ -85,6 +87,7 @@ object CopybookParser {
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 ebcdicCodePage: CodePage,
+                floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
     // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
@@ -150,7 +153,7 @@ object CopybookParser {
 
       val newElement = if (isLeaf) {
         val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
         Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
           dependingOn, isFiller = isFiller, decode = decode)(None)
       }
@@ -170,11 +173,11 @@ object CopybookParser {
 
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
       )), segmentRedefines))
     } else {
       calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage)
+        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
       )), segmentRedefines))
     }
 
@@ -184,7 +187,8 @@ object CopybookParser {
   private def addNonTerminals(copybook: MutableCopybook, nonTerminals: Set[String],
                               enc: Encoding,
                               stringTrimmingPolicy: StringTrimmingPolicy,
-                              ebcdicCodePage: CodePage
+                              ebcdicCodePage: CodePage,
+                              floatingPointFormat: FloatingPointFormat
                              ): MutableCopybook = {
 
     def getNonTerminalName(name: String, parent: Group): String = {
@@ -210,13 +214,13 @@ object CopybookParser {
           if (nonTerminals contains g.name) {
             newCopybook.append(
               g.copy(
-                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage),
+                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat),
                 isRedefined = true
               )(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newCopybook.append(
               Primitive(
@@ -230,7 +234,7 @@ object CopybookParser {
           }
           else
             newCopybook.append(
-              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage))(g.parent)
+              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat))(g.parent)
             )
         }
       }

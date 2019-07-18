@@ -16,9 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 
 /**
   * This class holds parameters for the job.
@@ -30,6 +31,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmi
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
+  * @param floatingPointFormat    A format of floating-point numbers
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
@@ -48,6 +50,7 @@ case class CobolParameters(
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,
                             ebcdicCodePageClass:   Option[String],
+                            floatingPointFormat:   FloatingPointFormat,
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             variableLengthParams:  Option[VariableLengthParameters],

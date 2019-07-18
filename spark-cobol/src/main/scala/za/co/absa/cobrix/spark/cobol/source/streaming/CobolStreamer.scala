@@ -23,7 +23,7 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
@@ -44,6 +44,7 @@ object CobolStreamer {
     new FixedLenNestedReader(copybooks,
       isEbcdic = true,
       CodePage.getCodePageByName("common"),
+      floatingPointFormat = FloatingPointFormat.IBM,
       schemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,

@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
@@ -27,6 +28,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param isEbcdic                If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage          Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass     An optional custom code page conversion class provided by a user
+  * @param floatingPointFormat     A format of floating-point numbers
   * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence        Does input files have 4 byte record length headers
   * @param isRdwBigEndian          Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
@@ -53,6 +55,7 @@ case class ReaderParameters(
                              isEbcdic:                Boolean = true,
                              ebcdicCodePage:          String,
                              ebcdicCodePageClass:     Option[String],
+                             floatingPointFormat:     FloatingPointFormat,
                              lengthFieldName:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
                              isRdwBigEndian:          Boolean = false,
