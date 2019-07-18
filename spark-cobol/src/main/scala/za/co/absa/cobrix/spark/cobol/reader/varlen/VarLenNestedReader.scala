@@ -121,12 +121,24 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val schema = if (copyBookContents.size == 1)
-      CopybookParser.parseTree(encoding, copyBookContents.head, readerProperties.dropGroupFillers,
-                               segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+      CopybookParser.parseTree(encoding,
+        copyBookContents.head,
+        readerProperties.dropGroupFillers,
+        segmentRedefines,
+        readerProperties.stringTrimmingPolicy,
+        codePage,
+        readerProperties.floatingPointFormat,
+        readerProperties.nonTerminals)
     else
       Copybook.merge(copyBookContents.map(
-        CopybookParser.parseTree(encoding, _, readerProperties.dropGroupFillers,
-          segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+        CopybookParser.parseTree(encoding,
+          _,
+          readerProperties.dropGroupFillers,
+          segmentRedefines,
+          readerProperties.stringTrimmingPolicy,
+          codePage,
+          readerProperties.floatingPointFormat,
+          nonTerminals = readerProperties.nonTerminals)
       ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
