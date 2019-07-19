@@ -42,7 +42,6 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
   private val inputDataPathBigEndian = "../data/test5b_data"
 
   test(s"Integration test on $exampleName - segment ids, ebcdic") {
-    import spark.implicits._
 
     val expectedSchemaPath = "../data/test5_expected/test5_schema.json"
     val actualSchemaPath = "../data/test5_expected/test5_schema_actual.json"
@@ -94,7 +93,6 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
   }
 
   test(s"Integration test on $exampleName - root segment id") {
-    import spark.implicits._
 
     // In this test we check that if only one segment id is specified the root segment ids should
     // still be correctly generated.
@@ -150,7 +148,6 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
   }
 
   test(s"Integration test on $exampleName - auto resolve segment redefines") {
-    import spark.implicits._
 
     val expectedSchemaPath = "../data/test5_expected/test5c_schema.json"
     val actualSchemaPath = "../data/test5_expected/test5c_schema_actual.json"
@@ -216,12 +213,11 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
     val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
     val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
       recordHeaderParser = recordHeaderParser, recordsPerIndexEntry = Some(10),  sizePerIndexEntryMB = None,
-      copybook = Some(copybook), segmentField = Some(segmentIdField), rootSegmentId = segmentIdRootValue)
+      copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValue)
     assert(indexes.length == 88)
   }
 
   test(s"Integration test on $exampleName - big endian RDW") {
-    import spark.implicits._
 
     val expectedSchemaPath = "../data/test5_expected/test5b_schema.json"
     val actualSchemaPath = "../data/test5_expected/test5b_schema_actual.json"

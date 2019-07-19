@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.index
 
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
@@ -26,6 +27,8 @@ import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import scala.collection.mutable.ArrayBuffer
 
 object IndexGenerator {
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
                            isRdwBigEndian: Boolean,
@@ -34,15 +37,15 @@ object IndexGenerator {
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
                            segmentField: Option[Primitive] = None,
+                           isHierarchical: Boolean,
                            rootSegmentId: String = ""): ArrayBuffer[SparseIndexEntry] = {
     var byteIndex = 0L
     val index = new ArrayBuffer[SparseIndexEntry]
     var rootRecordId: String = ""
-    var rootRecordSize = -1
     var recordsInChunk = 0
     var bytesInChunk = 0L
     var recordIndex = 0
-    var isHierarchical = copybook.nonEmpty && segmentField.nonEmpty
+    val isReallyHierarchical = copybook.nonEmpty && segmentField.nonEmpty && isHierarchical
     val isSplitBySize = recordsPerIndexEntry.isEmpty && sizePerIndexEntryMB.nonEmpty
 
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
@@ -64,16 +67,15 @@ object IndexGenerator {
         if (record.length < recordSize) {
           endOfFileReached = true
         } else if (recordMetadata.isValid) {
-          if (isHierarchical && rootRecordId.isEmpty) {
+          if (isReallyHierarchical && rootRecordId.isEmpty) {
             val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
             if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
               || (rootSegmentId.nonEmpty && curSegmentId == rootSegmentId)) {
-              rootRecordSize = recordSize
               rootRecordId = curSegmentId
             }
           }
           if (needSplit(recordsInChunk, bytesInChunk)) {
-            if (!isHierarchical || isSegmentGoodForSplit(rootRecordSize, rootRecordId, copybook.get, segmentField.get, record)) {
+            if (!isReallyHierarchical || isSegmentGoodForSplit(rootRecordId, copybook.get, segmentField.get, record)) {
               val indexEntry = SparseIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
               index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
@@ -96,11 +98,10 @@ object IndexGenerator {
       recordsInChunk += 1
       bytesInChunk += headerSize + recordSize
     }
-    if (isHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
-      throw new IllegalStateException(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
-    }
-    if (isHierarchical && rootRecordId.isEmpty) {
-      throw new IllegalStateException(s"Root segment ${segmentField.get.name} ie empty for every record in the data file.")
+    if (isReallyHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
+      logger.error(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
+    } else if (isReallyHierarchical && rootRecordId.isEmpty) {
+      logger.error(s"Root segment ${segmentField.get.name} ie empty for every record in the data file.")
     }
     index
   }
@@ -121,16 +122,11 @@ object IndexGenerator {
     }
   }
 
-  private def isSegmentGoodForSplit(rootRecordSize: Int,
-                                    rootRecordId: String,
+  private def isSegmentGoodForSplit(rootRecordId: String,
                                     copybook: Copybook,
                                     segmentField: Primitive,
                                     record: Array[Byte]): Boolean = {
-    if (record.length != rootRecordSize) {
-      false
-    } else {
-      rootRecordId == getSegmentId(copybook, segmentField, record)
-    }
+    rootRecordId == getSegmentId(copybook, segmentField, record)
   }
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
