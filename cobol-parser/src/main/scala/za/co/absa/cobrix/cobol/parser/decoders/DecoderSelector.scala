@@ -106,10 +106,10 @@ object DecoderSelector {
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case Some(Constants.compFloat) =>
         // COMP-1 aka 32-bit floating point number
-        BinaryUtils.decodeFloat
+        getSinglePrecisionFpDecoder(floatingPointFormat)
       case Some(Constants.compDouble) =>
         // COMP-2 aka 64-bit floating point number
-        BinaryUtils.decodeDouble
+        getDoublePrecisionFpDecoder(floatingPointFormat)
       case Some(Constants.compBCD) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
@@ -126,6 +126,28 @@ object DecoderSelector {
         throw new IllegalStateException(s"Unknown number compression format (COMP-${decimalType.compact}).")
     }
 
+  }
+
+  private def getSinglePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+    import FloatingPointFormat._
+    floatingPointFormat match {
+      case IBM =>        FloatingPointDecoders.decodeIbmSingleBigEndian
+      case IBM_LE =>     FloatingPointDecoders.decodeIbmSingleLittleEndian
+      case IEEE754 =>    FloatingPointDecoders.decodeIeee754SingleBigEndian
+      case IEEE754_LE => FloatingPointDecoders.decodeIeee754SingleLittleEndian
+      case _ => throw new IllegalStateException(s"Unknown floating point format ($floatingPointFormat).")
+    }
+  }
+
+  private def getDoublePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+    import FloatingPointFormat._
+    floatingPointFormat match {
+      case IBM =>        FloatingPointDecoders.decodeIbmDoubleBigEndian
+      case IBM_LE =>     FloatingPointDecoders.decodeIbmDoubleLittleEndian
+      case IEEE754 =>    FloatingPointDecoders.decodeIeee754DoubleBigEndian
+      case IEEE754_LE => FloatingPointDecoders.decodeIeee754DoubleLittleEndian
+      case _ => throw new IllegalStateException(s"Unknown floating point format ($floatingPointFormat).")
+    }
   }
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
