@@ -840,7 +840,7 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
 | .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
-| .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`. |
+| .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 
 ##### Modifier options
 

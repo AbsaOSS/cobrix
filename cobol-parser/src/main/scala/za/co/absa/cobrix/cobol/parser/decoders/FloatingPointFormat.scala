@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 object FloatingPointFormat extends Enumeration {
   type FloatingPointFormat = Value
 
-  val IBM, IEEE754 = Value
+  val IBM, IBM_LE, IEEE754, IEEE754_LE = Value
 
   def withNameOpt(s: String): Option[Value] = {
     val exactNames = values.find(_.toString == s)
@@ -27,8 +27,12 @@ object FloatingPointFormat extends Enumeration {
       val sLowerCase = s.toLowerCase()
       if (sLowerCase == "ibm") {
         Some(IBM)
+      } else if (sLowerCase == "ibm_little_endian") {
+        Some(IBM_LE)
       } else if (sLowerCase == "ieee754") {
         Some(IEEE754)
+      } else if (sLowerCase == "ieee754_little_endian") {
+        Some(IEEE754_LE)
       } else {
         None
       }
