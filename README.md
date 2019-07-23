@@ -981,6 +981,11 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.4 released 23 July 2019
+  - Added support for IBM floating point formats.
+  - Fixed sparse index generation when file header has the same segment id as root record.
+  - Fixed sparse index generation when a file does not contain any data, but just headers and footers.
+
 - #### 0.5.3 released 15 July 2019
   - Make `peadntic=false` by default so existing workflows won't break.
   - Use `cobrix_build.properties` file for storing Cobrix version instead of `build.properties` to avoid name clashes.
