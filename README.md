@@ -275,7 +275,6 @@ val copyBook = CopybookParser.parseTree(copyBookContents)
 println(copyBook.generateRecordLayoutPositions())
 ```
 
-### Varialble length records support
 ### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
@@ -453,6 +452,72 @@ fully qualified class name to the following option:
 ```
 .option("record_header_parser", "com.example.record.header.parser")
 ```
+
+## Reading ASCII text file
+Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
+
+Working example:
+```scala
+    val spark = SparkSession
+      .builder()
+      .appName("Spark-Cobol ASCII text file")
+      .master("local[*]")
+      .getOrCreate()
+
+    val copybook =
+      """       01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID		PIC 9(1).
+        |            05  STATIC-DETAILS.
+        |               10  NAME      	PIC X(2).
+        |
+        |            05  CONTACTS REDEFINES STATIC-DETAILS.
+        |               10  PERSON    	PIC X(3).
+      """.stripMargin
+
+    val parsedCopybook = CopybookParser.parseTree(ASCII(), copybook, dropGroupFillers = false, segmentRedefines = Seq(), stringTrimmingPolicy = StringTrimmingPolicy.TrimNone, ebcdicCodePage = CodePage.getCodePageByName("common"), nonTerminals = Seq())
+    val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, false)
+    val sparkSchema = cobolSchema.getSparkSchema
+
+
+    val rddText = spark.sparkContext.textFile("src/main/resources/mini.txt")
+
+    val rddRow = rddText.map(str => {
+      RowExtractors.extractRecord(parsedCopybook.ast, str.getBytes(), 0, SchemaRetentionPolicy.CollapseRoot)
+    })
+
+    val dfOut = spark.createDataFrame(rddRow, sparkSchema)
+
+    dfOut.printSchema()
+    dfOut.show()
+```
+
+Corresponding data sample in `mini.txt`:
+```
+1BB
+2CCC
+```
+
+Output:
+```
+root
+ |-- SEGMENT_ID: integer (nullable = true)
+ |-- STATIC_DETAILS: struct (nullable = true)
+ |    |-- NAME: string (nullable = true)
+ |-- CONTACTS: struct (nullable = true)
+ |    |-- PERSON: string (nullable = true)
+
+ ...
+
+ +----------+--------------+--------+
+ |SEGMENT_ID|STATIC_DETAILS|CONTACTS|
+ +----------+--------------+--------+
+ |         1|          [BB]|  [null]|
+ |         2|          [CC]|   [CCC]|
+ +----------+--------------+--------+
+```
+
+There, Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only one redefine is valid for every segment. Filtering is described in the following section.
+
 
 ## <a id="ims"/>Reading hierarchical data sets
 
