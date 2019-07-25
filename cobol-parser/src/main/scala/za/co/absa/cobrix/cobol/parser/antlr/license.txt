@@ -13,11 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package za.co.absa.cobrix.cobol.parser.ast.datatype
-
-/** Trait for Cobol data types */
-trait CobolType {
-  def pic: String
-  def originalPic: Option[String]
-}

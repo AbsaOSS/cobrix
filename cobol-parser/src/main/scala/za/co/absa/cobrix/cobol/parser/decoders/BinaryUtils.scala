@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 import org.slf4j.LoggerFactory
 import scodec.Codec
 import scodec.bits.BitVector
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, Usage}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 
@@ -125,14 +126,14 @@ object BinaryUtils {
     }
   }
 
-  def getBytesCount(compression: Option[Int], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
+  def getBytesCount(compression: Option[Usage], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
     import Constants._
     val isRealSigned = if (isSignSeparate) false else isSigned
     val bytes = compression match {
-      case Some(comp) if comp == compBinary1 || comp == compBinary2 || comp == compBinaryBinCutoff || comp == compBinaryLittleEndian =>
+      case Some(comp) if comp == COMP4() || comp == COMP5() || comp == COMP9() =>     // || comp == binary2()
         // if native binary follow IBM guide to digit binary length
         precision match {
-          case p if p >= 1 && p <= 2 && comp == compBinaryLittleEndian => 1 // byte
+          case p if p >= 1 && p <= 2 && comp == COMP9() => 1 // byte
           case p if p >= minShortPrecision && p <= maxShortPrecision => binaryShortSizeBytes
           case p if p >= minIntegerPrecision && p <= maxIntegerPrecision => binaryIntSizeBytes
           case p if p >= minLongPrecision && p <= maxLongPrecision => binaryLongSizeBytes
@@ -140,9 +141,9 @@ object BinaryUtils {
             val numberOfBytes = ((Math.log(10)/ Math.log(2))*precision + 1)/8
             math.ceil(numberOfBytes).toInt
         }
-      case Some(comp) if comp == compFloat => floatSize
-      case Some(comp) if comp == compDouble => doubleSize
-      case Some(comp) if comp == compBCD => precision / 2 + 1  // bcd
+      case Some(comp) if comp == COMP1() => floatSize
+      case Some(comp) if comp == COMP2() => doubleSize
+      case Some(comp) if comp == COMP3() => precision / 2 + 1  // bcd
       case Some(comp) => throw new IllegalArgumentException(s"Illegal clause COMP-$comp.")
       case None =>
         var size = precision

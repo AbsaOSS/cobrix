@@ -16,13 +16,31 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
+import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.antlr.{ParserVisitor, ThrowErrorStrategy, copybookLexer, copybookParser}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII}
+import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
-import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
 
 class PicValidationSpec extends FunSuite {
+
+  private def validatePic(pic: String) = {
+
+    val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
+                                    CodePage.getCodePageByName("common"))
+
+    val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
+    val lexer = new copybookLexer(charStream)
+    val tokens = new CommonTokenStream(lexer)
+    val parser = new copybookParser(tokens)
+    parser.setErrorHandler(new ThrowErrorStrategy())
+    visitor.visit(parser.main())
+  }
+
+
 
   test("Test invalid sign definition for a string field") {
     val copyBookContents: String =
@@ -35,7 +53,7 @@ class PicValidationSpec extends FunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("Invalid 'PIC SX(30)'. Unexpected character 'X' at position 2."))
+    assert(syntaxErrorException.msg.contains("Invalid input 'SX' at position 2:33"))
   }
 
   test("Test invalid decimal scale specifier") {
@@ -49,7 +67,7 @@ class PicValidationSpec extends FunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("Unexpected character '(' at position 7."))
+    assert(syntaxErrorException.msg.contains("Invalid input '(' at position 2:39"))
   }
 
   test("Test invalid mix string and numeric definition") {
@@ -63,63 +81,59 @@ class PicValidationSpec extends FunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("Cannot mix 'X' with '9' at position 6."))
+    assert(syntaxErrorException.msg.contains("Invalid input 'XX' at position 2:38"))
   }
 
   test("Test various correct PICs") {
-    CobolValidators.validatePic(0, "A", "9999")
-    CobolValidators.validatePic(0, "A", "9(5)")
-    CobolValidators.validatePic(0, "A", "S99(5)99")
-    CobolValidators.validatePic(0, "A", "S9(3)9(2)")
-    CobolValidators.validatePic(0, "A", "XXX(5)")
-    CobolValidators.validatePic(0, "A", "S9(5)V9(5)")
-    CobolValidators.validatePic(0, "A", "S9(5)V99")
-    CobolValidators.validatePic(0, "A", "S99V9(5)")
-    CobolValidators.validatePic(0, "A", ".999")
-    CobolValidators.validatePic(0, "A", "V99")
-    CobolValidators.validatePic(0, "A", "9(10000)")
-    CobolValidators.validatePic(0, "A", "Z(5)")
-    CobolValidators.validatePic(0, "A", "Z(5)VZZ")
-    CobolValidators.validatePic(0, "A", "SV99")
-    CobolValidators.validatePic(0, "A", "PPP999")
-    CobolValidators.validatePic(0, "A", "VPPP999")
-    CobolValidators.validatePic(0, "A", "SVPP9(5)")
-    CobolValidators.validatePic(0, "A", "S999PPP")
-    CobolValidators.validatePic(0, "A", "S999PPPV")
-    CobolValidators.validatePic(0, "A", "P(3)999")
-    CobolValidators.validatePic(0, "A", "S9(3)PPP")
-    CobolValidators.validatePic(0, "A", "P(3)9(3)")
-    CobolValidators.validatePic(0, "A", "S9(3)P(3)")
+    validatePic("9999")
+    validatePic("9(5)")
+    validatePic("S99(5)99")
+    validatePic("S9(3)9(2)")
+    validatePic("XXX(5)")
+    validatePic("S9(5)V9(5)")
+    validatePic("S9(5)V99")
+    validatePic("S99V9(5)")
+    validatePic(".999")
+    validatePic("V99")
+    validatePic("9(10000)")
+    validatePic("Z(5)")
+    validatePic("Z(5)VZZ")
+    validatePic("SV99")
+    validatePic("PPP999")
+    validatePic("S999PPP")
+    validatePic("P(3)999")
+    validatePic("S9(3)PPP")
+    validatePic("P(3)9(3)")
+    validatePic("S9(3)P(3)")
   }
 
   test("Test various malformed PICs") {
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "Y") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "(10)9") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "XVX") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "X.X") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9.A") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "SXXX") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "S(10)999") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(10)S99") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "999A") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(2(3))") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(2)(3)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9((3))") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(5") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9()") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "95") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(9V9)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9.9.9") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "99V99.99") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(10)VV9") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "S9(5)V(5)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(100000)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9P9") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "9(5)P(5)9(5)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "P(5)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "SP(5)") }
-    intercept[SyntaxErrorException] { CobolValidators.validatePic(0, "A", "S9P(5)9") }
+    intercept[SyntaxErrorException] { validatePic("Y") }
+    intercept[SyntaxErrorException] { validatePic("(10)9") }
+    intercept[SyntaxErrorException] { validatePic("XVX") }
+    intercept[SyntaxErrorException] { validatePic("X.X") }
+    intercept[SyntaxErrorException] { validatePic("9.A") }
+    intercept[SyntaxErrorException] { validatePic("SXXX") }
+    intercept[SyntaxErrorException] { validatePic("S(10)999") }
+    intercept[SyntaxErrorException] { validatePic("9(10)S99") }
+    intercept[SyntaxErrorException] { validatePic("999A") }
+    intercept[SyntaxErrorException] { validatePic("9(2(3))") }
+    intercept[SyntaxErrorException] { validatePic("9(2)(3)") }
+    intercept[SyntaxErrorException] { validatePic("9((3))") }
+    intercept[SyntaxErrorException] { validatePic("9(5") }
+    intercept[SyntaxErrorException] { validatePic("9()") }
+    intercept[SyntaxErrorException] { validatePic("95") }
+    intercept[SyntaxErrorException] { validatePic("9(9V9)") }
+    intercept[SyntaxErrorException] { validatePic("9.9.9") }
+    intercept[SyntaxErrorException] { validatePic("99V99.99") }
+    intercept[SyntaxErrorException] { validatePic("9(10)VV9") }
+    intercept[SyntaxErrorException] { validatePic("S9(5)V(5)") }
+    intercept[SyntaxErrorException] { validatePic("9(100000)") }
+    intercept[SyntaxErrorException] { validatePic("9P9") }
+    intercept[SyntaxErrorException] { validatePic("9(5)P(5)9(5)") }
+    intercept[SyntaxErrorException] { validatePic("P(5)") }
+    intercept[SyntaxErrorException] { validatePic("SP(5)") }
+    intercept[SyntaxErrorException] { validatePic("S9P(5)9") }
   }
-
 
 }

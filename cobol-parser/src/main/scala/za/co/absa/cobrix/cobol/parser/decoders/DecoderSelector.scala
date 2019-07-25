@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
@@ -96,25 +96,25 @@ object DecoderSelector {
           else
             StringDecoders.decodeAsciiBigNumber(_, !isSigned, decimalType.scale, decimalType.scaleFactor)
         }
-      case Some(Constants.compBinary1) =>
-        // COMP aka BINARY encoded number
-        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
-      case Some(Constants.compFloat) =>
+//      case Some(COMP()) =>
+//        // COMP aka BINARY encoded number
+//        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
+      case Some(COMP1()) =>
         // COMP-1 aka 32-bit floating point number
         BinaryUtils.decodeFloat
-      case Some(Constants.compDouble) =>
+      case Some(COMP2()) =>
         // COMP-2 aka 64-bit floating point number
         BinaryUtils.decodeDouble
-      case Some(Constants.compBCD) =>
+      case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
-      case Some(Constants.compBinary2) =>
+      case Some(COMP4()) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
-      case Some(Constants.compBinaryBinCutoff) =>
+      case Some(COMP5()) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
-      case Some(Constants.compBinaryLittleEndian) =>
+      case Some(COMP9()) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = false, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case _ =>
@@ -152,32 +152,32 @@ object DecoderSelector {
           else
             StringDecoders.decodeAsciiBigNumber(_, !isSigned)
         }
-      case Some(Constants.compBinary1) =>
-        // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, isBigEndian = true)
-      case Some(Constants.compFloat) =>
+//      case Some(Constants.compBinary1) =>
+//        // COMP aka BINARY encoded number
+//        getBinaryEncodedIntegralDecoder(Some(0), integralType.precision, integralType.signPosition, isBigEndian = true)
+      case Some(COMP1()) =>
         throw new IllegalStateException("Unexpected error. COMP-1 (float) is incorrect for an integral number.")
-      case Some(Constants.compDouble) =>
+      case Some(COMP2()) =>
         throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
-      case Some(Constants.compBCD) =>
+      case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
         getBCDIntegralDecoder(integralType.precision)
-      case Some(Constants.compBinary2) =>
+      case Some(COMP4()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(Constants.compBinary2), integralType.precision, integralType.signPosition, isBigEndian = true)
-      case Some(Constants.compBinaryBinCutoff) =>
+        getBinaryEncodedIntegralDecoder(Some(COMP4()), integralType.precision, integralType.signPosition, isBigEndian = true)
+      case Some(COMP5()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(Constants.compBinaryBinCutoff), integralType.precision, integralType.signPosition, isBigEndian = true)
-      case Some(Constants.compBinaryLittleEndian) =>
+        getBinaryEncodedIntegralDecoder(Some(COMP5()), integralType.precision, integralType.signPosition, isBigEndian = true)
+      case Some(COMP9()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(Constants.compBinaryLittleEndian), integralType.precision, integralType.signPosition, isBigEndian = false)
+        getBinaryEncodedIntegralDecoder(Some(COMP9()), integralType.precision, integralType.signPosition, isBigEndian = false)
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (COMP-${integralType.compact}).")
     }
   }
 
   /** Gets a decoder function for a binary encoded integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getBinaryEncodedIntegralDecoder(compact: Option[Int], precision: Int, signPosition: Option[Position] = None, isBigEndian: Boolean): Decoder = {
+  private def getBinaryEncodedIntegralDecoder(compact: Option[Usage], precision: Int, signPosition: Option[Position] = None, isBigEndian: Boolean): Decoder = {
     val isSigned = signPosition.nonEmpty
     val isSignLeft = signPosition.forall(sp => if (sp == za.co.absa.cobrix.cobol.parser.position.Left) true else false)
 

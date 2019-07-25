@@ -96,20 +96,20 @@ class SyntaxErrorsSpec extends FunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("Unable to parse the value of LEVEL"))
+    assert(syntaxErrorException.msg.contains("Invalid input '/' at position 2:8"))
   }
 
   test("Test invalid placement of SIGN SEPARATE clause") {
     val copyBookContents: String =
       """        01  RECORD.
-        |          10  FIELD    PIC 9(38)V9(19) COMP-3
+        |          10  FIELD    PIC 9(10)V9(9) COMP-3
         |          SIGN IS LEADING SEPARATE CHARACTER.
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
       CopybookParser.parseTree(copyBookContents)
     }
-    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.lineNumber == 2)
     assert(syntaxErrorException.msg.contains("SIGN SEPARATE clause is not supported for COMP-3"))
   }
 
@@ -138,7 +138,7 @@ class SyntaxErrorsSpec extends FunSuite {
     CopybookParser.parseTree(copyBookContents)
   }
 
-  test("Test invalid 2 explicit decimals in PIC") {
+  test("Test invalid 2 explicit signs in PIC") {
     val copyBookContents: String =
       """        01  RECORD.
         |          10  FIELD    PIC +9(8)+.
@@ -148,7 +148,8 @@ class SyntaxErrorsSpec extends FunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("A sign cannot be present in both beginning and at the end"))
+    assert(syntaxErrorException.msg.contains("Invalid input"))
+    assert(syntaxErrorException.msg.contains("at position 2:32"))
   }
 
   test("Test invalid explicit decimal in PIC") {
@@ -161,7 +162,7 @@ class SyntaxErrorsSpec extends FunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
-    assert(syntaxErrorException.msg.contains("A sign specifier should be the first or the last element of a PIC"))
+    assert(syntaxErrorException.msg.contains("Invalid input '(' at position 2:29"))
   }
 
   test("Test valid explicit decimal in PICs") {
@@ -174,8 +175,9 @@ class SyntaxErrorsSpec extends FunSuite {
         |          10  FIELD    PIC +999.
         |          10  FIELD    PIC -9999.
         |          10  FIELD    PIC 99999+.
-        |          10  FIELD    PIC 9(4)9-.
         |""".stripMargin
+
+    //           10  FIELD    PIC 9(4)9-.  <-- is this valid?
 
     CopybookParser.parseTree(copyBookContents)
   }
@@ -195,5 +197,66 @@ class SyntaxErrorsSpec extends FunSuite {
         |""".stripMargin
     CopybookParser.parseTree(copyBookContents)
   }
+
+  test("Test precision too large: Alpha") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC X(100001).
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("Incorrect field size of 100001 for PIC X(100001)."))
+  }
+
+  test("Test precision too large: Integral") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC 9(99999)99.
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("Incorrect field size of 100001 for PIC 9(99999)99."))
+  }
+
+  test("Test precision too large: COMP4 Integral") {
+    val copyBookContents: String =
+      """********************************************
+        |
+        |        01  RECORD.
+        |
+        |           10  GRP-FIELD.
+        |              15  SUB_FLD1         PIC X(3).
+        |              15  SUB_FLD2         PIC 9(99999)99 COMP-4.
+        |
+        |********************************************
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.getMessage.contains("BINARY-encoded integers with precision bigger than 38 are not supported."))
+  }
+
 
 }

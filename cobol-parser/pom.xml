@@ -39,6 +39,12 @@
             <groupId>org.scodec</groupId>
             <artifactId>scodec-core_${scala.compat.version}</artifactId>
         </dependency>
+        <!-- parser -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.7.2</version>
+        </dependency>
         <!-- logging -->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -46,7 +46,7 @@ class MergeCopybooksSpec extends FunSuite {
         |              06  FILLER             PIC X(10).
         |              06  GROUP-2.
         |                 10  NESTED-FIELD-1  PIC 9(20).
-        |                 10  FILLER          PIC 9(10)
+        |                 10  FILLER          PIC 9(10).
         |""".stripMargin
     val copyBookContents3: String =
       """        01  RECORD-COPYBOOK-3.
@@ -229,7 +229,7 @@ class MergeCopybooksSpec extends FunSuite {
         |              06  FILLER             PIC X(10).
         |              06  GROUP-2.
         |                 10  NESTED-FIELD-1  PIC 9(20).
-        |                 10  FILLER          PIC 9(10)
+        |                 10  FILLER          PIC 9(10).
         |        |""".stripMargin
 
     val copybook1 = CopybookParser.parseTree(copyBookContents1)
