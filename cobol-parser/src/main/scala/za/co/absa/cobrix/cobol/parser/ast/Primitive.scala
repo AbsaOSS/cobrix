@@ -17,9 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
-import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
@@ -49,6 +47,9 @@ case class Primitive(
                     )
                     (val parent: Option[Group] = None)
   extends Statement {
+
+  /** This is cached value specifying if the field is a string */
+  private val isString = dataType.isInstanceOf[AlphaNumeric]
 
   /** Returns a string representation of the field */
   override def toString: String = {
@@ -92,9 +93,17 @@ case class Primitive(
   def decodeTypeValue(itOffset: Int, record: Array[Byte]): Any = {
     val bytesCount = binaryProperties.dataSize
     val idx = itOffset
-    if (idx + bytesCount > record.length) {
-      return null
+
+    if (isString) {
+      if (idx > record.length) {
+        return null
+      }
+    } else {
+      if (idx + bytesCount > record.length) {
+        return null
+      }
     }
+
     val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
 
     decode(bytes)

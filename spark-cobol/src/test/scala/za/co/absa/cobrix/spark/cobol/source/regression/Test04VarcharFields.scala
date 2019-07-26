@@ -80,31 +80,14 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with TempFileFixtu
           ||0      |2        |2  |2345678   |
           ||0      |3        |3  |123       |
           ||0      |4        |4  |1         |
-          ||0      |5        |5  |null      |
+          ||0      |5        |5  |          |
           |+-------+---------+---+----------+
           |
           |""".stripMargin.replace("\r\n", "\n")
-
-      val expectedWrong =
-        """+-------+---------+---+----------+
-          ||File_Id|Record_Id|N  |V         |
-          |+-------+---------+---+----------+
-          ||0      |0        |0  |1234567890|
-          ||0      |1        |1  |2345678   |
-          ||0      |2        |2  |null      |
-          ||0      |3        |3  |null      |
-          ||0      |4        |4  |null      |
-          ||0      |5        |5  |null      |
-          |+-------+---------+---+----------+
-          |
-          |""".stripMargin.replace("\r\n", "\n")
-
-
-      //df.show(false)
 
       val actual = TestUtils.showString(df, 10)
 
-      assertResults(actual, expectedWrong)
+      assertResults(actual, expected)
     }
 
   }
