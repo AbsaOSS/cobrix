@@ -31,5 +31,4 @@ object TestUtils {
     new String(outCapture.toByteArray).replace("\r\n", "\n")
   }
 
-
 }

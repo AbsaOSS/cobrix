@@ -104,7 +104,6 @@ class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
-      .option("generate_record_id", true)
       .option("is_xcom", true)
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IBM")
@@ -122,7 +121,6 @@ class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
-      .option("generate_record_id", true)
       .option("generate_record_id", true)
       .option("is_xcom", true)
       .option("schema_retention_policy", "collapse_root")
@@ -142,7 +140,6 @@ class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
-      .option("generate_record_id", true)
       .option("is_xcom", true)
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IEEE754")
@@ -160,7 +157,6 @@ class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
-      .option("generate_record_id", true)
       .option("generate_record_id", true)
       .option("is_xcom", true)
       .option("schema_retention_policy", "collapse_root")
