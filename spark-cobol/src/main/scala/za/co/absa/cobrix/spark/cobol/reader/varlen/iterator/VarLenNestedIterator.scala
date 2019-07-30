@@ -63,6 +63,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
+  private val recordLengthAdjustment = readerProperties.rdwAdjustment
 
   fetchNext()
 
@@ -137,9 +138,9 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     var recordLength = lengthField match {
       case Some(lengthAST) =>
         cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int => i
-          case l: Long => l.toInt
-          case s: String => s.toInt
+          case i: Int => i + recordLengthAdjustment
+          case l: Long => l.toInt + recordLengthAdjustment
+          case s: String => s.toInt + recordLengthAdjustment
           case _ => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
         }
       case None => copyBookRecordSize
