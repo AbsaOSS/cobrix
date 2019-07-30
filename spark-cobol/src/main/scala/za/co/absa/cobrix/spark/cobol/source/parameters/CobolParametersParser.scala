@@ -168,6 +168,11 @@ object CobolParametersParser {
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
 
+    if (params.contains(PARAM_RECORD_LENGTH) &&
+      (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
+      throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
+    }
+
     if (recordLengthFieldOpt.isDefined ||
       isRecordSequence ||
       isRecordIdGenerationEnabled ||

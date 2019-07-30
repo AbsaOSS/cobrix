@@ -29,7 +29,7 @@ import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.JavaConversions._
 
@@ -244,6 +244,56 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = df.schema.json
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    val actualDf = df
+      .orderBy("File_Id", "Record_Id")
+      .toJSON
+      .take(60)
+
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+
+  }
+
+  test(s"Integration test on $exampleName - record length field instead of RDW") {
+
+    val inputCopybookWithRecordLengthPath = "file://../data/test5d_copybook.cob"
+    val expectedSchemaPath = "../data/test5_expected/test5d_schema.json"
+    val actualSchemaPath = "../data/test5_expected/test5d_schema_actual.json"
+    val expectedResultsPath = "../data/test5_expected/test5d.txt"
+    val actualResultsPath = "../data/test5_expected/test5d_actual.txt"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookWithRecordLengthPath)
+      .option("record_length_field", "RECORD-LENGTH")
+      .option("rdw_adjustment", 4)
+      .option("segment_field", "SEGMENT_ID")
+      .option("segment_id_level0", "C")
+      .option("segment_id_level1", "P")
+      .option("generate_record_id", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .option("segment_id_prefix", "A")
+      .load(inputDataPathBigEndian)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
