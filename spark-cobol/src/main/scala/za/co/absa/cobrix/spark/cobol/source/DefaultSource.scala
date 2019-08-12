@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParameters, CobolParametersParser, CobolParametersValidator, LocalityParameters}
+import za.co.absa.cobrix.spark.cobol.source.parameters._
 import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils, Parameters}
 
 /**
@@ -94,7 +94,8 @@ class DefaultSource
       parameters.schemaRetentionPolicy,
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
-      parameters.nonTerminals
+      parameters.nonTerminals,
+      getReaderProperties(parameters, spark)
     )
   }
 
@@ -105,38 +106,64 @@ class DefaultSource
     */
   private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
 
-    val variableLengthParams = parameters.variableLengthParams.get
-    val recordLengthField = if (variableLengthParams.recordLengthField.nonEmpty) Some(variableLengthParams.recordLengthField) else None
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     new VarLenNestedReader(
-      copybookContent,
-      ReaderParameters(isEbcdic = parameters.isEbcdic,
-        ebcdicCodePage = parameters.ebcdicCodePage,
-        ebcdicCodePageClass = parameters.ebcdicCodePageClass,
-        floatingPointFormat = parameters.floatingPointFormat,
-        lengthFieldName = recordLengthField,
-        isRecordSequence = variableLengthParams.isRecordSequence,
-        isRdwBigEndian = variableLengthParams.isRdwBigEndian,
-        isRdwPartRecLength = variableLengthParams.isRdwPartRecLength,
-        rdwAdjustment = variableLengthParams.rdwAdjustment,
-        isIndexGenerationNeeded = variableLengthParams.isUsingIndex,
-        inputSplitRecords = variableLengthParams.inputSplitRecords,
-        inputSplitSizeMB = variableLengthParams.inputSplitSizeMB,
-        hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
-        startOffset = parameters.recordStartOffset,
-        endOffset = parameters.recordEndOffset,
-        fileStartOffset = variableLengthParams.fileStartOffset,
-        fileEndOffset = variableLengthParams.fileEndOffset,
-        generateRecordId = variableLengthParams.generateRecordId,
-        schemaPolicy = parameters.schemaRetentionPolicy,
-        stringTrimmingPolicy = parameters.stringTrimmingPolicy,
-        parameters.multisegmentParams,
-        parameters.dropGroupFillers,
-        parameters.nonTerminals,
-        variableLengthParams.recordHeaderParser,
-        variableLengthParams.rhpAdditionalInfo
+      copybookContent, getReaderProperties(parameters, spark)
+
+    )
+  }
+
+  private def getReaderProperties(parameters: CobolParameters, spark: SparkSession): ReaderParameters = {
+    val varLenParams: VariableLengthParameters = parameters.variableLengthParams
+      .getOrElse(
+        VariableLengthParameters(isRecordSequence = false,
+          isRdwBigEndian = false,
+          isRdwPartRecLength = false,
+          rdwAdjustment = 0,
+          recordHeaderParser = None,
+          rhpAdditionalInfo = None,
+          recordLengthField = "",
+          fileStartOffset = 0,
+          fileEndOffset = 0,
+          generateRecordId = false,
+          isUsingIndex = false,
+          inputSplitRecords = None,
+          inputSplitSizeMB = None,
+          improveLocality = false,
+          optimizeAllocation = false)
       )
+
+    val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
+      Some(varLenParams.recordLengthField)
+    else
+      None
+
+    ReaderParameters(isEbcdic = parameters.isEbcdic,
+      ebcdicCodePage = parameters.ebcdicCodePage,
+      ebcdicCodePageClass = parameters.ebcdicCodePageClass,
+      floatingPointFormat = parameters.floatingPointFormat,
+      lengthFieldName = recordLengthField,
+      isRecordSequence = varLenParams.isRecordSequence,
+      isRdwBigEndian = varLenParams.isRdwBigEndian,
+      isRdwPartRecLength = varLenParams.isRdwPartRecLength,
+      rdwAdjustment = varLenParams.rdwAdjustment,
+      isIndexGenerationNeeded = varLenParams.isUsingIndex,
+      inputSplitRecords = varLenParams.inputSplitRecords,
+      inputSplitSizeMB = varLenParams.inputSplitSizeMB,
+      hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
+      startOffset = parameters.recordStartOffset,
+      endOffset = parameters.recordEndOffset,
+      fileStartOffset = varLenParams.fileStartOffset,
+      fileEndOffset = varLenParams.fileEndOffset,
+      generateRecordId = varLenParams.generateRecordId,
+      schemaPolicy = parameters.schemaRetentionPolicy,
+      stringTrimmingPolicy = parameters.stringTrimmingPolicy,
+      parameters.multisegmentParams,
+      parameters.dropGroupFillers,
+      parameters.nonTerminals,
+      varLenParams.recordHeaderParser,
+      varLenParams.rhpAdditionalInfo
     )
   }
 

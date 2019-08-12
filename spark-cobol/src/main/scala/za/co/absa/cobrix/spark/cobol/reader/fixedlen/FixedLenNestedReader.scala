@@ -24,6 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator.FixedLenNestedRowIterator
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -44,7 +45,8 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  schemaRetentionPolicy: SchemaRetentionPolicy,
                                  stringTrimmingPolicy: StringTrimmingPolicy,
                                  dropGroupFillers: Boolean,
-                                 nonTerminals: Seq[String]
+                                 nonTerminals: Seq[String],
+                                 readerProperties: ReaderParameters
                                  )
   extends FixedLenReader with Serializable {
 
@@ -57,7 +59,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
   @throws(classOf[Exception])
   override def getRowIterator(binaryData: Array[Byte]): Iterator[Row] = {
     checkBinaryDataValidity(binaryData)
-    new FixedLenNestedRowIterator(binaryData, cobolSchema, schemaRetentionPolicy, startOffset, endOffset)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset)
   }
 
   @throws(classOf[IllegalArgumentException])
@@ -82,11 +84,13 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
+    val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
         dropGroupFillers,
-        segmentRedefines = Nil,
+        segmentRedefines,
         stringTrimmingPolicy,
         ebcdicCodePage,
         floatingPointFormat,
@@ -94,7 +98,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
     else
       Copybook.merge(
         copyBookContents.map(
-          CopybookParser.parseTree(encoding, _, dropGroupFillers, segmentRedefines = Nil,
+          CopybookParser.parseTree(encoding, _, dropGroupFillers, segmentRedefines,
             stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
         )
       )

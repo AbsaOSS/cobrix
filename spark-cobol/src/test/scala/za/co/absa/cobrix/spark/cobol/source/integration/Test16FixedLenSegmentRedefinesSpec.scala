@@ -83,7 +83,6 @@ class Test16FixedLenSegmentRedefinesSpec extends FunSuite with SparkTestBase {
       .option("copybook_contents", copybookContents)
       .option("schema_retention_policy", "collapse_root")
       .option("segment_field", "SEGMENT_ID")
-      .option("generate_record_id", "true")
       .option("redefine_segment_id_map:0", "COMPANY => C")
       .option("redefine-segment-id-map:1", "PERSON => P")
       .option("redefine-segment-id-map:2", "PO-BOX => B")
@@ -91,7 +90,6 @@ class Test16FixedLenSegmentRedefinesSpec extends FunSuite with SparkTestBase {
       .load(inputDataPath)
 
     val actual = df
-      .drop("File_Id", "Record_Id") // ToDo Remove this workaround when the feature is implemented
       .toJSON
       .take(50)
       .map(SparkUtils.prettyJSON)

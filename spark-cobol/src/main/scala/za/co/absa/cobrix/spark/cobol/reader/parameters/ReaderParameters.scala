@@ -17,8 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -53,9 +53,9 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   */
 case class ReaderParameters(
                              isEbcdic:                Boolean = true,
-                             ebcdicCodePage:          String,
-                             ebcdicCodePageClass:     Option[String],
-                             floatingPointFormat:     FloatingPointFormat,
+                             ebcdicCodePage:          String = "common",
+                             ebcdicCodePageClass:     Option[String] = None,
+                             floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              lengthFieldName:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
                              isRdwBigEndian:          Boolean = false,
@@ -72,9 +72,9 @@ case class ReaderParameters(
                              generateRecordId:        Boolean = false,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-                             multisegment:            Option[MultisegmentParameters],
-                             dropGroupFillers:        Boolean,
-                             nonTerminals:            Seq[String],
-                             recordHeaderParser:      Option[String],
-                             rhpAdditionalInfo:       Option[String]
+                             multisegment:            Option[MultisegmentParameters] = None,
+                             dropGroupFillers:        Boolean = false,
+                             nonTerminals:            Seq[String] = Nil,
+                             recordHeaderParser:      Option[String] = None,
+                             rhpAdditionalInfo:       Option[String] = None
                            )
