@@ -1,0 +1,78 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "SEGMENT_ID",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMPANY",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "COMPANY_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "ADDRESS",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "TAXPAYER",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "PERSON",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "FIRST_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "LAST_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "ADDRESS",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "PHONE_NUM",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "PO_BOX",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "PO_NUMBER",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "BRANCH_ADDRESS",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

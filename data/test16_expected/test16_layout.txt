@@ -1,0 +1,16 @@
+-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+
+ENTITY                                                       1     64     64
+  5 SEGMENT_ID                                        1      1      1      1
+  5 COMPANY                            r              5      2     64     63
+    10 COMPANY_NAME                                   3      2     21     20
+    10 ADDRESS                                        4     22     51     30
+    10 TAXPAYER                                       5     52     59      8
+  5 PERSON                             rR            10      2     64     63
+    10 FIRST_NAME                                     7      2     17     16
+    10 LAST_NAME                                      8     18     33     16
+    10 ADDRESS                                        9     34     53     20
+    10 PHONE_NUM                                     10     54     64     11
+  5 PO_BOX                             R             13      2     64     63
+    10 PO_NUMBER                                     12      2     13     12
+    10 BRANCH_ADDRESS                                13     14     33     20
