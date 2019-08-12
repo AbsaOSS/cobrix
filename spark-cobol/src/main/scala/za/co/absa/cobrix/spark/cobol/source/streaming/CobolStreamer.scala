@@ -26,6 +26,7 @@ import org.apache.spark.streaming.dstream.DStream
 import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader}
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
@@ -48,7 +49,8 @@ object CobolStreamer {
       schemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,
-      nonTerminals = Seq()
+      nonTerminals = Seq(),
+      readerProperties = ReaderParameters()
     )
   }
   
