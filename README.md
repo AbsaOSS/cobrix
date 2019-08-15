@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency for the current release:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.4</version>
+      <version>0.5.5</version>
 </dependency>
 ```
 
@@ -75,7 +75,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.5-SNAPSHOT</version>
+      <version>0.5.6-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -188,14 +188,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.3.jar
-* cobol-parser-0.5.3.jar
+* spark-cobol-0.5.5.jar
+* cobol-parser-0.5.5.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.3.jar,cobol-parser-0.5.3.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.5.jar,cobol-parser-0.5.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1047,6 +1047,11 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.5 released 15 August 2019
+  - Added ability to read variable length files without RDW. A length field and [optionally] offsets can be specified instead.
+  - Added support for VARCHAR fields at the end of records. Length of such string fields is determined by the length of each record.
+  - Added support for segment id to redefine fields mapping for fixed-record length files.
+
 - #### 0.5.4 released 23 July 2019
   - Added support for IBM floating point formats.
   - Fixed sparse index generation when file header has the same segment id as root record.
