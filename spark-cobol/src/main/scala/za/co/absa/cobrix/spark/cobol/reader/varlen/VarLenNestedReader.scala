@@ -19,12 +19,12 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
@@ -88,13 +88,13 @@ final class VarLenNestedReader(copybookContents: Seq[String],
       if (inputSplitSizeRecords.get < 1 || inputSplitSizeRecords.get > 1000000000) {
         throw new IllegalArgumentException(s"Invalid input split size. The requested number of records is ${inputSplitSizeRecords.get}.")
       }
-      logger.warn(s"Input split size = ${inputSplitSizeRecords.get} records")
+      logger.info(s"Input split size = ${inputSplitSizeRecords.get} records")
     } else {
       if (inputSplitSizeMB.nonEmpty) {
         if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > 2000) {
           throw new IllegalArgumentException(s"Invalid input split size of ${inputSplitSizeMB.get} MB.")
         }
-        logger.warn(s"Input split size = ${inputSplitSizeMB.get} MB")
+        logger.info(s"Input split size = ${inputSplitSizeMB.get} MB")
       }
     }
 
@@ -102,11 +102,17 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
     val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
 
+    // It makes sense to parse data hierarchically only if hierarchical id generation is requested
+    val isHierarchical = readerProperties.multisegment match {
+      case Some(params) => params.segmentLevelIds.nonEmpty
+      case None => false
+    }
+
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), segmentIfValue)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIfValue)
       case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, None, None, isHierarchical)
     }
   }
 
@@ -115,12 +121,24 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val schema = if (copyBookContents.size == 1)
-      CopybookParser.parseTree(encoding, copyBookContents.head, readerProperties.dropGroupFillers,
-                               segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+      CopybookParser.parseTree(encoding,
+        copyBookContents.head,
+        readerProperties.dropGroupFillers,
+        segmentRedefines,
+        readerProperties.stringTrimmingPolicy,
+        codePage,
+        readerProperties.floatingPointFormat,
+        readerProperties.nonTerminals)
     else
       Copybook.merge(copyBookContents.map(
-        CopybookParser.parseTree(encoding, _, readerProperties.dropGroupFillers,
-          segmentRedefines, readerProperties.stringTrimmingPolicy, codePage, nonTerminals = readerProperties.nonTerminals)
+        CopybookParser.parseTree(encoding,
+          _,
+          readerProperties.dropGroupFillers,
+          segmentRedefines,
+          readerProperties.stringTrimmingPolicy,
+          codePage,
+          readerProperties.floatingPointFormat,
+          nonTerminals = readerProperties.nonTerminals)
       ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")

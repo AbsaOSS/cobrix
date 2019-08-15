@@ -51,7 +51,7 @@ final class SegmentIdAccumulator (segmentIds: Seq[String], segmentIdPrefix: Stri
     * @param level A level for which a value is requested
     * @return A Seg_Id value for the level
     */
-  def getSegmentLevelId(level: Int): Any = {
+  def getSegmentLevelId(level: Int): String = {
     if (level>=0 && level<=currentLevel) {
       if (level==0) {
         currentRootId

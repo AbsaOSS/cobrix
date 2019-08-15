@@ -17,10 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.apache.spark.sql.Row
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
+import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
 
+import scala.collection.immutable.HashMap
 
 /**
   * This is an iterator traversing contents of Cobol binary data
@@ -30,11 +34,19 @@ import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
   */
 class FixedLenNestedRowIterator(val binaryData: Array[Byte],
                                 val cobolSchema: CobolSchema,
+                                readerProperties: ReaderParameters,
                                 policy: SchemaRetentionPolicy,
                                 startOffset: Int,
                                 endOffset: Int) extends Iterator[Row] {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
   private val recordSize = cobolSchema.getRecordSize
   private var byteIndex = startOffset
+
+  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema.copybook)
+  private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
+  private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
   override def hasNext: Boolean = byteIndex + recordSize <= binaryData.length
 
@@ -44,8 +56,21 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
       throw new NoSuchElementException()
     }
 
-    var offset = byteIndex
-    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast, binaryData, offset, policy, generateRecordId = false)
+    val offset = byteIndex
+
+    val activeSegmentRedefine: String = if (segmentRedefineAvailable) {
+      val segmentId = getSegmentId(binaryData, offset)
+      val segmentIdStr = segmentId.getOrElse("")
+      segmentRedefineMap.getOrElse(segmentIdStr, "")
+    } else {
+      ""
+    }
+
+    val records = RowExtractors.extractRecord(cobolSchema.getCobolSchema.ast,
+      binaryData,
+      offset,
+      policy,
+      activeSegmentRedefine = activeSegmentRedefine)
 
     // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.children.last
@@ -53,6 +78,18 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
     byteIndex += lastRecordActualSize + endOffset
 
     records
+  }
+
+  private def getSegmentId(data: Array[Byte], offset: Int): Option[String] = {
+    segmentIdField.map(field => {
+      val fieldValue = cobolSchema.copybook.extractPrimitiveField(field, data, offset)
+      if (fieldValue == null) {
+        logger.error(s"An unexpected null encountered for segment id at $byteIndex")
+        ""
+      } else {
+        fieldValue.toString.trim
+      }
+    })
   }
 
 }

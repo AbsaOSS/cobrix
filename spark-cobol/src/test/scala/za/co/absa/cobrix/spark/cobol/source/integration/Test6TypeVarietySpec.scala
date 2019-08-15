@@ -63,6 +63,7 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
+      .option("floating_point_format", "IEEE754")
       .load(inpudDataPath)
 
     df.printSchema()

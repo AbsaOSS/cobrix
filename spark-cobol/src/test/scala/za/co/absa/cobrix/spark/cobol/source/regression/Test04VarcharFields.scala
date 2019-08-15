@@ -1,0 +1,103 @@
+/*
+ * Copyright 2018-2019 ABSA Group Limited
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package za.co.absa.cobrix.spark.cobol.source.regression
+
+import org.scalatest.FunSuite
+import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.fixtures.TempFileFixture
+import za.co.absa.cobrix.spark.cobol.utils.TestUtils
+
+class Test04VarcharFields extends FunSuite with SparkTestBase with TempFileFixture {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
+  private val copybook =
+    """       01  R.
+                03 N     PIC X(1).
+                03 V     PIC X(10).
+    """
+
+  val binFileContents: Array[Byte] = Array[Byte](
+    // Record 0 (full)
+    0x00, 0x00, 0x0B.toByte, 0x00,
+    0xF0.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte,
+    0xF4.toByte, 0xF5.toByte, 0xF6.toByte, 0xF7.toByte,
+    0xF8.toByte, 0xF9.toByte, 0xF0.toByte,
+    // Record 1 (full with spaces)
+    0x00, 0x00, 0x0B.toByte, 0x00,
+    0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
+    0xF5.toByte, 0xF6.toByte, 0xF7.toByte, 0xF8.toByte,
+    0x40.toByte, 0x40.toByte, 0x40.toByte,
+    // Record 2 (partial 1)
+    0x00, 0x00, 0x0A.toByte, 0x00,
+    0xF2.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
+    0xF5.toByte, 0xF6.toByte, 0xF7.toByte, 0xF8.toByte,
+    0x40.toByte, 0x40.toByte,
+    // Record 3 (partial 2)
+    0x00, 0x00, 0x04.toByte, 0x00,
+    0xF3.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte,
+    // Record 4 (partial 2)
+    0x00, 0x00, 0x02.toByte, 0x00,
+    0xF4.toByte, 0xF1.toByte,
+    // Record 5 (partial 3 - tiny)
+    0x00, 0x00, 0x01.toByte, 0x00,
+    0xF5.toByte
+  )
+
+
+  test("Test input data file having a varchar text field at the end of the copybook") {
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("generate_record_id", true)
+        .option("is_xcom", true)
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected =
+        """+-------+---------+---+----------+
+          ||File_Id|Record_Id|N  |V         |
+          |+-------+---------+---+----------+
+          ||0      |0        |0  |1234567890|
+          ||0      |1        |1  |2345678   |
+          ||0      |2        |2  |2345678   |
+          ||0      |3        |3  |123       |
+          ||0      |4        |4  |1         |
+          ||0      |5        |5  |          |
+          |+-------+---------+---+----------+
+          |
+          |""".stripMargin.replace("\r\n", "\n")
+
+      val actual = TestUtils.showString(df, 10)
+
+      assertResults(actual, expected)
+    }
+
+  }
+
+  def assertResults(actualResults: String, expectedResults: String): Unit = {
+    if (actualResults != expectedResults) {
+      logger.error(s"EXPECTED:\n$expectedResults")
+      logger.error(s"ACTUAL:\n$actualResults")
+      fail("Actual dataset data does not match the expected data (see above).")
+    }
+  }
+
+}

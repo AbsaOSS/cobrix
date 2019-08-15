@@ -63,6 +63,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
+  private val recordLengthAdjustment = readerProperties.rdwAdjustment
 
   fetchNext()
 
@@ -98,7 +99,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
           val segmentIdStr = segmentId.getOrElse("")
           val segmentLevelIds = getSegmentLevelIds(segmentIdStr)
 
-          if (isSegmentMatchesTheFilter(segmentIdStr)) {
+          if (isSegmentMatchesTheFilter(segmentIdStr, segmentLevelIds)) {
             val segmentRedefine = if (segmentRedefineAvailable) {
               segmentRedefineMap.getOrElse(segmentIdStr, "")
             } else ""
@@ -137,9 +138,9 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     var recordLength = lengthField match {
       case Some(lengthAST) =>
         cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int => i
-          case l: Long => l.toInt
-          case s: String => s.toInt
+          case i: Int => i + recordLengthAdjustment
+          case l: Long => l.toInt + recordLengthAdjustment
+          case s: String => s.toInt + recordLengthAdjustment
           case _ => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
         }
       case None => copyBookRecordSize
@@ -193,11 +194,11 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
   // The gets all values for the helper fields for the current record having a specific segment id
   // It is deliberately wtitten imperative style for performance
-  private def getSegmentLevelIds(segmentId: String): Seq[Any] = {
+  private def getSegmentLevelIds(segmentId: String): Seq[String] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
       acc.acquiredSegmentId(segmentId, recordIndex)
-      val ids = new ListBuffer[Any]
+      val ids = new ListBuffer[String]
       var i = 0
       while (i < segmentLevelIdsCount) {
         ids += acc.getSegmentLevelId(i)
@@ -222,8 +223,14 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     )
   }
 
-  private def isSegmentMatchesTheFilter(segmentId: String): Boolean = {
-    segmentIdFilter
-      .forall(filter => filter.contains(segmentId))
+  private def isSegmentMatchesTheFilter(segmentId: String, segmentLevels: Seq[String]): Boolean = {
+    if (!isRootSegmentReached(segmentLevels)) {
+      false
+    } else {
+      segmentIdFilter
+        .forall(filter => filter.contains(segmentId))
+    }
   }
+
+  private def isRootSegmentReached(segmentLevels: Seq[String]): Boolean = segmentLevels.isEmpty || segmentLevels.head != null
 }

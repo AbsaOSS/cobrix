@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency for the current release:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.3</version>
+      <version>0.5.5</version>
 </dependency>
 ```
 
@@ -75,7 +75,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.4-SNAPSHOT</version>
+      <version>0.5.6-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -188,14 +188,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.3.jar
-* cobol-parser-0.5.3.jar
+* spark-cobol-0.5.5.jar
+* cobol-parser-0.5.5.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.3.jar,cobol-parser-0.5.3.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.5.jar,cobol-parser-0.5.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -275,7 +275,6 @@ val copyBook = CopybookParser.parseTree(copyBookContents)
 println(copyBook.generateRecordLayoutPositions())
 ```
 
-### Varialble length records support
 ### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
@@ -453,6 +452,72 @@ fully qualified class name to the following option:
 ```
 .option("record_header_parser", "com.example.record.header.parser")
 ```
+
+## Reading ASCII text file
+Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
+
+Working example:
+```scala
+    val spark = SparkSession
+      .builder()
+      .appName("Spark-Cobol ASCII text file")
+      .master("local[*]")
+      .getOrCreate()
+
+    val copybook =
+      """       01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID		PIC 9(1).
+        |            05  STATIC-DETAILS.
+        |               10  NAME      	PIC X(2).
+        |
+        |            05  CONTACTS REDEFINES STATIC-DETAILS.
+        |               10  PERSON    	PIC X(3).
+      """.stripMargin
+
+    val parsedCopybook = CopybookParser.parseTree(ASCII(), copybook, dropGroupFillers = false, segmentRedefines = Seq(), stringTrimmingPolicy = StringTrimmingPolicy.TrimNone, ebcdicCodePage = CodePage.getCodePageByName("common"), nonTerminals = Seq())
+    val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, false)
+    val sparkSchema = cobolSchema.getSparkSchema
+
+
+    val rddText = spark.sparkContext.textFile("src/main/resources/mini.txt")
+
+    val rddRow = rddText.map(str => {
+      RowExtractors.extractRecord(parsedCopybook.ast, str.getBytes(), 0, SchemaRetentionPolicy.CollapseRoot)
+    })
+
+    val dfOut = spark.createDataFrame(rddRow, sparkSchema)
+
+    dfOut.printSchema()
+    dfOut.show()
+```
+
+Corresponding data sample in `mini.txt`:
+```
+1BB
+2CCC
+```
+
+Output:
+```
+root
+ |-- SEGMENT_ID: integer (nullable = true)
+ |-- STATIC_DETAILS: struct (nullable = true)
+ |    |-- NAME: string (nullable = true)
+ |-- CONTACTS: struct (nullable = true)
+ |    |-- PERSON: string (nullable = true)
+
+ ...
+
+ +----------+--------------+--------+
+ |SEGMENT_ID|STATIC_DETAILS|CONTACTS|
+ +----------+--------------+--------+
+ |         1|          [BB]|  [null]|
+ |         2|          [CC]|   [CCC]|
+ +----------+--------------+--------+
+```
+
+There, Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only one redefine is valid for every segment. Filtering is described in the following section.
+
 
 ## <a id="ims"/>Reading hierarchical data sets
 
@@ -840,6 +905,7 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
 | .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
+| .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 
 ##### Modifier options
 
@@ -856,6 +922,7 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
 | .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. |
 | .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
+| .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
 | .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
 | .option("rhp_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record header parser (RHP). A custom RHP can get that additional info by overriding `onReceiveAdditionalInfo()`  |
 
@@ -980,6 +1047,16 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.5 released 15 August 2019
+  - Added ability to read variable length files without RDW. A length field and [optionally] offsets can be specified instead.
+  - Added support for VARCHAR fields at the end of records. Length of such string fields is determined by the length of each record.
+  - Added support for segment id to redefine fields mapping for fixed-record length files.
+
+- #### 0.5.4 released 23 July 2019
+  - Added support for IBM floating point formats.
+  - Fixed sparse index generation when file header has the same segment id as root record.
+  - Fixed sparse index generation when a file does not contain any data, but just headers and footers.
+
 - #### 0.5.3 released 15 July 2019
   - Make `peadntic=false` by default so existing workflows won't break.
   - Use `cobrix_build.properties` file for storing Cobrix version instead of `build.properties` to avoid name clashes.

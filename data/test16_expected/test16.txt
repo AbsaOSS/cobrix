@@ -1,0 +1,399 @@
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Eliana",
+    "LAST_NAME" : "Boehme",
+    "ADDRESS" : "74 Staromestka., Pra",
+    "PHONE_NUM" : "+(132) 233"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Janiece",
+    "LAST_NAME" : "Newcombe",
+    "ADDRESS" : "123/B Prome str., De",
+    "PHONE_NUM" : "+(657) 886"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "31429725762",
+    "BRANCH_ADDRESS" : "901 Ztt, Munich"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Test Bank",
+    "ADDRESS" : "1 Garden str., London",
+    "TAXPAYER" : "13093784"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Joan Q & Z",
+    "ADDRESS" : "10 Sandton, Johannesburg",
+    "TAXPAYER" : "36867856"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Test Bank",
+    "ADDRESS" : "1 Garden str., London",
+    "TAXPAYER" : "37284728"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Gabriele",
+    "LAST_NAME" : "Shapiro",
+    "ADDRESS" : "10 Sandton, Johannes",
+    "PHONE_NUM" : "+(245) 832"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "29089081961",
+    "BRANCH_ADDRESS" : "123/B Prome str., De"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "69262509564",
+    "BRANCH_ADDRESS" : "74 Qing ave., Beijin"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Xingzhoug",
+    "ADDRESS" : "74 Qing ave., Beijing",
+    "TAXPAYER" : "63756473"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Beatrice",
+    "LAST_NAME" : "Brandis",
+    "ADDRESS" : "901 Ztt, Munich",
+    "PHONE_NUM" : "+(229) 874"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Edyth",
+    "LAST_NAME" : "Concannon",
+    "ADDRESS" : "123/B Prome str., De",
+    "PHONE_NUM" : "+(698) 202"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "ECSRONO",
+    "ADDRESS" : "123/B Prome str., Denver",
+    "TAXPAYER" : "67293878"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Jene",
+    "LAST_NAME" : "Norgard",
+    "ADDRESS" : "74 Qing ave., Beijin",
+    "PHONE_NUM" : "+(681) 738"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Robotrd Inc.",
+    "ADDRESS" : "2 Park ave., Johannesburg",
+    "TAXPAYER" : "38694303"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Sulema",
+    "LAST_NAME" : "Riojas",
+    "ADDRESS" : "74 Staromestka., Pra",
+    "PHONE_NUM" : "+(154) 976"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Beierbauh.",
+    "ADDRESS" : "2 G. str., Johannesburg",
+    "TAXPAYER" : "51616041"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "8586145587",
+    "BRANCH_ADDRESS" : "1 Garden str., Londo"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "97625023876",
+    "BRANCH_ADDRESS" : "74 Qing ave., Beijin"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Jene",
+    "LAST_NAME" : "Mackinnon",
+    "ADDRESS" : "1 Garden str., Londo",
+    "PHONE_NUM" : "+(122) 216"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "39003660177",
+    "BRANCH_ADDRESS" : "1 Garden str., Londo"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Jene",
+    "LAST_NAME" : "Godfrey",
+    "ADDRESS" : "74 Staromestka., Pra",
+    "PHONE_NUM" : "+(489) 644"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "94582966413",
+    "BRANCH_ADDRESS" : "2 Park ave., Johanne"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Starr",
+    "LAST_NAME" : "Celestin",
+    "ADDRESS" : "74 Lawn ave., New Yo",
+    "PHONE_NUM" : "+(210) 323"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "ABCD Ltd.",
+    "ADDRESS" : "74 Lawn ave., New York",
+    "TAXPAYER" : "19292660"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Carrie",
+    "LAST_NAME" : "Wallingford",
+    "ADDRESS" : "74 Qing ave., Beijin",
+    "PHONE_NUM" : "+(476) 289"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "85892135991",
+    "BRANCH_ADDRESS" : "5574, Tokyo"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Inge",
+    "LAST_NAME" : "Debow",
+    "ADDRESS" : "2 G. str., Johannesb",
+    "PHONE_NUM" : "+(303) 191"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Carrie",
+    "LAST_NAME" : "Bourke",
+    "ADDRESS" : "123/B Prome str., De",
+    "PHONE_NUM" : "+(828) 463"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "79254464023",
+    "BRANCH_ADDRESS" : "74 Qing ave., Beijin"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Joan Q & Z",
+    "ADDRESS" : "10 Sandton, Johannesburg",
+    "TAXPAYER" : "77597274"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Estelle",
+    "LAST_NAME" : "Celestin",
+    "ADDRESS" : "123/B Prome str., De",
+    "PHONE_NUM" : "+(648) 964"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Carrie",
+    "LAST_NAME" : "Winburn",
+    "ADDRESS" : "74 Staromestka., Pra",
+    "PHONE_NUM" : "+(333) 930"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Wilbert",
+    "LAST_NAME" : "Newcombe",
+    "ADDRESS" : "123/B Prome str., De",
+    "PHONE_NUM" : "+(170) 120"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "Joan Q & Z",
+    "ADDRESS" : "10 Sandton, Johannesburg",
+    "TAXPAYER" : "92310419"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Sulema",
+    "LAST_NAME" : "Batman",
+    "ADDRESS" : "2 G. str., Johannesb",
+    "PHONE_NUM" : "+(184) 948"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "58076239063",
+    "BRANCH_ADDRESS" : "5574, Tokyo"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "88174066342",
+    "BRANCH_ADDRESS" : "2 G. str., Johannesb"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "38751715002",
+    "BRANCH_ADDRESS" : "123/B Prome str., De"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Suk",
+    "LAST_NAME" : "Ortego",
+    "ADDRESS" : "74 Staromestka., Pra",
+    "PHONE_NUM" : "+(654) 844"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "96157844305",
+    "BRANCH_ADDRESS" : "10 Sandton, Johannes"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "8733744845",
+    "BRANCH_ADDRESS" : "10 Sandton, Johannes"
+  }
+}
+{
+  "SEGMENT_ID" : "P",
+  "PERSON" : {
+    "FIRST_NAME" : "Cassey",
+    "LAST_NAME" : "Batman",
+    "ADDRESS" : "74 Lawn ave., New Yo",
+    "PHONE_NUM" : "+(127) 223"
+  }
+}
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY" : {
+    "COMPANY_NAME" : "ZjkLPj",
+    "ADDRESS" : "5574, Tokyo",
+    "TAXPAYER" : "23645637"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "10931630469",
+    "BRANCH_ADDRESS" : "74 Staromestka., Pra"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "61011949724",
+    "BRANCH_ADDRESS" : "1 Garden str., Londo"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "3313766832",
+    "BRANCH_ADDRESS" : "1 Garden str., Londo"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "95776539368",
+    "BRANCH_ADDRESS" : "901 Ztt, Munich"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "87501534328",
+    "BRANCH_ADDRESS" : "107 Labe str., Berli"
+  }
+}
+{
+  "SEGMENT_ID" : "B",
+  "PO_BOX" : {
+    "PO_NUMBER" : "20501365030",
+    "BRANCH_ADDRESS" : "123/B Prome str., De"
+  }
+}

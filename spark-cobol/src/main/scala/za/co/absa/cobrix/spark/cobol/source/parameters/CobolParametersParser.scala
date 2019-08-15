@@ -18,8 +18,9 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -56,6 +57,7 @@ object CobolParametersParser {
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
   val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
+  val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
 
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
@@ -105,6 +107,18 @@ object CobolParametersParser {
     }
   }
 
+  private def getFloatingPointFormat(params: Parameters): FloatingPointFormat = {
+    val floatingPointFormatName = params.getOrElse(PARAM_FLOATING_POINT_FORMAT, "IBM")
+    val floatingPointFormat = FloatingPointFormat.withNameOpt(floatingPointFormatName)
+
+    floatingPointFormat match {
+      case Some(p) =>
+        p
+      case None =>
+        throw new IllegalArgumentException(s"Invalid value '$floatingPointFormat' for '$PARAM_FLOATING_POINT_FORMAT' option.")
+    }
+  }
+
   def parse(params: Parameters): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
@@ -132,6 +146,7 @@ object CobolParametersParser {
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
+      getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       parseVariableLengthParameters(params),
@@ -152,6 +167,11 @@ object CobolParametersParser {
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
+
+    if (params.contains(PARAM_RECORD_LENGTH) &&
+      (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
+      throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
+    }
 
     if (recordLengthFieldOpt.isDefined ||
       isRecordSequence ||

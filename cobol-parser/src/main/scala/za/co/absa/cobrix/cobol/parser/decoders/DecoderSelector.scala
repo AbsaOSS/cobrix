@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.position.Position
@@ -43,12 +44,16 @@ object DecoderSelector {
     * @param dataType             A daatype of a copybook field
     * @param stringTrimmingPolicy Specifies how the decoder should handle string types
     * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
+    * @param floatingPointFormat  Specifies a floating point format (IBM or IEEE754)
     * @return A function that converts an array of bytes to the target data type.
     */
-  def getDecoder(dataType: CobolType, stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth, ebcdicCodePage: CodePage = new CodePageCommon): Decoder = {
+  def getDecoder(dataType: CobolType,
+                 stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
+                 ebcdicCodePage: CodePage = new CodePageCommon,
+                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage)
-      case decimalType: Decimal => getDecimalDecoder(decimalType)
+      case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
@@ -73,7 +78,7 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a decimal data type. The input array of bytes is always converted to string and then to BigDecimal */
-  private def getDecimalDecoder(decimalType: Decimal): Decoder = {
+  private def getDecimalDecoder(decimalType: Decimal, floatingPointFormat: FloatingPointFormat): Decoder = {
     val encoding = decimalType.enc.getOrElse(EBCDIC())
 
     val isEbcidic = encoding match {
@@ -101,10 +106,10 @@ object DecoderSelector {
 //        (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
       case Some(COMP1()) =>
         // COMP-1 aka 32-bit floating point number
-        BinaryUtils.decodeFloat
+        getSinglePrecisionFpDecoder(floatingPointFormat)
       case Some(COMP2()) =>
         // COMP-2 aka 64-bit floating point number
-        BinaryUtils.decodeDouble
+        getDoublePrecisionFpDecoder(floatingPointFormat)
       case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
         BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
@@ -121,6 +126,28 @@ object DecoderSelector {
         throw new IllegalStateException(s"Unknown number compression format (COMP-${decimalType.compact}).")
     }
 
+  }
+
+  private def getSinglePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+    import FloatingPointFormat._
+    floatingPointFormat match {
+      case IBM =>        FloatingPointDecoders.decodeIbmSingleBigEndian
+      case IBM_LE =>     FloatingPointDecoders.decodeIbmSingleLittleEndian
+      case IEEE754 =>    FloatingPointDecoders.decodeIeee754SingleBigEndian
+      case IEEE754_LE => FloatingPointDecoders.decodeIeee754SingleLittleEndian
+      case _ => throw new IllegalStateException(s"Unknown floating point format ($floatingPointFormat).")
+    }
+  }
+
+  private def getDoublePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+    import FloatingPointFormat._
+    floatingPointFormat match {
+      case IBM =>        FloatingPointDecoders.decodeIbmDoubleBigEndian
+      case IBM_LE =>     FloatingPointDecoders.decodeIbmDoubleLittleEndian
+      case IEEE754 =>    FloatingPointDecoders.decodeIeee754DoubleBigEndian
+      case IEEE754_LE => FloatingPointDecoders.decodeIeee754DoubleLittleEndian
+      case _ => throw new IllegalStateException(s"Unknown floating point format ($floatingPointFormat).")
+    }
   }
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
