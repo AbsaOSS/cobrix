@@ -16,8 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 
-import org.antlr.v4.runtime.{CharStreams, CommonTokenStream, DefaultErrorStrategy, InputMismatchException, Parser, RecognitionException, Token}
+import org.antlr.v4.runtime._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
@@ -48,8 +49,9 @@ object ANTLRParser {
   def parse(copyBookContents: String,
             enc: Encoding,
             stringTrimmingPolicy: StringTrimmingPolicy,
-            ebcdicCodePage: CodePage): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage)
+            ebcdicCodePage: CodePage,
+            floatingPointFormat: FloatingPointFormat): CopybookAST = {
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
 
     val charStream = CharStreams.fromString(copyBookContents)
     val lexer = new copybookLexer(charStream)

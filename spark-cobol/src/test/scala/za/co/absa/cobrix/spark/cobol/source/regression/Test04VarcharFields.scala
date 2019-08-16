@@ -29,7 +29,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with TempFileFixtu
   private val copybook =
     """       01  R.
                 03 N     PIC X(1).
-                03 V     PIC X(10).
+                03 V1     PIC X(10).
     """
 
   val binFileContents: Array[Byte] = Array[Byte](
@@ -73,7 +73,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with TempFileFixtu
 
       val expected =
         """+-------+---------+---+----------+
-          ||File_Id|Record_Id|N  |V         |
+          ||File_Id|Record_Id|N  |V1        |
           |+-------+---------+---+----------+
           ||0      |0        |0  |1234567890|
           ||0      |1        |1  |2345678   |

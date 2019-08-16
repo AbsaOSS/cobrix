@@ -18,23 +18,21 @@ package za.co.absa.cobrix.cobol.parser.antlr
 
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-
-import scala.util.matching.Regex
-import scala.collection.JavaConverters._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
-import za.co.absa.cobrix.cobol.parser.position.Position
-import za.co.absa.cobrix.cobol.parser.position.Left
-import za.co.absa.cobrix.cobol.parser.position.Right
+import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
+import scala.util.matching.Regex
 
 
 sealed trait Expr
@@ -42,7 +40,8 @@ sealed trait Expr
 
 class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
-                    ebcdicCodePage: CodePage) extends copybookParserBaseVisitor[Expr] {
+                    ebcdicCodePage: CodePage,
+                    floatingPointFormat: FloatingPointFormat) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String) extends Expr
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
@@ -782,7 +781,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) occurs.get.dep else None,
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
       ) (Some(parent))
 
     parent.children.append(prim)
