@@ -75,7 +75,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.6-SNAPSHOT</version>
+      <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
