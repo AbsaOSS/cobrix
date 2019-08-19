@@ -19,10 +19,10 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 import org.scalatest.FunSuite
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.source.fixtures.TempFileFixture
+import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.TestUtils
 
-class Test04VarcharFields extends FunSuite with SparkTestBase with TempFileFixture {
+class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFixture {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
