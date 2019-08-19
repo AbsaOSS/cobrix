@@ -116,10 +116,17 @@ COMMENT:  '*' ~( '\r' | '\n' )* -> skip;
 // special cases (for the lengths)
 NINES: '9'+;
 A_S: A+;
-P_S: P+ '9'+;
+P_S: P+ '9'*;
 X_S: X+;
-S_S: S '9'* V P* '9'* | S P+ '9'+ | S '9'+ P*;
-Z_S: Z+ '9'* P* | Z+ '9'* V P* '9'+;
+S_S: S '9'+ V? P* '9'* | S '9'* V? P* '9'+;
+Z_S: Z+ '9'* P* | Z+ '9'* V P* '9'*;
+V_S: V+ '9'+;
+
+P_NS: P+ '9'*;
+S_NS: S '9'* V? P* '9'*;
+Z_NS: Z+ '9'* P* | Z+ '9'* V P* '9'*;
+V_NS: V+ '9'*;
+
 
 // numbers
 PRECISION_9_EXPLICIT_DOT: S? LENGTH_TYPE_9? DOT LENGTH_TYPE_9;

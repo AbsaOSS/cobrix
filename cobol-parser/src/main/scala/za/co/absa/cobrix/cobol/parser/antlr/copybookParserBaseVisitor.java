@@ -259,6 +259,13 @@ public class copybookParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitPrecision9Vs(copybookParser.Precision9VsContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitPrecision9ExplicitDot(copybookParser.Precision9ExplicitDotContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

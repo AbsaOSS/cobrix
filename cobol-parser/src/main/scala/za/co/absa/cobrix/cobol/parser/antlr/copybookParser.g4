@@ -48,7 +48,7 @@ booleanLiteral
    ;
 
 identifier:
-      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | X_S | S_S | Z_S
+      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | P_NS | X_S | S_S | S_NS | Z_S | Z_NS | V_S | V_NS
     | SINGLE_QUOTED_IDENTIFIER // is this valid?
     ;
 
@@ -158,6 +158,7 @@ precision9:
     | S_S                           #precision9Ss
     | P_S                           #precision9Ps
     | Z_S                           #precision9Zs
+    | V_S                           #precision9Vs
     | PRECISION_9_EXPLICIT_DOT      #precision9ExplicitDot
     | PRECISION_9_DECIMAL_SCALED    #precision9DecimalScaled
     | PRECISION_9_SCALED            #precision9Scaled

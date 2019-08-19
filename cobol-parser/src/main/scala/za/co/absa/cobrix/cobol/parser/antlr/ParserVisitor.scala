@@ -666,6 +666,15 @@ class ParserVisitor(enc: Encoding,
     )
   }
 
+  override def visitPrecision9Vs(ctx: copybookParser.Precision9VsContext): PicExpr = {
+    ctx.getText match {
+      case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+      )
+      case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
+    }
+  }
+
   override def visitPrecision9Zs(ctx: copybookParser.Precision9ZsContext): PicExpr = {
     ctx.getText match {
       case numericZPicRegexDecimalScaled(z1, nine1, scale, nine2, z2) => PicExpr(
