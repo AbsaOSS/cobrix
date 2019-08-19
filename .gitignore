@@ -48,3 +48,4 @@ dependency-reduced-pom.xml
 
 _testOutput
 output
+.attach_pid*

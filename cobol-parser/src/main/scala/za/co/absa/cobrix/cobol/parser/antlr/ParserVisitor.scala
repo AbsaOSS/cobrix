@@ -194,14 +194,20 @@ class ParserVisitor(enc: Encoding,
       levels.pop
     }
 
-    if (levels.top.children.isEmpty) {
-      val newTop = levels.top.copy(children = Some(section))
+    def addLevel(s: Int) = {
+      val newTop = levels.top.copy(children = Some(s))
       levels.pop
       levels.push(newTop)
     }
-    if (!levels.top.children.contains(section))
-      throw new SyntaxErrorException(levels.top.el.children.last.lineNumber, levels.top.el.name,
-        s"The field is a leaf element and cannot contain nested fields.")
+
+    levels.top.children match {
+      case Some(s) if s == section => { }
+      case None => addLevel(section)
+      case Some(s) if s > section => addLevel(section)
+      case _ =>
+        throw new SyntaxErrorException(levels.top.el.children.last.lineNumber, levels.top.el.children.last.name,
+          s"The field is a leaf element and cannot contain nested fields.")
+    }
 
     levels.top.el
   }
