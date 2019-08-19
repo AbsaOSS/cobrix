@@ -14,6 +14,9 @@ syntax: glob
 .manager
 .scala_dependencies
 
+# VsCode
+.project
+
 # idea
 .idea
 *.iml
