@@ -31,7 +31,7 @@ class ThrowErrorStrategy() extends DefaultErrorStrategy {
       e.getOffendingToken.getLine,
       "",
       "Invalid input " + getTokenErrorDisplay(e.getOffendingToken) + " at position " + e.getOffendingToken.getLine
-      + ":" + e.getOffendingToken.getCharPositionInLine
+      + ":" + (e.getOffendingToken.getCharPositionInLine + 6)
     )
   }
 
@@ -53,7 +53,15 @@ object ANTLRParser {
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
     val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
 
-    val charStream = CharStreams.fromString(copyBookContents)
+    val strippedContents = copyBookContents.split("\\r?\\n").map(
+      line =>
+        line
+          // ignore all columns after 72th one and
+          // first 6 columns (historically for line numbers)
+          .slice(6, 72)
+    ).mkString("\n")
+
+    val charStream = CharStreams.fromString(strippedContents)
     val lexer = new copybookLexer(charStream)
     val tokens = new CommonTokenStream(lexer)
     val parser = new copybookParser(tokens)
