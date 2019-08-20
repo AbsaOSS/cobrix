@@ -28,7 +28,7 @@ import scala.util.control.NonFatal
 object DecoderSelector {
   type Decoder = Array[Byte] => Any
 
-  import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy._
+  import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy._
 
 
   /**

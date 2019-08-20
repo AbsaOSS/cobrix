@@ -160,6 +160,7 @@ class DefaultSource
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       parameters.multisegmentParams,
+      parameters.commentPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
       varLenParams.recordHeaderParser,
