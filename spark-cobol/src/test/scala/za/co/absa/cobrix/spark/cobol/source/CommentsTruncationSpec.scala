@@ -19,10 +19,11 @@ package za.co.absa.cobrix.spark.cobol.source
 import org.scalatest.FunSuite
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class CommentsControlSpec extends FunSuite with SparkTestBase with BinaryFileFixture {
+class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFileFixture {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -103,19 +104,21 @@ class CommentsControlSpec extends FunSuite with SparkTestBase with BinaryFileFix
     assert(layout == expectedLayout)
   }
 
-//  test("Test copybook comments are parsed with an adjusted comment positions") {
-//    val copybook = CopybookParser.parseTree(copybookWithTruncatedComments)
-//    val layout = copybook.generateRecordLayoutPositions()
-//
-//    assert(layout == expectedLayout)
-//  }
-//
-//  test("Test copybook comments are parsed with no comment truncation") {
-//    val copybook = CopybookParser.parseTree(copybookWithNoCommentTruncation)
-//    val layout = copybook.generateRecordLayoutPositions()
-//
-//    assert(layout == expectedLayout)
-//  }
+  test("Test copybook comments are parsed with an adjusted comment positions") {
+    val copybook = CopybookParser.parseTree(copybookWithTruncatedComments,
+      commentPolicy = CommentPolicy(truncateComments = true, 3, 50))
+    val layout = copybook.generateRecordLayoutPositions()
+
+    assert(layout == expectedLayout)
+  }
+
+  test("Test copybook comments are parsed with no comment truncation") {
+    val copybook = CopybookParser.parseTree(copybookWithNoCommentTruncation,
+      commentPolicy = CommentPolicy(truncateComments = false))
+    val layout = copybook.generateRecordLayoutPositions()
+
+    assert(layout == expectedLayout)
+  }
 
   test("Test copybook are processed by spark-cobol properly with the default comment positions") {
     withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
@@ -128,42 +131,78 @@ class CommentsControlSpec extends FunSuite with SparkTestBase with BinaryFileFix
         .load(tmpFileName)
 
       val actualSchema = df.schema.treeString
-      println(actualSchema)
 
       assert(actualSchema == expectedSchema)
     }
   }
 
-//  test("Test copybook are processed by spark-cobol properly with an adjusted comment positions") {
-//    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
-//      val df = spark
-//        .read
-//        .format("cobol")
-//        .option("copybook_contents", copybookWithTruncatedComments)
-//        .option("is_record_sequence", "true")
-//        .option("schema_retention_policy", "collapse_root")
-//        .load(tmpFileName)
-//
-//      val actualSchema = df.schema.treeString
-//
-//      assert(actualSchema == expectedSchema)
-//    }
-//  }
-//
-//  test("Test copybook are processed by spark-cobol properly with no comment truncation") {
-//    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
-//      val df = spark
-//        .read
-//        .format("cobol")
-//        .option("copybook_contents", copybookWithNoCommentTruncation)
-//        .option("is_record_sequence", "true")
-//        .option("schema_retention_policy", "collapse_root")
-//        .load(tmpFileName)
-//
-//      val actualSchema = df.schema.treeString
-//
-//      assert(actualSchema == expectedSchema)
-//    }
-//  }
+  test("Test copybook are processed by spark-cobol properly with an adjusted comment positions") {
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybookWithTruncatedComments)
+        .option("is_record_sequence", "true")
+        .option("comments_lbound", 3)
+        .option("comments_ubound", 50)
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val actualSchema = df.schema.treeString
+
+      assert(actualSchema == expectedSchema)
+    }
+  }
+
+  test("Test copybook are processed by spark-cobol properly with no comment truncation") {
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybookWithNoCommentTruncation)
+        .option("is_record_sequence", "true")
+        .option("truncate_comments", "false")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val actualSchema = df.schema.treeString
+
+      assert(actualSchema == expectedSchema)
+    }
+  }
+
+  test("Test an exception is thrown when 'comments_truncated' is used with 'comments_lbound'") {
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
+      val ex = intercept[IllegalArgumentException] {
+        spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybookWithTruncatedComments)
+          .option("is_record_sequence", "true")
+          .option("comments_lbound", 3)
+          .option("truncate_comments", "false")
+          .option("schema_retention_policy", "collapse_root")
+          .load(tmpFileName)
+      }
+      assert(ex.getMessage.contains("the following parameters cannot be used"))
+    }
+  }
+
+  test("Test an exception is thrown when 'comments_truncated' is used with 'comments_ubound'") {
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
+      val ex = intercept[IllegalArgumentException] {
+        spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybookWithTruncatedComments)
+          .option("is_record_sequence", "true")
+          .option("comments_ubound", 50)
+          .option("truncate_comments", "false")
+          .option("schema_retention_policy", "collapse_root")
+          .load(tmpFileName)
+      }
+      assert(ex.getMessage.contains("the following parameters cannot be used"))
+    }
+  }
 
 }

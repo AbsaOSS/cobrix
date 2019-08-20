@@ -21,11 +21,12 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Dec
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
 
 import scala.collection.mutable
@@ -57,16 +58,19 @@ object CopybookParser {
     * @param copyBookContents A string containing all lines of a copybook
     * @param dropGroupFillers Drop groups marked as fillers from the output AST
     * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
   }
 
   /**
@@ -78,6 +82,7 @@ object CopybookParser {
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                             resolving segment redefines.
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -86,6 +91,7 @@ object CopybookParser {
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
+                commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
@@ -130,7 +136,7 @@ object CopybookParser {
       }
     }
 
-    val tokens = tokenize(copyBookContents)
+    val tokens = tokenize(copyBookContents, commentPolicy)
     val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
 
     val fields: Seq[CopybookLine] =
@@ -757,16 +763,14 @@ object CopybookParser {
   /**
     * Tokenizes a copybook to lift the relevant information
     */
-  def tokenize(cpyBook: String): Array[StatementTokens] = {
+  def tokenize(cpyBook: String, commentPolicy: CommentPolicy): Array[StatementTokens] = {
     val tokens = cpyBook
       // split by line breaks
       .split("\\r?\\n")
       .map(
-        line =>
-          line
-            // ignore all columns after 72th one and
-            // first 6 columns (historically for line numbers)
-            .slice(6, 72)
+        line => {
+          val lineTruncated = truncateComments(line, commentPolicy)
+          lineTruncated
             // remove unnecessary white space
             .replaceAll("\\s\\s+", " ")
             // the '.' sybmol inside a PIC meand an explicit decimal point
@@ -774,6 +778,7 @@ object CopybookParser {
             // So here we replace '.' inside a PIC by ',' and thread ',' as an explicit decimal point instead
             .replaceAll("\\.9", ",9")
             .trim()
+        }
       )
       .zipWithIndex
       .map(v => StatementLine(v._2 + 1, v._1))
@@ -788,6 +793,26 @@ object CopybookParser {
       .filterNot(l => l.text.startsWith("66") || l.text.startsWith("77") || l.text.startsWith("88") || l.text.trim.isEmpty)
       .map(l => StatementTokens(l.lineNumber, l.text.trim().split("\\s+")))
       .toArray
+  }
+
+  /**
+    * Truncate all columns after configured (72th by default) one and
+    * first configured (6 by default) columns (historically for line numbers)
+    */
+  private def truncateComments(copybookLine: String, commentPolicy: CommentPolicy): String = {
+    if (commentPolicy.truncateComments) {
+      if (commentPolicy.commentsUpToChar >= 0 && commentPolicy.commentsAfterChar >= 0) {
+        copybookLine.slice(commentPolicy.commentsUpToChar, commentPolicy.commentsAfterChar)
+      } else {
+        if (commentPolicy.commentsUpToChar >= 0) {
+          copybookLine.drop(commentPolicy.commentsUpToChar)
+        } else {
+          copybookLine.dropRight(commentPolicy.commentsAfterChar)
+        }
+      }
+    } else {
+      copybookLine
+    }
   }
 
   /**

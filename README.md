@@ -898,6 +898,14 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
 | .option("record_end_offset", "0")          | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data. |
 
+##### Copybook parsing options
+
+|            Option (usage example)          |                           Description |
+| ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("truncate_comments", "true")       | Historically, COBOL parser ignores the first 6 characters and all characters after 72. When this option is `false`, no truncation is performed. |
+| .option("comments_lbound", 6)              | By default each line starts with a 6 character comment. The exact number of characters can be tuned using this option. |
+| .option("comments_ubound", 72)             | By default all characters after 72th one of each line is ignored by the COBOL parser. The exact number of characters can be tuned using this option. |
+
 ##### Data parsing options
 
 |            Option (usage example)          |                           Description |
