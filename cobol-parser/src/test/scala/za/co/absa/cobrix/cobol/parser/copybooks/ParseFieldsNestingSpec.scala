@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.copybooks
 import org.scalatest.FunSuite
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 class ParseFieldsNestingSpec extends FunSuite {
 
@@ -52,5 +53,24 @@ class ParseFieldsNestingSpec extends FunSuite {
     val layout = copybook.generateRecordLayoutPositions()
 
     assert(layout == expectedLayout)
+  }
+
+  test("Test copybook parser doesn't allow nesting leaf statements") {
+    val copybookWithCommentLines =
+      """
+      01  ROOT-GROUP.
+          03  NESTED-PRIMITIVE-01  PIC 9(7)    COMP-3.
+          03  NESTED-GRP-01.
+            05  NESTED-NESTED-02   PIC X(7).
+          03  FILL                 PIC X(07).
+        02  FILLER_1               PIC XX.
+          03  NUMERIC-FIELD-01     PIC S9(04)  COMP.
+      """
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copybookWithCommentLines)
+    }
+    assert(syntaxErrorException.lineNumber == 7)
+    assert(syntaxErrorException.msg.contains("The field is a leaf element and cannot contain nested fields."))
   }
 }
