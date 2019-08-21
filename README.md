@@ -65,7 +65,7 @@ Coordinates for Maven POM dependency for the current release:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.5</version>
+      <version>0.5.6</version>
 </dependency>
 ```
 
@@ -75,7 +75,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>0.5.6-SNAPSHOT</version>
+      <version>1.0.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -188,14 +188,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.5.jar
-* cobol-parser-0.5.5.jar
+* spark-cobol-0.5.6.jar
+* cobol-parser-0.5.6.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.5.jar,cobol-parser-0.5.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.6.jar,cobol-parser-0.5.6.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1055,6 +1055,11 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 0.5.6 released 21 August 2019. This release should be functionally equivalent to 1.0.0 pre-release.
+  - Added ability to control truncation of comments when parsing a copybook. Historically the first 6 bytes of a copybook are ignored,
+    as well as all characters after position 72. Added options to control this behavior.
+  - Added unit tests for the copybook parser covering several exotic cases.
+
 - #### 0.5.5 released 15 August 2019
   - Added ability to read variable length files without RDW. A length field and [optionally] offsets can be specified instead.
   - Added support for VARCHAR fields at the end of records. Length of such string fields is determined by the length of each record.
