@@ -19,10 +19,11 @@ package za.co.absa.cobrix.cobol.parser.antlr
 import org.antlr.v4.runtime._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 
 
 class ThrowErrorStrategy() extends DefaultErrorStrategy {
@@ -49,16 +50,14 @@ object ANTLRParser {
   def parse(copyBookContents: String,
             enc: Encoding,
             stringTrimmingPolicy: StringTrimmingPolicy,
+            commentPolicy: CommentPolicy,
             ebcdicCodePage: CodePage,
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
     val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
 
     val strippedContents = copyBookContents.split("\\r?\\n").map(
       line =>
-        line
-          // ignore all columns after 72th one and
-          // first 6 columns (historically for line numbers)
-          .slice(6, 72)
+        truncateComments(line, commentPolicy)
     ).mkString("\n")
 
     val charStream = CharStreams.fromString(strippedContents)
@@ -69,5 +68,25 @@ object ANTLRParser {
 
     visitor.visitMain(parser.main())
     visitor.ast
+  }
+
+  /**
+    * Truncate all columns after configured (72th by default) one and
+    * first configured (6 by default) columns (historically for line numbers)
+    */
+  private def truncateComments(copybookLine: String, commentPolicy: CommentPolicy): String = {
+    if (commentPolicy.truncateComments) {
+      if (commentPolicy.commentsUpToChar >= 0 && commentPolicy.commentsAfterChar >= 0) {
+        copybookLine.slice(commentPolicy.commentsUpToChar, commentPolicy.commentsAfterChar)
+      } else {
+        if (commentPolicy.commentsUpToChar >= 0) {
+          copybookLine.drop(commentPolicy.commentsUpToChar)
+        } else {
+          copybookLine.dropRight(commentPolicy.commentsAfterChar)
+        }
+      }
+    } else {
+      copybookLine
+    }
   }
 }

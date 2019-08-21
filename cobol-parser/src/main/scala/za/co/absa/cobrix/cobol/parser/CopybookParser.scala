@@ -94,7 +94,7 @@ object CopybookParser {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
-    val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat))
+    val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat))
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -569,27 +569,6 @@ object CopybookParser {
     calcNonFillers(originalSchema)
   }
 
-        }
-  }
-
-  /**
-    * Truncate all columns after configured (72th by default) one and
-    * first configured (6 by default) columns (historically for line numbers)
-    */
-  private def truncateComments(copybookLine: String, commentPolicy: CommentPolicy): String = {
-    if (commentPolicy.truncateComments) {
-      if (commentPolicy.commentsUpToChar >= 0 && commentPolicy.commentsAfterChar >= 0) {
-        copybookLine.slice(commentPolicy.commentsUpToChar, commentPolicy.commentsAfterChar)
-      } else {
-        if (commentPolicy.commentsUpToChar >= 0) {
-          copybookLine.drop(commentPolicy.commentsUpToChar)
-        } else {
-          copybookLine.dropRight(commentPolicy.commentsAfterChar)
-        }
-      }
-    } else {
-      copybookLine
-    }
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
   def transformIdentifier(identifier: String): String = {
     identifier
