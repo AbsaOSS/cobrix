@@ -16,9 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.parameters
 
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -46,6 +47,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param schemaPolicy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
   * @param multisegment            Parameters specific to reading multisegment files
+  * @param commentPolicy           A comment truncation policy
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param recordHeaderParser      A parser used to parse data field record headers
@@ -73,6 +75,7 @@ case class ReaderParameters(
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment:            Option[MultisegmentParameters] = None,
+                             commentPolicy:           CommentPolicy = CommentPolicy(),
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
                              recordHeaderParser:      Option[String] = None,

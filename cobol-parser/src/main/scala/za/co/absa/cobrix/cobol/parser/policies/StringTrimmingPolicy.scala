@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.decoders
+package za.co.absa.cobrix.cobol.parser.policies
 
 object StringTrimmingPolicy extends Enumeration {
   type StringTrimmingPolicy = Value

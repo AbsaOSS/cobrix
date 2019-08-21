@@ -22,11 +22,12 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -55,16 +56,19 @@ object CopybookParser {
     * @param copyBookContents A string containing all lines of a copybook
     * @param dropGroupFillers Drop groups marked as fillers from the output AST
     * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
   }
 
   /**
@@ -76,6 +80,7 @@ object CopybookParser {
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                             resolving segment redefines.
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -84,6 +89,7 @@ object CopybookParser {
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
+                commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
@@ -563,6 +569,27 @@ object CopybookParser {
     calcNonFillers(originalSchema)
   }
 
+        }
+  }
+
+  /**
+    * Truncate all columns after configured (72th by default) one and
+    * first configured (6 by default) columns (historically for line numbers)
+    */
+  private def truncateComments(copybookLine: String, commentPolicy: CommentPolicy): String = {
+    if (commentPolicy.truncateComments) {
+      if (commentPolicy.commentsUpToChar >= 0 && commentPolicy.commentsAfterChar >= 0) {
+        copybookLine.slice(commentPolicy.commentsUpToChar, commentPolicy.commentsAfterChar)
+      } else {
+        if (commentPolicy.commentsUpToChar >= 0) {
+          copybookLine.drop(commentPolicy.commentsUpToChar)
+        } else {
+          copybookLine.dropRight(commentPolicy.commentsAfterChar)
+        }
+      }
+    } else {
+      copybookLine
+    }
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
   def transformIdentifier(identifier: String): String = {
     identifier

@@ -18,9 +18,10 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.spark.cobol.reader.parameters.MultisegmentParameters
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -52,6 +53,11 @@ object CobolParametersParser {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
+
+  // General parsing parameters
+  val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
+  val PARAM_COMMENTS_LBOUND           = "comments_lbound"
+  val PARAM_COMMENTS_UBOUND           = "comments_ubound"
 
   // Data parsing parameters
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
@@ -107,6 +113,42 @@ object CobolParametersParser {
     }
   }
 
+  /**
+    * Parses comment truncation parameters
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns an instance of omment truncation parameters
+    */
+  @throws(classOf[IllegalArgumentException])
+  private def parseCommentTruncationPolicy(params: Parameters): CommentPolicy = {
+    var commentParams = CommentPolicy()
+
+    if (params.contains(PARAM_TRUNCATE_COMMENTS)) {
+      val truncateComments = params(PARAM_TRUNCATE_COMMENTS).toBoolean
+      commentParams = commentParams.copy(truncateComments = truncateComments)
+
+      if (!truncateComments) {
+        if (params.contains(PARAM_COMMENTS_LBOUND) || params.contains(PARAM_COMMENTS_UBOUND)) {
+          throw new IllegalArgumentException(s"When '$PARAM_TRUNCATE_COMMENTS=false' the following parameters cannot " +
+            s"be used: '$PARAM_COMMENTS_LBOUND', '$PARAM_COMMENTS_UBOUND'."
+          )
+        }
+      }
+    }
+
+    if (params.contains(PARAM_COMMENTS_LBOUND)) {
+      val lbound = params(PARAM_COMMENTS_LBOUND).toInt
+      commentParams = commentParams.copy(commentsUpToChar = lbound)
+    }
+
+    if (params.contains(PARAM_COMMENTS_UBOUND)) {
+      val ubound = params(PARAM_COMMENTS_UBOUND).toInt
+      commentParams = commentParams.copy(commentsAfterChar = ubound)
+    }
+
+    commentParams
+  }
+
   private def getFloatingPointFormat(params: Parameters): FloatingPointFormat = {
     val floatingPointFormatName = params.getOrElse(PARAM_FLOATING_POINT_FORMAT, "IBM")
     val floatingPointFormat = FloatingPointFormat.withNameOpt(floatingPointFormatName)
@@ -153,6 +195,7 @@ object CobolParametersParser {
       schemaRetentionPolicy,
       stringTrimmingPolicy,
       parseMultisegmentParameters(params),
+      parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
