@@ -14,6 +14,8 @@
 
 # Cobrix - COBOL Data Source for Apache Spark
 
+[![Build Status](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/badge/icon)](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/)
+
 Pain free Spark/Cobol files integration.
 
 Seamlessly query your COBOL/EBCDIC binary files as Spark Dataframes and streams.   
