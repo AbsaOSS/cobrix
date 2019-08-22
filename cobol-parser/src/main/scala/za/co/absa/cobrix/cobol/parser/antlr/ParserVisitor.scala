@@ -454,7 +454,7 @@ class ParserVisitor(enc: Encoding,
     val m = ctx.integerLiteral.getText.toInt
     val M: Option[Int] = ctx.occursTo() match {
       case null => None
-      case x => Some(x.getText.toInt)
+      case x => Some(x.integerLiteral.getText.toInt)
     }
     val dep: Option[String] = ctx.dependingOn() match {
       case null => None
