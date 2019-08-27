@@ -17,11 +17,13 @@ def enceladusSlaveLabel = getEnceladusSlaveLabel()
 def toolVersionJava = getToolVersionJava()
 def toolVersionMaven = getToolVersionMaven()
 def toolVersionGit = getToolVersionGit()
+def mavenSettingsId = getMavenSettingsId()
 
 pipeline {
     agent {
         label "${enceladusSlaveLabel}"
     }
+
     tools {
         jdk "${toolVersionJava}"
         maven "${toolVersionMaven}"
