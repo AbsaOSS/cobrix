@@ -14,7 +14,9 @@
 
 # Cobrix - COBOL Data Source for Apache Spark
 
-[![Build Status](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/badge/icon)](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/)
+| master |
+| ------------- |
+| [![Build Status](https://opensource.bigusdatus.com/jenkins/buildStatus/icon?job=Absa-OSS-Projects%2Fcobrix%2Fmaster)](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/) |
 
 Pain free Spark/Cobol files integration.
 
