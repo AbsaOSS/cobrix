@@ -17,9 +17,10 @@
 package za.co.absa.cobrix.cobol.parser
 
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
@@ -27,11 +28,10 @@ import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.parser.validators.CobolValidators
 
 import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.util.control.NonFatal
+import scala.collection.mutable.ArrayBuffer
+
 
 /**
   * The object contains generic function for the Copybook parser
@@ -41,8 +41,6 @@ object CopybookParser {
 
   type MutableCopybook = mutable.ArrayBuffer[Statement]
   type CopybookAST = Group
-
-  import za.co.absa.cobrix.cobol.parser.common.ReservedWords._
 
   case class StatementLine(lineNumber: Int, text: String)
 
@@ -96,82 +94,7 @@ object CopybookParser {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
-    // Get start line index and one past last like index for each record (aka newElementLevel 1 field)
-    def getBreakpoints(lines: Seq[CopybookLine]) = {
-      // miniumum level
-      val minLevel = lines.map(line => line.level).min
-      // create a tuple of index value and root names for all the 01 levels
-      val recordStartLines: Seq[(String, Int)] = lines.zipWithIndex.collect {
-        case (CopybookLine(`minLevel`, name: String, _, _), i: Int) => (name, i)
-      }
-      val recordChangeLines: Seq[Int] = recordStartLines.drop(1).map(_._2) :+ lines.length
-      val recordBeginEnd: Seq[((String, Int), Int)] = recordStartLines.zip(recordChangeLines)
-      val breakpoints: Seq[RecordBoundary] = recordBeginEnd.map {
-        case ((recordName, startLine), endLine) => RecordBoundary(recordName, startLine, endLine)
-      }
-      breakpoints
-    }
-
-    def getMatchingGroup(element: Statement, newElementLevel: Int): Group = {
-      newElementLevel match {
-        case level if level < 1 =>
-          throw new SyntaxErrorException(element.lineNumber, element.name, s"Couldn't find matching level.")
-        case level if level > element.level =>
-          element match {
-            case g: Group => g
-            case s: Primitive =>
-              throw new SyntaxErrorException(s.lineNumber, s.name, s"The field is a leaf element and cannot contain nested fields.")
-            case c: Statement =>
-              throw new SyntaxErrorException(c.lineNumber, c.name, s"Unknown AST object.")
-          }
-        case level if level <= element.level =>
-          getMatchingGroup(element.up().get, level)
-      }
-    }
-
-    def getUsageModifiers(modifiers: Map[String, String]): Map[String, String] = {
-      getComactLevel(modifiers) match {
-        case Some(value) => Map[String, String](COMP123 -> value.toString)
-        case None => Map[String, String]()
-      }
-    }
-
-    val tokens = tokenize(copyBookContents, commentPolicy)
-    val lexedLines = tokens.map(lineTokens => lex(lineTokens.lineNumber, lineTokens.tokens))
-
-    val fields: Seq[CopybookLine] =
-      tokens.zip(lexedLines)
-        .map { case (lineTokens, modifiers) =>
-          CreateCopybookLine(lineTokens, modifiers)
-        }
-
-    val root = Group.root.copy(children = mutable.ArrayBuffer())(None)
-    fields.foldLeft[Statement](root)((element, field) => {
-      val comp = getComactLevel(field.modifiers).getOrElse(-1)
-      val keywords = field.modifiers.keys.toList
-      val isLeaf = keywords.contains(PIC) || comp == 1 || comp == 2
-      val redefines = field.modifiers.get(REDEFINES)
-      val occurs = field.modifiers.get(OCCURS).map(i => i.toInt)
-      val to = field.modifiers.get(TO).map(i => i.toInt)
-      val dependingOn = field.modifiers.get(DEPENDING)
-      val attachLevel = getMatchingGroup(element, field.level)
-      val isFiller = field.name.trim.toUpperCase() == ReservedWords.FILLER
-
-      val newElement = if (isLeaf) {
-        val dataType = typeAndLengthFromString(keywords, field.modifiers, attachLevel.groupUsage, field.lineNumber, field.name)(enc)
-        val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-        Primitive(field.level, field.name, field.lineNumber, dataType, redefines, isRedefined = false, occurs, to,
-          dependingOn, isFiller = isFiller, decode = decode)(None)
-      }
-      else {
-        val groupUsage = getUsageModifiers(field.modifiers)
-        Group(field.level, field.name, field.lineNumber, mutable.ArrayBuffer(), redefines, isRedefined = false,
-          isSegmentRedefine = false, occurs, to, dependingOn, isFiller = isFiller, groupUsage)(None)
-      }
-
-      attachLevel.add(newElement)
-    })
-    val schema: MutableCopybook = ArrayBuffer(root)
+    val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat))
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -179,11 +102,11 @@ object CopybookParser {
 
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
       )), segmentRedefines))
     } else {
       calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schema), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
       )), segmentRedefines))
     }
 
@@ -246,23 +169,6 @@ object CopybookParser {
       }
     }
     newCopybook
-  }
-
-  private def CreateCopybookLine(lineTokens: StatementTokens, modifiers: Map[String, String]): CopybookLine = {
-    if (lineTokens.tokens.length < 2) {
-      throw new SyntaxErrorException(lineTokens.lineNumber, "", s"Syntax error at '${lineTokens.tokens.mkString(" ").trim}'")
-    }
-    val nameWithoutColons = transformIdentifier(lineTokens.tokens(1))
-    val level = try {
-      lineTokens.tokens(0).toInt
-    } catch {
-      case e: NumberFormatException =>
-        throw new SyntaxErrorException(
-          lineTokens.lineNumber,
-          "",
-          s"Unable to parse the value of LEVEL. Numeric value expected, but '${lineTokens.tokens(0)}' encountered")
-    }
-    CopybookLine(level, nameWithoutColons, lineTokens.lineNumber, modifiers)
   }
 
   /** Calculate binary properties based on the whole AST
@@ -545,7 +451,7 @@ object CopybookParser {
         if (group.isFiller) {
           lastFillerIndex += 1
           group.copy(name = s"${
-            FILLER
+            Constants.FILLER
           }_$lastFillerIndex", children = newChildren, isFiller = false)(group.parent)
         } else {
           group.copy(children = newChildren)(group.parent)
@@ -663,373 +569,6 @@ object CopybookParser {
     calcNonFillers(originalSchema)
   }
 
-  /**
-    * Get the type and length from a cobol data structure.
-    *
-    * @param keywords       Keywords of a Copybook statement
-    * @param modifiers      Modifiers of a Copybook field
-    * @param groupModifiers Modifiers of the group level
-    * @param lineNumber     Line number of the field definition
-    * @param fieldName      The name of the field
-    * @return Cobol data type
-    */
-  @throws(classOf[SyntaxErrorException])
-  def typeAndLengthFromString(
-                               keywords: List[String],
-                               modifiers: Map[String, String],
-                               groupModifiers: Map[String, String],
-                               lineNumber: Int,
-                               fieldName: String
-                             )(enc: Encoding): CobolType = {
-    val compDefined = getComactLevel(modifiers)
-    val compInherited = getComactLevel(groupModifiers)
-
-    val comp = (compDefined, compInherited) match {
-      case (None, None) => None
-      case (Some(x), None) => Some(x)
-      case (None, Some(y)) => Some(y)
-      case (Some(x), Some(y)) =>
-        if (x != y) {
-          throw new SyntaxErrorException(lineNumber, fieldName, s"Field USAGE (COMP-$x) doesn't match group's USAGE (COMP-$y).")
-        }
-        Some(x)
-    }
-
-    val computation = comp.getOrElse(-1)
-    val pic = if (computation == 1 || computation == 2) {
-      // Floating point numbers (COMP-1, COMP2) do not need PIC, so just replacing it with a dummy PIC that doesn't affect the actual format
-      "9(16)V9(16)"
-    } else {
-      try {
-        modifiers(PIC)
-      }
-      catch {
-        case NonFatal(e) => throw new SyntaxErrorException(lineNumber, fieldName, "Primitive fields need to have a PIC modifier.")
-      }
-    }
-
-    val picOrigin = modifiers.getOrElse("PIC_ORIGIN", pic)
-
-    // Trailing sign is supported implicitly by smart uncompressed number converters
-    val isSignSeparate = modifiers.contains(SIGN_SEP) || pic.contains('+') || pic.contains('-')
-
-    CobolValidators.validatePic(lineNumber, fieldName, picOrigin)
-
-    val sync = keywords.contains(SYNC)
-    val dataType = pic match {
-      case s if s.contains('X') || s.contains('A') =>
-        AlphaNumeric(picOrigin, s.length, wordAlligned = if (sync) Some(position.Left) else None, Some(enc))
-      case s if s.contains('V') || s.contains(',') || s.contains('P') =>
-        CopybookParser.decimalLength(s) match {
-          case (integralDigits, 0, 0) =>
-            //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
-            Integral(
-              picOrigin,
-              integralDigits,
-              if (s.startsWith("S")) Some(position.Left) else None,
-              isSignSeparate = isSignSeparate,
-              if (sync) Some(position.Right) else None,
-              comp,
-              Some(enc))
-          case (integralDigits, fractureDigits, scaleFactor) =>
-            //println(s"DECIMAL LENGTH for $s => ($integralDigits, $fractureDigits)")
-            Decimal(
-              picOrigin,
-              fractureDigits,
-              integralDigits + fractureDigits,
-              scaleFactor,
-              s.contains(','),
-              if (s.startsWith("S")) Some(position.Left) else None,
-              isSignSeparate = isSignSeparate,
-              if (sync) Some(position.Right) else None,
-              comp,
-              Some(enc))
-        }
-      case s if s.contains("9") =>
-        Integral(
-          picOrigin,
-          precision = s.count(_ == '9'),
-          signPosition = if (s.startsWith("S")) Some(position.Left) else None,
-          isSignSeparate = isSignSeparate,
-          wordAlligned = if (sync) Some(position.Right) else None,
-          comp,
-          Some(enc)
-        )
-    }
-    CobolValidators.validateDataType(lineNumber, fieldName, dataType)
-    dataType
-  }
-
-  /**
-    * Tokenizes a copybook to lift the relevant information
-    */
-  def tokenize(cpyBook: String, commentPolicy: CommentPolicy): Array[StatementTokens] = {
-    val tokens = cpyBook
-      // split by line breaks
-      .split("\\r?\\n")
-      .map(
-        line => {
-          val lineTruncated = truncateComments(line, commentPolicy)
-          lineTruncated
-            // remove unnecessary white space
-            .replaceAll("\\s\\s+", " ")
-            // the '.' sybmol inside a PIC meand an explicit decimal point
-            // but also '.' is a stetement separator.
-            // So here we replace '.' inside a PIC by ',' and thread ',' as an explicit decimal point instead
-            .replaceAll("\\.9", ",9")
-            .trim()
-        }
-      )
-      .zipWithIndex
-      .map(v => StatementLine(v._2 + 1, v._1))
-      // ignore commented lines
-      .filterNot(l => l.text.startsWith("*"))
-
-    val tokensSplit = ResplitByStatementSeparator(tokens)
-
-    tokensSplit
-      .map(l => l.copy(text = l.text.replaceAll("^\\s+", "")))
-      // filter out aliases and enumerations
-      .filterNot(l => l.text.startsWith("66") || l.text.startsWith("77") || l.text.startsWith("88") || l.text.trim.isEmpty)
-      .map(l => StatementTokens(l.lineNumber, l.text.trim().split("\\s+")))
-      .toArray
-  }
-
-  /**
-    * Truncate all columns after configured (72th by default) one and
-    * first configured (6 by default) columns (historically for line numbers)
-    */
-  private def truncateComments(copybookLine: String, commentPolicy: CommentPolicy): String = {
-    if (commentPolicy.truncateComments) {
-      if (commentPolicy.commentsUpToChar >= 0 && commentPolicy.commentsAfterChar >= 0) {
-        copybookLine.slice(commentPolicy.commentsUpToChar, commentPolicy.commentsAfterChar)
-      } else {
-        if (commentPolicy.commentsUpToChar >= 0) {
-          copybookLine.drop(commentPolicy.commentsUpToChar)
-        } else {
-          copybookLine.dropRight(commentPolicy.commentsAfterChar)
-        }
-      }
-    } else {
-      copybookLine
-    }
-  }
-
-  /**
-    * This re-splits lines separated by a new line character to lines separated by '.' (COBOL statement separator)
-    */
-  private def ResplitByStatementSeparator(linesIn: Seq[StatementLine]): Seq[StatementLine] = {
-    val linesOut = new ListBuffer[StatementLine]()
-    var partiallLine: String = ""
-    var lastLineNumber = 0
-
-    linesIn.foreach(line => {
-      if (line.text.contains('.')) {
-        val parts = (line.text + " ").split('.')
-        parts.dropRight(1).foreach(p => {
-          linesOut += StatementLine(line.lineNumber, s"${
-            partiallLine.trim
-          } $p")
-          partiallLine = ""
-        })
-        partiallLine = parts.last
-      } else {
-        partiallLine += " " + line.text
-      }
-      lastLineNumber = line.lineNumber
-    })
-    if (partiallLine.trim.nonEmpty) {
-      linesOut += StatementLine(lastLineNumber, partiallLine)
-    }
-    linesOut
-  }
-
-  /** Returns compact level of a binary field */
-  private def getComactLevel(modifiers: Map[String, String]): Option[Int] = {
-    val keywords = modifiers.keys.toList
-    val comp: Option[Int] =
-      if (keywords.contains(COMP123))
-        Some(modifiers.getOrElse(COMP123, "1").toInt)
-      else {
-        if (keywords.contains(COMP) || keywords.contains(COMPUTATIONAL) || keywords.contains(BINARY))
-          Some(4)
-        else
-          None
-      }
-    comp
-  }
-
-  /** Lex the parsed tokens
-    *
-    * @param tokens Tokens to lex
-    * @return lexed properties
-    */
-  @throws(classOf[SyntaxErrorException])
-  def lex(lineNumber: Int, tokens: Array[String]): Map[String, String] = {
-    val keywordsWithModifiers = List(REDEFINES, OCCURS, TO, PIC)
-    val keywordsWithoutModifiers = List(COMP, COMPUTATIONAL, BINARY)
-
-    if (tokens.length < 3) {
-      Map[String, String]()
-    } else {
-      var index = 2
-      val mapAccumulator = mutable.Map[String, String]()
-      while (index < tokens.length) {
-        if (tokens(index) == PIC || tokens(index) == PICTURE) {
-          if (index >= tokens.length - 1) {
-            throw new SyntaxErrorException(lineNumber, "", "PIC should be followed by a pattern")
-          }
-          val pic = fixPic(tokens(index + 1))
-          mapAccumulator += "PIC_ORIGIN" -> pic
-          // Expand PIC, e.g. S9(5) -> S99999
-          mapAccumulator += PIC -> expandPic(pic)
-          index += 1
-        } else if (tokens(index) == REDEFINES) {
-          // Expand REDEFINES, ensure current field redefines the consequent field
-          if (index >= tokens.length - 1) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${
-              tokens(index)
-            } should be followed by a field name")
-          }
-          // Add modifiers with parameters
-          mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 1))
-          index += 1
-        } else if (keywordsWithModifiers.contains(tokens(index))) {
-          if (index >= tokens.length - 1) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier ${
-              tokens(index)
-            } should be followed by a parameter")
-          }
-          // Add modifiers with parameters
-          mapAccumulator += tokens(index) -> tokens(index + 1)
-          index += 1
-        } else if (tokens(index).startsWith(COMP123) || tokens(index).startsWith(COMPUTATIONAL123)) {
-          // Handle COMP-1 / COMP-2 / COMP-3
-          mapAccumulator += COMP123 -> tokens(index).split('-')(1)
-        } else if (tokens(index) == SYNC) {
-          // Handle SYNC
-          mapAccumulator += tokens(index) -> RIGHT
-        } else if (tokens(index) == DEPENDING) {
-          // Handle DEPENDING ON
-          if (index >= tokens.length - 2 || tokens(index + 1) != ON) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier DEPENDING should be followed by ON FIELD")
-          }
-          mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
-          index += 2
-        } else if (tokens(index) == INDEXED) {
-          // Handle INDEXED BY
-          if (index >= tokens.length - 2 || tokens(index + 1) != BY) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier INDEXED should be followed by BY FIELD")
-          }
-          mapAccumulator += tokens(index) -> transformIdentifier(tokens(index + 2))
-          index += 2
-        } else if (tokens(index) == SIGN) {
-          // SIGN [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]
-          val except = new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by [IS] {LEADING|TRAILING} [SEPARATE] [CHARACTER]")
-          if (index >= tokens.length - 1) {
-            throw except
-          }
-          if (tokens(index + 1) == IS) {
-            index += 1
-          }
-          if (index >= tokens.length - 1) {
-            throw except
-          }
-          if (tokens(index + 1) != LEADING && tokens(index + 1) != TRAILING) {
-            throw new SyntaxErrorException(lineNumber, "", s"Modifier SIGN should be followed by either LEADING or TRAILING")
-          }
-          if (tokens(index + 1) == LEADING) {
-            mapAccumulator += SIGN -> LEFT
-          } else {
-            mapAccumulator += SIGN -> RIGHT
-          }
-          if (index < tokens.length - 2 && tokens(index + 2) == SEPARATE) {
-            mapAccumulator += SIGN_SEP -> "true"
-            index += 1
-          }
-          if (index < tokens.length - 2 && tokens(index + 2) == CHARACTER) {
-            index += 1
-          }
-        } else if (keywordsWithoutModifiers.contains(tokens(index))) {
-          // Handle parameterless modifiers (COMP)
-          mapAccumulator += tokens(index) -> ""
-        }
-        index += 1
-      }
-      mapAccumulator.toMap
-    }
-
-  }
-
-  /**
-    * Expands a PIC by replacing parenthesis with a number by the actual symbols.
-    * For example: 99(3).9(2) -> 9999.99
-    *
-    * @param inputPIC An input PIC specification, e.g. "9(5)V9(2)"
-    * @return The expanded version of a PIC value, e.g. "99999V99"
-    */
-  @throws(classOf[IllegalStateException])
-  def expandPic(inputPIC: String): String = {
-    val outputCharacters = new ArrayBuffer[Char]()
-    val repeatCount = new ArrayBuffer[Char]()
-    var parsingCount = false
-    var lastCharacter = ' '
-    for (c <- inputPIC) {
-      if (!parsingCount) {
-        if (c == '(') {
-          parsingCount = true
-        }
-        else {
-          outputCharacters += c
-          lastCharacter = c
-        }
-      } else {
-        if (c == ')') {
-          parsingCount = false
-          val num = repeatCount.mkString("").toInt - 1
-          repeatCount.clear()
-          if (num > 0 && num <= Constants.maxFieldLength) {
-            for (i <- Range(0, num)) {
-              outputCharacters += lastCharacter
-            }
-          } else {
-            // Do nothing if num == 0
-            if (num < 0 || num > Constants.maxFieldLength) {
-              throw new IllegalStateException(s"Incorrect field size of $inputPIC. Supported size is in range from 1 to ${
-                Constants.maxFieldLength
-              }.")
-            }
-          }
-        }
-        else {
-          repeatCount += c
-        }
-      }
-    }
-    val pic = outputCharacters.mkString
-    // 'Z' has the same meaning as '9' from Spark data types perspective
-    pic.replace('Z', '9')
-  }
-
-  /**
-    * Fix PIC according to the actual copybooks being encountered.
-    *
-    * <ul><li>For '`02 FIELD PIC 9(5)USAGE COMP.`' The picture is '`9(5)USAGE`', but should be '`9(5)`'</li></ul>
-    *
-    * @param inputPIC An input PIC specification, e.g. "9(5)V9(2)"
-    * @return The fixed PIC specification
-    */
-  def fixPic(inputPIC: String): String = {
-    // Fix 'PIC 9(5)USAGE' pics
-    if (inputPIC.contains('U')) {
-      inputPIC.split('U').head
-    } else if (inputPIC.contains('u')) {
-      inputPIC.split('u').head
-    } else {
-      inputPIC
-    }
-  }
-
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
   def transformIdentifier(identifier: String): String = {
     identifier
@@ -1037,46 +576,4 @@ object CopybookParser {
       .replaceAll("-", "_")
   }
 
-  /**
-    * Get number of decimal digits given a PIC of a numeric field
-    *
-    * @param s A PIC string
-    * @return A tuple specifying the number of digits before and after decimal separator and the scale factor
-    */
-  def decimalLength(s: String): (Int, Int, Int) = {
-    var str = expandPic(s)
-    val separator = if (str.contains('V')) 'V' else if (str.contains(',')) ',' else '.'
-    val parts = str.split(separator)
-    val nines1 = parts.head.count(_ == '9')
-    val nines2 = if (parts.length > 1) parts.last.count(_ == '9') else 0
-    val scaleFactor = getScaleFactor(str)
-    (nines1, nines2, scaleFactor)
-  }
-
-  private def getScaleFactor(s: String): Int = {
-    val scaleFactorSymbolCount = s.count(_ == 'P')
-    var scalePositive = false
-    if (scaleFactorSymbolCount == 0) {
-      0
-    } else {
-      var nineEncountered = false
-      var scaleEncountered = false
-      var i = 0
-      while (i < s.length) {
-        if (!nineEncountered && !scaleEncountered) {
-          if (s.charAt(i) == '9') {
-            nineEncountered = true
-          }
-          if (s.charAt(i) == 'P') {
-            scaleEncountered = true
-          }
-        }
-        if (nineEncountered && !scaleEncountered) {
-          scalePositive = true
-        }
-        i += 1
-      }
-    }
-    if (scalePositive) scaleFactorSymbolCount else -scaleFactorSymbolCount
-  }
 }

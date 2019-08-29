@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decode
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{COMP3, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
@@ -38,7 +39,7 @@ class UsageInheritanceSpec extends FunSuite {
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
-    assert(compact.get == 3)
+    assert(compact.contains(COMP3()))
   }
 
   test("Test alternative COMP type definition") {
@@ -56,7 +57,7 @@ class UsageInheritanceSpec extends FunSuite {
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
-    assert(compact.get == 3)
+    assert(compact.contains(COMP3()))
   }
 
   test("Test group COMPUTATIONAL USAGE") {
@@ -74,7 +75,7 @@ class UsageInheritanceSpec extends FunSuite {
     val compact = dataType.asInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral].compact
 
     assert(compact.isDefined)
-    assert(compact.get == 4)
+    assert(compact.contains(COMP4()))
   }
 
   test("Test default field USAGE") {

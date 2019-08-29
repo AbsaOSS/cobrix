@@ -19,13 +19,9 @@ package za.co.absa.cobrix.cobol.parser.reader.iterator
 import java.nio.file.{Files, Paths}
 import java.io.FileInputStream
 
-import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.{Statement, Group, Primitive}
-import za.co.absa.cobrix.cobol.parser.common.{DataExtractors, ReservedWords}
+import za.co.absa.cobrix.cobol.parser.common.DataExtractors
 import za.co.absa.cobrix.cobol.parser.Copybook
 
-import scala.collection.mutable.ArrayBuffer
 
 @throws(classOf[IllegalArgumentException])
 class FSRecordIterator (cobolSchema: Copybook, binaryFilePath: String) extends Iterator[Seq[Any]] {

@@ -22,8 +22,8 @@ import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.{Constants, ReservedWords}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral, COMP1, COMP2}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable.ArrayBuffer
@@ -111,13 +111,10 @@ class CobolSchema(val copybook: Copybook,
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
             case d: Decimal =>
-              val computation = d.compact.getOrElse(-1)
-              if (computation == 1) {
-                FloatType
-              } else if (computation == 2) {
-                DoubleType
-              } else {
-                DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
+              d.compact match {
+                case Some(COMP1()) => FloatType
+                case Some(COMP2()) => DoubleType
+                case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
               }
             case _: AlphaNumeric => StringType
             case dt: Integral =>

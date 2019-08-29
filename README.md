@@ -65,6 +65,18 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 Coordinates for Maven POM dependency for the current release:
 
+Current version:
+
+```xml
+<dependency>
+      <groupId>za.co.absa.cobrix</groupId>
+      <artifactId>spark-cobol</artifactId>
+      <version>1.0.0</version>
+</dependency>
+```
+
+The most stable release:
+
 ```xml
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
@@ -79,7 +91,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>1.0.0-SNAPSHOT</version>
+      <version>1.0.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -192,14 +204,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-0.5.6.jar
-* cobol-parser-0.5.6.jar
+* spark-cobol-1.0.0.jar
+* cobol-parser-1.0.0.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-0.5.6.jar,cobol-parser-0.5.6.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.0.0.jar,cobol-parser-1.0.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1059,7 +1071,14 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 0.5.6 released 21 August 2019. This release should be functionally equivalent to 1.0.0 pre-release.
+- #### 1.0.0 released 29 August 2019. 
+  - The parser is completely rewritten in ANTLR by Tiago Requeijo. This provides a lot of benefits, including but not limited to:
+    - This should provide more strict compliance to the COBOL spec.
+    - The parser should now be more robust and maintainable.
+    - Changes to the parser from now on should be less error prone.
+    - Syntax error messages should be more meaningful.
+
+- #### 0.5.6 released 21 August 2019. This release should be functionally equivalent to 1.0.0.
   - Added ability to control truncation of comments when parsing a copybook. Historically the first 6 bytes of a copybook are ignored,
     as well as all characters after position 72. Added options to control this behavior.
   - Added unit tests for the copybook parser covering several exotic cases.

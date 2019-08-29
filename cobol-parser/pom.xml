@@ -22,7 +22,7 @@
     <parent>
         <groupId>za.co.absa.cobrix</groupId>
         <artifactId>cobrix</artifactId>
-        <version>0.5.7-SNAPSHOT</version>
+        <version>1.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -38,6 +38,12 @@
         <dependency>
             <groupId>org.scodec</groupId>
             <artifactId>scodec-core_${scala.compat.version}</artifactId>
+        </dependency>
+        <!-- parser -->
+        <dependency>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.7.2</version>
         </dependency>
         <!-- logging -->
         <dependency>

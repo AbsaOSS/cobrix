@@ -17,9 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.fixedlen.iterator
 
 import org.slf4j.LoggerFactory
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.ReservedWords
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.mutable.ListBuffer
