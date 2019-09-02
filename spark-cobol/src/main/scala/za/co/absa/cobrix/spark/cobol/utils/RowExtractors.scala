@@ -30,11 +30,12 @@ object RowExtractors {
   /**
     * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
     *
-    * @param ast              The parsed copybook
-    * @param data             The data bits containing the record
-    * @param offsetBytes      The offset to the beginning of the record (in bits)
-    * @param generateRecordId If true a record id field will be added as the first field of the record.
-    * @param recordId         The record id to be saved to the record id field
+    * @param ast                  The parsed copybook
+    * @param data                 The data bits containing the record
+    * @param offsetBytes          The offset to the beginning of the record (in bits)
+    * @param variableLengthOccurs If true, OCCURS DEPENDING ON data size will depend on the number of elements
+    * @param generateRecordId     If true a record id field will be added as the first field of the record.
+    * @param recordId             The record id to be saved to the record id field
     * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
     */
   @throws(classOf[IllegalStateException])
@@ -42,6 +43,7 @@ object RowExtractors {
                     data: Array[Byte],
                     offsetBytes: Int = 0,
                     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                    variableLengthOccurs: Boolean = false,
                     generateRecordId: Boolean = false,
                     segmentLevelIds: Seq[Any] = Nil,
                     fileId: Int = 0,
@@ -49,7 +51,7 @@ object RowExtractors {
                     activeSegmentRedefine: String = ""): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
-    def extractArray(field: Statement, useOffset: Int): Array[Any] = {
+    def extractArray(field: Statement, useOffset: Int): (Int, Array[Any]) = {
       val from = 0
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
@@ -63,7 +65,7 @@ object RowExtractors {
       }
 
       var offset = useOffset
-      field match {
+      val arr = field match {
         case grp: Group =>
           val groupValues = new Array[Any](actualSize - from)
           var i = from
@@ -88,6 +90,11 @@ object RowExtractors {
             j += 1
           }
           values
+      }
+      if (variableLengthOccurs) {
+        (offset - useOffset, arr)
+      } else {
+        (field.binaryProperties.actualSize, arr)
       }
     }
 
@@ -123,12 +130,17 @@ object RowExtractors {
       while (i < group.children.length) {
         val field = group.children(i)
         val fieldValue = if (field.isArray) {
-          extractArray(field, bitOffset)
+          val (size, value) = extractArray(field, bitOffset)
+          if (!field.isRedefined) {
+            bitOffset += size
+          }
+          value
         } else {
-          extractValue(field, bitOffset)
-        }
-        if (!field.isRedefined) {
-          bitOffset += field.binaryProperties.actualSize
+          val value = extractValue(field, bitOffset)
+          if (!field.isRedefined) {
+            bitOffset += field.binaryProperties.actualSize
+          }
+          value
         }
         if (!field.isFiller) {
           fields(j) = fieldValue
