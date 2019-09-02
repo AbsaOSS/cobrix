@@ -64,6 +64,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
+  private val variableLengthOccurs = readerProperties.variableSizeOccurs
 
   fetchNext()
 

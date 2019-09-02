@@ -70,6 +70,7 @@ class VarSizeArraysSpecFields extends FunSuite with SparkTestBase with BinaryFil
         .option("copybook_contents", copybook)
         .option("is_xcom", true)
         .option("schema_retention_policy", "collapse_root")
+        .option("variable_size_occurs", "true")
         .load(tmpFileName)
 
       val expected =

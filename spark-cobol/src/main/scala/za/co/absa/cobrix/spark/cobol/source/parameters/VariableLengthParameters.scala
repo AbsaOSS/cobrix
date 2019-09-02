@@ -28,6 +28,7 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
   * @param recordLengthField      A field that stores record length
   * @param fileStartOffset        A number of bytes to skip at the beginning of each file
   * @param fileEndOffset          A number of bytes to skip at the end of each file
+  * @param variableSizeOccurs     If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
   * @param isUsingIndex           Is indexing input file before processing is requested
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
@@ -45,6 +46,7 @@ case class VariableLengthParameters(
                                      recordLengthField:     String,
                                      fileStartOffset:       Int,
                                      fileEndOffset:         Int,
+                                     variableSizeOccurs:    Boolean,
                                      generateRecordId:      Boolean,
                                      isUsingIndex:          Boolean,
                                      inputSplitRecords:     Option[Int],
