@@ -930,6 +930,7 @@ You can change this behaviour if you would like to drop such filler groups by pr
 | .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
 | .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
+| .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
 
 ##### Modifier options
 

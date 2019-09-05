@@ -64,6 +64,7 @@ object CobolParametersParser {
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
   val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
+  val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
 
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
@@ -233,6 +234,7 @@ object CobolParametersParser {
         recordLengthFieldOpt.getOrElse(""),
         fileStartOffset,
         fileEndOffset,
+        params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
         isRecordIdGenerationEnabled,
         params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
@@ -383,9 +385,7 @@ object CobolParametersParser {
       } else {
         logger.error(msg)
       }
-
     }
   }
-
 
 }
