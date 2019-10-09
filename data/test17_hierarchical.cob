@@ -33,12 +33,10 @@
            05  COMPANY.
               10  COMPANY-NAME      PIC X(20).
               10  ADDRESS           PIC X(30).
-              10  TAXPAYER          PIC X(8).
+              10  TAXPAYER          PIC 9(9) BINARY.
            05  DEPT REDEFINES COMPANY.
-              10  FIRST-NAME        PIC X(16).
-              10  LAST-NAME         PIC X(16).
-              10  ADDRESS           PIC X(20).
-              10  PHONE-NUM         PIC X(11).
+              10  DEPT-NAME         PIC X(22).
+              10  EXTENSION         PIC 9(6).
            05  EMPLOYEE REDEFINES COMPANY.
               10  FIRST-NAME        PIC X(16).
               10  LAST-NAME         PIC X(16).

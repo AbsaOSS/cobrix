@@ -48,6 +48,27 @@ object CommonLists {
     Company("\71\72\73\74\75\76\77\100", "0038903321", "2 G. str., Johannesburg")
   )
 
+  val departments: Seq[String] = Seq(
+    "Executive",
+    "Finance",
+    "Operations",
+    "Development",
+    "Sales",
+    "Marketing",
+    "Research",
+    "Risk Management",
+    "Production",
+    "Logistics",
+    "Transportation",
+    "Planning",
+    "Engineering",
+    "Accounting",
+    "Legal",
+    "Compliance",
+    "Creative"
+  )
+
+
   val firstNames: Seq[String] = Seq(
     "Jene",
     "Maya",
@@ -112,6 +133,45 @@ object CommonLists {
     "Tumlin",
     "Celestin",
     "Brandis"
+  )
+
+  val roles: Seq[String] = Seq(
+    "CEO",
+    "CFO",
+    "CTO",
+    "COO",
+    "VP of Sales",
+    "VP of Operations",
+    "VP of Marketing",
+    "VP of Development",
+    "VP of Legal",
+    "VP of Accounting",
+    "director",
+    "managing director",
+    "software developer",
+    "software engineer",
+    "big data engineer",
+    "devops",
+    "support",
+    "project manager",
+    "scrum master",
+    "sales",
+    "copyrightor",
+    "accountant",
+    "analytic",
+    "legal",
+    "assistant",
+    "researcher",
+    "specialist"
+  )
+
+  val contractStates: Seq[String] = Seq(
+    "Unsigned",
+    "Signed",
+    "Progress",
+    "Rejected",
+    "Done",
+    "Archived"
   )
 
 }
