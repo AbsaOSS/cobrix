@@ -65,6 +65,7 @@ class Test17HierarchicalSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
+      .option("pedantic", "true")
       .option("is_record_sequence", "true")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
@@ -80,7 +81,62 @@ class Test17HierarchicalSpec extends FunSuite with SparkTestBase {
       .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = df.schema.json
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    val actualDf = df
+      .orderBy("File_Id", "Record_Id")
+      .toJSON
+      .take(300)
+
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+  }
+
+  test(s"Integration test on $exampleName - segment ids, ebcdic, multisegment, hierarchical") {
+    val expectedSchemaPath = "../data/test17_expected/test17b_schema.json"
+    val actualSchemaPath = "../data/test17_expected/test17b_schema_actual.json"
+    val expectedResultsPath = "../data/test17_expected/test17b.txt"
+    val actualResultsPath = "../data/test17_expected/test17b_actual.txt"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("pedantic", "true")
+      .option("is_record_sequence", "true")
+      .option("generate_record_id", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .option("segment_field", "SEGMENT_ID")
+      .option("redefine_segment_id_map:1", "COMPANY => 1")
+      .option("redefine-segment-id-map:2", "DEPT => 2")
+      .option("redefine-segment-id-map:3", "EMPLOYEE => 3")
+      .option("redefine-segment-id-map:4", "OFFICE => 4")
+      .option("redefine-segment-id-map:5", "CUSTOMER => 5")
+      .option("redefine-segment-id-map:6", "CONTACT => 6")
+      .option("redefine-segment-id-map:7", "CONTRACT => 7")
+      .option("segment-children:1", "COMPANY => DEPT,CUSTOMER")
+      .option("segment-children:2", "DEPT => EMPLOYEE,OFFICE")
+      .option("segment-children:3", "CUSTOMER => CONTACT,CONTRACT")
+
+      .load(inputDataPath)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)

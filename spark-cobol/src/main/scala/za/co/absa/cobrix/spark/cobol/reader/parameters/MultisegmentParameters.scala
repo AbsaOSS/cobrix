@@ -24,5 +24,6 @@ case class MultisegmentParameters(
                                    segmentIdFilter: Option[Seq[String]],      // The list of segment ids to read
                                    segmentLevelIds: Seq[String],              // The list of segment id on corresponding levels
                                    segmentIdPrefix: String,                   // A prefix that will be added to all segment id fields
-                                   segmentIdRedefineMap: Map[String, String]  // Key = a segment id, Value = a redefined field
+                                   segmentIdRedefineMap: Map[String, String], // Key = a segment id, Value = a redefined field
+                                   fieldParentMap: Map[String, String]        // Key = a segment redefined field, Value = a parent field
                                  )
