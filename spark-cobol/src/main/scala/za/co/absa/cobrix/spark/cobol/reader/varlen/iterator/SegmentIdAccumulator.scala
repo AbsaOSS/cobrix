@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 
 final class SegmentIdAccumulator (segmentIds: Seq[String], segmentIdPrefix: String, val fileId: Int) {
-  private val segmentIdsArr = segmentIds.toArray
+  private val segmentIdsArr = segmentIds.toArray.map(_.split(","))
   private val segmentIdCount = segmentIds.size
   private val segmentIdAccumulator = new Array[Long](segmentIdCount + 1)
   private var currentLevel = -1
@@ -77,7 +77,7 @@ final class SegmentIdAccumulator (segmentIds: Seq[String], segmentIdPrefix: Stri
     var level: Option[Int] = None
     var i = 0
     while (level.isEmpty && i<segmentIdCount) {
-      if (id == segmentIdsArr(i))
+      if (segmentIdsArr(i).contains(id))
         level = Some(i)
       i += 1
     }

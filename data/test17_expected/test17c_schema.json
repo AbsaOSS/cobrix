@@ -11,21 +11,6 @@
     "nullable" : false,
     "metadata" : { }
   }, {
-    "name" : "Seg_Id0",
-    "type" : "string",
-    "nullable" : true,
-    "metadata" : { }
-  }, {
-    "name" : "Seg_Id1",
-    "type" : "string",
-    "nullable" : true,
-    "metadata" : { }
-  }, {
-    "name" : "Seg_Id2",
-    "type" : "string",
-    "nullable" : true,
-    "metadata" : { }
-  }, {
     "name" : "SEGMENT_ID",
     "type" : "integer",
     "nullable" : true,
