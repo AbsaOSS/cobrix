@@ -29,6 +29,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 
+import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -105,14 +106,17 @@ object CopybookParser {
       yield transformIdentifier(id)
     ).toSet
 
+    val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
+    validateFieldParentMap(correctedFieldParentMap)
+
     val newTrees = if (dropGroupFillers) {
       calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
         addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-      )), segmentRedefines), fieldParentMap))
+      )), segmentRedefines), correctedFieldParentMap))
     } else {
       calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
         addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-      )), segmentRedefines), fieldParentMap))
+      )), segmentRedefines), correctedFieldParentMap))
     }
 
     new Copybook(newTrees.head.asInstanceOf[Group])
@@ -455,14 +459,20 @@ object CopybookParser {
     */
   @throws(classOf[IllegalStateException])
   def setSegmentParents(originalSchema: MutableCopybook, fieldParentMap: Map[String,String]): MutableCopybook = {
+    val fieldParentMapWithIdfiersCorrected = fieldParentMap.map {
+      case (k, v) =>
+        val newKey = transformIdentifier(k)
+        val newValue = transformIdentifier(v)
+        (newKey, newValue)
+    }
     val rootSegments = ListBuffer[String]()
     val redefinedFields = getAllSegmentRedefines(originalSchema.head.asInstanceOf[Group])
 
     def getParentField(childName: String): Option[Group] = {
-      fieldParentMap
+      fieldParentMapWithIdfiersCorrected
         .get(childName)
         .map(field => {
-          val parentOpt = redefinedFields.find(_.name == field)
+          val parentOpt = redefinedFields.find(f => f.name == field)
           parentOpt match {
             case Some(group) => group
             case _ => throw new IllegalStateException(s"Field $field is specified to be the parent of $childName, " +
@@ -478,7 +488,7 @@ object CopybookParser {
         case group: Group =>
           if (group.isSegmentRedefine) {
             val newGroup = group.withUpdatedParentSegment(getParentField(group.name))
-            if (group.parentSegment.isEmpty) {
+            if (newGroup.parentSegment.isEmpty) {
               rootSegments += group.name
             }
             newGroup
@@ -507,13 +517,16 @@ object CopybookParser {
         val rootSegmentsStr = rootSegments.mkString(", ")
         throw new IllegalStateException(s"Only one root segment is allowed. Found root segments: [ $rootSegmentsStr ]. ")
       }
+      if (rootSegments.isEmpty) {
+        throw new IllegalStateException(s"No root segment found in the segment parent-child map.")
+      }
     }
 
     if (fieldParentMap.isEmpty) {
       originalSchema
     } else {
-
       val newSchema = processRootLevelFields(originalSchema.head.asInstanceOf[Group].children)
+      validateRootSegments()
       ArrayBuffer(originalSchema.head.asInstanceOf[Group].copy(children = newSchema)(None))
     }
   }
@@ -682,6 +695,57 @@ object CopybookParser {
     identifier
       .replaceAll(":", "")
       .replaceAll("-", "_")
+  }
+
+  /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
+  def transformIdentifierMap(identifierMap: Map[String,String]): Map[String,String] = {
+    identifierMap.map {
+      case (k, v) =>
+        val newKey = transformIdentifier(k)
+        val newValue = transformIdentifier(v)
+        (newKey, newValue)
+    }
+  }
+
+  /**
+    * Finds a cycle in a parent-child relation map.
+    *
+    * @param m A mapping from field name to its parent field name.
+    * @return A list of fields in a cycle if there is one, an empty list otherwise
+    */
+  private def findCycleIntAMap(m: Map[String, String]): List[String] = {
+    @tailrec
+    def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
+      val path = field :: fieldsInPath
+      if (fieldsInPath.contains(field)) {
+        path
+      } else {
+        m.get(field) match {
+          case Some(parent) => findCycleHelper(parent, path)
+          case None => Nil
+        }
+      }
+    }
+
+    m.collectFirst {
+      case (k, _) if findCycleHelper(k, Nil).nonEmpty => findCycleHelper(k, Nil)
+    }.getOrElse(List[String]())
+  }
+
+  /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
+  private def validateFieldParentMap(identifierMap: Map[String, String]): Unit = {
+    identifierMap.foreach {
+      case (k, v) =>
+        if (k.equalsIgnoreCase(v)) {
+          throw new IllegalStateException(s"A segment $k cannot be a parent of itself.")
+        }
+    }
+
+    val cycle = findCycleIntAMap(identifierMap)
+    if (cycle.nonEmpty) {
+      val listStr = cycle.mkString(", ")
+      throw new IllegalStateException(s"Segments parent-child relation form a cycle: $listStr.")
+    }
   }
 
 }
