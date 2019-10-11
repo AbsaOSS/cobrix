@@ -29,6 +29,7 @@ import scala.collection.mutable
   * @param redefines         A name of a field which is redefined by this one
   * @param isRedefined       Is the field redefined by an other field
   * @param isSegmentRedefine Is the field corresponds to one of the segments (it should be a redefine)
+  * @param parentSegment     Specifies a parent segment for a segment redefine in hierarchical files
   * @param occurs            The number of elements in an fixed size array / minimum items in variable-sized array
   * @param to                The maximum number of items in a variable size array
   * @param dependingOn       A field which specifies size of the array in a record
@@ -46,6 +47,7 @@ case class Group(
                   redefines: Option[String] = None,
                   isRedefined: Boolean = false,
                   isSegmentRedefine: Boolean = false,
+                  parentSegment: Option[Group] = None,
                   occurs: Option[Int] = None,
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
@@ -93,6 +95,11 @@ case class Group(
   /** Returns the original AST element with updated `isSegmentRedefine` flag */
   def withUpdatedIsSegmentRedefine(newIsSegmentRedefine: Boolean): Group = {
     copy(isSegmentRedefine = newIsSegmentRedefine)(parent)
+  }
+
+  /** Returns the original AST element with updated `isSegmentRedefine` flag */
+  def withUpdatedParentSegment(newParentSegmentOpt: Option[Group]): Group = {
+    copy(parentSegment = newParentSegmentOpt)(parent)
   }
 
 }
