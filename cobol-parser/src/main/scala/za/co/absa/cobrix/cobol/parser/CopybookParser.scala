@@ -713,12 +713,15 @@ object CopybookParser {
     * @param m A mapping from field name to its parent field name.
     * @return A list of fields in a cycle if there is one, an empty list otherwise
     */
-  private def findCycleIntAMap(m: Map[String, String]): List[String] = {
+  def findCycleIntAMap(m: Map[String, String]): List[String] = {
     @tailrec
     def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
       val path = field :: fieldsInPath
       if (fieldsInPath.contains(field)) {
-        path
+        // dropping fields that precede the cycle
+        val i = fieldsInPath.indexOf(field)
+        val cycle = path.take(i + 2)
+        cycle.reverse
       } else {
         m.get(field) match {
           case Some(parent) => findCycleHelper(parent, path)
