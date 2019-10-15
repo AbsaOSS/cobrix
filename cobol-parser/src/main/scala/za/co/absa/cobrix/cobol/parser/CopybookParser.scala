@@ -440,18 +440,12 @@ object CopybookParser {
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def setSegmentParents(originalSchema: MutableCopybook, fieldParentMap: Map[String,String]): MutableCopybook = {
-    val fieldParentMapWithIdfiersCorrected = fieldParentMap.map {
-      case (k, v) =>
-        val newKey = transformIdentifier(k)
-        val newValue = transformIdentifier(v)
-        (newKey, newValue)
-    }
+  def setSegmentParents(originalSchema: CopybookAST, fieldParentMap: Map[String,String]): CopybookAST = {
     val rootSegments = ListBuffer[String]()
-    val redefinedFields = getAllSegmentRedefines(originalSchema.head.asInstanceOf[Group])
+    val redefinedFields = getAllSegmentRedefines(originalSchema)
 
     def getParentField(childName: String): Option[Group] = {
-      fieldParentMapWithIdfiersCorrected
+      fieldParentMap
         .get(childName)
         .map(field => {
           val parentOpt = redefinedFields.find(f => f.name == field)
@@ -479,19 +473,10 @@ object CopybookParser {
               throw new IllegalStateException("Parent field is defined for a field that is not a segment redefine. " +
               s"Field: '${group.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
             }
-            group
+            processGroupFields(group)
           }
       }
       group.copy(children = childrenWithSegmentRedefines)(group.parent)
-    }
-
-    def processRootLevelFields(copybook: MutableCopybook): MutableCopybook = {
-      copybook.map {
-        case p: Primitive =>
-          p
-        case g: Group =>
-          processGroupFields(g)
-      }
     }
 
     def validateRootSegments(): Unit = {
@@ -507,9 +492,9 @@ object CopybookParser {
     if (fieldParentMap.isEmpty) {
       originalSchema
     } else {
-      val newSchema = processRootLevelFields(originalSchema.head.asInstanceOf[Group].children)
+      val newSchema = processGroupFields(originalSchema)
       validateRootSegments()
-      ArrayBuffer(originalSchema.head.asInstanceOf[Group].copy(children = newSchema)(None))
+      newSchema
     }
   }
 
