@@ -41,7 +41,6 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 object CopybookParser {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  type MutableCopybook = mutable.ArrayBuffer[Statement]
   type CopybookAST = Group
 
   case class StatementLine(lineNumber: Int, text: String)
@@ -100,34 +99,34 @@ object CopybookParser {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
-    val schemaANTLR: MutableCopybook = ArrayBuffer(ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat))
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
     ).toSet
-
+    
     val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
     validateFieldParentMap(correctedFieldParentMap)
 
-    val newTrees = if (dropGroupFillers) {
-      calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-      )), segmentRedefines), correctedFieldParentMap))
-    } else {
-      calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-        addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-      )), segmentRedefines), correctedFieldParentMap))
-    }
-
-    new Copybook(newTrees.head.asInstanceOf[Group])
+    new Copybook(
+      if (dropGroupFillers) {
+        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+        )), segmentRedefines), correctedFieldParentMap))
+      } else {
+        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+        )), segmentRedefines), correctedFieldParentMap))
+      }
+    )
   }
 
-  private def addNonTerminals(copybook: MutableCopybook, nonTerminals: Set[String],
+  private def addNonTerminals(copybook: CopybookAST, nonTerminals: Set[String],
                               enc: Encoding,
                               stringTrimmingPolicy: StringTrimmingPolicy,
                               ebcdicCodePage: CodePage,
                               floatingPointFormat: FloatingPointFormat
-                             ): MutableCopybook = {
+                             ): CopybookAST = {
 
     def getNonTerminalName(name: String, parent: Group): String = {
       val existingNames = parent.children.map{
@@ -144,23 +143,20 @@ object CopybookParser {
       wantedName
     }
 
-    val newCopybook: MutableCopybook = new ArrayBuffer()
-    for(stmt <- copybook) {
+    val newChildren: ArrayBuffer[Statement] = new ArrayBuffer[Statement]()
+    for(stmt <- copybook.children) {
       stmt match {
-        case s: Primitive => newCopybook.append(s)
+        case s: Primitive => newChildren.append(s)
         case g: Group => {
           if (nonTerminals contains g.name) {
-            newCopybook.append(
-              g.copy(
-                children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat),
-                isRedefined = true
-              )(g.parent)
+            newChildren.append(
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
             val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
             val newName = getNonTerminalName(g.name, g.parent.get)
-            newCopybook.append(
+            newChildren.append(
               Primitive(
                 g.level, newName, g.lineNumber,
                 dataType,
@@ -171,57 +167,38 @@ object CopybookParser {
             )
           }
           else
-            newCopybook.append(
-              g.copy(children = addNonTerminals(g.children, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat))(g.parent)
+            newChildren.append(
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
             )
         }
       }
     }
-    newCopybook
+    copybook.copy(children = newChildren)(copybook.parent)
   }
 
   /** Calculate binary properties based on the whole AST
     *
-    * @param originalSchema An AST as a set of copybook records
+    * @param ast An AST as a set of copybook records
     * @return The same AST with binary properties set for every field
     */
-  def calculateBinaryProperties(originalSchema: MutableCopybook): MutableCopybook = {
-    val schema = calculateSchemaSizes(originalSchema)
-    getSchemaWithOffsets(0, schema)
+  def calculateBinaryProperties(ast: CopybookAST): CopybookAST = {
+    getSchemaWithOffsets(0, calculateSchemaSizes(ast))
   }
 
   /**
-    * Calculate binary properties for a mutble Cobybook schema which is just an array of AST objects
+    * Calculate binary properties for a mutable Cobybook schema which is just an array of AST objects
     *
-    * @param subSchema An array of AST objects
+    * @param ast An array of AST objects
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[SyntaxErrorException])
-  def calculateSchemaSizes(subSchema: MutableCopybook): MutableCopybook = {
-
-    def calculateGroupSize(originalGroup: Group): Group = {
-      val children: MutableCopybook = calculateSchemaSizes(originalGroup.children)
-      val groupSize = (for (child <- children if child.redefines.isEmpty) yield child.binaryProperties.actualSize).sum
-      val groupSizeAllOccurs = groupSize * originalGroup.arrayMaxSize
-      val newBinProps = BinaryProperties(originalGroup.binaryProperties.offset, groupSize, groupSizeAllOccurs)
-      originalGroup.withUpdatedChildren(children).withUpdatedBinaryProperties(newBinProps)
-    }
-
-    def calculatePrimitiveSize(originalPrimitive: Primitive): Primitive = {
-      val size = originalPrimitive.getBinarySizeBytes
-      val sizeAllOccurs = size * originalPrimitive.arrayMaxSize
-      val binProps = BinaryProperties(originalPrimitive.binaryProperties.offset, size, sizeAllOccurs)
-      originalPrimitive.withUpdatedBinaryProperties(binProps)
-    }
-
-    val newSchema: MutableCopybook = new MutableCopybook()
+  def calculateSchemaSizes(ast: CopybookAST): CopybookAST = {
+    val newChildren: mutable.ArrayBuffer[Statement] = new mutable.ArrayBuffer[Statement]()
     val redefinedSizes = new mutable.ArrayBuffer[Int]()
     val redefinedNames = new mutable.HashSet[String]()
 
     // Calculate sizes of all elements of the AST array
-    for (i <- subSchema.indices) {
-      val child = subSchema(i)
-
+    for ((child, i) <- ast.children.zipWithIndex) {
       child.redefines match {
         case None =>
           redefinedSizes.clear()
@@ -233,53 +210,55 @@ object CopybookParser {
           if (!redefinedNames.contains(redefines.toUpperCase)) {
             throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
           }
-          newSchema(i - 1) = newSchema(i - 1).withUpdatedIsRedefined(newIsRedefined = true)
+          newChildren(i - 1) = newChildren(i - 1).withUpdatedIsRedefined(newIsRedefined = true)
       }
 
       val childWithSizes = child match {
-        case group: Group => calculateGroupSize(group)
-        case st: Primitive => calculatePrimitiveSize(st)
+        case group: Group => calculateSchemaSizes(group)
+        case st: Primitive => {
+          val size = st.getBinarySizeBytes
+          val sizeAllOccurs = size * st.arrayMaxSize
+          val binProps = BinaryProperties(st.binaryProperties.offset, size, sizeAllOccurs)
+          st.withUpdatedBinaryProperties(binProps)
+        }
       }
       redefinedSizes += childWithSizes.binaryProperties.actualSize
       redefinedNames += childWithSizes.name.toUpperCase
-      newSchema += childWithSizes
+      newChildren += childWithSizes
       if (child.redefines.nonEmpty) {
         // Calculate maximum redefine size
         val maxSize = redefinedSizes.max
         for (j <- redefinedSizes.indices) {
-          val updatedBinProps = newSchema(i - j).binaryProperties.copy(actualSize = maxSize)
-          val updatedChild = newSchema(i - j).withUpdatedBinaryProperties(updatedBinProps)
-          newSchema(i - j) = updatedChild
+          val updatedBinProps = newChildren(i - j).binaryProperties.copy(actualSize = maxSize)
+          val updatedChild = newChildren(i - j).withUpdatedBinaryProperties(updatedBinProps)
+          newChildren(i - j) = updatedChild
         }
       }
     }
-    newSchema
+
+    val groupSize = (for (child <- newChildren if child.redefines.isEmpty) yield child.binaryProperties.actualSize).sum
+    val groupSizeAllOccurs = groupSize * ast.arrayMaxSize
+    val newBinProps = BinaryProperties(ast.binaryProperties.offset, groupSize, groupSizeAllOccurs)
+    ast.withUpdatedChildren(newChildren).withUpdatedBinaryProperties(newBinProps)
   }
 
   /**
     * Calculate binary offsets for a mutable Cobybook schema which is just an array of AST objects
     *
-    * @param subSchema An array of AST objects
+    * @param ast An array of AST objects
     * @return The same AST with all offsets set for every field
     */
-  def getSchemaWithOffsets(bitOffset: Int, subSchema: MutableCopybook): MutableCopybook = {
-
-    def getGroupWithOffsets(bitOffset: Int, group: Group): Group = {
-      val newChildern = getSchemaWithOffsets(bitOffset, group.children)
-      val binProps = BinaryProperties(bitOffset, group.binaryProperties.dataSize, group.binaryProperties.actualSize)
-      group.withUpdatedChildren(newChildern).withUpdatedBinaryProperties(binProps)
-    }
-
+  def getSchemaWithOffsets(bitOffset: Int, ast: CopybookAST): CopybookAST = {
     var offset = bitOffset
     var redefinedOffset = bitOffset
-    val newSchema = for (field <- subSchema) yield {
+    val newChildren = for (field <- ast.children) yield {
       val useOffset = if (field.redefines.isEmpty) {
         redefinedOffset = offset
         offset
       } else redefinedOffset
       val newField = field match {
         case grp: Group =>
-          getGroupWithOffsets(useOffset, grp)
+          getSchemaWithOffsets(useOffset, grp)
         case st: Primitive =>
           val binProps = BinaryProperties(useOffset, st.binaryProperties.dataSize, st.binaryProperties.actualSize)
           st.withUpdatedBinaryProperties(binProps)
@@ -290,17 +269,18 @@ object CopybookParser {
       }
       newField
     }
-    newSchema
+    val binProps = BinaryProperties(bitOffset, ast.binaryProperties.dataSize, ast.binaryProperties.actualSize)
+    ast.withUpdatedChildren(newChildren).withUpdatedBinaryProperties(binProps)
   }
 
   /**
     * Sets isDependee attribute for fields in the schema which are used by other fields in DEPENDING ON clause
     *
-    * @param originalSchema An AST as a set of copybook records
+    * @param ast An AST as a set of copybook records
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def markDependeeFields(originalSchema: MutableCopybook): MutableCopybook = {
+  def markDependeeFields(ast: CopybookAST): CopybookAST = {
     val flatFields = new mutable.ArrayBuffer[Primitive]()
     val dependees = new mutable.HashSet[Primitive]()
 
@@ -317,24 +297,24 @@ object CopybookParser {
       dependees ++= foundFields
     }
 
-    def traverseDepends(subSchema: MutableCopybook): Unit = {
-      for (field <- subSchema) {
+    def traverseDepends(group: CopybookAST): Unit = {
+      for (field <- group.children) {
         field.dependingOn.foreach(name => addDependeeField(name))
         field match {
-          case grp: Group => traverseDepends(grp.children)
+          case grp: Group => traverseDepends(grp)
           case st: Primitive => flatFields += st
         }
       }
     }
 
     def markDependeesForGroup(group: Group): Group = {
-      val newChildren = markDependees(group.children)
-      var groupWithMarkedDependees = group.copy(children = newChildren)(group.parent)
+      val newChildren = markDependees(group)
+      var groupWithMarkedDependees = group.copy(children = newChildren.children)(group.parent)
       groupWithMarkedDependees
     }
 
-    def markDependees(subSchema: MutableCopybook): MutableCopybook = {
-      val newSchema = for (field <- subSchema) yield {
+    def markDependees(group: CopybookAST): CopybookAST = {
+      val newChildren = for (field <- group.children) yield {
         val newField: Statement = field match {
           case grp: Group => markDependeesForGroup(grp)
           case primitive: Primitive =>
@@ -351,11 +331,11 @@ object CopybookParser {
         }
         newField
       }
-      newSchema
+      group.copy(children = newChildren)(group.parent)
     }
 
-    traverseDepends(originalSchema)
-    markDependees(originalSchema)
+    traverseDepends(ast)
+    markDependees(ast)
   }
 
   /**
@@ -368,12 +348,12 @@ object CopybookParser {
     * * All segment fields should belong to the level 1 (one level down record root level)
     * * A segment redefine cannot be inside an array
     *
-    * @param originalSchema   An AST as a set of copybook records
+    * @param ast   An AST as a set of copybook records
     * @param segmentRedefines The list of fields names that correspond to segment GROUPs.
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def markSegmentRedefines(originalSchema: MutableCopybook, segmentRedefines: Seq[String]): MutableCopybook = {
+  def markSegmentRedefines(ast: CopybookAST, segmentRedefines: Seq[String]): CopybookAST = {
     var foundRedefines = new mutable.HashSet[String]
     val transformedSegmentRedefines = segmentRedefines.map(transformIdentifier)
     val allowNonRedefines = segmentRedefines.lengthCompare(1) == 0
@@ -417,13 +397,15 @@ object CopybookParser {
       group.copy(children = childrenWithSegmentRedefines)(group.parent)
     }
 
-    def processRootLevelFields(copybook: MutableCopybook): MutableCopybook = {
-      copybook.map {
-        case p: Primitive =>
-          p
-        case g: Group =>
-          processGroupFields(g)
-      }
+    def processRootLevelFields(group: CopybookAST): CopybookAST = {
+      group.withUpdatedChildren(
+        group.children.map {
+          case p: Primitive =>
+            p
+          case g: Group =>
+            processGroupFields(g)
+        }
+      )
     }
 
     def validateAllSegmentsFound(): Unit = {
@@ -436,11 +418,11 @@ object CopybookParser {
     }
 
     if (segmentRedefines.isEmpty) {
-      originalSchema
+      ast
     } else {
-      val newSchema = processRootLevelFields(originalSchema.head.asInstanceOf[Group].children)
+      val newSchema = processRootLevelFields(ast)
       validateAllSegmentsFound()
-      ArrayBuffer(originalSchema.head.asInstanceOf[Group].copy(children=newSchema)(None))
+      ast.withUpdatedChildren(newSchema.children)
     }
   }
 
@@ -560,48 +542,48 @@ object CopybookParser {
     * Rename group fillers so filed names in the scheme doesn't repeat
     * Also, remove all group fillers that doesn't have child nodes
     *
-    * @param originalSchema An AST as a set of copybook records
+    * @param ast An AST as a set of copybook records
     * @return The same AST with group fillers renamed
     */
-  private def renameGroupFillers(originalSchema: MutableCopybook): MutableCopybook = {
+  private def renameGroupFillers(ast: CopybookAST): CopybookAST = {
     var lastFillerIndex = 0
 
     def renameSubGroupFillers(group: Group): Group = {
-      val (newChildren, hasNonFillers) = renameFillers(group.children)
-      var renamedGroup = if (hasNonFillers) {
+      val (newChildren, hasNonFillers) = renameFillers(group)
+      val renamedGroup = if (hasNonFillers) {
         if (group.isFiller) {
           lastFillerIndex += 1
           group.copy(name = s"${
             Constants.FILLER
-          }_$lastFillerIndex", children = newChildren, isFiller = false)(group.parent)
+          }_$lastFillerIndex", children = newChildren.children, isFiller = false)(group.parent)
         } else {
-          group.copy(children = newChildren)(group.parent)
+          group.withUpdatedChildren(newChildren.children)
         }
       } else {
         // All the children are fillers
-        group.copy(children = newChildren, isFiller = true)(group.parent)
+        group.copy(children = newChildren.children, isFiller = true)(group.parent)
       }
       renamedGroup
     }
 
-    def renameFillers(subSchema: MutableCopybook): (MutableCopybook, Boolean) = {
-      val newSchema = ArrayBuffer[Statement]()
+    def renameFillers(group: CopybookAST): (CopybookAST, Boolean) = {
+      val newChildren = ArrayBuffer[Statement]()
       var hasNonFillers = false
-      subSchema.foreach {
+      group.children.foreach {
         case grp: Group =>
           val newGrp = renameSubGroupFillers(grp)
           if (newGrp.children.nonEmpty) {
-            newSchema += newGrp
+            newChildren += newGrp
           }
           if (!grp.isFiller) hasNonFillers = true
         case st: Primitive =>
-          newSchema += st
+          newChildren += st
           if (!st.isFiller) hasNonFillers = true
       }
-      (newSchema, hasNonFillers)
+      (group.withUpdatedChildren(newChildren), hasNonFillers)
     }
 
-    val (newSchema, hasNonFillers) = renameFillers(originalSchema)
+    val (newSchema, hasNonFillers) = renameFillers(ast)
     if (!hasNonFillers) {
       throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
     }
@@ -615,38 +597,37 @@ object CopybookParser {
     * <li>Remove all groups that don't have child nodes.</li>
     * </ul>
     *
-    * @param originalSchema An AST as a set of copybook records
+    * @param ast An AST as a set of copybook records
     * @return The same AST with group fillers processed
     */
-  private def processGroupFillers(originalSchema: MutableCopybook): MutableCopybook = {
-    var lastFillerIndex = 0
+  private def processGroupFillers(ast: CopybookAST): CopybookAST = {
 
     def processSubGroupFillers(group: Group): Group = {
-      val (newChildren, hasNonFillers) = processFillers(group.children)
+      val (newChildren, hasNonFillers) = processFillers(group)
       if (hasNonFillers)
-        group.copy(children = newChildren)(group.parent)
+        group.copy(children = newChildren.children)(group.parent)
       else
-        group.copy(children = newChildren, isFiller = true)(group.parent)
+        group.copy(children = newChildren.children, isFiller = true)(group.parent)
     }
 
-    def processFillers(subSchema: MutableCopybook): (MutableCopybook, Boolean) = {
-      val newSchema = ArrayBuffer[Statement]()
+    def processFillers(group: CopybookAST): (CopybookAST, Boolean) = {
+      val newChildren = ArrayBuffer[Statement]()
       var hasNonFillers = false
-      subSchema.foreach {
+      group.children.foreach {
         case grp: Group =>
           val newGrp = processSubGroupFillers(grp)
           if (newGrp.children.nonEmpty) {
-            newSchema += newGrp
+            newChildren += newGrp
           }
           if (!grp.isFiller) hasNonFillers = true
         case st: Primitive =>
-          newSchema += st
+          newChildren += st
           if (!st.isFiller) hasNonFillers = true
       }
-      (newSchema, hasNonFillers)
+      (group.withUpdatedChildren(newChildren), hasNonFillers)
     }
 
-    val (newSchema, hasNonFillers) = processFillers(originalSchema)
+    val (newSchema, hasNonFillers) = processFillers(ast)
     if (!hasNonFillers) {
       throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
     }
@@ -656,14 +637,14 @@ object CopybookParser {
   /**
     * For each group calculates the number of non-filler items
     *
-    * @param originalSchema An AST as a set of copybook records
+    * @param ast An AST as a set of copybook records
     * @return The same AST with non-filler size set for each group
     */
-  private def calculateNonFillerSizes(originalSchema: MutableCopybook): MutableCopybook = {
+  private def calculateNonFillerSizes(ast: CopybookAST): CopybookAST = {
     var lastFillerIndex = 0
 
     def calcSubGroupNonFillers(group: Group): Group = {
-      val newChildren = calcNonFillers(group.children)
+      val newChildren = calcNonFillers(group)
       var i = 0
       var nonFillers = 0
       while (i < group.children.length) {
@@ -671,23 +652,23 @@ object CopybookParser {
           nonFillers += 1
         i += 1
       }
-      group.copy(nonFillerSize = nonFillers, children = newChildren)(group.parent)
+      group.copy(nonFillerSize = nonFillers, children = newChildren.children)(group.parent)
     }
 
-    def calcNonFillers(subSchema: MutableCopybook): MutableCopybook = {
-      val newSchema = ArrayBuffer[Statement]()
-      subSchema.foreach {
+    def calcNonFillers(group: CopybookAST): CopybookAST = {
+      val newChildren = ArrayBuffer[Statement]()
+      group.children.foreach {
         case grp: Group =>
           val newGrp = calcSubGroupNonFillers(grp)
           if (newGrp.children.nonEmpty) {
-            newSchema += newGrp
+            newChildren += newGrp
           }
-        case st: Primitive => newSchema += st
+        case st: Primitive => newChildren += st
       }
-      newSchema
+      group.withUpdatedChildren(newChildren)
     }
 
-    calcNonFillers(originalSchema)
+    calcNonFillers(ast)
   }
 
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */

@@ -31,9 +31,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
   def getCobolSchema: CopybookAST = ast
 
   lazy val getRecordSize: Int = {
-    val last = ast
-    val sizeInBytes = last.binaryProperties.offset + last.binaryProperties.actualSize
-    sizeInBytes
+    ast.binaryProperties.offset + ast.binaryProperties.actualSize
   }
 
   def isRecordFixedSize: Boolean = true
@@ -250,8 +248,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       throw new RuntimeException("All elements of the root element must be record groups.")
 
     val newRoot = ast.children.head.asInstanceOf[Group].copy()(None)
-    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
-    new Copybook(schema.head.asInstanceOf[Group])
+    new Copybook(CopybookParser.calculateBinaryProperties(newRoot))
   }
 
   def restrictTo(fieldName: String): Copybook = {
@@ -259,8 +256,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     if (stmt.isInstanceOf[Primitive])
       throw new RuntimeException("Can only restrict the copybook to a group element.")
     val newRoot = Group.root.copy(children = mutable.ArrayBuffer(stmt))(None)
-    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
-    new Copybook(schema.head.asInstanceOf[Group])
+    val schema = CopybookParser.calculateBinaryProperties(newRoot)
+    new Copybook(schema)
   }
 }
 
@@ -320,8 +317,8 @@ object Copybook {
     }
 
     // recompute sizes
-    val schema = CopybookParser.calculateBinaryProperties(ArrayBuffer(newRoot))
+    val schema = CopybookParser.calculateBinaryProperties(newRoot)
 
-    new Copybook(schema.head.asInstanceOf[Group])
+    new Copybook(schema)
   }
 }

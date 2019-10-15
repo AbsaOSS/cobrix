@@ -36,7 +36,7 @@ pipeline {
     stages {
         stage ('Build') {
             steps {
-                sh "mvn clean package -Ppublic"
+                sh "mvn clean package -Ppublic --no-transfer-progress"
             }
         }
     }
