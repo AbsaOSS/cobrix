@@ -504,7 +504,7 @@ object CopybookParser {
     * @param schema An AST as a set of copybook records
     * @return A list of segment redefine GROUPs
     */
-  private def getAllSegmentRedefines(schema: CopybookAST): List[Group] = {
+  def getAllSegmentRedefines(schema: CopybookAST): List[Group] = {
     val redefinedFields = ListBuffer[Group]()
 
     def processGroupFields(group: Group): Unit = {
