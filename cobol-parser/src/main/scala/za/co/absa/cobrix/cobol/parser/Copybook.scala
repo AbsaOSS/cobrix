@@ -36,6 +36,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   def isRecordFixedSize: Boolean = true
 
+  def getAllSegmentRedefines: List[CopybookAST] = CopybookParser.getAllSegmentRedefines(ast)
 
   /**
     * Get the AST object of a field by name.
