@@ -522,6 +522,22 @@ object CopybookParser {
     redefinedFields.toList
   }
 
+  /**
+    * Given an AST of a copybook returns a new AST that does not contain child segments
+    *
+    * @param schema An AST as a set of copybook records
+    * @return A list of segment redefine GROUPs
+    */
+  def getRootSegmentAST(schema: CopybookAST): CopybookAST = {
+    val newChildren: ArrayBuffer[Statement] = schema.children.collect {
+      case p: Primitive =>
+        p
+      case g: Group if g.parentSegment.isEmpty =>
+        getRootSegmentAST(g)
+    }
+    schema.withUpdatedChildren(newChildren)
+  }
+
 
   /**
     * Rename group fillers so filed names in the scheme doesn't repeat

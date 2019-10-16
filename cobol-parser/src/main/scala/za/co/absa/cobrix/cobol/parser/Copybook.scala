@@ -38,6 +38,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   def getAllSegmentRedefines: List[CopybookAST] = CopybookParser.getAllSegmentRedefines(ast)
 
+  def getRootSegmentAST: CopybookAST = CopybookParser.getRootSegmentAST(ast)
+
   /**
     * Get the AST object of a field by name.
     *
