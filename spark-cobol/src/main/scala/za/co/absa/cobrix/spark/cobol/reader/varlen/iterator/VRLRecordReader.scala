@@ -51,7 +51,7 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = startingFileOffset
-  private var recordIndex = startRecordId
+  private var recordIndex = startRecordId - 1
   private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
@@ -67,6 +67,7 @@ class VRLRecordReader(cobolSchema: Copybook,
       case None => throw new NoSuchElementException
       case Some(value) =>
         fetchNext()
+        recordIndex = recordIndex + 1
         value
     }
   }
@@ -92,7 +93,6 @@ class VRLRecordReader(cobolSchema: Copybook,
           cachedValue = Some(segmentIdStr, data)
           recordFetched = true
       }
-      recordIndex = recordIndex + 1
     }
   }
 

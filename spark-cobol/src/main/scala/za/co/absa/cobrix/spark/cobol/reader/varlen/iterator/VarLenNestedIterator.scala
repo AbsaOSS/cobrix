@@ -52,7 +52,6 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
 
   private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, startRecordId, startingFileOffset)
 
-  private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
   private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
@@ -99,13 +98,12 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
                 readerProperties.generateRecordId,
                 segmentLevelIds,
                 fileId,
-                recordIndex,
+                rawRecordIterator.getRecordIndex,
                 activeSegmentRedefine = segmentRedefine
               ))
 
               recordFetched = true
             }
-            recordIndex = recordIndex + 1
         }
       } else {
         cachedValue = None
@@ -119,7 +117,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def getSegmentLevelIds(segmentId: String): Seq[String] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
-      acc.acquiredSegmentId(segmentId, recordIndex)
+      acc.acquiredSegmentId(segmentId, rawRecordIterator.getRecordIndex)
       val ids = new ListBuffer[String]
       var i = 0
       while (i < segmentLevelIdsCount) {
