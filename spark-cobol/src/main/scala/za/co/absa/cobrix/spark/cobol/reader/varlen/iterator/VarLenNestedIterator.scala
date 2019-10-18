@@ -50,20 +50,15 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
                                  startingFileOffset: Long,
                                  segmentIdPrefix: String) extends Iterator[Row] {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, startRecordId, startingFileOffset)
 
-  private val copyBookRecordSize = cobolSchema.getRecordSize
-  private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
-  private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
-  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
   private val segmentIdAccumulator = readerProperties.multisegment.map(p => new SegmentIdAccumulator(p.segmentLevelIds, segmentIdPrefix, fileId))
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
-  private val recordLengthAdjustment = readerProperties.rdwAdjustment
 
   fetchNext()
 
@@ -84,117 +79,43 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private def fetchNext(): Unit = {
     var recordFetched = false
     while (!recordFetched) {
-      val binaryData = if (readerProperties.isRecordSequence || lengthField.isEmpty) {
-        fetchRecordUsingRdwHeaders()
-      } else {
-        fetchRecordUsingRecordLengthField()
-      }
+      if (rawRecordIterator.hasNext) {
+        val record = rawRecordIterator.next()
 
-      binaryData match {
-        case None =>
-          cachedValue = None
-          recordFetched = true
-        case Some(data) =>
-          val segmentId = getSegmentId(data)
-          val segmentIdStr = segmentId.getOrElse("")
-          val segmentLevelIds = getSegmentLevelIds(segmentIdStr)
+        record match {
+          case (segmentIdStr, data) =>
+            val segmentLevelIds = getSegmentLevelIds(segmentIdStr)
 
-          if (isSegmentMatchesTheFilter(segmentIdStr, segmentLevelIds)) {
-            val segmentRedefine = if (segmentRedefineAvailable) {
-              segmentRedefineMap.getOrElse(segmentIdStr, "")
-            } else ""
+            if (isSegmentMatchesTheFilter(segmentIdStr, segmentLevelIds)) {
+              val segmentRedefine = if (segmentRedefineAvailable) {
+                segmentRedefineMap.getOrElse(segmentIdStr, "")
+              } else ""
 
-            cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
-              data,
-              readerProperties.startOffset,
-              readerProperties.schemaPolicy,
-              readerProperties.variableSizeOccurs,
-              readerProperties.generateRecordId,
-              segmentLevelIds,
-              fileId,
-              recordIndex,
-              activeSegmentRedefine = segmentRedefine
-            ))
+              cachedValue = Some(RowExtractors.extractRecord(cobolSchema.getCobolSchema,
+                data,
+                readerProperties.startOffset,
+                readerProperties.schemaPolicy,
+                readerProperties.variableSizeOccurs,
+                readerProperties.generateRecordId,
+                segmentLevelIds,
+                fileId,
+                recordIndex,
+                activeSegmentRedefine = segmentRedefine
+              ))
 
-            recordFetched = true
-          }
-      }
-      recordIndex = recordIndex + 1
-    }
-  }
-
-  private def fetchRecordUsingRecordLengthField(): Option[Array[Byte]] = {
-    if (lengthField.isEmpty) {
-      throw new IllegalStateException(s"For variable length reader either RDW record headers or record length field should be provided.")
-    }
-
-    val lengthFieldBlock = lengthField.get.binaryProperties.offset + lengthField.get.binaryProperties.actualSize
-
-    val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
-
-    if (binaryDataStart.length < readerProperties.startOffset + lengthFieldBlock) {
-      return None
-    }
-
-    var recordLength = lengthField match {
-      case Some(lengthAST) =>
-        cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int => i + recordLengthAdjustment
-          case l: Long => l.toInt + recordLengthAdjustment
-          case s: String => s.toInt + recordLengthAdjustment
-          case _ => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
+              recordFetched = true
+            }
+            recordIndex = recordIndex + 1
         }
-      case None => copyBookRecordSize
-    }
-
-    val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
-
-    if (restOfDataLength > 0) {
-      Some(binaryDataStart ++ dataStream.next(restOfDataLength))
-    } else {
-      Some(binaryDataStart)
-    }
-  }
-
-  private def fetchRecordUsingRdwHeaders(): Option[Array[Byte]] = {
-    val rdwHeaderBlock = recordHeaderParser.getHeaderLength
-
-    var isValidRecord = false
-    var isEndOfFile = false
-    var headerBytes = Array[Byte]()
-    var recordBytes = Array[Byte]()
-
-    while (!isValidRecord && !isEndOfFile) {
-      headerBytes = dataStream.next(rdwHeaderBlock)
-
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
-      val recordLength = recordMetadata.recordLength
-
-      byteIndex += headerBytes.length
-
-      if (recordLength > 0) {
-        recordBytes = dataStream.next(recordLength)
-        byteIndex += recordBytes.length
       } else {
-        isEndOfFile = true
+        cachedValue = None
+        recordFetched = true
       }
-
-      isValidRecord = recordMetadata.isValid
-    }
-
-    if (!isEndOfFile) {
-      if (recordHeaderParser.isHeaderDefinedInCopybook) {
-        Some(headerBytes ++ recordBytes)
-      } else {
-        Some(recordBytes)
-      }
-    } else {
-      None
     }
   }
 
   // The gets all values for the helper fields for the current record having a specific segment id
-  // It is deliberately wtitten imperative style for performance
+  // It is deliberately written imperative style for performance
   private def getSegmentLevelIds(segmentId: String): Seq[String] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
@@ -209,19 +130,6 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
     } else {
       Nil
     }
-  }
-
-  private def getSegmentId(data: Array[Byte]): Option[String] = {
-    segmentIdField.map(field => {
-      val fieldValue = cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset)
-      if (fieldValue == null) {
-        logger.error(s"An unexpected null encountered for segment id at $byteIndex")
-        ""
-      } else {
-        fieldValue.toString.trim
-      }
-    }
-    )
   }
 
   private def isSegmentMatchesTheFilter(segmentId: String, segmentLevels: Seq[String]): Boolean = {
