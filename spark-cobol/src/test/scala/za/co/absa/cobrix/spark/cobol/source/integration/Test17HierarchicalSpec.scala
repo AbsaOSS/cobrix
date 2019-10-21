@@ -225,4 +225,60 @@ class Test17HierarchicalSpec extends FunSuite with SparkTestBase {
     Files.delete(Paths.get(actualResultsPath))
   }
 
+  test(s"Integration test on Test4(multisegment,ascii) - ascii segment ids, ascii") {
+    val exampleName = "Test4(multisegment,ascii)"
+    val inputCopybookPath = "file://../data/test4_copybook.cob"
+    val inpudDataPath = "../data/test4_data"
+
+    val expectedSchemaPath = "../data/test17_expected/test17d_schema.json"
+    val actualSchemaPath = "../data/test17_expected/test17d_schema_actual.json"
+    val expectedResultsPath = "../data/test17_expected/test17d.txt"
+    val actualResultsPath = "../data/test17_expected/test17d_actual.txt"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("encoding", "ascii")
+      .option("is_record_sequence", "true")
+      .option("segment_field", "SEGMENT_ID")
+      .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+      .option("redefine-segment-id-map:2", "CONTACTS => P")
+      .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+      .option("generate_record_id", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .load(inpudDataPath)
+
+    // This is to print the actual output
+    //println(df.schema.json)
+    //df.toJSON.take(60).foreach(println)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    val actualDf = df
+      .orderBy("File_Id", "Record_Id")
+      .toJSON
+      .take(60)
+
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+
+  }
+
 }
