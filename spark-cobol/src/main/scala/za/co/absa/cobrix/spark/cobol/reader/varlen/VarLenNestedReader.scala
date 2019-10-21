@@ -29,7 +29,7 @@ import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
-import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
+import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.immutable.HashMap
@@ -68,8 +68,13 @@ final class VarLenNestedReader(copybookContents: Seq[String],
                               startingFileOffset: Long,
                               fileNumber: Int,
                               startingRecordIndex: Long): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-      fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+    if (cobolSchema.copybook.isHierarchical) {
+      new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+        fileNumber, startingRecordIndex, startingFileOffset)
+    } else {
+      new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+        fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+    }
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.

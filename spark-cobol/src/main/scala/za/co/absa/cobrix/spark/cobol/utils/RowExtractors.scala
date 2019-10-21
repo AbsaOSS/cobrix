@@ -163,6 +163,169 @@ object RowExtractors {
   }
 
   /**
+    * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
+    *
+    * @param ast                  The parsed copybook
+    * @param segmentsData         The data bits containing the record
+    * @param offsetBytes          The offset to the beginning of the record (in bits)
+    * @param variableLengthOccurs If true, OCCURS DEPENDING ON data size will depend on the number of elements
+    * @param generateRecordId     If true a record id field will be added as the first field of the record.
+    * @param recordId             The record id to be saved to the record id field
+    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
+    */
+  @throws(classOf[IllegalStateException])
+  def extractHierarchicalRecord(ast: CopybookAST,
+                                segmentsData: ArrayBuffer[(String, Array[Byte])],
+                                segmentRedefines: Array[Group],
+                                segmentIdRedefineMap: Map[String, Group],
+                                parentChildMap: Map[String, Seq[Group]],
+                                offsetBytes: Int = 0,
+                                policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                                variableLengthOccurs: Boolean = false,
+                                generateRecordId: Boolean = false,
+                                fileId: Int = 0,
+                                recordId: Long = 0): Row = {
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
+
+    def extractArray(field: Statement, useOffset: Int, data: Array[Byte]): (Int, Array[Any]) = {
+      val from = 0
+      val arraySize = field.arrayMaxSize
+      val actualSize = field.dependingOn match {
+        case None => arraySize
+        case Some(dependingOn) =>
+          val dependValue = dependFields.getOrElse(dependingOn, arraySize)
+          if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
+            dependValue
+          else
+            arraySize
+      }
+
+      var offset = useOffset
+      val arr = field match {
+        case grp: Group =>
+          val groupValues = new Array[Any](actualSize - from)
+          var i = from
+          var j = 0
+          while (i < actualSize) {
+            val value = getGroupValues(offset, grp, data)
+            offset += grp.binaryProperties.dataSize
+            groupValues(j) = value
+            i += 1
+            j += 1
+          }
+          groupValues
+        case s: Primitive =>
+          val values = new Array[Any](actualSize - from)
+          var i = from
+          var j = 0
+          while (i < actualSize) {
+            val value = s.decodeTypeValue(offset, data)
+            offset += s.binaryProperties.dataSize
+            values(j) = value
+            i += 1
+            j += 1
+          }
+          values
+      }
+      if (variableLengthOccurs) {
+        (offset - useOffset, arr)
+      } else {
+        (field.binaryProperties.actualSize, arr)
+      }
+    }
+
+    def extractValue(field: Statement, useOffset: Int, data: Array[Byte]): Any = {
+      field match {
+        case grp: Group =>
+          getGroupValues(useOffset, grp, data)
+        case st: Primitive =>
+          val value = st.decodeTypeValue(useOffset, data)
+          if (value != null && st.isDependee) {
+            val intVal: Int = value match {
+              case v: Int => v
+              case v: Number => v.intValue()
+              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
+            }
+            dependFields += st.name -> intVal
+          }
+          value
+      }
+    }
+
+    def extractChildren(field: Group): Any = {
+      val children = new ArrayBuffer[Row]()
+
+      segmentsData.foreach{
+        case (segmentId, segmentData) => {
+          if (segmentIdRedefineMap.get(segmentId).map(_.name).getOrElse("") == field.name) {
+            children += getGroupValues(field.binaryProperties.offset, field, segmentData)
+          }
+        }
+      }
+
+      children.toArray
+    }
+
+    def getGroupValues(offset: Int, group: Group, data: Array[Byte]): Row = {
+      var bitOffset = offset
+
+      val childrenNum = if (group.isSegmentRedefine) {
+        parentChildMap(group.name).size
+      } else {
+        0
+      }
+
+      val fields = new Array[Any](group.nonFillerSize + childrenNum)
+
+      var j = 0
+      var i = 0
+      while (i < group.children.length) {
+        val field = group.children(i)
+        val fieldValue = if (field.isArray) {
+          val (size, value) = extractArray(field, bitOffset, data)
+          if (!field.isRedefined) {
+            bitOffset += size
+          }
+          value
+        } else {
+          val value = extractValue(field, bitOffset, data)
+          if (!field.isRedefined) {
+            bitOffset += field.binaryProperties.actualSize
+          }
+          value
+        }
+        if (!field.isFiller) {
+          fields(j) = fieldValue
+          j += 1
+        }
+        i += 1
+      }
+
+      // Add children
+      if (group.isSegmentRedefine) {
+        parentChildMap.get(group.name).foreach(children => {
+          children.foreach(child => {
+            fields(j) = extractChildren(child)
+            j += 1
+          })
+        })
+      }
+
+      new GenericRow(fields)
+    }
+
+    var nextOffset = offsetBytes
+
+    val records = ast.children.collect { case grp: Group if grp.parentSegment.isEmpty =>
+      val values = getGroupValues(nextOffset, grp, segmentsData(0)._2)
+      nextOffset += grp.binaryProperties.actualSize
+      values
+    }
+
+    applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId)
+  }
+
+    /**
     * <p>This method applies additional postprocessing to the schema obtained from a copybook to make it easier to use as a Spark Schema.</p>
     *
     * <p>The following transofmations will currently be applied:

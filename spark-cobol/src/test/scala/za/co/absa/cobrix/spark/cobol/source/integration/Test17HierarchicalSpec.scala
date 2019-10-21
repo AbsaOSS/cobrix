@@ -200,11 +200,12 @@ class Test17HierarchicalSpec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    /*
     val actualDf = df
       .orderBy("File_Id", "Record_Id")
       .toJSON
-      .take(300)
+      .collect
+
+    assert(df.count == 50)
 
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
 
@@ -212,12 +213,16 @@ class Test17HierarchicalSpec extends FunSuite with SparkTestBase {
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
     val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
 
+    val firstLineActual = SparkUtils.prettyJSON(actual.head)
+    val firstLineExpected = SparkUtils.prettyJSON(expected.head)
+
+    assert(firstLineActual == firstLineExpected)
+
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
         s"$actualResultsPath for details.")
     }
     Files.delete(Paths.get(actualResultsPath))
-    */
   }
 
 }
