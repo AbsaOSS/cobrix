@@ -509,7 +509,7 @@ object CopybookParser {
 
     def processGroupFields(group: Group): Unit = {
       group.children.foreach {
-        case p: Primitive => // Nothing to do
+        case _: Primitive => // Nothing to do
         case g: Group =>
           if (g.isSegmentRedefine) {
             redefinedFields += g
@@ -520,6 +520,41 @@ object CopybookParser {
 
     processGroupFields(schema)
     redefinedFields.toList
+  }
+
+  /**
+    * Given an AST of a copybook returns a map from segment redefines to their children
+    *
+    * @param schema An AST as a set of copybook records
+    * @return A map from segment redefines to their children
+    */
+  def getAllParentToChildMap(schema: CopybookAST): Map[String, Seq[Group]] = {
+    val redefineParents = mutable.ListBuffer[(Group, Option[Group])]()
+
+    def generateListOfParents(group: Group): Unit = {
+      group.children.foreach {
+        case _: Primitive => // Nothing to do
+        case g: Group =>
+          if (g.isSegmentRedefine) {
+            redefineParents.append((g, g.parentSegment))
+          }
+          generateListOfParents(g)
+      }
+    }
+
+    generateListOfParents(schema)
+
+    val redefines = redefineParents.map(_._1)
+    redefines.map(parent => {
+      val children = redefines.flatMap(child =>
+        if (child.parentSegment.nonEmpty && child.parentSegment.get.name == parent.name) {
+          List[Group](child)
+        } else {
+          List[Group]()
+        }
+      )
+      (parent.name, children)
+    }).toMap
   }
 
   /**

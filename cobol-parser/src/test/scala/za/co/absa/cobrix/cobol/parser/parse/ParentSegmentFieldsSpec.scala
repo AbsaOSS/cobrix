@@ -26,44 +26,120 @@ import scala.collection.immutable.HashMap
 
 class ParentSegmentFieldsSpec extends WordSpec {
 
+  "For a simple copybook" when {
+    val copybook =
+      """      01 RECORD.
+        |        02 RECORD-1.
+        |           03 FIELD1 PIC X(2).
+        |        02 Z-RECORD.
+        |           03 FIELD2 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines: Seq[String] = Nil
+    val fieldParentMap = HashMap[String, String]()
+
+    "CopybookParser.parseTree" should {
+      "not throw if no segment redefines or parent fields are provided" in {
+        CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      }
+    }
+
+    "CopybookParser.getAllParentToChildMap" should {
+      "return an empty map" in {
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+
+        assert(map.isEmpty)
+      }
+    }
+  }
+
+  "For a copybook with a single parent-child relationship" when {
+    val copybook =
+      """      01 RECORD.
+        |        02 SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-B REDEFINES SEGMENT-A.
+        |           03 FIELD2 PIC X(2).
+        |        02 Z-RECORD.
+        |           03 FIELD3 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: Nil
+    val fieldParentMap = HashMap[String, String]("SEGMENT-B" -> "SEGMENT-A")
+
+    "CopybookParser.parseTree" should {
+      "work with a simple 2 segments having a parent-child relationship" in {
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+
+        assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].parentSegment.isEmpty)
+        assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].parentSegment.nonEmpty)
+        assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(2).asInstanceOf[Group].parentSegment.isEmpty)
+      }
+    }
+
+    "CopybookParser.getAllParentToChildMap" should {
+      "return a single entity map" in {
+
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+
+        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+
+        val grpA = map.keys.find(_ == "SEGMENT_A").get
+        val childrenOfA = map(grpA)
+
+        assert(childrenOfA.size == 1)
+        assert(childrenOfA.head.name == "SEGMENT_B")
+      }
+    }
+  }
+
+  "For a more complicated hierarchical copybook" when {
+    val copybook =
+      """      01 RECORD.
+        |        02 RECORD-1.
+        |           03 FIELD-1 PIC X(2).
+        |        02 SEGMENT-A.
+        |           03 FIELD-2 PIC X(2).
+        |        02 SEGMENT-B REDEFINES SEGMENT-A.
+        |           03 FIELD-3 PIC S9(6) COMP.
+        |        02 SEGMENT-C REDEFINES SEGMENT-A.
+        |           03 FIELD-4 PICTURE S9(6) COMP.
+        |        02 SEGMENT-D REDEFINES SEGMENT-A.
+        |           03 FIELD-5 PICTURE S9(6) COMP.
+        |        02 Z-RECORD.
+        |           03 FIELD-6 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: Nil
+    val fieldParentMap = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-A")
+
+    "CopybookParser.getAllParentToChildMap" should {
+      "return a proper parent-children map" in {
+
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+
+        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+
+        val grpA = map.keys.find(_ == "SEGMENT_A").get
+        val childrenOfA = map(grpA)
+        val grpB = map.keys.find(_ == "SEGMENT_B").get
+        val childrenOfB = map(grpB)
+        val grpC = map.keys.find(_ == "SEGMENT_C").get
+        val childrenOfC = map(grpC)
+
+        assert(map.keys.size == 3)
+        assert(childrenOfA.size == 2)
+        assert(childrenOfA.head.name == "SEGMENT_B")
+        assert(childrenOfA(1).name == "SEGMENT_C")
+        assert(childrenOfB.isEmpty)
+        assert(childrenOfC.isEmpty)
+      }
+    }
+
+  }
+
   "CopybookParser.parseTree" should {
-
-    "not throw if no segment redefines or parent fields are provided" in {
-      val copybook =
-        """      01 RECORD.
-          |        02 RECORD-1.
-          |           03 FIELD1 PIC X(2).
-          |        02 Z-RECORD.
-          |           03 FIELD2 PIC X(2).
-        """.stripMargin
-
-      val segmentRedefines: Seq[String] = Nil
-      val fieldParentMap = HashMap[String, String]()
-
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
-    }
-
-    "work with a simple 2 segments having a parent-child relationship" in {
-      val copybook =
-        """      01 RECORD.
-          |        02 SEGMENT-A.
-          |           03 FIELD1 PIC X(2).
-          |        02 SEGMENT-B REDEFINES SEGMENT-A.
-          |           03 FIELD2 PIC X(2).
-          |        02 Z-RECORD.
-          |           03 FIELD3 PIC X(2).
-        """.stripMargin
-
-      val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: Nil
-      val fieldParentMap = HashMap[String, String]("SEGMENT-B" -> "SEGMENT-A")
-
-      val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
-
-      assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].parentSegment.isEmpty)
-      assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].parentSegment.nonEmpty)
-      assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(2).asInstanceOf[Group].parentSegment.isEmpty)
-    }
-
     "return a serializable copybook AST when redefines and parents are defined" in {
       val copybook =
         """      01 RECORD.

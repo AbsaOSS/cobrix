@@ -36,9 +36,25 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   def isRecordFixedSize: Boolean = true
 
+  /**
+    * Returns all segment redefines defined in an AST.
+    */
   def getAllSegmentRedefines: List[CopybookAST] = CopybookParser.getAllSegmentRedefines(ast)
 
+  /**
+    * Returns a mapping from a segment redefine field name to its children.
+    */
+  def getParentChildrenSegmentMap: Map[String, Seq[Group]] = CopybookParser.getAllParentToChildMap(ast)
+
+  /**
+    * Returns a root segment AST stripped of all child segment ASTs.
+    */
   def getRootSegmentAST: CopybookAST = CopybookParser.getRootSegmentAST(ast)
+
+  /**
+    * Returns true if there at least 1 parent-child relationships defined in any of segment redefines.
+    */
+  lazy val isHierarchical: Boolean = getAllSegmentRedefines.exists(_.parentSegment.nonEmpty)
 
   /**
     * Get the AST object of a field by name.
