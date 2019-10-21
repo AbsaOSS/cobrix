@@ -104,9 +104,11 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
           case (segmentIdStr, _) =>
             if (isRootSegment(segmentIdStr)) {
               if (fetchedRecords.nonEmpty) {
+                // Extract an accumulated record
                 val row: Row = extractRow(fetchedRecords)
                 fetchedRecords = ArrayBuffer[RawRecord]()
                 cachedValue = Some(row)
+                recordIndex = recordIndex + 1
                 recordFetched = true
               }
               fetchedRecords += record
@@ -116,7 +118,6 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
               }
             }
         }
-        recordIndex = recordIndex + 1
       } else {
         if (fetchedRecords.nonEmpty) {
           // Extract the last record

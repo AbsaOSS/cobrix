@@ -42,7 +42,7 @@
               10  LAST-NAME         PIC X(16).
               10  ROLE              PIC X(18).
               10  HOME-ADDRESS      PIC X(40).
-              10  PHONE-NUM         PIC X(11).
+              10  PHONE-NUM         PIC X(17).
            05  OFFICE REDEFINES COMPANY.
               10  ADDRESS           PIC X(30).
               10  FLOOR             PIC 9(3).
@@ -54,7 +54,7 @@
            05  CONTACT REDEFINES COMPANY.
               10  FIRST-NAME        PIC X(16).
               10  LAST-NAME         PIC X(16).
-              10  PHONE-NUM         PIC X(11).
+              10  PHONE-NUM         PIC X(17).
            05  CONTRACT REDEFINES COMPANY.
               10  CONTRACT-NUMBER   PIC X(15).
               10  STATE             PIC X(8).

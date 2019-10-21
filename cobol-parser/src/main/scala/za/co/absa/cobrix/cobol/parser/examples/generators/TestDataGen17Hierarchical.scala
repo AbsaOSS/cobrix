@@ -51,7 +51,7 @@ object TestDataGen17Hierarchical {
               10  LAST-NAME         PIC X(16).
               10  ROLE              PIC X(18).
               10  HOME-ADDRESS      PIC X(40).
-              10  PHONE-NUM         PIC X(11).
+              10  PHONE-NUM         PIC X(17).
            05  OFFICE REDEFINES COMPANY.
               10  ADDRESS           PIC X(30).
               10  FLOOR             PIC 9(3).
@@ -63,7 +63,7 @@ object TestDataGen17Hierarchical {
            05  CONTACT REDEFINES COMPANY.
               10  FIRST-NAME        PIC X(16).
               10  LAST-NAME         PIC X(16).
-              10  PHONE-NUM         PIC X(11).
+              10  PHONE-NUM         PIC X(17).
            05  CONTRACT REDEFINES COMPANY.
               10  CONTRACT-NUMBER   PIC X(15).
               10  STATE             PIC X(8).
@@ -160,12 +160,12 @@ object TestDataGen17Hierarchical {
   }
 
   def putEmployee(bos: BufferedOutputStream): Unit = {
-    val bytes: Array[Byte] = new Array[Byte](106)
+    val bytes: Array[Byte] = new Array[Byte](112)
 
     // RDW header
     bytes(0) = 0
     bytes(1) = 0
-    putShortToArray(bytes, 102, 2, 3) // record size = 101 bytes
+    putShortToArray(bytes, 108, 2, 3) // record size = 107 bytes
 
     // Data to save
     val fname = firstNames(rand.nextInt(firstNames.size))
@@ -183,7 +183,7 @@ object TestDataGen17Hierarchical {
     offset = putStringToArray("LAST-NAME", bytes, lname, offset, 16)
     offset = putStringToArray("ROLE", bytes, role, offset, 18)
     offset = putStringToArray("HOME-ADDRESS", bytes, address, offset, 40)
-    offset = putStringToArray("PHONE-NUM", bytes, phoneNum, offset, 11)
+    offset = putStringToArray("PHONE-NUM", bytes, phoneNum, offset, 17)
 
     bos.write(bytes)
   }
@@ -250,12 +250,12 @@ object TestDataGen17Hierarchical {
   }
 
   def putContact(bos: BufferedOutputStream): Unit = {
-    val bytes: Array[Byte] = new Array[Byte](48)
+    val bytes: Array[Byte] = new Array[Byte](54)
 
     // RDW header
     bytes(0) = 0
     bytes(1) = 0
-    putShortToArray(bytes, 44, 2, 3) // record size = 43 bytes
+    putShortToArray(bytes, 50, 2, 3) // record size = 49 bytes
 
     // Data to save
     val fname = firstNames(rand.nextInt(firstNames.size))
@@ -269,7 +269,7 @@ object TestDataGen17Hierarchical {
     // Contact details
     offset = putStringToArray("FIRST-NAME", bytes, fname, offset, 16)
     offset = putStringToArray("LAST-NAME", bytes, lname, offset, 16)
-    offset = putStringToArray("PHONE-NUM", bytes, phoneNum, offset, 11)
+    offset = putStringToArray("PHONE-NUM", bytes, phoneNum, offset, 17)
 
     bos.write(bytes)
   }
