@@ -684,7 +684,7 @@ object CopybookParser {
       var i = 0
       var nonFillers = 0
       while (i < group.children.length) {
-        if (!group.children(i).isFiller)
+        if (!group.children(i).isFiller && !group.children(i).isChildSegment)
           nonFillers += 1
         i += 1
       }

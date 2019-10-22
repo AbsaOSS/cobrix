@@ -56,6 +56,9 @@ case class Primitive(
     s"${" " * 2 * level}$camelCased ${camelCase(redefines.getOrElse(""))} $dataType"
   }
 
+  /** Returns true if the field is a child segment */
+  def isChildSegment: Boolean = false
+
   /** Returns the original field with updated binary properties */
   def withUpdatedBinaryProperties(newBinaryProperties: BinaryProperties): Primitive = {
     copy(binaryProperties = newBinaryProperties)(parent)

@@ -77,6 +77,9 @@ case class Group(
     child
   }
 
+  /** Returns true if the field is a child segment */
+  def isChildSegment: Boolean = parentSegment.nonEmpty
+
   /** Returns the original Group with updated children */
   def withUpdatedChildren(newChildren: mutable.ArrayBuffer[Statement]): Group = {
     copy(children = newChildren)(parent)

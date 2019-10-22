@@ -294,7 +294,7 @@ object RowExtractors {
           }
           value
         }
-        if (!field.isFiller) {
+        if (!field.isFiller && !field.isChildSegment) {
           fields(j) = fieldValue
           j += 1
         }
