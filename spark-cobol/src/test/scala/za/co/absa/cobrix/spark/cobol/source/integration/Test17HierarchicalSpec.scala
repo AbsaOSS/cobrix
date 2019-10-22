@@ -324,6 +324,44 @@ class Test17HierarchicalSpec extends WordSpec with SparkTestBase {
         }
         Files.delete(Paths.get(actualResultsPath))
       }
+
+      "throw an exception if root segment id is specified (ID fields generation is requested)" in {
+        val ex = intercept[IllegalArgumentException] {
+          spark
+            .read
+            .format("cobol")
+            .option("copybook", inputCopybookPath)
+            .option("encoding", "ascii")
+            .option("is_record_sequence", "true")
+            .option("segment_field", "SEGMENT_ID")
+            .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+            .option("redefine-segment-id-map:2", "CONTACTS => P")
+            .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+            .option("segment_id_root", "1")
+            .load(inpudDataPath)
+        }
+
+        assert(ex.getMessage.contains("ID fields generation is not supported for hierarchical records reader"))
+      }
+
+      "throw an exception if ID fields generation is also requested" in {
+        val ex = intercept[IllegalArgumentException] {
+          spark
+            .read
+            .format("cobol")
+            .option("copybook", inputCopybookPath)
+            .option("encoding", "ascii")
+            .option("is_record_sequence", "true")
+            .option("segment_field", "SEGMENT_ID")
+            .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+            .option("redefine-segment-id-map:2", "CONTACTS => P")
+            .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+            .option("segment_id_level0", "1")
+            .load(inpudDataPath)
+        }
+
+        assert(ex.getMessage.contains("ID fields generation is not supported for hierarchical records reader"))
+      }
     }
   }
 }

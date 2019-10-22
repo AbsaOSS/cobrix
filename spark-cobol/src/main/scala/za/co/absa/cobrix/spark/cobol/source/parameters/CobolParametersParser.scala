@@ -448,6 +448,14 @@ object CobolParametersParser {
         logger.error(msg)
       }
     }
+    val segmentRedefineParents = getSegmentRedefineParents(params)
+    if (segmentRedefineParents.nonEmpty) {
+      val segmentIdLevels = parseSegmentLevels(params)
+      if (segmentIdLevels.nonEmpty) {
+        throw new IllegalArgumentException(s"Options 'segment-children:*' cannot be used with 'segment_id_level*' or 'segment_id_root' " +
+          "since ID fields generation is not supported for hierarchical records reader.")
+      }
+    }
   }
 
 }
