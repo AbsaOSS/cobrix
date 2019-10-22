@@ -98,16 +98,25 @@ case class Primitive(
     val idx = itOffset
 
     if (isString) {
+      // The length of a string can be smaller for varchar fields at the end of a record
       if (idx > record.length) {
         return null
       }
     } else {
+      // Non-string field size should exactly fix the required bytes
       if (idx + bytesCount > record.length) {
         return null
       }
     }
 
-    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesCount)
+    // Determine the actual number of bytes to copy based on the record size.
+    // Varchar fields can be trimmed by the record size.
+    val bytesToCopy = if (idx + bytesCount > record.length) {
+      record.length - idx
+    } else {
+      bytesCount
+    }
+    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesToCopy)
 
     decode(bytes)
   }

@@ -59,6 +59,18 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
     0xF5.toByte
   )
 
+  val binFileContentsNoTrim: Array[Byte] = Array[Byte](
+    // Record 0 (partial 1)
+    0x00, 0x00, 0x04.toByte, 0x00,
+    0xF3.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte,
+    // Record 1 (partial 2)
+    0x00, 0x00, 0x02.toByte, 0x00,
+    0xF4.toByte, 0xF1.toByte,
+    // Record 2 (partial 3 - tiny)
+    0x00, 0x00, 0x01.toByte, 0x00,
+    0xF5.toByte
+  )
+
 
   test("Test input data file having a varchar text field at the end of the copybook") {
     withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
@@ -88,6 +100,41 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
       val actual = TestUtils.showString(df, 10)
 
       assertResults(actual, expected)
+    }
+
+  }
+
+  test("Test input data file having a varchar text field when string trimming is turned off") {
+    withTempBinFile("binary", ".dat", binFileContentsNoTrim) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("generate_record_id", true)
+        .option("is_xcom", true)
+        .option("string_trimming_policy", "none")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected =
+        """+-------+---------+---+---+
+          ||File_Id|Record_Id|N  |V  |
+          |+-------+---------+---+---+
+          ||0      |0        |3  |123|
+          ||0      |1        |4  |1  |
+          ||0      |2        |5  |   |
+          |+-------+---------+---+---+
+          |
+          |""".stripMargin.replace("\r\n", "\n")
+
+      val expectedJson =
+        """{"File_Id":0,"Record_Id":0,"N":"3","V":"123"},{"File_Id":0,"Record_Id":1,"N":"4","V":"1"},{"File_Id":0,"Record_Id":2,"N":"5","V":""}"""
+
+      val actual = TestUtils.showString(df, 10)
+      val actualJson = df.toJSON.collect().mkString(",")
+
+      assertResults(actual, expected)
+      assertResults(actualJson, expectedJson)
     }
 
   }
