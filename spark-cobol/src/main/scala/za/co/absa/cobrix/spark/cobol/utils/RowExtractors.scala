@@ -28,15 +28,20 @@ import scala.collection.mutable.ArrayBuffer
 object RowExtractors {
 
   /**
-    * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
+    * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
     *
-    * @param ast                  The parsed copybook
-    * @param data                 The data bits containing the record
-    * @param offsetBytes          The offset to the beginning of the record (in bits)
-    * @param variableLengthOccurs If true, OCCURS DEPENDING ON data size will depend on the number of elements
-    * @param generateRecordId     If true a record id field will be added as the first field of the record.
-    * @param recordId             The record id to be saved to the record id field
-    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
+    * @param ast                   The parsed copybook.
+    * @param data                  The data bits containing the record.
+    * @param offsetBytes           The offset to the beginning of the record (in bits).
+    * @param policy                A schema retention policy to be applied to the extracted record.
+    * @param variableLengthOccurs  If true, OCCURS DEPENDING ON data size will depend on the number of elements.
+    * @param generateRecordId      If true a record id field will be added as the first field of the record.
+    * @param segmentLevelIds       Segent ids to put to the extracted record if id generation it turned on.
+    * @param fileId                A file id to be put to the extractor record if generateRecordId == true.
+    * @param recordId              The record id to be saved to the record id field.
+    * @param activeSegmentRedefine An active segment redefine (the one that will be parsed).
+    *                              All other segment redefines will be skipped.
+    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema.
     */
   @throws(classOf[IllegalStateException])
   def extractRecord(ast: CopybookAST,
@@ -163,15 +168,27 @@ object RowExtractors {
   }
 
   /**
-    * This method extracts a record from the specified bit vector. The copybook for the record needs to be already parsed.
+    * This method extracts a hierarchical record from the specified raw bytes.
+    * The copybook for the record needs to be already parsed.
+    *
+    * This extractor expects multiple segments to be provided as a list of a segmentId-data pair.
+    * Raw data for each segment should be provided as array of bytes.
+    *
+    * This method reconstructs hierarchical record structure by putting all provided segments in their
+    * corresponding places in the hierarchy.
     *
     * @param ast                  The parsed copybook
     * @param segmentsData         The data bits containing the record
+    * @param segmentRedefines     A list of segment redefine GROUPs
+    * @param segmentIdRedefineMap A mapping from segment ids to segment redefine groups
+    * @param parentChildMap       A mapping from a segment field name to its parents
     * @param offsetBytes          The offset to the beginning of the record (in bits)
+    * @param policy               A schema retention policy to be applied to the extracted record
     * @param variableLengthOccurs If true, OCCURS DEPENDING ON data size will depend on the number of elements
     * @param generateRecordId     If true a record id field will be added as the first field of the record.
+    * @param fileId               A file id to be put to the extractor record if generateRecordId == true
     * @param recordId             The record id to be saved to the record id field
-    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema
+    * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the hierarchical record schema
     */
   @throws(classOf[IllegalStateException])
   def extractHierarchicalRecord(ast: CopybookAST,
@@ -255,7 +272,7 @@ object RowExtractors {
     def extractChildren(field: Group): Any = {
       val children = new ArrayBuffer[Row]()
 
-      segmentsData.foreach{
+      segmentsData.foreach {
         case (segmentId, segmentData) => {
           if (segmentIdRedefineMap.get(segmentId).map(_.name).getOrElse("") == field.name) {
             children += getGroupValues(field.binaryProperties.offset, field, segmentData)
@@ -325,7 +342,7 @@ object RowExtractors {
     applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId)
   }
 
-    /**
+  /**
     * <p>This method applies additional postprocessing to the schema obtained from a copybook to make it easier to use as a Spark Schema.</p>
     *
     * <p>The following transofmations will currently be applied:
