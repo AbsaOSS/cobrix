@@ -52,6 +52,12 @@ class Copybook(val ast: CopybookAST) extends Serializable {
   def getRootSegmentAST: CopybookAST = CopybookParser.getRootSegmentAST(ast)
 
   /**
+    * Returns a a list of values of segment ids for the root segment.
+    */
+  def getRootSegmentIds(segmentIdRedefineMap: Map[String, String], fieldParentMap: Map[String, String]): List[String] =
+    CopybookParser.getRootSegmentIds(ast, segmentIdRedefineMap, fieldParentMap)
+
+  /**
     * Returns true if there at least 1 parent-child relationships defined in any of segment redefines.
     */
   lazy val isHierarchical: Boolean = getAllSegmentRedefines.exists(_.parentSegment.nonEmpty)

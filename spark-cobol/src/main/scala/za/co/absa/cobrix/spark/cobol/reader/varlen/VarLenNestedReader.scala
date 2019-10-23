@@ -106,17 +106,17 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
-    val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
+    val segmentIdValue = getRootSegmentId
 
     // It makes sense to parse data hierarchically only if hierarchical id generation is requested
     val isHierarchical = readerProperties.multisegment match {
-      case Some(params) => params.segmentLevelIds.nonEmpty
+      case Some(params) => params.segmentLevelIds.nonEmpty || params.fieldParentMap.nonEmpty
       case None => false
     }
 
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIfValue)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIdValue)
       case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
         recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, None, None, isHierarchical)
     }
@@ -228,6 +228,19 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.fileEndOffset,
         0
       )
+    }
+  }
+
+  private def getRootSegmentId: String = {
+    readerProperties.multisegment match {
+      case Some(m) =>
+        if (m.fieldParentMap.nonEmpty && m.segmentIdRedefineMap.nonEmpty) {
+          cobolSchema.copybook.getRootSegmentIds(m.segmentIdRedefineMap, m.fieldParentMap).headOption.getOrElse("")
+        } else {
+          m.segmentLevelIds.headOption.getOrElse("")
+        }
+      case None =>
+        ""
     }
   }
 }

@@ -108,7 +108,6 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
                 val row: Row = extractRow(fetchedRecords)
                 fetchedRecords = ArrayBuffer[RawRecord]()
                 cachedValue = Some(row)
-                recordIndex = recordIndex + 1
                 recordFetched = true
               }
               fetchedRecords += record
@@ -118,6 +117,7 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
               }
             }
         }
+        recordIndex = recordIndex + 1
       } else {
         if (fetchedRecords.nonEmpty) {
           // Extract the last record
