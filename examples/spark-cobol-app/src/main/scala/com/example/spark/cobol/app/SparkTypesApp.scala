@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spark.types.app
+package com.example.spark.cobol.app
 
 import org.apache.spark.sql.SparkSession
 
@@ -53,10 +53,10 @@ object SparkTypesApp {
 
     val df = spark
       .read
-      .format("cobol")                             // Alternatively can use "za.co.absa.cobrix.spark.cobol.source"
-      .option("copybook", "file://data/data_types.cpy")    // A copybook can be provided inline
-      .option("schema_retention_policy", "collapse_root")  // Collapses the root group returning it's field on the top level of the schema
-      .load("data/data_types")                      // Location of data file(s)
+      .format("cobol")                                        // Alternatively can use "za.co.absa.cobrix.spark.cobol.source"
+      .option("copybook", "file://../example_data/data_types.cpy")    // A copybook can be provided inline
+      .option("schema_retention_policy", "collapse_root")             // Collapses the root group returning it's field on the top level of the schema
+      .load("../example_data/data_types")                       // Location of data file(s)
 
     df.printSchema()
 

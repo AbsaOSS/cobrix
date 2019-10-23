@@ -99,15 +99,20 @@ Snapshot versions corresponding to the current master are available as well:
 
 ## Quick start
 
-This repository contains 2 standalone examples in `examples` directory:
-* `spark-type-variety` is an example of a very simple mainframe file processing.
+This repository contains several standalone example applications in `examples/spark-cobol-app` directory.
+It is a Maven project that contains several examples:
+* `SparkTypesApp` is an example of a very simple mainframe file processing.
    It is a fixed record length raw data file with a corresponding copybook. The copybook 
    contains examples of various numeric data types Cobrix supports.
-* `spark-cobol-app` is an example of a Spark Job for handling multisegment variable record
+* `SparkCobolApp` is an example of a Spark Job for handling multisegment variable record
    length mainframe files.  
+* `SparkCodecApp` is an example usage of a custom record header parser. This application reads a variable
+   record length file having non-standard RDW headers. In this example RDH header is 5 bytes instead of 4
+* `SparkCobolHierarchical` is an example processing of an EBCDIC multisegment file extracted from a hierarchical database.
 
-Both of these examples can be used as a template for a Spark job application. Refer to README.md
-in each example folder for the detailed guide how to run the examples locally and on a cluster.
+
+The example project can be used as a template for creating Spark Application. Refer to README.md
+of that project for the detailed guide how to run the examples locally and on a cluster.
 
 When running `mvn clean package` in `examples/spark-cobol-app` an uber jar will be created. It can be used to run
 jobs via `spark-submit` or `spark-shell`. 

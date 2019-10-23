@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.spark.codec.app
+package com.example.spark.cobol.app
 
-import com.example.spark.codec.testUtils.{SparkJobRunHelper, SparkLocalMaster}
-import com.example.spark.codec.testUtils.SparkJobRunHelper
+import com.example.spark.cobol.utils.SparkLocalMaster
+import com.example.spark.cobol.utils.SparkJobRunHelper
 import org.scalatest.FunSuite
 
-class SparkCodecAppRunner extends FunSuite
+class SparkCobolHierarchicalRunner extends FunSuite
   with SparkJobRunHelper
   with SparkLocalMaster {
-      runSparkJobAsTest[SparkCodecApp.type]
+      runSparkJobAsTest[SparkCobolHierarchical.type]
   }
 

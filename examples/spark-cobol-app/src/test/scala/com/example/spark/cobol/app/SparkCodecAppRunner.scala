@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.spark.types.app
+package com.example.spark.cobol.app
 
-import com.example.spark.types.testUtils.{SparkJobRunHelper, SparkLocalMaster}
+import com.example.spark.cobol.utils.SparkLocalMaster
+import com.example.spark.cobol.utils.SparkJobRunHelper
 import org.scalatest.FunSuite
 
-class SparkTypesAppRunner extends FunSuite
+class SparkCodecAppRunner extends FunSuite
   with SparkJobRunHelper
   with SparkLocalMaster {
-      runSparkJobAsTest[SparkTypesApp.type]
+      runSparkJobAsTest[SparkCodecApp.type]
   }
 

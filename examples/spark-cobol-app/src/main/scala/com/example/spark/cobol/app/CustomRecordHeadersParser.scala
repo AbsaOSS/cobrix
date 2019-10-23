@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spark.codec.app
+package com.example.spark.cobol.app
 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordMetadata}

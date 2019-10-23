@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-package com.example.spark.types.testUtils
+package com.example.spark.cobol.app
 
-trait SparkLocalMaster {
-  System.getProperties.setProperty("spark.master", "local[*]")
-}
+import com.example.spark.cobol.utils.SparkLocalMaster
+import com.example.spark.cobol.utils.SparkJobRunHelper
+import org.scalatest.FunSuite
+
+class SparkTypesAppRunner extends FunSuite
+  with SparkJobRunHelper
+  with SparkLocalMaster {
+      runSparkJobAsTest[SparkTypesApp.type]
+  }
+

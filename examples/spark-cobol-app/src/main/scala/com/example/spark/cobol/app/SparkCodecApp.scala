@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.spark.codec.app
+package com.example.spark.cobol.app
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.sql.SparkSession
@@ -40,12 +40,12 @@ object SparkCodecApp {
     val df = spark
       .read
       .format("cobol")
-      .option("copybook", "data/copybook.cob")
+      .option("copybook", "../example_data/copybook_codec.cob")
       .option("is_record_sequence", "true")
       .option("generate_record_id", true)
       .option("schema_retention_policy", "collapse_root")
-      .option("record_header_parser", "com.example.spark.codec.app.CustomRecordHeadersParser") // Custom record header parser class
-      .load("data/data/example.dat")
+      .option("record_header_parser", "com.example.spark.cobol.app.CustomRecordHeadersParser") // Custom record header parser class
+      .load("../example_data/data_codec/example.dat")
 
     df.printSchema()
 
