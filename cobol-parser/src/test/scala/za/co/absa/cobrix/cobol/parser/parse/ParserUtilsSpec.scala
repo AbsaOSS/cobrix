@@ -150,4 +150,37 @@ class ParserUtilsSpec extends WordSpec {
     }
   }
 
+  "CopybookParser.getRootSegmentIds" should {
+    "return an empty string is neither map is defined" in {
+      val rootSegmentIds = CopybookParser.getRootSegmentIds(HashMap[String, String](), HashMap[String, String]())
+      assert(rootSegmentIds.isEmpty)
+    }
+
+    "return a root segment id for a simple 2 segment tree" in {
+      val rootSegmentIds = CopybookParser.getRootSegmentIds(
+        HashMap[String, String]("1" -> "A", "2" -> "B"),
+        HashMap[String, String]("B" -> "A"))
+      assert(rootSegmentIds.size == 1)
+      assert(rootSegmentIds.head == "1")
+    }
+
+    "return a root segment ids for a multiple root forest" in {
+      val rootSegmentIds = CopybookParser.getRootSegmentIds(
+        HashMap[String, String]("1" -> "A", "2" -> "B", "3" -> "C", "4" -> "D"),
+        HashMap[String, String]("B" -> "A", "D" -> "C"))
+      assert(rootSegmentIds.size == 2)
+      assert(rootSegmentIds.contains("1"))
+      assert(rootSegmentIds.contains("3"))
+    }
+
+    "return a root segment ids for a root having multiple segment id values" in {
+      val rootSegmentIds = CopybookParser.getRootSegmentIds(
+        HashMap[String, String]("1" -> "A", "2" -> "B", "3" -> "C", "4" -> "A"),
+        HashMap[String, String]("B" -> "A", "C" -> "D"))
+      assert(rootSegmentIds.size == 2)
+      assert(rootSegmentIds.contains("1"))
+      assert(rootSegmentIds.contains("4"))
+    }
+  }
+
 }

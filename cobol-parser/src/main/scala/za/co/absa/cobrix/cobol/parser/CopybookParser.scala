@@ -576,27 +576,25 @@ object CopybookParser {
   /**
     * Returns a a list of values of segment ids for the root segment.
     */
-  def getRootSegmentIds(schema: CopybookAST,
-                        segmentIdRedefineMap: Map[String, String],
+  def getRootSegmentIds(segmentIdRedefineMap: Map[String, String],
                         fieldParentMap: Map[String, String]): List[String] = {
 
-    val rootSegmentField = getRootSegmentField(fieldParentMap)
+    val rootSegmentFields = getRootSegmentFields(fieldParentMap)
 
     segmentIdRedefineMap.toList.collect {
-      case (segmentId, redefine) if redefine.equalsIgnoreCase(rootSegmentField) => segmentId
+      case (segmentId, redefine) if rootSegmentFields.contains(redefine) => segmentId
     }
   }
 
   /**
-    * From a mapping from fields to their parents returns the root field - the one that does not have a parent.
+    * From a mapping from fields to their parents returns roots field - the ones that does not have a parent.
     */
-  private def getRootSegmentField(fieldParentMap: Map[String, String]): String = {
+  private def getRootSegmentFields(fieldParentMap: Map[String, String]): List[String] = {
     fieldParentMap
       .values
       .toSet
       .diff(fieldParentMap.keys.toSet)
-      .headOption
-      .getOrElse("")
+      .toList
   }
 
 

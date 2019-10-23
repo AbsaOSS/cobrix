@@ -106,6 +106,8 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
+
+    // TODO Add support for multiple Ids (https://github.com/AbsaOSS/cobrix/issues/197)
     val segmentIdValue = getRootSegmentId
 
     // It makes sense to parse data hierarchically only if hierarchical id generation is requested
