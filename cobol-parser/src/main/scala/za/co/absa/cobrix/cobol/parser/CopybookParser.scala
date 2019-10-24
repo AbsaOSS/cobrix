@@ -461,19 +461,19 @@ object CopybookParser {
       val childrenWithSegmentRedefines: ArrayBuffer[Statement] = group.children.map {
         case p: Primitive =>
           p
-        case group: Group =>
-          if (group.isSegmentRedefine) {
-            val newGroup = group.withUpdatedParentSegment(getParentField(group.name))
+        case g: Group =>
+          if (g.isSegmentRedefine) {
+            val newGroup = g.withUpdatedParentSegment(getParentField(g.name))
             if (newGroup.parentSegment.isEmpty) {
-              rootSegments += group.name
+              rootSegments += g.name
             }
             newGroup
           } else {
-            if (fieldParentMap.contains(group.name)) {
+            if (fieldParentMap.contains(g.name)) {
               throw new IllegalStateException("Parent field is defined for a field that is not a segment redefine. " +
-              s"Field: '${group.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
+              s"Field: '${g.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
             }
-            processGroupFields(group)
+            processGroupFields(g)
           }
       }
       group.copy(children = childrenWithSegmentRedefines)(group.parent)
@@ -528,7 +528,7 @@ object CopybookParser {
     * @param schema An AST as a set of copybook records
     * @return A map from segment redefines to their children
     */
-  def getAllParentToChildMap(schema: CopybookAST): Map[String, Seq[Group]] = {
+  def getParentToChildrenMap(schema: CopybookAST): Map[String, Seq[Group]] = {
     val redefineParents = mutable.ListBuffer[(Group, Option[Group])]()
 
     def generateListOfParents(group: Group): Unit = {

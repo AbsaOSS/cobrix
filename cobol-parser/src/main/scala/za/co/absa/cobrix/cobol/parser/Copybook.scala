@@ -44,7 +44,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
   /**
     * Returns a mapping from a segment redefine field name to its children.
     */
-  def getParentChildrenSegmentMap: Map[String, Seq[Group]] = CopybookParser.getAllParentToChildMap(ast)
+  def getParentChildrenSegmentMap: Map[String, Seq[Group]] = CopybookParser.getParentToChildrenMap(ast)
 
   /**
     * Returns a root segment AST stripped of all child segment ASTs.

@@ -44,10 +44,10 @@ class ParentSegmentFieldsSpec extends WordSpec {
       }
     }
 
-    "CopybookParser.getAllParentToChildMap" should {
+    "CopybookParser.getParentToChildrenMap" should {
       "return an empty map" in {
         val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
-        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+        val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
         assert(map.isEmpty)
       }
@@ -78,12 +78,12 @@ class ParentSegmentFieldsSpec extends WordSpec {
       }
     }
 
-    "CopybookParser.getAllParentToChildMap" should {
+    "CopybookParser.getParentToChildrenMap" should {
       "return a single entity map" in {
 
         val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
 
-        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+        val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
         val grpA = map.keys.find(_ == "SEGMENT_A").get
         val childrenOfA = map(grpA)
@@ -114,12 +114,12 @@ class ParentSegmentFieldsSpec extends WordSpec {
     val segmentRedefines = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: Nil
     val fieldParentMap = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-A")
 
-    "CopybookParser.getAllParentToChildMap" should {
+    "CopybookParser.getParentToChildrenMap" should {
       "return a proper parent-children map" in {
 
         val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
 
-        val map = CopybookParser.getAllParentToChildMap(parsedCopybook.ast)
+        val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
         val grpA = map.keys.find(_ == "SEGMENT_A").get
         val childrenOfA = map(grpA)
