@@ -757,23 +757,24 @@ object CopybookParser {
   def findCycleIntAMap(m: Map[String, String]): List[String] = {
     @tailrec
     def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
-      val path = field :: fieldsInPath
-      if (fieldsInPath.contains(field)) {
-        // dropping fields that precede the cycle
-        val i = fieldsInPath.indexOf(field)
-        val cycle = path.take(i + 2)
-        cycle.reverse
+      val i = fieldsInPath.indexOf(field)
+      if (i >= 0) {
+        fieldsInPath.take(i + 1).reverse :+ field
       } else {
         m.get(field) match {
-          case Some(parent) => findCycleHelper(parent, path)
+          case Some(parent) =>
+            val path = field :: fieldsInPath
+            findCycleHelper(parent, path)
           case None => Nil
         }
       }
     }
 
-    m.collectFirst {
-      case (k, _) if findCycleHelper(k, Nil).nonEmpty => findCycleHelper(k, Nil)
-    }.getOrElse(List[String]())
+    m.view
+      .map({ case (k, _) =>
+        findCycleHelper(k, Nil) })
+      .find(_.nonEmpty)
+      .getOrElse(List[String]())
   }
 
   /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
