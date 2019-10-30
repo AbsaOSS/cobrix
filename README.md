@@ -91,7 +91,7 @@ Snapshot versions corresponding to the current master are available as well:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <version>1.1.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -99,15 +99,20 @@ Snapshot versions corresponding to the current master are available as well:
 
 ## Quick start
 
-This repository contains 2 standalone examples in `examples` directory:
-* `spark-type-variety` is an example of a very simple mainframe file processing.
+This repository contains several standalone example applications in `examples/spark-cobol-app` directory.
+It is a Maven project that contains several examples:
+* `SparkTypesApp` is an example of a very simple mainframe file processing.
    It is a fixed record length raw data file with a corresponding copybook. The copybook 
    contains examples of various numeric data types Cobrix supports.
-* `spark-cobol-app` is an example of a Spark Job for handling multisegment variable record
+* `SparkCobolApp` is an example of a Spark Job for handling multisegment variable record
    length mainframe files.  
+* `SparkCodecApp` is an example usage of a custom record header parser. This application reads a variable
+   record length file having non-standard RDW headers. In this example RDH header is 5 bytes instead of 4
+* `SparkCobolHierarchical` is an example processing of an EBCDIC multisegment file extracted from a hierarchical database.
 
-Both of these examples can be used as a template for a Spark job application. Refer to README.md
-in each example folder for the detailed guide how to run the examples locally and on a cluster.
+
+The example project can be used as a template for creating Spark Application. Refer to README.md
+of that project for the detailed guide how to run the examples locally and on a cluster.
 
 When running `mvn clean package` in `examples/spark-cobol-app` an uber jar will be created. It can be used to run
 jobs via `spark-submit` or `spark-shell`. 
@@ -534,6 +539,85 @@ root
 
 There, Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only one redefine is valid for every segment. Filtering is described in the following section.
 
+## Automatic segment redefines filtering
+
+When reading a multisegment file you can use Spark to clean up redefines that do not match segment ids. Cobrix will parse
+every redefined field for each segment. To increase performance you can specify which redefine corresponds to which
+segment id. This way Cobrix will parse only relevant segment redefined fields and leave the rest of the redefined fields null.
+
+```
+  .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...")
+  .option("redefine-segment-id-map:1", "REDEFINED_FIELD2 => SegmentId10,SegmentId11,...")
+```
+
+For the above example the load options will lok like this (last 2 options):
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("schema_retention_policy", "collapse_root")
+  .option("is_record_sequence", "true")
+  .option("segment_field", "SEGMENT_ID")
+  .option("segment_id_level0", "C")
+  .option("segment_id_level1", "P")
+  .option("redefine_segment_id_map:0", "STATIC-DETAILS => C")
+  .option("redefine_segment_id_map:1", "CONTACTS => P")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The filtered data will look like this:
+```
+df.show(10)
++----------+----------+--------------------+--------------------+
+|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
++----------+----------+--------------------+--------------------+
+|         C|9377942526|[Joan Q & Z,10 Sa...|                    |
+|         P|9377942526|                    |[+(277) 944 44 55...|
+|         C|3483483977|[Robotrd Inc.,2 P...|                    |
+|         P|3483483977|                    |[+(174) 970 97 54...|
+|         P|3483483977|                    |[+(848) 832 61 68...|
+|         P|3483483977|                    |[+(455) 184 13 39...|
+|         C|7540764401|[Eqartion Inc.,87...|                    |
+|         C|4413124035|[Xingzhoug,74 Qin...|                    |
+|         C|9546291887|[ZjkLPj,5574, Tok...|                    |
+|         P|9546291887|                    |[+(300) 252 33 17...|
++----------+----------+--------------------+--------------------+
+```
+
+In the above example invalid fields became `null` and the parsing is done faster because Cobrix does not need to process
+every redefine for each record.
+
+
+## Group Filler dropping
+
+A FILLER is an anonymous field that is usually used for reserving space for new fields in a fixed record length data.
+Or it is used to remove a field from a copybook without affecting compatibility.
+
+```cobol
+      05  COMPANY.
+          10  NAME      PIC X(15).
+          10  FILLER    PIC X(5).
+          10  ADDRESS   PIC X(25).
+          10  FILLER    PIC X(125).
+``` 
+Such fields are dropped when imported into a Spark data frame by Cobrix. Some copybooks, however, have FILLER groups that
+contain non-filler fields. For example,
+```cobol
+      05  FILLER.
+          10  NAME      PIC X(15).
+          10  ADDRESS   PIC X(25).
+      05  FILLER.
+          10  AMOUNT    PIC 9(10)V96.
+          10  COMMENT   PIC X(40).
+``` 
+By default Cobrix will retain such fields, but will rename each such filler to a unique name so each each individual struct
+can be specified unambiguously. For example, in this case the filler groups will be renamed to `FILLER_1` and `FILLER_2`.
+You can change this behaviour if you would like to drop such filler groups by providing this option:
+```
+.option("drop_group_fillers", "true")
+```
+
 
 ## <a id="ims"/>Reading hierarchical data sets
 
@@ -625,7 +709,99 @@ the second data set (segment id = 'P' [person]). While doing the split we can al
 contain nested structures. This can be helpful to simplify the analysis of the data.
 
 While doing it you might notice that the taxpayer number field is actually a redefine. Depending on the 'TAXPAYER_TYPE'
-either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spark app as well. 
+either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spark app as well.
+
+### <a id="autoims"/>Automatic reconstruction of hierarchical record structure
+Starting from `spark-cobol` version `1.1.0` hierarchical structure of multisegment records can be restored automatically. In order to do this you
+need to provide:
+- A segment ID field that will be used to distinguish segment types.
+- A segmentId to redefine fields mapping that will be used to map each segment to a redefine field.
+- A parent-child relationship between segments identified by segment redefine fields.
+
+When all of the above is specified Cobrix can reconstruct hierarchical nature of records by making child segments nested
+arrays of parent segments. Arbitrary levels of hierarchy and arbitrary number of segments is supported.
+
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook", "/path/to/thecopybook")
+  .option("schema_retention_policy", "collapse_root")
+  .option("is_record_sequence", "true")
+
+  // Specifies a field containing a segment id
+  .option("segment_field", "SEGMENT_ID")
+  
+  // Specifies a mapping between segment ids and segment redefine fields
+  .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+  .option("redefine-segment-id-map:2", "CONTACTS => P")
+  
+  // Specifies a parent-child relationship
+  .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+  
+  .load("examples/multisegment_data")
+```
+
+The output schema will be
+
+```
+scala> df.printSchema()
+
+root
+ |-- SEGMENT_ID: string (nullable = true)
+ |-- COMPANY_ID: string (nullable = true)
+ |-- STATIC_DETAILS: struct (nullable = true)
+ |    |-- COMPANY_NAME: string (nullable = true)
+ |    |-- ADDRESS: string (nullable = true)
+ |    |-- TAXPAYER: struct (nullable = true)
+ |    |    |-- TAXPAYER_TYPE: string (nullable = true)
+ |    |    |-- TAXPAYER_STR: string (nullable = true)
+ |    |    |-- TAXPAYER_NUM: integer (nullable = true)
+ |    |-- CONTACTS: array (nullable = true)
+ |    |    |-- element: struct (containsNull = true)
+ |    |    |    |-- PHONE_NUMBER: string (nullable = true)
+ |    |    |    |-- CONTACT_PERSON: string (nullable = true)
+
+```
+
+Notice that contacts now is an array of structs. That is a company static details can contain zero or mor contacts.
+A possible hierarchical record output is
+```
+scala> import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
+
+scala> println(SparkUtils.prettyJSON(df.toJSON.take(1).mkString("[", ", ", "]")))
+{
+  "SEGMENT_ID" : "C",
+  "COMPANY_ID" : "9377942526",
+  "STATIC_DETAILS" : {
+    "COMPANY_NAME" : "Joan Q & Z",
+    "ADDRESS" : "10 Sandton, Johannesburg",
+    "TAXPAYER" : {
+      "TAXPAYER_TYPE" : "A",
+      "TAXPAYER_STR" : "92714306",
+      "TAXPAYER_NUM" : 959592241
+    },
+    "CONTACTS" : [ {
+      "PHONE_NUMBER" : "+(174) 970 97 54",
+      "CONTACT_PERSON" : "Tyesha Debow"
+    }, {
+      "PHONE_NUMBER" : "+(848) 832 61 68",
+      "CONTACT_PERSON" : "Mindy Celestin"
+    }, {
+      "PHONE_NUMBER" : "+(455) 184 13 39",
+      "CONTACT_PERSON" : "Mabelle Winburn"
+    } ]
+  }
+}
+```
+
+An advanced hierarchical example with multiple levels of nesting and multiple segments on each level
+is available as a unit test `za/co/absa/cobrix/spark/cobol/source/integration/Test17HierarchicalSpec.scala`.
+ 
+### Manual reconstruction of hierarchical structure
+
+Alternatively, hierarchical record structure can be reconstructed manually by extracting each segment and joining
+segments together. This a is more complicated process, but it provides more control.
 
 #### Getting the first segment
 ```scala
@@ -824,85 +1000,6 @@ dfJoined.show(13, truncate = false)
 Again, the full example is available at
 `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
 
-## Automatic segment redefines filtering
-
-When reading a multisegment file you can use Spark to clean up redefines that do not match segment ids. Cobrix will parse
-every redefined field for each segment. To increase performance you can specify which redefine corresponds to which
-segment id. This way Cobrix will parse only relevant segment redefined fields and leave the rest of the redefined fields null.
-
-```
-  .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...")
-  .option("redefine-segment-id-map:1", "REDEFINED_FIELD2 => SegmentId10,SegmentId11,...")
-```
-
-For the above example the load options will lok like this (last 2 options):
-```scala
-val df = spark
-  .read
-  .format("cobol")
-  .option("copybook_contents", copybook)
-  .option("schema_retention_policy", "collapse_root")
-  .option("is_record_sequence", "true")
-  .option("segment_field", "SEGMENT_ID")
-  .option("segment_id_level0", "C")
-  .option("segment_id_level1", "P")
-  .option("redefine_segment_id_map:0", "STATIC-DETAILS => C")
-  .option("redefine_segment_id_map:1", "CONTACTS => P")
-  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
-```
-
-The filtered data will look like this:
-```
-df.show(10)
-+----------+----------+--------------------+--------------------+
-|SEGMENT_ID|COMPANY_ID|      STATIC_DETAILS|            CONTACTS|
-+----------+----------+--------------------+--------------------+
-|         C|9377942526|[Joan Q & Z,10 Sa...|                    |
-|         P|9377942526|                    |[+(277) 944 44 55...|
-|         C|3483483977|[Robotrd Inc.,2 P...|                    |
-|         P|3483483977|                    |[+(174) 970 97 54...|
-|         P|3483483977|                    |[+(848) 832 61 68...|
-|         P|3483483977|                    |[+(455) 184 13 39...|
-|         C|7540764401|[Eqartion Inc.,87...|                    |
-|         C|4413124035|[Xingzhoug,74 Qin...|                    |
-|         C|9546291887|[ZjkLPj,5574, Tok...|                    |
-|         P|9546291887|                    |[+(300) 252 33 17...|
-+----------+----------+--------------------+--------------------+
-```
-
-In the above example invalid fields became `null` and the parsing is done faster because Cobrix does not need to process
-every redefine for each record.
-
-
-## Group Filler dropping
-
-A FILLER is an anonymous field that is usually used for reserving space for new fields in a fixed record length data.
-Or it is used to remove a field from a copybook without affecting compatibility.
-
-```cobol
-      05  COMPANY.
-          10  NAME      PIC X(15).
-          10  FILLER    PIC X(5).
-          10  ADDRESS   PIC X(25).
-          10  FILLER    PIC X(125).
-``` 
-Such fields are dropped when imported into a Spark data frame by Cobrix. Some copybooks, however, have FILLER groups that
-contain non-filler fields. For example,
-```cobol
-      05  FILLER.
-          10  NAME      PIC X(15).
-          10  ADDRESS   PIC X(25).
-      05  FILLER.
-          10  AMOUNT    PIC 9(10)V96.
-          10  COMMENT   PIC X(40).
-``` 
-By default Cobrix will retain such fields, but will rename each such filler to a unique name so each each individual struct
-can be specified unambiguously. For example, in this case the filler groups will be renamed to `FILLER_1` and `FILLER_2`.
-You can change this behaviour if you would like to drop such filler groups by providing this option:
-```
-.option("drop_group_fillers", "true")
-```
-
 ## Summary of all available options
 
 ##### File reading options
@@ -957,7 +1054,8 @@ You can change this behaviour if you would like to drop such filler groups by pr
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
-| .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so teh option keys are unique. |
+| .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so the option keys are unique. |
+| .option("segment-children:0", "COMPANY => EMPLOYEE,DEPARTMENT") | Specifies a mapping between segment redefined fields and their children. Each option specifies a mapping for a single parent field. The numeric value for each mapping option must be incremented so the option keys are unique. If such mapping is specified hierarchical record structure will be automatically reconstructed. This require `redefine-segment-id-map` to be set. | 
 | .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
 | .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
 | .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. |
@@ -1072,6 +1170,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 1.1.0 snapshot
+  - Add an option (`segment-children`) to reconstruct hierarchical structure of records. See [Automatic reconstruction of hierarchical structure](#autoims)
+
 - #### 1.0.2 released 21 October 2019. 
   - Fixed trimming of VARCHAR fields.
 

@@ -29,8 +29,10 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 
+import scala.annotation.tailrec
+import scala.collection.immutable.HashMap
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 
 /**
@@ -52,9 +54,10 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param copyBookContents A string containing all lines of a copybook
-    * @param dropGroupFillers Drop groups marked as fillers from the output AST
-    * @param segmentRedefines A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param copyBookContents     A string containing all lines of a copybook
+    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
@@ -62,12 +65,13 @@ object CopybookParser {
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
                 segmentRedefines: Seq[String] = Nil,
+                fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
+    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, fieldParentMap, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
   }
 
   /**
@@ -78,6 +82,7 @@ object CopybookParser {
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                             resolving segment redefines.
+    * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
@@ -87,6 +92,7 @@ object CopybookParser {
                 copyBookContents: String,
                 dropGroupFillers: Boolean,
                 segmentRedefines: Seq[String],
+                fieldParentMap: Map[String,String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
@@ -98,16 +104,19 @@ object CopybookParser {
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
     ).toSet
+    
+    val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
+    validateFieldParentMap(correctedFieldParentMap)
 
     new Copybook(
       if (dropGroupFillers) {
-        calculateNonFillerSizes(markSegmentRedefines(processGroupFillers(markDependeeFields(
+        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
           addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-        )), segmentRedefines))
+        )), segmentRedefines), correctedFieldParentMap))
       } else {
-        calculateNonFillerSizes(markSegmentRedefines(renameGroupFillers(markDependeeFields(
+        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
           addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
-        )), segmentRedefines))
+        )), segmentRedefines), correctedFieldParentMap))
       }
     )
   }
@@ -367,7 +376,7 @@ object CopybookParser {
     }
 
     def processGroupFields(group: Group): Group = {
-      val newChildren: ArrayBuffer[Statement] = group.children.map {
+      val childrenWithSegmentRedefines: ArrayBuffer[Statement] = group.children.map {
         case p: Primitive =>
           ensureSegmentRedefinesAreIneGroup(p.name, isCurrentFieldASegmentRedefine = false)
           p
@@ -385,7 +394,7 @@ object CopybookParser {
           }
         }
       }
-      group.copy(children = newChildren)(group.parent)
+      group.copy(children = childrenWithSegmentRedefines)(group.parent)
     }
 
     def processRootLevelFields(group: CopybookAST): CopybookAST = {
@@ -416,6 +425,178 @@ object CopybookParser {
       ast.withUpdatedChildren(newSchema.children)
     }
   }
+
+  /**
+    * Sets parent groups for child segment redefines.
+    * This relies on segment id to redefines map. The assumptions are
+    *
+    * * Only one segment redefine field has empty parent - the root segment.
+    * * All other segment redefines should have a parent segment.
+    * * isSegmentRedefine should be already set for all segment redefines.
+    * * A parent of a segment redefine should be a segment redefine as well
+    *
+    * @param originalSchema   An AST as a set of copybook records
+    * @param fieldParentMap A mapping between field names and their parents
+    * @return The same AST with binary properties set for every field
+    */
+  @throws(classOf[IllegalStateException])
+  def setSegmentParents(originalSchema: CopybookAST, fieldParentMap: Map[String,String]): CopybookAST = {
+    val rootSegments = ListBuffer[String]()
+    val redefinedFields = getAllSegmentRedefines(originalSchema)
+
+    def getParentField(childName: String): Option[Group] = {
+      fieldParentMap
+        .get(childName)
+        .map(field => {
+          val parentOpt = redefinedFields.find(f => f.name == field)
+          parentOpt match {
+            case Some(group) => group
+            case _ => throw new IllegalStateException(s"Field $field is specified to be the parent of $childName, " +
+              s"but $field is not a segment redefine. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
+          }
+        })
+    }
+
+    def processGroupFields(group: Group): Group = {
+      val childrenWithSegmentRedefines: ArrayBuffer[Statement] = group.children.map {
+        case p: Primitive =>
+          p
+        case g: Group =>
+          if (g.isSegmentRedefine) {
+            val newGroup = g.withUpdatedParentSegment(getParentField(g.name))
+            if (newGroup.parentSegment.isEmpty) {
+              rootSegments += g.name
+            }
+            newGroup
+          } else {
+            if (fieldParentMap.contains(g.name)) {
+              throw new IllegalStateException("Parent field is defined for a field that is not a segment redefine. " +
+              s"Field: '${g.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
+            }
+            processGroupFields(g)
+          }
+      }
+      group.copy(children = childrenWithSegmentRedefines)(group.parent)
+    }
+
+    def validateRootSegments(): Unit = {
+      if (rootSegments.size > 1) {
+        val rootSegmentsStr = rootSegments.mkString(", ")
+        throw new IllegalStateException(s"Only one root segment is allowed. Found root segments: [ $rootSegmentsStr ]. ")
+      }
+      if (rootSegments.isEmpty) {
+        throw new IllegalStateException(s"No root segment found in the segment parent-child map.")
+      }
+    }
+
+    if (fieldParentMap.isEmpty) {
+      originalSchema
+    } else {
+      val newSchema = processGroupFields(originalSchema)
+      validateRootSegments()
+      newSchema
+    }
+  }
+
+  /**
+    * Given an AST of a copybook returns the list of all segment redefine GROUPs
+    *
+    * @param schema An AST as a set of copybook records
+    * @return A list of segment redefine GROUPs
+    */
+  def getAllSegmentRedefines(schema: CopybookAST): List[Group] = {
+    val redefinedFields = ListBuffer[Group]()
+
+    def processGroupFields(group: Group): Unit = {
+      group.children.foreach {
+        case _: Primitive => // Nothing to do
+        case g: Group =>
+          if (g.isSegmentRedefine) {
+            redefinedFields += g
+          }
+          processGroupFields(g)
+      }
+    }
+
+    processGroupFields(schema)
+    redefinedFields.toList
+  }
+
+  /**
+    * Given an AST of a copybook returns a map from segment redefines to their children
+    *
+    * @param schema An AST as a set of copybook records
+    * @return A map from segment redefines to their children
+    */
+  def getParentToChildrenMap(schema: CopybookAST): Map[String, Seq[Group]] = {
+    val redefineParents = mutable.ListBuffer[(Group, Option[Group])]()
+
+    def generateListOfParents(group: Group): Unit = {
+      group.children.foreach {
+        case _: Primitive => // Nothing to do
+        case g: Group =>
+          if (g.isSegmentRedefine) {
+            redefineParents.append((g, g.parentSegment))
+          }
+          generateListOfParents(g)
+      }
+    }
+
+    generateListOfParents(schema)
+
+    val redefines = redefineParents.map(_._1)
+    redefines.map(parent => {
+      val children = redefines.flatMap(child =>
+        if (child.parentSegment.nonEmpty && child.parentSegment.get.name == parent.name) {
+          List[Group](child)
+        } else {
+          List[Group]()
+        }
+      )
+      (parent.name, children)
+    }).toMap
+  }
+
+  /**
+    * Given an AST of a copybook returns a new AST that does not contain child segments
+    *
+    * @param schema An AST as a set of copybook records
+    * @return A list of segment redefine GROUPs
+    */
+  def getRootSegmentAST(schema: CopybookAST): CopybookAST = {
+    val newChildren: ArrayBuffer[Statement] = schema.children.collect {
+      case p: Primitive =>
+        p
+      case g: Group if g.parentSegment.isEmpty =>
+        getRootSegmentAST(g)
+    }
+    schema.withUpdatedChildren(newChildren)
+  }
+
+  /**
+    * Returns a a list of values of segment ids for the root segment.
+    */
+  def getRootSegmentIds(segmentIdRedefineMap: Map[String, String],
+                        fieldParentMap: Map[String, String]): List[String] = {
+
+    val rootSegmentFields = getRootSegmentFields(fieldParentMap)
+
+    segmentIdRedefineMap.toList.collect {
+      case (segmentId, redefine) if rootSegmentFields.contains(redefine) => segmentId
+    }
+  }
+
+  /**
+    * From a mapping from fields to their parents returns roots field - the ones that does not have a parent.
+    */
+  private def getRootSegmentFields(fieldParentMap: Map[String, String]): List[String] = {
+    fieldParentMap
+      .values
+      .toSet
+      .diff(fieldParentMap.keys.toSet)
+      .toList
+  }
+
 
   /**
     * Rename group fillers so filed names in the scheme doesn't repeat
@@ -527,7 +708,7 @@ object CopybookParser {
       var i = 0
       var nonFillers = 0
       while (i < group.children.length) {
-        if (!group.children(i).isFiller)
+        if (!group.children(i).isFiller && !group.children(i).isChildSegment)
           nonFillers += 1
         i += 1
       }
@@ -555,6 +736,61 @@ object CopybookParser {
     identifier
       .replaceAll(":", "")
       .replaceAll("-", "_")
+  }
+
+  /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
+  def transformIdentifierMap(identifierMap: Map[String,String]): Map[String,String] = {
+    identifierMap.map {
+      case (k, v) =>
+        val newKey = transformIdentifier(k)
+        val newValue = transformIdentifier(v)
+        (newKey, newValue)
+    }
+  }
+
+  /**
+    * Finds a cycle in a parent-child relation map.
+    *
+    * @param m A mapping from field name to its parent field name.
+    * @return A list of fields in a cycle if there is one, an empty list otherwise
+    */
+  def findCycleIntAMap(m: Map[String, String]): List[String] = {
+    @tailrec
+    def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
+      val i = fieldsInPath.indexOf(field)
+      if (i >= 0) {
+        fieldsInPath.take(i + 1).reverse :+ field
+      } else {
+        m.get(field) match {
+          case Some(parent) =>
+            val path = field :: fieldsInPath
+            findCycleHelper(parent, path)
+          case None => Nil
+        }
+      }
+    }
+
+    m.view
+      .map({ case (k, _) =>
+        findCycleHelper(k, Nil) })
+      .find(_.nonEmpty)
+      .getOrElse(List[String]())
+  }
+
+  /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
+  private def validateFieldParentMap(identifierMap: Map[String, String]): Unit = {
+    identifierMap.foreach {
+      case (k, v) =>
+        if (k.equalsIgnoreCase(v)) {
+          throw new IllegalStateException(s"A segment $k cannot be a parent of itself.")
+        }
+    }
+
+    val cycle = findCycleIntAMap(identifierMap)
+    if (cycle.nonEmpty) {
+      val listStr = cycle.mkString(", ")
+      throw new IllegalStateException(s"Segments parent-child relation form a cycle: $listStr.")
+    }
   }
 
 }

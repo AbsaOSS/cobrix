@@ -18,14 +18,16 @@ package za.co.absa.cobrix.spark.cobol.schema
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+
 import org.apache.spark.sql.types._
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Decimal, Integral, COMP1, COMP2}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -51,10 +53,37 @@ class CobolSchema(val copybook: Copybook,
   def getCobolSchema: Copybook = copybook
 
   @throws(classOf[IllegalStateException])
-  private[this] lazy val sparkSchema = {
+  private[this] lazy val sparkSchema = createSparkSchema()
+
+  @throws(classOf[IllegalStateException])
+  private[this] lazy val sparkFlatSchema = {
+    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
+    val arraySchema = copybook.ast.children.toArray
+    val records = arraySchema.flatMap(record => {
+      parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
+    })
+    StructType(records)
+  }
+
+  def getSparkSchema: StructType = {
+    sparkSchema
+  }
+
+  def getSparkFlatSchema: StructType = {
+    sparkFlatSchema
+  }
+
+  lazy val getRecordSize: Int = copybook.getRecordSize
+
+  def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
+
+  @throws(classOf[IllegalStateException])
+  private def createSparkSchema(): StructType = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val records = for (record <- copybook.ast.children) yield {
-      parseGroup(record.asInstanceOf[Group])
+      val group = record.asInstanceOf[Group]
+      val redefines = copybook.getAllSegmentRedefines
+      parseGroup(group, redefines)
     }
     val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot) {
       // Expand root group fields
@@ -81,67 +110,78 @@ class CobolSchema(val copybook: Copybook,
   }
 
   @throws(classOf[IllegalStateException])
-  private[this] lazy val sparkFlatSchema = {
-    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-    val arraySchema = copybook.ast.children.toArray
-    val records = arraySchema.flatMap(record => {
-      parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
+  private def parseGroup(group: Group, segmentRedefines: List[Group]): StructField = {
+    val fields = group.children.flatMap(field => {
+      if (field.isFiller) {
+        // Skipping fillers
+        Nil
+      } else {
+        field match {
+          case group: Group =>
+            if (group.parentSegment.isEmpty) {
+              parseGroup(group, segmentRedefines) :: Nil
+            } else {
+              // Skipping child segments on this level
+              Nil
+            }
+          case p: Primitive =>
+            parsePrimitive(p) :: Nil
+        }
+      }
     })
-    StructType(records)
+    val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
+    if (group.isArray) {
+      StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true)
+    } else {
+      StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true)
+    }
   }
-
-  def getSparkSchema: StructType = {
-    sparkSchema
-  }
-
-  def getSparkFlatSchema: StructType = {
-    sparkFlatSchema
-  }
-
-  lazy val getRecordSize: Int = copybook.getRecordSize
-
-  def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
 
   @throws(classOf[IllegalStateException])
-  private def parseGroup(group: Group): StructField = {
-    val fields = for (field <- group.children if !field.isFiller) yield {
-      field match {
-        case group: Group =>
-          parseGroup(group)
-        case s: Primitive =>
-          val dataType: DataType = s.dataType match {
-            case d: Decimal =>
-              d.compact match {
-                case Some(COMP1()) => FloatType
-                case Some(COMP2()) => DoubleType
-                case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
-              }
-            case _: AlphaNumeric => StringType
-            case dt: Integral =>
-              if (dt.precision > Constants.maxLongPrecision) {
-                DecimalType(precision = dt.precision, scale = 0)
-              } else if (dt.precision > Constants.maxIntegerPrecision) {
-                LongType
-              }
-              else {
-                IntegerType
-              }
-            case _ => throw new IllegalStateException("Unknown AST object")
-          }
-          if (s.isArray) {
-            StructField(s.name, ArrayType(dataType), nullable = true)
-          } else {
-            StructField(s.name, dataType, nullable = true)
-          }
-      }
-
+  private def parsePrimitive(p: Primitive): StructField = {
+    val dataType: DataType = p.dataType match {
+      case d: Decimal =>
+        d.compact match {
+          case Some(COMP1()) => FloatType
+          case Some(COMP2()) => DoubleType
+          case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
+        }
+      case _: AlphaNumeric => StringType
+      case dt: Integral =>
+        if (dt.precision > Constants.maxLongPrecision) {
+          DecimalType(precision = dt.precision, scale = 0)
+        } else if (dt.precision > Constants.maxIntegerPrecision) {
+          LongType
+        }
+        else {
+          IntegerType
+        }
+      case _ => throw new IllegalStateException("Unknown AST object")
     }
-    if (group.isArray) {
-      StructField(group.name, ArrayType(StructType(fields.toArray)), nullable = true)
+    if (p.isArray) {
+      StructField(p.name, ArrayType(dataType), nullable = true)
     } else {
-      StructField(group.name, StructType(fields.toArray), nullable = true)
+      StructField(p.name, dataType, nullable = true)
     }
+  }
 
+  private def getChildSegments(group: Group, segmentRedefines: List[Group]): ArrayBuffer[StructField] = {
+    segmentRedefines.flatMap(segment => {
+      segment.parentSegment match {
+        case Some(parent) =>
+          if (parent.name.equalsIgnoreCase(group.name)) {
+            val child = parseGroup(segment, segmentRedefines)
+            val fields = child.dataType.asInstanceOf[StructType].fields
+            List(
+              StructField(segment.name, ArrayType(StructType(fields)), nullable = true)
+            )
+          } else {
+            Nil
+          }
+        case None =>
+          Nil
+      }
+    }).to[mutable.ArrayBuffer]
   }
 
   @throws(classOf[IllegalStateException])

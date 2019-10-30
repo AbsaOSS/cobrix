@@ -28,6 +28,8 @@ import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 
+import scala.collection.immutable.HashMap
+
 /**
   *  The Cobol data reader that produces nested structure schema
   *
@@ -85,12 +87,14 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
 
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
         dropGroupFillers,
         segmentRedefines,
+        fieldParentMap,
         stringTrimmingPolicy,
         readerProperties.commentPolicy,
         ebcdicCodePage,
@@ -99,8 +103,16 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
     else
       Copybook.merge(
         copyBookContents.map(
-          CopybookParser.parseTree(encoding, _, dropGroupFillers, segmentRedefines,
-            stringTrimmingPolicy, readerProperties.commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
+          CopybookParser.parseTree(encoding,
+            _,
+            dropGroupFillers,
+            segmentRedefines,
+            fieldParentMap,
+            stringTrimmingPolicy,
+            readerProperties.commentPolicy,
+            ebcdicCodePage,
+            floatingPointFormat,
+            nonTerminals)
         )
       )
     new CobolSchema(schema, schemaRetentionPolicy, false)

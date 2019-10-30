@@ -29,9 +29,10 @@ import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
-import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.VarLenNestedIterator
+import za.co.absa.cobrix.spark.cobol.reader.varlen.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
+import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -67,8 +68,13 @@ final class VarLenNestedReader(copybookContents: Seq[String],
                               startingFileOffset: Long,
                               fileNumber: Int,
                               startingRecordIndex: Long): Iterator[Row] =
-    new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-      fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+    if (cobolSchema.copybook.isHierarchical) {
+      new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+        fileNumber, startingRecordIndex, startingFileOffset)
+    } else {
+      new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+        fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix)
+    }
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.
@@ -100,17 +106,19 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
-    val segmentIfValue = readerProperties.multisegment.flatMap(a => a.segmentLevelIds.headOption).getOrElse("")
+
+    // TODO Add support for multiple Ids (https://github.com/AbsaOSS/cobrix/issues/197)
+    val segmentIdValue = getRootSegmentId
 
     // It makes sense to parse data hierarchically only if hierarchical id generation is requested
     val isHierarchical = readerProperties.multisegment match {
-      case Some(params) => params.segmentLevelIds.nonEmpty
+      case Some(params) => params.segmentLevelIds.nonEmpty || params.fieldParentMap.nonEmpty
       case None => false
     }
 
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIfValue)
+        recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIdValue)
       case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
         recordHeaderParser, inputSplitSizeRecords, inputSplitSizeMB, None, None, isHierarchical)
     }
@@ -119,12 +127,14 @@ final class VarLenNestedReader(copybookContents: Seq[String],
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
         readerProperties.dropGroupFillers,
         segmentRedefines,
+        fieldParentMap,
         readerProperties.stringTrimmingPolicy,
         readerProperties.commentPolicy,
         codePage,
@@ -136,6 +146,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           _,
           readerProperties.dropGroupFillers,
           segmentRedefines,
+          fieldParentMap,
           readerProperties.stringTrimmingPolicy,
           readerProperties.commentPolicy,
           codePage,
@@ -219,6 +230,19 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.fileEndOffset,
         0
       )
+    }
+  }
+
+  private def getRootSegmentId: String = {
+    readerProperties.multisegment match {
+      case Some(m) =>
+        if (m.fieldParentMap.nonEmpty && m.segmentIdRedefineMap.nonEmpty) {
+          cobolSchema.copybook.getRootSegmentIds(m.segmentIdRedefineMap, m.fieldParentMap).headOption.getOrElse("")
+        } else {
+          m.segmentLevelIds.headOption.getOrElse("")
+        }
+      case None =>
+        ""
     }
   }
 }

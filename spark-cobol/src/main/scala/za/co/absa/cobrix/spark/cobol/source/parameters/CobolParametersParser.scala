@@ -27,6 +27,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.Parameters
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -262,7 +263,8 @@ object CobolParametersParser {
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
-        getSegmentIdRedefineMapping(params)
+        getSegmentIdRedefineMapping(params),
+        getSegmentRedefineParents(params)
       ))
     }
     else {
@@ -342,6 +344,7 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     * @return Returns a sequence of segment ids on the order of hierarchy levels
     */
+  @throws(classOf[IllegalArgumentException])
   def getSegmentIdRedefineMapping(params: Parameters): Map[String, String] = {
     params.getMap.flatMap {
       case (k, v) =>
@@ -351,7 +354,7 @@ object CobolParametersParser {
           params.markUsed(k)
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) !=0) {
-            throw new IllegalArgumentException(s"Illegal argument for the 'redefine_segment_id_map' option: '$v'.")
+            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id-map' option: '$v'.")
           }
           val redefine = splitVal(0).trim
           val segmentIds = splitVal(1).split(',').map(_.trim)
@@ -360,6 +363,65 @@ object CobolParametersParser {
           Nil
         }
     }
+  }
+
+  /**
+    * Parses the list of sergent redefine fields and their children for a hierarchical data.
+    * Produces a mapping between redefined fields and their parents.
+    * Root level redefines are not added to the mapping since they don't have parents.
+    *
+    * Example:
+    * For
+    * {{{
+    *   sprak.read
+    *     .option("segment-children:0", "COMPANY => DEPT,CUSTOMER")
+    *     .option("segment-children:1", "DEPT => EMPLOYEE,OFFICE")
+    * }}}
+    *
+    * The corresponding mapping will be:
+    *
+    * {{{
+    *    "DEPT" -> "COMPANY"
+    *    "CUSTOMER" -> "COMPANY"
+    *    "EMPLOYEE" -> "DEPT"
+    *    "OFFICE" -> "DEPT"
+    * }}}
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a mapping between redefined fields and their parents
+    */
+  @throws(classOf[IllegalArgumentException])
+  def getSegmentRedefineParents(params: Parameters): Map[String, String] = {
+    val segmentRedefineParents = new mutable.HashMap[String, String]
+    params.getMap.foreach({
+      case (key, value) =>
+        val keyNoCase = key.toLowerCase
+        if (keyNoCase.startsWith("segment-children") ||
+          keyNoCase.startsWith("segment_children")) {
+          params.markUsed(key)
+          val splitVal = value.split("\\=\\>")
+          if (splitVal.lengthCompare(2) != 0) {
+            throw new IllegalArgumentException(s"Illegal argument for the 'segment-children' option: '$value'.")
+          }
+          val redefine = CopybookParser.transformIdentifier(splitVal(0).trim)
+          val children = splitVal(1).split(',').map(field => CopybookParser.transformIdentifier(field.trim))
+          children.foreach(child => {
+            val duplicateOpt = segmentRedefineParents.find {
+              case (k, v) => k == child & v != redefine
+            }
+            duplicateOpt match {
+              case Some((k, v)) =>
+                throw new IllegalArgumentException(s"Duplicate child '$child' for parents $v and $redefine " +
+                  s"specified for 'segment-children' option.")
+              case _ =>
+                segmentRedefineParents.put(child, redefine)
+            }
+          })
+        } else {
+          Nil
+        }
+    })
+    segmentRedefineParents.toMap
   }
 
   /**
@@ -384,6 +446,14 @@ object CobolParametersParser {
         throw new IllegalArgumentException(msg)
       } else {
         logger.error(msg)
+      }
+    }
+    val segmentRedefineParents = getSegmentRedefineParents(params)
+    if (segmentRedefineParents.nonEmpty) {
+      val segmentIdLevels = parseSegmentLevels(params)
+      if (segmentIdLevels.nonEmpty) {
+        throw new IllegalArgumentException(s"Options 'segment-children:*' cannot be used with 'segment_id_level*' or 'segment_id_root' " +
+          "since ID fields generation is not supported for hierarchical records reader.")
       }
     }
   }

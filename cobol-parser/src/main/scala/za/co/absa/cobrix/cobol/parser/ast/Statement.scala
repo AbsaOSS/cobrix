@@ -77,6 +77,9 @@ trait Statement {
   /** Returns true if the field is a filler */
   def isFiller: Boolean
 
+  /** Returns true if the field is a child segment */
+  def isChildSegment: Boolean
+
   /** A binary properties of a field */
   val binaryProperties: BinaryProperties
 
