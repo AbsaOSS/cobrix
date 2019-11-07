@@ -1170,7 +1170,7 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 1.1.0 snapshot
+- #### 1.1.0 released 7 November 2019.
   - Add an option (`segment-children`) to reconstruct hierarchical structure of records. See [Automatic reconstruction of hierarchical structure](#autoims)
 
 - #### 1.0.2 released 21 October 2019. 
