@@ -71,7 +71,7 @@ Current version:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>1.0.2</version>
+      <version>1.1.0</version>
 </dependency>
 ```
 
@@ -209,14 +209,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-1.0.2.jar
-* cobol-parser-1.0.2.jar
+* spark-cobol-1.1.0.jar
+* cobol-parser-1.1.0.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.0.2.jar,cobol-parser-1.0.2.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.1.0.jar,cobol-parser-1.1.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1170,7 +1170,7 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 1.1.0 snapshot
+- #### 1.1.0 released 7 November 2019.
   - Add an option (`segment-children`) to reconstruct hierarchical structure of records. See [Automatic reconstruction of hierarchical structure](#autoims)
 
 - #### 1.0.2 released 21 October 2019. 
