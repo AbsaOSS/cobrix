@@ -48,17 +48,11 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
                                | |    |    |    |    |    |    |    |-- element: string (containsNull = true)
                                | |    |    |-- legid: long (nullable = true)
                                |""".stripMargin.replace("\r\n", "\n")
-    val expectedOrigData = """+---+----------------------------------------------------------------------------+
-                             ||id |legs                                                                        |
-                             |+---+----------------------------------------------------------------------------+
-                             ||1  |[[WrappedArray([100,WrappedArray([WrappedArray(1, 2, 3b, 4, 5c, 6)])]),100]]|
-                             ||2  |[[WrappedArray([200,WrappedArray([WrappedArray(3, 4, 5b, 6, 7c, 8)])]),200]]|
-                             ||3  |[[WrappedArray([300,WrappedArray([WrappedArray(6, 7, 8b, 9, 0c, 1)])]),300]]|
-                             ||4  |[]                                                                          |
-                             ||5  |null                                                                        |
-                             |+---+----------------------------------------------------------------------------+
-                             |
-                             |""".stripMargin.replace("\r\n", "\n")
+    val expectedOrigData = """{"id":1,"legs":[{"conditions":[{"amount":100,"checks":[{"checkNums":["1","2","3b","4","5c","6"]}]}],"legid":100}]}
+                             |{"id":2,"legs":[{"conditions":[{"amount":200,"checks":[{"checkNums":["3","4","5b","6","7c","8"]}]}],"legid":200}]}
+                             |{"id":3,"legs":[{"conditions":[{"amount":300,"checks":[{"checkNums":["6","7","8b","9","0c","1"]}]}],"legid":300}]}
+                             |{"id":4,"legs":[]}
+                             |{"id":5}""".stripMargin.replace("\r\n", "\n")
 
     val expectedFlatSchema = """root
                                | |-- id: long (nullable = true)
@@ -87,7 +81,7 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
     val dfFlattened = SparkUtils.flattenSchema(df)
 
     val originalSchema = df.schema.treeString
-    val originalData = showString(df)
+    val originalData = df.toJSON.collect().mkString("\n")
 
     val flatSchema = dfFlattened.schema.treeString
     val flatData = showString(dfFlattened)
@@ -155,16 +149,10 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
                                | |    |-- element: array (containsNull = true)
                                | |    |    |-- element: integer (containsNull = false)
                                |""".stripMargin.replace("\r\n", "\n")
-    val expectedOrigData = """+---------------------------------------------------------------------------------------------+
-                             ||value                                                                                        |
-                             |+---------------------------------------------------------------------------------------------+
-                             ||[WrappedArray(1, 2, 3, 4, 5, 6), WrappedArray(7, 8, 9, 10, 11, 12, 13)]                      |
-                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
-                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
-                             ||[WrappedArray(201, 202, 203, 204, 205, 206), WrappedArray(207, 208, 209, 210, 211, 212, 213)]|
-                             |+---------------------------------------------------------------------------------------------+
-                             |
-                             |""".stripMargin.replace("\r\n", "\n")
+    val expectedOrigData = """{"value":[[1,2,3,4,5,6],[7,8,9,10,11,12,13]]}
+                             |{"value":[[201,202,203,204,205,206],[207,208,209,210,211,212,213]]}
+                             |{"value":[[201,202,203,204,205,206],[207,208,209,210,211,212,213]]}
+                             |{"value":[[201,202,203,204,205,206],[207,208,209,210,211,212,213]]}""".stripMargin.replace("\r\n", "\n")
 
     val expectedFlatSchema = """root
                                | |-- value_0_0: integer (nullable = true)
@@ -198,7 +186,7 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
     val dfFlattened2 = SparkUtils.flattenSchema(df, useShortFieldNames = true)
 
     val originalSchema = df.schema.treeString
-    val originalData = showString(df)
+    val originalData = df.toJSON.collect().mkString("\n")
 
     val flatSchema1 = dfFlattened1.schema.treeString
     val flatData1 = showString(dfFlattened1)

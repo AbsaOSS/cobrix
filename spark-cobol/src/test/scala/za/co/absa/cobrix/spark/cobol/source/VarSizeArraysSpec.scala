@@ -102,16 +102,10 @@ class VarSizeArraysSpec extends FunSuite with SparkTestBase with BinaryFileFixtu
   )
 
   private val expected =
-    """+---+---------------------------------------------------------------+---+
-      ||N  |A                                                              |C  |
-      |+---+---------------------------------------------------------------+---+
-      ||9  |[[1,1], [2,2], [3,3], [4,4], [5,5], [6,6], [7,7], [8,8], [9,9]]|A  |
-      ||4  |[[1,2], [3,4], [5,6], [7,8]]                                   |B  |
-      ||1  |[[0,9]]                                                        |C  |
-      ||0  |[]                                                             |D  |
-      |+---+---------------------------------------------------------------+---+
-      |
-      |""".stripMargin.replace("\r\n", "\n")
+    """{"N":9,"A":[{"B1":"1","B2":"1"},{"B1":"2","B2":"2"},{"B1":"3","B2":"3"},{"B1":"4","B2":"4"},{"B1":"5","B2":"5"},{"B1":"6","B2":"6"},{"B1":"7","B2":"7"},{"B1":"8","B2":"8"},{"B1":"9","B2":"9"}],"C":"A"}
+      |{"N":4,"A":[{"B1":"1","B2":"2"},{"B1":"3","B2":"4"},{"B1":"5","B2":"6"},{"B1":"7","B2":"8"}],"C":"B"}
+      |{"N":1,"A":[{"B1":"0","B2":"9"}],"C":"C"}
+      |{"N":0,"A":[],"C":"D"}""".stripMargin.replace("\r\n", "\n")
 
   test("Test input data file having a fixed length array field") {
     withTempBinFile("binary", ".dat", binFixLenFileContents) { tmpFileName =>
@@ -124,7 +118,7 @@ class VarSizeArraysSpec extends FunSuite with SparkTestBase with BinaryFileFixtu
         .option("variable_size_occurs", "false")
         .load(tmpFileName)
 
-      val actual = TestUtils.showString(df, 10)
+      val actual = df.toJSON.collect().mkString("\n")
       assertResults(actual, expected)
     }
 
@@ -141,7 +135,7 @@ class VarSizeArraysSpec extends FunSuite with SparkTestBase with BinaryFileFixtu
         .option("variable_size_occurs", "true")
         .load(tmpFileName)
 
-      val actual = TestUtils.showString(df, 10)
+      val actual = df.toJSON.collect().mkString("\n")
       assertResults(actual, expected)
     }
 
