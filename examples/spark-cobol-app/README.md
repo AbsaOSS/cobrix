@@ -25,7 +25,7 @@ or change Scala and Spark dependencies from `provided` to `compile`.
 
 **To run this on cluster generate the uber jar by running**
 ```
-mvn package -DskipTests
+mvn package -DskipTests=true
 ```
 After the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
 to an edge node of a cluster and use `spark-submit` to run the job. Here us an example when running on Yarn:
@@ -37,7 +37,7 @@ spark-submit --num-executors 20 --executor-memory 4g --executor-cores 2 --master
 **To run a spark shell with cobol files support on cluster**
 
 ```
-mvn package -DskipTests
+mvn package -DskipTests=true
 ```
 
 After the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
