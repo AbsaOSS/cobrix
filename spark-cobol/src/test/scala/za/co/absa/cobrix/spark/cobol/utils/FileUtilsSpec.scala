@@ -19,10 +19,10 @@ package za.co.absa.cobrix.spark.cobol.utils
 import java.io.File
 import java.util.{Random, UUID}
 
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
 import org.spark_project.guava.io.Files
 
 class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
@@ -85,7 +85,7 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
       file = "/" + file
     val paths = FileUtils.getFiles(file, fileSystem, recursive = false)
     assert(paths.size == 1)
-    assert(paths.head == file)
+    assert(paths.head.contains(file))
   }
 
   it should "not retrieve files starting with ." in {

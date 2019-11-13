@@ -81,7 +81,7 @@ object FileUtils {
       }
     })
 
-    allFiles.map(_.getPath.toUri.getRawPath).toList
+    allFiles.map(_.getPath.toString).toList
   }
 
   /**

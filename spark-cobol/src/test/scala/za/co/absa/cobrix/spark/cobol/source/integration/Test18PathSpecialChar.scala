@@ -64,12 +64,12 @@ class Test18PathSpecialChar extends WordSpec with SparkTestBase with CobolTestBa
 
         testSchema(df, actualSchemaPath, expectedSchemaPath)
 
-//        val actualDf = df
-//          .orderBy("File_Id", "Record_Id")
-//          .toJSON
-//          .take(300)
-//
-//        testData(actualDf, actualResultsPath, expectedResultsPath)
+        val actualDf = df
+          .orderBy("File_Id", "Record_Id")
+          .toJSON
+          .take(300)
+
+        testData(actualDf, actualResultsPath, expectedResultsPath)
       }
     }
 
