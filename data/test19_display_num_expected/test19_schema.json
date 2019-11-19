@@ -1,0 +1,49 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "File_Id",
+    "type" : "integer",
+    "nullable" : false,
+    "metadata" : { }
+  }, {
+    "name" : "Record_Id",
+    "type" : "long",
+    "nullable" : false,
+    "metadata" : { }
+  }, {
+    "name" : "WS_DATE_NUM",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_DATE_ALPHA",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_ACCT_ALPHA",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_AMOUNT_NUMERIC",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_AMOUNT_FRACTION",
+    "type" : "decimal(10,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_NAME_ALPHABET",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "WS_AMOUNT_FRACTION2",
+    "type" : "decimal(10,2)",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

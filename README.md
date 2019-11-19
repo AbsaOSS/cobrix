@@ -1170,6 +1170,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 1.1.2 snapshot version.
+  - Fixed too permissive parsing of uncompressed (DISPLAY) numbers.
+  
 - #### 1.1.1 released 15 November 2019.
   - Fixed processing files that have special characters in their paths.
 

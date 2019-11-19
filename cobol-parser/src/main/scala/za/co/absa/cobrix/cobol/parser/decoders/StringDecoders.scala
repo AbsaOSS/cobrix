@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
+import java.nio.charset.StandardCharsets
+
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
 import scala.util.control.NonFatal
@@ -98,13 +100,27 @@ object StringDecoders {
   def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
     import Constants._
     val buf = new StringBuffer(bytes.length + 1)
+    val ss = new String(bytes, StandardCharsets.UTF_8)
     var sign = ' '
     var malformed = false
     var i = 0
     while (i < bytes.length) {
       val b = bytes(i) & 0xFF
       var ch = ' '
-      if (b >= 0xF0 && b <= 0xF9) {
+      if (sign != ' ') {
+        // Handle characters after a sign character is encountered
+        if (b >= 0xF0 && b <= 0xF9) {
+          ch = (b - 0xF0 + 0x30).toChar // unsigned
+        } else if (b == dotCharEBCIDIC) {
+          ch = '.'
+        }
+        else if (b == spaceCharEBCIDIC || b == 0) {
+          ch = ' '
+        }
+        else {
+          malformed = true
+        }
+      } else if (b >= 0xF0 && b <= 0xF9) {
         ch = (b - 0xF0 + 0x30).toChar // unsigned
       }
       else if (b >= 0xC0 && b <= 0xC9) {
