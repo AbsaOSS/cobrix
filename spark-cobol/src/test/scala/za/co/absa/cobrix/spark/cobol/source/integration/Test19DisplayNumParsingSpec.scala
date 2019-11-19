@@ -20,49 +20,40 @@ import org.scalatest.WordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.{CobolTestBase, SparkTestBase}
 
 //noinspection NameBooleanParameters
-class Test18PathSpecialChar extends WordSpec with SparkTestBase with CobolTestBase {
+class Test19DisplayNumParsingSpec extends WordSpec with SparkTestBase with CobolTestBase {
 
   "A copybook and a binary file contains special character in pathname" when {
-    val dataPath = "test18 special_char"
-    val expectedPath = "test18 special_char_expected"
-    val inputCopybookPath = "file://../data/test18 special_char.cob"
-    val inputCopybookFSPath = "../data/test18 special_char.cob"
-    val inputDataPath = s"../data/$dataPath/HIERARCHICAL.DATA.RDW.dat"
+    val dataPath = "test19_display_num"
+    val expectedPath = "test19_display_num_expected"
+    val inputCopybookPath = "file://../data/test19_display_num.cob"
+    val inputCopybookFSPath = "../data/test19_display_num.cob"
+    val inputDataPath = s"../data/$dataPath/data.dat"
 
 
     "read normally" should {
-      val expectedLayoutPath = s"../data/$expectedPath/test18a_layout.txt"
-      val actualLayoutPath = s"../data/$expectedPath/test18a_layout_actual.txt"
-      val expectedSchemaPath = s"../data/$expectedPath/test18a_schema.json"
-      val actualSchemaPath = s"../data/$expectedPath/test18a_schema_actual.json"
-      val expectedResultsPath = s"../data/$expectedPath/test18a.txt"
-      val actualResultsPath = s"../data/$expectedPath/test18a_actual.txt"
+      val expectedLayoutPath = s"../data/$expectedPath/test19_layout.txt"
+      val actualLayoutPath = s"../data/$expectedPath/test19_layout_actual.txt"
+      val expectedSchemaPath = s"../data/$expectedPath/test19_schema.json"
+      val actualSchemaPath = s"../data/$expectedPath/test19_schema_actual.json"
+      val expectedResultsPath = s"../data/$expectedPath/test19.txt"
+      val actualResultsPath = s"../data/$expectedPath/test19_actual.txt"
 
         "return a data frame" in {
         // Comparing layout
         val copybookContents = readCopybook(inputCopybookFSPath)
 
-        testLaoyout(copybookContents, actualLayoutPath, expectedLayoutPath)
+        //testLaoyout(copybookContents, actualLayoutPath, expectedLayoutPath)
 
         val df = spark
           .read
           .format("cobol")
           .option("copybook", inputCopybookPath)
           .option("pedantic", "true")
-          .option("is_record_sequence", "true")
           .option("generate_record_id", "true")
           .option("schema_retention_policy", "collapse_root")
-          .option("segment_field", "SEGMENT_ID")
-          .option("redefine_segment_id_map:1", "COMPANY => 1")
-          .option("redefine-segment-id-map:2", "DEPT => 2")
-          .option("redefine-segment-id-map:3", "EMPLOYEE => 3")
-          .option("redefine-segment-id-map:4", "OFFICE => 4")
-          .option("redefine-segment-id-map:5", "CUSTOMER => 5")
-          .option("redefine-segment-id-map:6", "CONTACT => 6")
-          .option("redefine-segment-id-map:7", "CONTRACT => 7")
           .load(inputDataPath)
 
-        testSchema(df, actualSchemaPath, expectedSchemaPath)
+        //testSchema(df, actualSchemaPath, expectedSchemaPath)
 
         val actualDf = df
           .orderBy("File_Id", "Record_Id")
