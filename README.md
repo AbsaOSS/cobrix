@@ -71,27 +71,7 @@ Current version:
 <dependency>
       <groupId>za.co.absa.cobrix</groupId>
       <artifactId>spark-cobol</artifactId>
-      <version>1.1.1</version>
-</dependency>
-```
-
-The most stable release:
-
-```xml
-<dependency>
-      <groupId>za.co.absa.cobrix</groupId>
-      <artifactId>spark-cobol</artifactId>
-      <version>0.5.6</version>
-</dependency>
-```
-
-Snapshot versions corresponding to the current master are available as well:
-
-```xml
-<dependency>
-      <groupId>za.co.absa.cobrix</groupId>
-      <artifactId>spark-cobol</artifactId>
-      <version>1.1.2-SNAPSHOT</version>
+      <version>1.1.2</version>
 </dependency>
 ```
 
@@ -209,14 +189,14 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-1.1.1.jar
-* cobol-parser-1.1.1.jar
+* spark-cobol-1.1.2.jar
+* cobol-parser-1.1.2.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.1.1.jar,cobol-parser-1.1.1.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.1.2.jar,cobol-parser-1.1.2.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1170,7 +1150,8 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 1.1.2 snapshot version.
+- #### 1.1.2 released 28 November 2019.
+  - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
   - Fixed too permissive parsing of uncompressed (DISPLAY) numbers.
   
 - #### 1.1.1 released 15 November 2019.
