@@ -29,7 +29,7 @@ import BuildInfoTemplateSettings._
 
 lazy val cobrix = (project in file("."))
   .settings(
-    name := "cborix"
+    name := "cobrix"
   )
   .aggregate(cobolParser, sparkCobol)
 
