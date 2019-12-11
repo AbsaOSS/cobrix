@@ -63,9 +63,9 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 | spark-cobol | Spark         |
 | ----------- | ------------- |
-| 0.x         | 2.1.x+        |
+| 0.x         | 2.2.x+        |
 | 1.x         | 2.2.x+        |
-| 2.x         | 2.4.3+        |
+| 2.x+        | 2.4.3+        |
 
 ## Linking
 
@@ -101,6 +101,16 @@ $SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.0
 ### Spark compiled with Scala 2.12
 ```
 $SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.0
+```
+
+### Linking legacy `spark-cobol`
+
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
+
+```
+groupId: za.co.absa.cobrix
+artifactId: spark-cobol
+version: 1.1.2
 ```
 
 ## Usage
