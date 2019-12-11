@@ -13,20 +13,36 @@ Here is the list of Spark Application examples:
 
 The project generates source and javadoc jars so it can be used for creating Spark library projects as well.
 
-## Usage 
+## Usage
 
-The example application is in `com.example.spark.cobol.app` package.
+The example application is in `com.example.spark.cobol.app` package. The project contains build files for `sbt` and `Maven`.
+
+## Sbt
+
+**To run this locally use**
+```sh
+sbt test
+```
+
+**To build an uber jar to run on cluster**
+```
+sbt package
+```
+
+## Maven
 
 **To run this locally use**
 ```sh
 mvn test
 ```
-or change Scala and Spark dependencies from `provided` to `compile`.
 
-**To run this on cluster generate the uber jar by running**
+**To build an uber jar to run on cluster**
 ```
 mvn package -DskipTests=true
 ```
+
+## Running via spark-submit
+
 After the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
 to an edge node of a cluster and use `spark-submit` to run the job. Here us an example when running on Yarn:
 
@@ -34,13 +50,9 @@ to an edge node of a cluster and use `spark-submit` to run the job. Here us an e
 spark-submit --num-executors 20 --executor-memory 4g --executor-cores 2 --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --conf 'spark.yarn.executor.memoryOverhead=512' --class com.example.spark.cobol.app.SparkCobolApp spark-cobol-app-0.0.1-SNAPSHOT.jar
 ```
 
-**To run a spark shell with cobol files support on cluster**
+## Running via spark-shell
 
-```
-mvn package -DskipTests=true
-```
-
-After the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
+To run a spark shell with cobol files support on cluster after the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
 to an edge node of a cluster
 
 ```sh
