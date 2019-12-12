@@ -74,6 +74,19 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
         assert(fileName1 == "example.bin")
         assert(fileName2 == "example2.bin")
       }
+
+      "throw an exception if 'with_input_file_name_col' is used" in {
+        val ex = intercept[IllegalArgumentException] {
+          spark
+            .read
+            .format("cobol")
+            .option("copybook", inputCopybookPath)
+            .option("with_input_file_name_col", "file_name")
+            .load(inputDataPath)
+        }
+
+        assert(ex.getMessage.contains("'with_input_file_name_col' is supported only when 'is_record_sequence' = true"))
+      }
     }
 
     "a variable-record length file is used" should {
@@ -86,6 +99,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .format("cobol")
           .option("copybook", inputCopybookPath)
           .option("is_record_sequence", "true")
+          .option("with_input_file_name_col", "file_name")
           .load(inputDataPath + "/COMP.DETAILS.SEP30.DATA.dat")
 
         val fileName = getInputFileName(df)
@@ -100,6 +114,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .format("cobol")
           .option("copybook", inputCopybookPath)
           .option("is_record_sequence", "true")
+          .option("with_input_file_name_col", "file_name")
           .load(inputDataPath)
 
         val fileName = getInputFileName(df)

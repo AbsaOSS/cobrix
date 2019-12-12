@@ -53,6 +53,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
+  * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   */
 case class ReaderParameters(
                              isEbcdic:                Boolean = true,
@@ -81,5 +82,6 @@ case class ReaderParameters(
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
                              recordHeaderParser:      Option[String] = None,
-                             rhpAdditionalInfo:       Option[String] = None
+                             rhpAdditionalInfo:       Option[String] = None,
+                             inputFileNameColumn:     String = ""
                            )

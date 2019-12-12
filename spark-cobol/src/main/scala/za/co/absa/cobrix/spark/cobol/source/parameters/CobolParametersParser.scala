@@ -79,6 +79,7 @@ object CobolParametersParser {
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
   val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
+  val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
 
   // Indexed multisegment file processing
   val PARAM_ALLOW_INDEXING            = "allow_indexing"
@@ -241,7 +242,8 @@ object CobolParametersParser {
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
-        params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean
+        params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
+        params.getOrElse(PARAM_INPUT_FILE_COLUMN, "")
       ))
     } else {
       None
@@ -430,6 +432,8 @@ object CobolParametersParser {
     * @param params Parameters provided by spark.read.option(...)
     */
   private def validateSparkCobolOptions(params: Parameters): Unit = {
+    val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, "false").toBoolean ||
+      params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean
     val isPedantic = params.getOrElse(PARAM_PEDANTIC, "false").toBoolean
     val keysPassed = params.getMap.keys.toSeq
     val unusedKeys = keysPassed.flatMap(key => {
@@ -455,6 +459,9 @@ object CobolParametersParser {
         throw new IllegalArgumentException(s"Options 'segment-children:*' cannot be used with 'segment_id_level*' or 'segment_id_root' " +
           "since ID fields generation is not supported for hierarchical records reader.")
       }
+    }
+    if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
+      throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when '$PARAM_IS_RECORD_SEQUENCE' = true.")
     }
   }
 
