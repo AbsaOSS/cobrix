@@ -28,6 +28,8 @@ object Dependencies {
 
   private val scalatestVersion = "3.0.1"
 
+  def getScalaDependency(scalaVersion: String): ModuleID = "org.scala-lang" % "scala-library" % scalaVersion % Provided
+
   val SparkCobolDependencies: Seq[ModuleID] = Seq(
     // provided
     "org.apache.spark" %% "spark-core"       % sparkVersion % Provided,

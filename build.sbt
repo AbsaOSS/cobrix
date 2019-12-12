@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import Dependencies._
+import BuildInfoTemplateSettings._
+
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.10"
 
@@ -24,8 +27,8 @@ ThisBuild / crossScalaVersions := Seq(scala211, scala212)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
 
-import Dependencies._
-import BuildInfoTemplateSettings._
+// Scala shouldn't be packaged so it is explicitly added as a provided dependency below
+ThisBuild / autoScalaLibrary := false
 
 lazy val cobrix = (project in file("."))
   .settings(
@@ -42,7 +45,7 @@ lazy val cobolParser = (project in file("cobol-parser"))
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
     name := "spark-cobol",
-    libraryDependencies ++= SparkCobolDependencies,
+    libraryDependencies ++= SparkCobolDependencies :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
     populateBuildInfoTemplate
