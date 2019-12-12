@@ -39,7 +39,8 @@ lazy val cobrix = (project in file("."))
 lazy val cobolParser = (project in file("cobol-parser"))
   .settings(
     name := "cobol-parser",
-    libraryDependencies ++= CobolParserDependencies
+    libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
 
 lazy val sparkCobol = (project in file("spark-cobol"))
@@ -48,7 +49,8 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     libraryDependencies ++= SparkCobolDependencies :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
-    populateBuildInfoTemplate
+    populateBuildInfoTemplate,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
   .dependsOn(cobolParser)
 
@@ -57,7 +59,6 @@ ThisBuild / coverageExcludedPackages := ".*examples.*;.*replication.*"
 ThisBuild / coverageExcludedFiles := ".*Example.*;Test.*"
 
 // release settings
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
 releaseCrossBuild := true
 addCommandAlias("releaseMajor", ";set releaseVersionBump := sbtrelease.Version.Bump.Major; release with-defaults")
 addCommandAlias("releaseMinor", ";set releaseVersionBump := sbtrelease.Version.Bump.Minor; release with-defaults")
