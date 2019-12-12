@@ -32,7 +32,12 @@ ThisBuild / autoScalaLibrary := false
 
 lazy val cobrix = (project in file("."))
   .settings(
-    name := "cobrix"
+    name := "cobrix",
+
+    // No need to publish the aggregation [empty] artifact
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {}
   )
   .aggregate(cobolParser, sparkCobol)
 
