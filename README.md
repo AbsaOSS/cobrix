@@ -63,9 +63,9 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 | spark-cobol | Spark         |
 | ----------- | ------------- |
-| 0.x         | 2.2.x+        |
-| 1.x         | 2.2.x+        |
-| 2.x+        | 2.4.3+        |
+| 0.x         | 2.2+          |
+| 1.x         | 2.2+          |
+| 2.x         | 2.4.3+        |
 
 ## Linking
 
@@ -240,7 +240,6 @@ $ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memor
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-19/12/10 10:01:15 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Spark context available as 'sc' (master = yarn, app id = application_1535701365011_2721).
 Spark session available as 'spark'.
 Welcome to
@@ -1191,7 +1190,7 @@ For multisegment variable lengths tests:
 
 ## Changelog
 - #### 2.0.0 released 11 December 2019.
-  - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks Georgi Chochov).
+  - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks @GeorgiChochov).
 
 - #### 1.1.2 released 28 November 2019.
   - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
