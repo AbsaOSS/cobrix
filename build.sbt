@@ -65,6 +65,4 @@ ThisBuild / coverageExcludedFiles := ".*Example.*;Test.*"
 
 // release settings
 releaseCrossBuild := true
-addCommandAlias("releaseMajor", ";set releaseVersionBump := sbtrelease.Version.Bump.Major; release with-defaults")
-addCommandAlias("releaseMinor", ";set releaseVersionBump := sbtrelease.Version.Bump.Minor; release with-defaults")
-addCommandAlias("releasePatch", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")
+addCommandAlias("releaseNow", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")
