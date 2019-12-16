@@ -26,7 +26,7 @@ sbt test
 
 **To build an uber jar to run on cluster**
 ```
-sbt package
+sbt assembly
 ```
 
 ## Maven
@@ -43,7 +43,7 @@ mvn package -DskipTests=true
 
 ## Running via spark-submit
 
-After the project is packaged you can copy 'target/spark-cobol-app-0.0.1-SNAPSHOT.jar'
+After the project is packaged you can copy `target/spark-cobol-app-0.0.1-SNAPSHOT.jar` (if build using `Maven`) or `target/scala-2.11/spark-cobol-app-assembly-0.1.0-SNAPSHOT.jar` (if built using `sbt`)
 to an edge node of a cluster and use `spark-submit` to run the job. Here us an example when running on Yarn:
 
 ```sh
