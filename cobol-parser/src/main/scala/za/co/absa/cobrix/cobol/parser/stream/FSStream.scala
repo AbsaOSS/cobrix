@@ -29,6 +29,8 @@ class FSStream (fileName: String) extends SimpleStream {
 
   override def offset: Long = byteIndex
 
+  override def inputFileName: String = fileName
+
   @throws(classOf[IllegalArgumentException])
   @throws(classOf[IOException])
   override def next(numberOfBytes: Int): Array[Byte] = {
