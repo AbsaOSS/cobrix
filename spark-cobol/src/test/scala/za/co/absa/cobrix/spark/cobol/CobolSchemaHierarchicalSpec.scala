@@ -101,6 +101,6 @@ class CobolSchemaHierarchicalSpec extends WordSpec {
 
   private def parseSchema(copybook: String, segmentRedefines: List[String], fieldParentMap: Map[String, String]): CobolSchema = {
     val parsedSchema = CopybookParser.parseTree(copybook, segmentRedefines = segmentRedefines, fieldParentMap = fieldParentMap)
-    new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false)
+    new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "",false)
   }
 }

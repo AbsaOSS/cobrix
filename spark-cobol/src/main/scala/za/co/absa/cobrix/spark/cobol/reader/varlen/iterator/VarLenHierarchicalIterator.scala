@@ -59,6 +59,7 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
   private val segmentRedefines = cobolSchema.getAllSegmentRedefines.toArray
 
   private val segmentIdRedefines = readerProperties.multisegment.map(p => p.segmentIdRedefineMap).get.toList
+  private val generateInputFileName = readerProperties.inputFileNameColumn.nonEmpty
 
   private val rootSegmentIds = segmentRedefines
     .filter(_.parentSegment.isEmpty)
@@ -144,7 +145,9 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
       readerProperties.variableSizeOccurs,
       readerProperties.generateRecordId,
       fileId,
-      recordIndex
+      recordIndex,
+      generateInputFileName,
+      dataStream.inputFileName
     )
   }
 

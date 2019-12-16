@@ -70,7 +70,8 @@ class FixedLenNestedRowIterator(val binaryData: Array[Byte],
       binaryData,
       offset,
       policy,
-      activeSegmentRedefine = activeSegmentRedefine)
+      activeSegmentRedefine = activeSegmentRedefine
+    )
 
     // Advance byte index to the next record
     val lastRecord = cobolSchema.getCobolSchema.ast.children.last

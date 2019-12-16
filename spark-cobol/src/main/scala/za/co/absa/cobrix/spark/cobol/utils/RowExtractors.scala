@@ -30,17 +30,19 @@ object RowExtractors {
   /**
     * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
     *
-    * @param ast                   The parsed copybook.
-    * @param data                  The data bits containing the record.
-    * @param offsetBytes           The offset to the beginning of the record (in bits).
-    * @param policy                A schema retention policy to be applied to the extracted record.
-    * @param variableLengthOccurs  If true, OCCURS DEPENDING ON data size will depend on the number of elements.
-    * @param generateRecordId      If true a record id field will be added as the first field of the record.
-    * @param segmentLevelIds       Segent ids to put to the extracted record if id generation it turned on.
-    * @param fileId                A file id to be put to the extractor record if generateRecordId == true.
-    * @param recordId              The record id to be saved to the record id field.
-    * @param activeSegmentRedefine An active segment redefine (the one that will be parsed).
-    *                              All other segment redefines will be skipped.
+    * @param ast                    The parsed copybook.
+    * @param data                   The data bits containing the record.
+    * @param offsetBytes            The offset to the beginning of the record (in bits).
+    * @param policy                 A schema retention policy to be applied to the extracted record.
+    * @param variableLengthOccurs   If true, OCCURS DEPENDING ON data size will depend on the number of elements.
+    * @param generateRecordId       If true a record id field will be added as the first field of the record.
+    * @param segmentLevelIds        Segent ids to put to the extracted record if id generation it turned on.
+    * @param fileId                 A file id to be put to the extractor record if generateRecordId == true.
+    * @param recordId               The record id to be saved to the record id field.
+    * @param activeSegmentRedefine  An active segment redefine (the one that will be parsed).
+    *                               All other segment redefines will be skipped.
+    * @param generateInputFileField if true, a field containing input file name will be generated
+    * @param inputFileName          An input file name to put if its generation is needed
     * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the record schema.
     */
   @throws(classOf[IllegalStateException])
@@ -53,7 +55,9 @@ object RowExtractors {
                     segmentLevelIds: Seq[Any] = Nil,
                     fileId: Int = 0,
                     recordId: Long = 0,
-                    activeSegmentRedefine: String = ""): Row = {
+                    activeSegmentRedefine: String = "",
+                    generateInputFileField: Boolean = false,
+                    inputFileName: String = ""): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     def extractArray(field: Statement, useOffset: Int): (Int, Array[Any]) = {
@@ -164,7 +168,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId)
+    applyRowPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, generateInputFileField, inputFileName)
   }
 
   /**
@@ -188,6 +192,8 @@ object RowExtractors {
     * @param generateRecordId     If true a record id field will be added as the first field of the record.
     * @param fileId               A file id to be put to the extractor record if generateRecordId == true
     * @param recordId             The record id to be saved to the record id field
+    * @param generateInputFileField if true, a field containing input file name will be generated
+    * @param inputFileName          An input file name to put if its generation is needed
     * @return A Spark [[org.apache.spark.sql.Row]] object corresponding to the hierarchical record schema
     */
   @throws(classOf[IllegalStateException])
@@ -201,7 +207,9 @@ object RowExtractors {
                                 variableLengthOccurs: Boolean = false,
                                 generateRecordId: Boolean = false,
                                 fileId: Int = 0,
-                                recordId: Long = 0): Row = {
+                                recordId: Long = 0,
+                                generateInputFileField: Boolean = false,
+                                inputFileName: String = ""): Row = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
 
     def extractArray(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Array[Any]) = {
@@ -350,7 +358,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId)
+    applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, generateInputFileField, inputFileName)
   }
 
   /**
@@ -359,17 +367,20 @@ object RowExtractors {
     * <p>The following transofmations will currently be applied:
     * <ul>
     * <li>If `generateRecordId == true` the record id field will be prepended to the row.</li>
+    * <li>If `generateInputFileField == true` the input file name be prepended to the row right after record ids.</li>
     * <li>If the schema has only one root StructType element, the element will be expanded. The resulting schema will contain only the children fields of
     * the element.</li>
     * </ul>
     * Combinations of the listed transformations are supported.
     * </p>
     *
-    * @param ast              The parsed copybook
-    * @param records          The array of [[Row]] object for each Group of the copybook
-    * @param generateRecordId If true a record id field will be added as the first field of the record.
-    * @param fileId           The file id to be saved to the file id field
-    * @param recordId         The record id to be saved to the record id field
+    * @param ast                    The parsed copybook
+    * @param records                The array of [[Row]] object for each Group of the copybook
+    * @param generateRecordId       If true a record id field will be added as the first field of the record.
+    * @param fileId                 The file id to be saved to the file id field
+    * @param recordId               The record id to be saved to the record id field
+    * @param generateInputFileField if true, a field containing input file name will be generated
+    * @param inputFileName          An input file name to put if its generation is needed
     * @return A Spark [[Row]] object corresponding to the record schema
     */
   private def applyRowPostProcessing(ast: CopybookAST,
@@ -378,26 +389,40 @@ object RowExtractors {
                                      generateRecordId: Boolean,
                                      segmentLevelIds: Seq[Any],
                                      fileId: Int,
-                                     recordId: Long): Row = {
-    if (generateRecordId) {
-      if (policy == SchemaRetentionPolicy.CollapseRoot) {
-        // If the policy for schema retention is root collapsing, expand root fields
-        // and add fileId and recordId
-        val expandedRows = records.flatMap(record => record.toSeq)
-        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ expandedRows))
-      } else {
-        // Add recordId as the first field
-        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ records))
-      }
-    } else {
-      // Addition of record index is not required
-      if (policy == SchemaRetentionPolicy.CollapseRoot) {
+                                     recordId: Long,
+                                     generateInputFileField: Boolean,
+                                     inputFileName: String): Row = {
+
+    (generateRecordId, generateInputFileField) match {
+      case (false, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
         Row.fromSeq(segmentLevelIds ++ records.flatMap(record => record.toSeq))
-      } else {
+      case (false, false) =>
         // Return rows as the original sequence of groups
         Row.fromSeq(segmentLevelIds ++ records)
-      }
+      case (true, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
+        // If the policy for schema retention is root collapsing, expand root fields
+        // and add fileId and recordId
+      val expandedRows = records.flatMap(record => record.toSeq)
+        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ expandedRows))
+      case (true, false) =>
+        // Add recordId as the first field
+        Row.fromSeq(fileId +: recordId +: (segmentLevelIds ++ records))
+
+      case (false, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
+        // If the policy for schema retention is root collapsing, expand root fields + adding the file name field
+        Row.fromSeq((segmentLevelIds :+ inputFileName) ++ records.flatMap(record => record.toSeq))
+      case (false, true) =>
+        // Return rows as the original sequence of groups + adding the file name field
+        Row.fromSeq((segmentLevelIds :+ inputFileName) ++ records)
+      case (true, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
+        // If the policy for schema retention is root collapsing, expand root fields
+        // and add fileId and recordId  + adding the file name field
+        val expandedRows = records.flatMap(record => record.toSeq)
+        Row.fromSeq(fileId +: recordId +: inputFileName +: (segmentLevelIds ++ expandedRows))
+      case (true, true) =>
+        // Add recordId as the first field + adding the file name field
+        Row.fromSeq(fileId +: recordId +: inputFileName +: (segmentLevelIds ++ records))
     }
   }
 }

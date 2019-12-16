@@ -115,7 +115,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
             nonTerminals)
         )
       )
-    new CobolSchema(schema, schemaRetentionPolicy, false)
+    new CobolSchema(schema, schemaRetentionPolicy, "",false)
   }
 
   override def getRecordStartOffset: Int = startOffset
