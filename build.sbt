@@ -14,6 +14,9 @@
  * limitations under the License.
  */
 
+import Dependencies._
+import BuildInfoTemplateSettings._
+
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.10"
 
@@ -24,28 +27,35 @@ ThisBuild / crossScalaVersions := Seq(scala211, scala212)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
 
-import Dependencies._
-import BuildInfoTemplateSettings._
+// Scala shouldn't be packaged so it is explicitly added as a provided dependency below
+ThisBuild / autoScalaLibrary := false
 
 lazy val cobrix = (project in file("."))
   .settings(
-    name := "cborix"
+    name := "cobrix",
+
+    // No need to publish the aggregation [empty] artifact
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {}
   )
   .aggregate(cobolParser, sparkCobol)
 
 lazy val cobolParser = (project in file("cobol-parser"))
   .settings(
     name := "cobol-parser",
-    libraryDependencies ++= CobolParserDependencies
+    libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
 
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
     name := "spark-cobol",
-    libraryDependencies ++= SparkCobolDependencies,
+    libraryDependencies ++= SparkCobolDependencies :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
-    populateBuildInfoTemplate
+    populateBuildInfoTemplate,
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
   .dependsOn(cobolParser)
 
@@ -54,8 +64,5 @@ ThisBuild / coverageExcludedPackages := ".*examples.*;.*replication.*"
 ThisBuild / coverageExcludedFiles := ".*Example.*;Test.*"
 
 // release settings
-releasePublishArtifactsAction := PgpKeys.publishSigned.value
 releaseCrossBuild := true
-addCommandAlias("releaseMajor", ";set releaseVersionBump := sbtrelease.Version.Bump.Major; release with-defaults")
-addCommandAlias("releaseMinor", ";set releaseVersionBump := sbtrelease.Version.Bump.Minor; release with-defaults")
-addCommandAlias("releasePatch", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")
+addCommandAlias("releaseNow", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")

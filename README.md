@@ -59,20 +59,58 @@ DataWorks Summit 2019 (General Cobrix workflow for hierarchical databases): http
 
 Spark Summit 2019 (More detailed overview of performance optimizations): https://www.youtube.com/watch?v=BOBIdGf3Tm0
 
-#### Linking
+## Requirements
+
+| spark-cobol | Spark         |
+| ----------- | ------------- |
+| 0.x         | 2.2+          |
+| 1.x         | 2.2+          |
+| 2.x         | 2.4.3+        |
+
+## Linking
+
+You can link against this library in your program at the following coordinates:
+
+### Scala 2.11
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11)
+
+```
+groupId: za.co.absa.cobrix
+artifactId: spark-cobol_2.11
+version: 2.0.0
+```
+
+### Scala 2.12
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12)
+
+```
+groupId: za.co.absa.cobrix
+artifactId: spark-cobol_2.12
+version: 2.0.0
+```
+
+## Using with Spark shell
+This package can be added to Spark using the `--packages` command line option. For example, to include it when starting the spark shell:
+
+
+### Spark compiled with Scala 2.11
+```
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.0
+```
+
+### Spark compiled with Scala 2.12
+```
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.0
+```
+
+### Linking legacy `spark-cobol`
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
 
-Coordinates for Maven POM dependency for the current release:
-
-Current version:
-
-```xml
-<dependency>
-      <groupId>za.co.absa.cobrix</groupId>
-      <artifactId>spark-cobol</artifactId>
-      <version>1.1.2</version>
-</dependency>
+```
+groupId: za.co.absa.cobrix
+artifactId: spark-cobol
+version: 1.1.2
 ```
 
 ## Usage
@@ -189,25 +227,26 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol-1.1.2.jar
-* cobol-parser-1.1.2.jar
+* spark-cobol_2.11-2.0.0.jar
+* cobol-parser_2.11-2.0.0.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol-1.1.2.jar,cobol-parser-1.1.2.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.0
+or 
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.0.jar,cobol-parser_2.11-2.0.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
-18/09/14 14:05:45 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 Spark context available as 'sc' (master = yarn, app id = application_1535701365011_2721).
 Spark session available as 'spark'.
 Welcome to
       ____              __
      / __/__  ___ _____/ /__
     _\ \/ _ \/ _ `/ __/  '_/
-   /___/ .__/\_,_/_/ /_/\_\   version 2.2.1
+   /___/ .__/\_,_/_/ /_/\_\   version 2.4.4
       /_/
 
 Using Scala version 2.11.8 (OpenJDK 64-Bit Server VM, Java 1.8.0_171)
@@ -1150,6 +1189,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.0 released 11 December 2019.
+  - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks @GeorgiChochov).
+
 - #### 1.1.2 released 28 November 2019.
   - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
   - Fixed too permissive parsing of uncompressed (DISPLAY) numbers.
@@ -1158,7 +1200,7 @@ For multisegment variable lengths tests:
   - Fixed processing files that have special characters in their paths.
 
 - #### 1.1.0 released 7 November 2019.
-  - Add an option (`segment-children`) to reconstruct hierarchical structure of records. See [Automatic reconstruction of hierarchical structure](#autoims)
+  - Added an option (`segment-children`) to reconstruct hierarchical structure of records. See [Automatic reconstruction of hierarchical structure](#autoims)
 
 - #### 1.0.2 released 21 October 2019. 
   - Fixed trimming of VARCHAR fields.
@@ -1313,6 +1355,7 @@ For multisegment variable lengths tests:
 
 - Thanks to the following people the project was made possible and for all the help along the way: 
   - Andrew Baker, Francois Cillers, Adam Smyczek,  Jan Scherbaum, Peter Moon, Clifford Lategan, Rekha Gorantla, Mohit Suryavanshi, Niel Steyn
+- Thanks to Tiago Requeijo, the author of the current ANTLR-based COBOL parser contributed to Cobrix.
 - Thanks to the authors of the original COBOL parser. When we started the project we had zero knowledge of COBOL and this parser was a good starting point:
   - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
    
