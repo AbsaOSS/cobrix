@@ -1054,6 +1054,7 @@ Again, the full example is available at
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
 | .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
+| .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
 
 ##### Variable record length files options
 
@@ -1189,8 +1190,13 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.1 current snapshot.
+  - (#221) Added `.option("with_input_file_name_col", "file_name")` for variable length files to workaround empty value returned by `input_file_name()`.
+  - Fixed Scala dependency in artifacts produced by `sbt`. The dependency is now provided so that a fat jar produced with `spark-cobol` dependency is compatible to wider range of Spark deployments.  
+
 - #### 2.0.0 released 11 December 2019.
   - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks @GeorgiChochov).
+  - Added sbt build for the example project.
 
 - #### 1.1.2 released 28 November 2019.
   - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
