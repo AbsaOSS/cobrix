@@ -16,10 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import java.nio.charset.StandardCharsets
+import java.nio.charset.{Charset, StandardCharsets}
 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
+import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
 
 object StringDecoders {
@@ -62,26 +63,32 @@ object StringDecoders {
     *
     * @param bytes        A byte array that represents the binary data
     * @param trimmingType Specifies if and how the soutput string should be trimmed
+    * @param charset      A charset the input array of bytes is encoded in
     * @return A string representation of the binary data
     */
-  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int): String = {
+  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int, charset: Charset = StandardCharsets.UTF_8): String = {
     var i = 0
-    val buf = new StringBuffer(bytes.length)
+
+    // Filter out all special characters
+    val buf = new ArrayBuffer[Byte](bytes.length)
     while (i < bytes.length) {
-      if (bytes(i) < 32 || bytes(i) > 127 /*Special and high order characters are masked*/ )
-        buf.append(' ')
+      if (bytes(i) < 32 /* Special characters are masked */ )
+        buf.append(32)
       else
-        buf.append(bytes(i).toChar)
+        buf.append(bytes(i))
       i = i + 1
     }
+
+    val str = new String(buf.toArray, charset)
+
     if (trimmingType == TrimNone) {
-      buf.toString
+      str
     } else if (trimmingType == TrimLeft) {
-      StringTools.trimLeft(buf.toString)
+      StringTools.trimLeft(str)
     } else if (trimmingType == TrimRight) {
-      StringTools.trimRight(buf.toString)
+      StringTools.trimRight(str)
     } else {
-      buf.toString.trim
+      str.trim
     }
   }
 
