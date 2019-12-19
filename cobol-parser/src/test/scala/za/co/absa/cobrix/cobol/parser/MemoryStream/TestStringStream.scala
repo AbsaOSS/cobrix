@@ -24,6 +24,8 @@ class TestStringStream extends SimpleStream{
   val str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   val sz: Int = str.length
 
+  override def inputFileName: String = "dummy"
+
   override def size: Long = sz
 
   override def offset: Long = position

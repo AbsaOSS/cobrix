@@ -45,6 +45,8 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   private val fileSize = getHDFSFileSize(getHDFSPath(filePath))
 
+  override def inputFileName: String = filePath
+
   override def size: Long = if (maximumBytes > 0) Math.min(fileSize, maximumBytes + startOffset) else fileSize
 
   override def offset: Long = byteIndex

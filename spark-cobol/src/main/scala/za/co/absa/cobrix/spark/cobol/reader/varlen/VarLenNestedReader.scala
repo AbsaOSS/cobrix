@@ -155,7 +155,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
       ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
-    new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
+    new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.inputFileNameColumn, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
   }
 
   override def getRecordStartOffset: Int = readerProperties.startOffset

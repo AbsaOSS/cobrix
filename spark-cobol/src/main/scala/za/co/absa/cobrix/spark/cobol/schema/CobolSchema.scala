@@ -36,12 +36,14 @@ import scala.collection.mutable.ArrayBuffer
   *
   * @param copybook                A parsed copybook.
   * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
-  * @param generateRecordId        If true, a record id field will be prepended to to the begginning of the schema.
+  * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
+  * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
   */
 class CobolSchema(val copybook: Copybook,
                   policy: SchemaRetentionPolicy,
+                  inputFileNameField: String,
                   generateRecordId: Boolean,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "") extends Serializable {
@@ -100,12 +102,19 @@ class CobolSchema(val copybook: Copybook,
       expandRecords
     }
 
-    val recordsWithRecordId = if (generateRecordId) {
-      StructField(Constants.fileIdField, IntegerType, nullable = false) +:
-        StructField(Constants.recordIdField, LongType, nullable = false) +: recordsWithSegmentFields
+    val recordsWithFileName = if (inputFileNameField.nonEmpty) {
+      StructField(inputFileNameField, StringType, nullable = true) +: recordsWithSegmentFields
     } else {
       recordsWithSegmentFields
     }
+
+    val recordsWithRecordId = if (generateRecordId) {
+      StructField(Constants.fileIdField, IntegerType, nullable = false) +:
+        StructField(Constants.recordIdField, LongType, nullable = false) +: recordsWithFileName
+    } else {
+      recordsWithFileName
+    }
+
     StructType(recordsWithRecordId)
   }
 

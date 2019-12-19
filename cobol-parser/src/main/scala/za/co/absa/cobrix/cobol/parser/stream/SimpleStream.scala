@@ -23,6 +23,8 @@ trait SimpleStream {
 
   def offset: Long
 
+  def inputFileName: String
+
   @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
 
   @throws(classOf[Exception]) def close(): Unit

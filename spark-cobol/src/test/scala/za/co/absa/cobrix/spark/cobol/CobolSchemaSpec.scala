@@ -42,7 +42,7 @@ class CobolSchemaSpec extends FunSuite {
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
 
     val parsedSchema = CopybookParser.parseTree(copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false)
+    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
     val actualSchema = cobolSchema.getSparkSchema.toString()
 
     assert(actualSchema == expectedSchema)
@@ -56,7 +56,7 @@ class CobolSchemaSpec extends FunSuite {
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
 
     val parsedSchema = CopybookParser.parseTree(copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, true)
+    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
     val actualSchema = cobolSchema.getSparkSchema.toString()
 
     assert(actualSchema == expectedSchema)
@@ -85,22 +85,22 @@ class CobolSchemaSpec extends FunSuite {
       "StructType(StructField(IntValue,IntegerType,true), StructField(STR_FLD,StringType,true))"
 
     val parsedSchema = CopybookParser.parseTree(copyBook)
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, true)
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true)
     val actualSchema1 = cobolSchema1.getSparkSchema.toString()
 
     assert(actualSchema1 == expectedSchemaWithRecordId)
 
-    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false)
+    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false)
     val actualSchema2 = cobolSchema2.getSparkSchema.toString()
 
     assert(actualSchema2 == expectedSchemaWithoutRecordId)
 
-    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, true)
+    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
     val actualSchema3 = cobolSchema3.getSparkSchema.toString()
 
     assert(actualSchema3 == expectedCollapsedSchemaWithRecordId)
 
-    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false)
+    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
     val actualSchema4 = cobolSchema4.getSparkSchema.toString()
 
     assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)
@@ -139,22 +139,22 @@ class CobolSchemaSpec extends FunSuite {
 
 
     val parsedSchema = CopybookParser.parseTree(copyBook)
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, true, 2)
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, 2)
     val actualSchema1 = cobolSchema1.getSparkSchema.toString()
 
     assert(actualSchema1 == expectedSchemaWithRecordId)
 
-    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, 2)
+    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, 2)
     val actualSchema2 = cobolSchema2.getSparkSchema.toString()
 
     assert(actualSchema2 == expectedSchemaWithoutRecordId)
 
-    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, true, 2)
+    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, 2)
     val actualSchema3 = cobolSchema3.getSparkSchema.toString()
 
     assert(actualSchema3 == expectedCollapsedSchemaWithRecordId)
 
-    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, 2)
+    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, 2)
     val actualSchema4 = cobolSchema4.getSparkSchema.toString()
 
     assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)

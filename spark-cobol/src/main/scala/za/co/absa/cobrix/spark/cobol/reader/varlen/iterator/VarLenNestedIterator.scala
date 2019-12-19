@@ -58,6 +58,7 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
   private val segmentLevelIdsCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
+  private val generateInputFileName = readerProperties.inputFileNameColumn.nonEmpty
 
   fetchNext()
 
@@ -99,7 +100,9 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
                 segmentLevelIds,
                 fileId,
                 rawRecordIterator.getRecordIndex,
-                activeSegmentRedefine = segmentRedefine
+                activeSegmentRedefine = segmentRedefine,
+                generateInputFileName,
+                dataStream.inputFileName
               ))
 
               recordFetched = true

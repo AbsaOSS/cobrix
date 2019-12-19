@@ -35,6 +35,7 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
   * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
+  * @param inputFileNameColumn    A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   */
 case class VariableLengthParameters(
                                      isRecordSequence:      Boolean,
@@ -52,5 +53,6 @@ case class VariableLengthParameters(
                                      inputSplitRecords:     Option[Int],
                                      inputSplitSizeMB:      Option[Int],
                                      improveLocality:       Boolean,
-                                     optimizeAllocation:    Boolean
+                                     optimizeAllocation:    Boolean,
+                                     inputFileNameColumn:   String
                                    )

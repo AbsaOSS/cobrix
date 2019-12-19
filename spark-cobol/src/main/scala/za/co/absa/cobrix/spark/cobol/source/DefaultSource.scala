@@ -132,7 +132,8 @@ class DefaultSource
           inputSplitRecords = None,
           inputSplitSizeMB = None,
           improveLocality = false,
-          optimizeAllocation = false)
+          optimizeAllocation = false,
+          inputFileNameColumn = "")
       )
 
     val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
@@ -166,7 +167,8 @@ class DefaultSource
       parameters.dropGroupFillers,
       parameters.nonTerminals,
       varLenParams.recordHeaderParser,
-      varLenParams.rhpAdditionalInfo
+      varLenParams.rhpAdditionalInfo,
+      varLenParams.inputFileNameColumn
     )
   }
 
