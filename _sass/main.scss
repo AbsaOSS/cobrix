@@ -15,7 +15,7 @@ footer {
 
 .bordered-header {
   border-bottom-style: bottom;
-  border-bottom :2px solid rgb(#{SITE_MAIN_RGB});
+  border-bottom :2px solid rgb(182, 1, 36);
 }
 
 .nav {
@@ -24,17 +24,17 @@ footer {
 
 .nav-pills {
   .nav-link {
-    color: rgb(#{SITE_MAIN_RGB})!important;
+    color: rgb(182, 1, 36)!important;
   }
 
   .nav-link.active {
     color: white!important;
-    background-color: rgb(#{SITE_MAIN_RGB})!important;
+    background-color: rgb(182, 1, 36)!important;
   }
 }
 
 i {
-  color: rgb(#{SITE_MAIN_RGB})!important;
+  color: rgb(182, 1, 36)!important;
 }
 
 #page_number {
@@ -46,7 +46,7 @@ i {
 }
 
 #search_button {
-  background-color: rgb(#{SITE_MAIN_RGB})!important;
+  background-color: rgb(182, 1, 36)!important;
   border-color: rgb(150, 1, 36)!important;
 }
 
