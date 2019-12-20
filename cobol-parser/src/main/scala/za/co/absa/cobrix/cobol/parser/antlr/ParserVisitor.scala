@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 
+import java.nio.charset.Charset
+
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
@@ -41,6 +43,7 @@ sealed trait Expr
 class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
                     ebcdicCodePage: CodePage,
+                    asciiCharset: Charset,
                     floatingPointFormat: FloatingPointFormat) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String) extends Expr
@@ -797,7 +800,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) occurs.get.dep else None,
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
       ) (Some(parent))
 
     parent.children.append(prim)

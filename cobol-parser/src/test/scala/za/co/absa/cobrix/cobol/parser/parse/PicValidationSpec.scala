@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
+import java.nio.charset.StandardCharsets
+
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -31,8 +33,9 @@ class PicValidationSpec extends FunSuite {
   private def validatePic(pic: String) = {
 
     val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
-                                    CodePage.getCodePageByName("common"),
-                                    FloatingPointFormat.IBM)
+      CodePage.getCodePageByName("common"),
+      StandardCharsets.UTF_8,
+      FloatingPointFormat.IBM)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)

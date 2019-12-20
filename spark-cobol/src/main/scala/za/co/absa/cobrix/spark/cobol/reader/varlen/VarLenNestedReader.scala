@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.varlen
 
+import java.nio.charset.{Charset, StandardCharsets}
+
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import org.slf4j.LoggerFactory
@@ -129,6 +131,8 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
+    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerProperties.asciiCharset)
+
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
@@ -138,6 +142,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.stringTrimmingPolicy,
         readerProperties.commentPolicy,
         codePage,
+        asciiCharset,
         readerProperties.floatingPointFormat,
         readerProperties.nonTerminals)
     else
@@ -150,6 +155,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           readerProperties.stringTrimmingPolicy,
           readerProperties.commentPolicy,
           codePage,
+          asciiCharset,
           readerProperties.floatingPointFormat,
           nonTerminals = readerProperties.nonTerminals)
       ))

@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser
 
+import java.nio.charset.{Charset, StandardCharsets}
+
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
@@ -60,6 +62,10 @@ object CopybookParser {
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
+    * @param ebcdicCodePage       A code page for EBCDIC encoded data
+    * @param asciiCharset         A charset for ASCII encoded data
+    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals         A list of non-terminals that should be extracted as strings
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -69,9 +75,20 @@ object CopybookParser {
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
+                asciiCharset: Charset = StandardCharsets.UTF_8,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(), copyBookContents, dropGroupFillers, segmentRedefines, fieldParentMap, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat, nonTerminals)
+    parseTree(EBCDIC(),
+      copyBookContents,
+      dropGroupFillers,
+      segmentRedefines,
+      fieldParentMap,
+      stringTrimmingPolicy,
+      commentPolicy,
+      ebcdicCodePage,
+      asciiCharset,
+      floatingPointFormat,
+      nonTerminals)
   }
 
   /**
@@ -85,6 +102,10 @@ object CopybookParser {
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
+    * @param ebcdicCodePage       A code page for EBCDIC encoded data
+    * @param asciiCharset         A charset for ASCII encoded data
+    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals         A list of non-terminals that should be extracted as strings
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -96,10 +117,11 @@ object CopybookParser {
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
+                asciiCharset: Charset,
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -111,11 +133,11 @@ object CopybookParser {
     new Copybook(
       if (dropGroupFillers) {
         calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
         )), segmentRedefines), correctedFieldParentMap))
       } else {
         calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
         )), segmentRedefines), correctedFieldParentMap))
       }
     )
@@ -125,6 +147,7 @@ object CopybookParser {
                               enc: Encoding,
                               stringTrimmingPolicy: StringTrimmingPolicy,
                               ebcdicCodePage: CodePage,
+                              asciiCharset: Charset,
                               floatingPointFormat: FloatingPointFormat
                              ): CopybookAST = {
 
@@ -150,11 +173,11 @@ object CopybookParser {
         case g: Group => {
           if (nonTerminals contains g.name) {
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat).copy(isRedefined = true)(g.parent)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
@@ -168,7 +191,7 @@ object CopybookParser {
           }
           else
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
             )
         }
       }

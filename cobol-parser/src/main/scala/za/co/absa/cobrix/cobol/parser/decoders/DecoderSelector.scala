@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
+import java.nio.charset.{Charset, StandardCharsets}
+
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
@@ -44,15 +46,17 @@ object DecoderSelector {
     * @param dataType             A daatype of a copybook field
     * @param stringTrimmingPolicy Specifies how the decoder should handle string types
     * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
+    * @param asciiCharset         A charset for ASCII encoded data
     * @param floatingPointFormat  Specifies a floating point format (IBM or IEEE754)
     * @return A function that converts an array of bytes to the target data type.
     */
   def getDecoder(dataType: CobolType,
                  stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
                  ebcdicCodePage: CodePage = new CodePageCommon,
+                 asciiCharset: Charset = StandardCharsets.UTF_8,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
     val decoder = dataType match {
-      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage)
+      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage, asciiCharset)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
@@ -61,10 +65,10 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is ENCDIC or ASCII */
-  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage): Decoder = {
+  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage, asciiCharset: Charset): Decoder = {
     encoding match {
       case _: EBCDIC => StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
-      case _: ASCII => StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
+      case _: ASCII => StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy), asciiCharset)
     }
   }
 
