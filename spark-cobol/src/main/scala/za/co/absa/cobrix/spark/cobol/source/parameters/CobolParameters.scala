@@ -32,6 +32,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
+  * @param asciiCharset           A charset for ASCII data
   * @param floatingPointFormat    A format of floating-point numbers
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
@@ -52,6 +53,7 @@ case class CobolParameters(
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,
                             ebcdicCodePageClass:   Option[String],
+                            asciiCharset:          String,
                             floatingPointFormat:   FloatingPointFormat,
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,

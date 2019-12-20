@@ -144,6 +144,7 @@ class DefaultSource
     ReaderParameters(isEbcdic = parameters.isEbcdic,
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
+      asciiCharset = parameters.asciiCharset,
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = varLenParams.variableSizeOccurs,
       lengthFieldName = recordLengthField,

@@ -64,6 +64,7 @@ object CobolParametersParser {
   val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
   val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
+  val PARAM_ASCII_CHARSET             = "ascii_charset"
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
 
@@ -169,6 +170,7 @@ object CobolParametersParser {
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
+    val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
@@ -191,6 +193,7 @@ object CobolParametersParser {
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
+      asciiCharset,
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,

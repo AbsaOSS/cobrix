@@ -29,6 +29,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param isEbcdic                If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage          Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass     An optional custom code page conversion class provided by a user
+  * @param asciiCharset            A charset for ASCII data
   * @param floatingPointFormat     A format of floating-point numbers
   * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
@@ -59,6 +60,7 @@ case class ReaderParameters(
                              isEbcdic:                Boolean = true,
                              ebcdicCodePage:          String = "common",
                              ebcdicCodePageClass:     Option[String] = None,
+                             asciiCharset:            String = "",
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              variableSizeOccurs:      Boolean = false,
                              lengthFieldName:         Option[String] = None,

@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.reader.fixedlen
 
+import java.nio.charset.{Charset, StandardCharsets}
+
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
@@ -88,6 +90,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
     val encoding = if (isEbcdic) EBCDIC() else ASCII()
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
+    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerProperties.asciiCharset)
 
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
@@ -98,6 +101,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
         stringTrimmingPolicy,
         readerProperties.commentPolicy,
         ebcdicCodePage,
+        asciiCharset,
         floatingPointFormat,
         nonTerminals)
     else
@@ -111,6 +115,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
             stringTrimmingPolicy,
             readerProperties.commentPolicy,
             ebcdicCodePage,
+            asciiCharset,
             floatingPointFormat,
             nonTerminals)
         )

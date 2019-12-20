@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 
+import java.nio.charset.Charset
+
 import org.antlr.v4.runtime._
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
@@ -52,8 +54,9 @@ object ANTLRParser {
             stringTrimmingPolicy: StringTrimmingPolicy,
             commentPolicy: CommentPolicy,
             ebcdicCodePage: CodePage,
+            asciiCharset: Charset,
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, floatingPointFormat)
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
 
     val strippedContents = copyBookContents.split("\\r?\\n").map(
       line =>
