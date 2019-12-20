@@ -7,3 +7,5 @@
   pretty_name: Deployment
 - name: usage
   pretty_name: Usage
+- name: Basic Usage
+  pretty_name: Basic Usage

@@ -1,5 +1,5 @@
-name: #{PROJECT_NAME}
-description: #{PROJECT_DESCRIPTION}
+name: Cobrix
+description: COBOL data source for Spark
 
 collections:
   docs:

@@ -22,11 +22,11 @@ ACTION = ARGV[0]
 TOPIC_NAME = ARGV[1]
 
 if ACTION == 'remove'
-  Docs.remove_topic(topic_name: TOPIC_NAME
+  Docs.remove_topic(topic_name: TOPIC_NAME,
                     doc_folder: DOC_FOLDER,
                     yaml_path: MENU_DATA)
 elsif ACTION == 'add'
-  Docs.add_topic(topic_name: TOPIC_NAME
+  Docs.add_topic(topic_name: TOPIC_NAME,
                     doc_folder: DOC_FOLDER,
                     yaml_path: MENU_DATA)
 else
