@@ -1,0 +1,36 @@
+---
+layout: default
+title: News
+---
+<!-- This loops through the paginated posts -->
+{% for post in paginator.posts %}
+  <h2>{{ post.title }}</h2>
+  <p>{{ post.excerpt }} -- <a href="{{ site.baseurl }}{{ post.url }}">read more</a></p>
+{% endfor %}
+
+<!-- Pagination links -->
+<div class="pagination">
+  <a id="search_button"
+    class="col-xs-6 col-md-4 btn btn-primary btn-sm"
+    href="{{ site.baseurl }}/blog/search"
+    role="button">
+    Search
+  </a>
+
+  <span id="page_number" class="page_number col-xs-6 col-md-4">
+    Page: {{ paginator.page }} of {{ paginator.total_pages }} &nbsp;
+  </span>
+
+  <div id="page_move" class="col-xs-6 col-md-4">
+    {% if paginator.previous_page %}
+      <a href="{{ paginator.previous_page_path }}" class="previous">Previous&nbsp;</a>
+    {% else %}
+      <span class="previous">Previous&nbsp;</span>
+    {% endif %}
+    {% if paginator.next_page %}
+      <a href="{{ paginator.next_page_path }}" class="next">Next</a>
+    {% else %}
+      <span class="next ">Next</span>
+    {% endif %}
+  </div>
+</div>

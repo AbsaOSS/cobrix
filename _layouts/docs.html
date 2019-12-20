@@ -1,0 +1,14 @@
+---
+layout: default
+---
+<div id="choose-version">
+  <label>Choose version:</label>
+  {% assign urlPostfix = page.title | downcase | replace: ' ','-' %}
+  <select id="nav-version" onchange="switchVersion(this.value, '{{ urlPostfix }}')">
+    {% for version in site.data.versions %}
+      <option value="{{ version }}" {% if page.url contains version %}selected{% endif %}>{{ version }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+{{ content }}

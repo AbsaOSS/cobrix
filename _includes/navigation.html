@@ -1,0 +1,35 @@
+<nav class="main-nav">
+  <h3>Navigation</h3>
+
+  {% if page.version %}
+    {% assign v = page.version %}
+  {% else %}
+    {% assign v = site.data.versions.last %}
+  {% endif %}
+
+  {% include menu.html %}
+
+  <ul id="shortcuts" class="list-inline d-flex justify-content-between p-2">
+    <li class="list-inline-item text-center">
+      <a href="{{ site.github.repository_url }}" target="_blank" class="text-dark">
+        <i class="fab fa-github fa-2x"></i>
+
+        <p>Github</p>
+      </a>
+    </li>
+    <li class="list-inline-item text-center">
+      <a href="{{ site.github.issues_url }}" target="_blank" class="text-dark">
+        <i class="fas fa-bug fa-2x"></i>
+
+        <p>Issues</p>
+      </a>
+    </li>
+    <li class="list-inline-item text-center">
+      <a href="https://mvnrepository.com/artifact/za.co.absa" target="_blank" class="text-dark">
+        <i class="fas fa-file-archive fa-2x"></i>
+
+        <p>Maven</p>
+      </a>
+    </li>
+  </ul>
+</nav>

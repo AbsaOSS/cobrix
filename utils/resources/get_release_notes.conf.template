@@ -1,0 +1,11 @@
+{
+  "use_zenhub" : false,
+  "print_empty" : true,
+  "print_only_title" : true,
+  "organization" : "AbsaOss",
+  "repository" : "enceladus",
+  "repository_id" : "154513089",
+  "zenhub_url" : "https://api.zenhub.io",
+  "github_url" : "https://api.github.com",
+  "strict": true
+}

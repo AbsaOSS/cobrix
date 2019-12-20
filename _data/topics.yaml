@@ -1,0 +1,9 @@
+---
+- name: components
+  pretty_name: Components
+- name: build-process
+  pretty_name: Build Process
+- name: deployment
+  pretty_name: Deployment
+- name: usage
+  pretty_name: Usage

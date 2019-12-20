@@ -1,0 +1,17 @@
+name: #{PROJECT_NAME}
+description: #{PROJECT_DESCRIPTION}
+
+collections:
+  docs:
+    title: Documentation
+    description: A collection of documentation pages for each version
+    output: true
+    permalink: :collection/:categories/:name
+
+plugins:
+  # https://help.github.com/en/articles/mentions-on-github-pages
+  - jekyll-mentions
+  - jekyll-paginate
+
+paginate: 15
+paginate_path: "/blog/page:num/"

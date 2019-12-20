@@ -1,0 +1,55 @@
+html, body {
+  height: 100%;
+}
+
+header {
+  padding-bottom: 1rem;
+}
+
+footer {
+  position: relative;
+  background-color: #555;
+  color: white;
+  padding: 15px;
+}
+
+.bordered-header {
+  border-bottom-style: bottom;
+  border-bottom :2px solid rgb(#{SITE_MAIN_RGB});
+}
+
+.nav {
+  padding-bottom: 1rem
+}
+
+.nav-pills {
+  .nav-link {
+    color: rgb(#{SITE_MAIN_RGB})!important;
+  }
+
+  .nav-link.active {
+    color: white!important;
+    background-color: rgb(#{SITE_MAIN_RGB})!important;
+  }
+}
+
+i {
+  color: rgb(#{SITE_MAIN_RGB})!important;
+}
+
+#page_number {
+  text-align: center;
+}
+
+#page_move {
+  text-align: right;
+}
+
+#search_button {
+  background-color: rgb(#{SITE_MAIN_RGB})!important;
+  border-color: rgb(150, 1, 36)!important;
+}
+
+#search_results {
+  margin-top: 1rem;
+}

@@ -1,0 +1,76 @@
+# use glob syntax.
+syntax: glob
+*.ser
+*.class
+*~
+*.bak
+#*.off
+*.old
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+
+# idea
+.idea
+*.iml
+
+# vs code
+.vscode
+
+# building
+target
+build
+null
+tmp*
+temp*
+dist
+test-output
+build.log
+
+# other scm
+.svn
+.CVS
+.hg*
+
+# switch to regexp syntax.
+#  syntax: regexp
+#  ^\.pc/
+
+build.log
+
+.cache*
+dependency-reduced-pom.xml
+
+_testOutput
+_tradeOutput
+_tradeData
+_countryMT
+_currencyMT
+_productMT
+_nestedStructs
+myTestCheckpoints
+
+**/main/resources/application.properties
+**/main/resources/application.conf
+**/main/resources/application.yaml
+**/main/resources/application.yml
+**/main/resources/spline.properties
+**/main/resources/kafka.properties
+**/enceladus_env.sh
+*.config
+*.keytab
+.DS_Store
+
+node_modules/
+Component-preload.js
+
+# Jekyll auto
+_site
+.sass-cache
+.jekyll-metadata
+
+utils/resources/*.conf

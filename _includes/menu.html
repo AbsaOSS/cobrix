@@ -1,0 +1,22 @@
+<ul class="nav flex-column nav-pills nav-fill">
+  <li class="nav-item ">
+    <a class="nav-link {% if page.url == "/" %}active{% endif %}"
+      href="{{ site.baseurl }}/">Home</a>
+  </li>
+
+  {% for topic in site.data.topics %}
+    <li class="nav-item">
+      <a class="nav-link {% if page.title == topic.pretty_name %}active{% endif %}"
+        href="{{ site.baseurl }}/docs/{{ v }}/{{ topic.name }}">{{ topic.pretty_name }}</a>
+    </li>
+  {% endfor %}
+
+  <li class="nav-item">
+    <a class="nav-link {% if page.title == "News" or page.title == "Search news" %}active{% endif %}"
+      href="{{ site.baseurl }}/blog/">News</a>
+  </li>
+  <li class="nav-item ">
+    <a class="nav-link {% if page.title == "About Us" %}active{% endif %}"
+      href="{{ site.baseurl }}/about">About Us</a>
+  </li>
+</ul>
