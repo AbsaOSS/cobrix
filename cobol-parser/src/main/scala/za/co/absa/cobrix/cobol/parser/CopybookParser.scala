@@ -75,7 +75,7 @@ object CopybookParser {
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
-                asciiCharset: Charset = StandardCharsets.UTF_8,
+                asciiCharset: Charset = StandardCharsets.US_ASCII,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
     parseTree(EBCDIC(),

@@ -53,7 +53,7 @@ object DecoderSelector {
   def getDecoder(dataType: CobolType,
                  stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
                  ebcdicCodePage: CodePage = new CodePageCommon,
-                 asciiCharset: Charset = StandardCharsets.UTF_8,
+                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage, asciiCharset)
@@ -64,11 +64,18 @@ object DecoderSelector {
     decoder
   }
 
-  /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is ENCDIC or ASCII */
+  /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is EBCDIC or ASCII */
   private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage, asciiCharset: Charset): Decoder = {
     encoding match {
-      case _: EBCDIC => StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
-      case _: ASCII => StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy), asciiCharset)
+      case _: EBCDIC =>
+        StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
+      case _: ASCII =>
+        if (asciiCharset.name() == "US-ASCII") {
+          StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
+        } else {
+          // A workaround for non serializable class: Charset
+          new AsciiStringDecoderWrapper(getStringStrimmingType(stringTrimmingPolicy), asciiCharset.name())
+        }
     }
   }
 
