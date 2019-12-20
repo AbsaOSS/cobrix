@@ -63,32 +63,26 @@ object StringDecoders {
     *
     * @param bytes        A byte array that represents the binary data
     * @param trimmingType Specifies if and how the soutput string should be trimmed
-    * @param charset      A charset the input array of bytes is encoded in
     * @return A string representation of the binary data
     */
-  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int, charset: Charset = StandardCharsets.UTF_8): String = {
+  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int): String = {
     var i = 0
-
-    // Filter out all special characters
-    val buf = new ArrayBuffer[Byte](bytes.length)
+    val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
-      if (bytes(i) < 32 /* Special characters are masked */ )
-        buf.append(32)
+      if (bytes(i) < 32 /*Special and high order characters are masked*/ )
+        buf.append(' ')
       else
-        buf.append(bytes(i))
+        buf.append(bytes(i).toChar)
       i = i + 1
     }
-
-    val str = new String(buf.toArray, charset)
-
     if (trimmingType == TrimNone) {
-      str
+      buf.toString
     } else if (trimmingType == TrimLeft) {
-      StringTools.trimLeft(str)
+      StringTools.trimLeft(buf.toString)
     } else if (trimmingType == TrimRight) {
-      StringTools.trimRight(str)
+      StringTools.trimRight(buf.toString)
     } else {
-      str.trim
+      buf.toString.trim
     }
   }
 
@@ -107,7 +101,6 @@ object StringDecoders {
   def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
     import Constants._
     val buf = new StringBuffer(bytes.length + 1)
-    val ss = new String(bytes, StandardCharsets.UTF_8)
     var sign = ' '
     var malformed = false
     var i = 0

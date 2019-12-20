@@ -32,7 +32,7 @@ class DataSizeSpec extends FunSuite {
   private def parse(pic: String): Primitive = {
     val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
       CodePage.getCodePageByName("common"),
-      StandardCharsets.UTF_8,
+      StandardCharsets.US_ASCII,
       FloatingPointFormat.IBM)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
