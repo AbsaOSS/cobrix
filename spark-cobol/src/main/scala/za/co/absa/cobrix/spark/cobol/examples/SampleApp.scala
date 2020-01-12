@@ -16,10 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.examples
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SQLContext, SaveMode, SparkSession}
 import org.apache.spark.SparkConf
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.SaveMode
 
 object SampleApp {
 
@@ -38,8 +37,7 @@ object SampleApp {
     val paramMap = parseArguments(args)
     
     val config = new SparkConf().setAppName("CobolParser")    
-    val sc = new SparkContext(config)
-    val sqlContext = new SQLContext(sc)
+    val sqlContext = SparkSession.builder().config(config).getOrCreate()
 
     val df = sqlContext
       .read

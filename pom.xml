@@ -290,6 +290,12 @@
                             <goal>compile</goal>
                             <goal>testCompile</goal>
                         </goals>
+                        <configuration>
+                            <args>
+                                <arg>-unchecked</arg>
+                                <arg>-deprecation</arg>
+                            </args>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>attach-javadocs</id>
