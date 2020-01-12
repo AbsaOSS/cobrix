@@ -117,7 +117,7 @@ object FileUtils {
     * Writes array of strings to a file
     */
   def writeStringsToFile(strings: Array[String], filePathName: String): Unit = {
-    val writer = new PrintWriter(filePathName)
+    val writer = new PrintWriter(filePathName, "UTF-8")
     try {
       for (str <- strings) {
         writer.write(str)
