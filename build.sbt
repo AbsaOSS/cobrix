@@ -27,6 +27,8 @@ ThisBuild / crossScalaVersions := Seq(scala211, scala212)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
 
+ThisBuild / scalacOptions := Seq("-unchecked", "-deprecation")
+
 // Scala shouldn't be packaged so it is explicitly added as a provided dependency below
 ThisBuild / autoScalaLibrary := false
 
