@@ -24,7 +24,7 @@ import org.scalatest.{Assertion, TestSuite}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 trait CobolTestBase extends TestSuite {
 
@@ -61,8 +61,8 @@ trait CobolTestBase extends TestSuite {
     FileUtils.writeStringsToFile(results, actualResultsPath)
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
-    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
-    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected. Please compare contents of $expectedResultsPath to " +

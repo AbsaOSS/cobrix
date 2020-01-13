@@ -23,7 +23,7 @@ import org.scalatest.FunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 //noinspection NameBooleanParameters
 class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
@@ -69,8 +69,8 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
 
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
 
-    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
-    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
@@ -112,8 +112,8 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
 
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
 
-    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
-    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +

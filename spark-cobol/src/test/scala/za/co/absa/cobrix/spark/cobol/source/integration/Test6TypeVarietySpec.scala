@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 //noinspection NameBooleanParameters
 class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
@@ -97,10 +97,10 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
     // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
     val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
-    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 
     // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
-    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toList.toArray
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 
     if (!actual.sameElements(expected)) {
       assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
