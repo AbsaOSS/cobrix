@@ -71,7 +71,7 @@ class ParserVisitor(enc: Encoding,
                                        ).r
   val numericSPicRegexExplicitDot: Regex = ("(S?)"
                                             + genericLengthRegex('9', optional = true)
-                                            + "\\."
+                                            + "."
                                             + genericLengthRegex('9')
                                             ).r
   val numericSPicRegexDecimalScaled: Regex = ("(S?)"
@@ -86,7 +86,7 @@ class ParserVisitor(enc: Encoding,
                                                   ).r
   val numericZPicRegexExplicitDot: Regex = (genericLengthRegex('Z')
                                             + genericLengthRegex('9', optional = true)
-                                            + "\\."
+                                            + "."
                                             + genericLengthRegex('9', optional = true)
                                             + genericLengthRegex('Z', optional = true)
                                             ).r
