@@ -85,6 +85,13 @@ class DataSizeSpec extends FunSuite {
     assert(decimalLength("99(5).99(2)") == (6, 3, 0))
     assert(decimalLength("99(5)99.99(2)99") == (8, 5, 0))
 
+    assert(decimalLength("99999,99") == (5, 2, 0))
+    assert(decimalLength("9(13),99") == (13, 2, 0))
+    assert(decimalLength("9(13),9(2)") == (13, 2, 0))
+    assert(decimalLength("9999999999,9(2)") == (10, 2, 0))
+    assert(decimalLength("99(5),99(2)") == (6, 3, 0))
+    assert(decimalLength("99(5)99,99(2)99") == (8, 5, 0))
+
     assert(decimalLength("PPP99999") == (5, 0, -3))
     assert(decimalLength("P(3)9(10)") == (10, 0, -3))
     assert(decimalLength("9(10)PPP") == (10, 0, 3))
@@ -100,6 +107,8 @@ class DataSizeSpec extends FunSuite {
     assert(decimalLength("ZZZ999.99") == (6, 2, 0))
     assert(decimalLength("ZZZ999.99ZZ") == (6, 4, 0))
     assert(decimalLength("ZZZ999V99ZZ") == (6, 4, 0))
+    assert(decimalLength("ZZZ999,99") == (6, 2, 0))
+    assert(decimalLength("ZZZ999,99ZZ") == (6, 4, 0))
   }
 
 }
