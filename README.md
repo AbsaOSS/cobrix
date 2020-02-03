@@ -1177,6 +1177,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.2 released 2 February 2020.
+  - [#241](https://github.com/AbsaOSS/cobrix/issues/241) Added support for comma as a decimal seprartor for explicit decimal point
+    in DISPLAY numeric format (Thanks @tr11). 
+
 - #### 2.0.1 released 20 December 2019.
   - [#225](https://github.com/AbsaOSS/cobrix/issues/225) Added `.option("ascii_charset", chrsetName)` to specify a charset for ASCII data.
   - [#221](https://github.com/AbsaOSS/cobrix/issues/221) Added `.option("with_input_file_name_col", "file_name")` for variable length files to workaround empty value returned by `input_file_name()`.
