@@ -111,7 +111,7 @@ object StringDecoders {
         // Handle characters after a sign character is encountered
         if (b >= 0xF0 && b <= 0xF9) {
           ch = (b - 0xF0 + 0x30).toChar // unsigned
-        } else if (b == dotCharEBCIDIC) {
+        } else if (b == dotCharEBCIDIC || b == commaCharEBCIDIC) {
           ch = '.'
         }
         else if (b == spaceCharEBCIDIC || b == 0) {
@@ -137,7 +137,7 @@ object StringDecoders {
       else if (b == plusCharEBCIDIC) {
         sign = '+'
       }
-      else if (b == dotCharEBCIDIC) {
+      else if (b == dotCharEBCIDIC || b == commaCharEBCIDIC) {
         ch = '.'
       }
       else if (b == spaceCharEBCIDIC || b == 0) {
@@ -174,7 +174,11 @@ object StringDecoders {
       if (char == '-' || char == '+') {
         sign = char
       } else {
-        buf.append(char)
+        if (char == '.' || char == ',') {
+          buf.append('.')
+        } else {
+          buf.append(char)
+        }
       }
       i = i + 1
     }

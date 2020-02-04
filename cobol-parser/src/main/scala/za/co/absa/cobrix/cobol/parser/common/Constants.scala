@@ -23,6 +23,7 @@ object Constants {
   val minusCharEBCIDIC: Byte = 96
   val minusCharASCII: Byte = 45
   val dotCharEBCIDIC: Byte = 75
+  val commaCharEBCIDIC: Byte = 107
   val spaceCharEBCIDIC: Byte = 64
   val plusCharEBCIDIC: Byte = 78
   val plusCharASCII: Byte = 43
