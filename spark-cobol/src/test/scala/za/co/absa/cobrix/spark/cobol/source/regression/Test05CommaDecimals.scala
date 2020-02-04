@@ -17,13 +17,13 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class Test05CommaDecimals extends FunSuite with SparkTestBase with BinaryFileFixture {
+class Test05CommaDecimals extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val copybook =
     """       01  R.
@@ -52,17 +52,9 @@ class Test05CommaDecimals extends FunSuite with SparkTestBase with BinaryFileFix
 
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
-      assertResults(actual, expected)
+      assertEqualsMultiline(actual, expected)
     }
 
-  }
-
-  def assertResults(actualResults: String, expectedResults: String): Unit = {
-    if (actualResults != expectedResults) {
-      logger.error(s"EXPECTED:\n$expectedResults")
-      logger.error(s"ACTUAL:\n$actualResults")
-      fail("Actual dataset data does not match the expected data (see above).")
-    }
   }
 
 }
