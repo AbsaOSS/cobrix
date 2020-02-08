@@ -284,6 +284,21 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     val schema = CopybookParser.calculateBinaryProperties(newRoot)
     new Copybook(schema)
   }
+
+  /**
+   * This method traverses the AST and invokes the provided function on each primitive field
+   *
+   * @param f A function to invoke on each primitive field.
+   */
+  def visitPrimitive(f: Primitive => Unit): Unit = {
+    def visitGroup(grp: Group): Unit = {
+      grp.children.foreach {
+        case g: Group => visitGroup(g)
+        case p: Primitive => f(p)
+      }
+    }
+    visitGroup(ast)
+  }
 }
 
 
