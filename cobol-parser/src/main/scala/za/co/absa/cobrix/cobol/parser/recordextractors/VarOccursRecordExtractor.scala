@@ -62,6 +62,7 @@ class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) e
           extractGroup(useOffset, grp)
         case st: Primitive =>
           if (st.isDependee) {
+            ensureBytesRead(useOffset + field.binaryProperties.actualSize)
             val value = st.decodeTypeValue(useOffset, bytes)
             if (value != null) {
               val intVal: Int = value match {
