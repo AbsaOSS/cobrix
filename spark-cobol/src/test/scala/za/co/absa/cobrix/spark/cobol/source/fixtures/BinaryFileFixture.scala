@@ -67,5 +67,33 @@ trait BinaryFileFixture {
     tempFile.delete
   }
 
+  /**
+    * Creates a temporary binary file and returns the full path to it.
+    * The input data is specified as a hexadecimal string, e.g "CAFE"
+    *
+    * @param prefix  The prefix string to be used in generating the file's name;
+    *                must be at least three characters long
+    * @param suffix  The suffix string to be used in generating the file's name;
+    *                may be <code>null</code>, in which case the suffix <code>".tmp"</code> will be used
+    * @param content A contents to put to the file
+    * @return The full path to the temporary file
+    */
+  def withTempHexBinFile(prefix: String, suffix: String, content: String)(f: String => Unit): Unit = {
+    val tempFile = File.createTempFile(prefix, suffix)
+    val ostream = new DataOutputStream(new FileOutputStream(tempFile))
+    val binContent = hex2bytes(content)
+
+    ostream.write(binContent)
+    ostream.close()
+
+    f(tempFile.getAbsolutePath)
+
+    tempFile.delete
+  }
+
+  private def hex2bytes(hex: String): Array[Byte] = {
+    val compactStr = hex.replaceAll("\\s", "")
+    compactStr.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
+  }
 }
 
