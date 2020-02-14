@@ -216,6 +216,7 @@ object CobolParametersParser {
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
+    val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
 
     if (params.contains(PARAM_RECORD_LENGTH) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
@@ -226,7 +227,8 @@ object CobolParametersParser {
       isRecordSequence ||
       isRecordIdGenerationEnabled ||
       fileStartOffset > 0 ||
-      fileEndOffset > 0
+      fileEndOffset > 0 ||
+      varLenOccursEnabled
     ) {
       Some(VariableLengthParameters
       (
@@ -239,7 +241,7 @@ object CobolParametersParser {
         recordLengthFieldOpt.getOrElse(""),
         fileStartOffset,
         fileEndOffset,
-        params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
+        varLenOccursEnabled,
         isRecordIdGenerationEnabled,
         params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),

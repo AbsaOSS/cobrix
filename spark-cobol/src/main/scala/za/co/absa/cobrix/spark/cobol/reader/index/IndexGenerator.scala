@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.parser.recordextractors.RawRecordExtractor
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.Constants
 import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
@@ -33,6 +34,7 @@ object IndexGenerator {
                            dataStream: SimpleStream,
                            isRdwBigEndian: Boolean,
                            recordHeaderParser: RecordHeaderParser,
+                           recordExtractor: Option[RawRecordExtractor],
                            recordsPerIndexEntry: Option[Int] = None,
                            sizePerIndexEntryMB: Option[Int] = None,
                            copybook: Option[Copybook] = None,
@@ -56,17 +58,26 @@ object IndexGenerator {
 
     var endOfFileReached = false
     while (!endOfFileReached) {
-      val headerSize = recordHeaderParser.getHeaderLength
-      val headerBytes = dataStream.next(headerSize)
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
-      val recordSize = recordMetadata.recordLength
+      val (headerSize, recordSize, isValid) = recordExtractor match {
+        case Some(extractor) =>
+          if (extractor.hasNext) {
+            (0, -1, false)
+          } else {
+            (0, extractor.next().length, true)
+          }
+        case None =>
+          val headerSize = recordHeaderParser.getHeaderLength
+          val headerBytes = dataStream.next(headerSize)
+          val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
+          (headerSize, recordMetadata.recordLength, recordMetadata.isValid)
+      }
       if (recordSize <= 0) {
         endOfFileReached = true
       } else {
         val record = dataStream.next(recordSize)
         if (record.length < recordSize) {
           endOfFileReached = true
-        } else if (recordMetadata.isValid) {
+        } else if (isValid) {
           if (isReallyHierarchical && rootRecordId.isEmpty) {
             val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
             if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
