@@ -40,6 +40,7 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybook", inputCopybookPath)
       .option("encoding", "ascii")
+      .option("variable_size_occurs", "true")
       .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -54,10 +55,10 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
     val actual = df.toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
-//    if (!actual.sameElements(expected)) {
-//      FileUtils.writeStringsToFile(actual, actualResultsPath)
-//      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
-//    }
+    if (!actual.sameElements(expected)) {
+      FileUtils.writeStringsToFile(actual, actualResultsPath)
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to $actualResultsPath for details.")
+    }
   }
 
 }

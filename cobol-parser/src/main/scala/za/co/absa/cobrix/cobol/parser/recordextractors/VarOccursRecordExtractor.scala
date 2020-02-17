@@ -7,13 +7,13 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 
 /**
- * This implementation of a record extractor
- * A raw record is an array of bytes.
- *
- * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
- * determined neither from the copybook nor from record headers.
- */
-class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) extends RawRecordExtractor {
+  * This implementation of a record extractor
+  * A raw record is an array of bytes.
+  *
+  * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
+  * determined neither from the copybook nor from record headers.
+  */
+class VarOccursRecordExtractor(inputStream: SimpleStream, copybook: Copybook) extends RawRecordExtractor {
   private val maxRecordSize = copybook.getRecordSize
   private val ast = copybook.ast
   private val hasVarSizeOccurs = copybookHasVarSizedOccurs
@@ -24,6 +24,7 @@ class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) e
 
   override def next(): Array[Byte] = {
     if (hasVarSizeOccurs) {
+      bytesSize = 0
       util.Arrays.fill(bytes, 0.toByte)
       extractVarOccursRecordBytes()
     } else {
@@ -49,7 +50,11 @@ class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) e
       var offset = useOffset
       field match {
         case grp: Group =>
-          offset += extractGroup(offset, grp) * actualSize
+          var i = 0
+          while (i < actualSize) {
+            offset += extractGroup(offset, grp)
+            i += 1
+          }
         case s: Primitive =>
           offset += s.binaryProperties.dataSize * actualSize
       }
@@ -107,7 +112,7 @@ class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) e
       nextOffset += extractGroup(nextOffset, record.asInstanceOf[Group])
     }
     ensureBytesRead(nextOffset)
-    bytes
+    bytes.take(nextOffset)
   }
 
   private def ensureBytesRead(numOfBytes: Int): Unit = {
@@ -123,7 +128,7 @@ class VarOccursRecordExtractor (inputStream: SimpleStream, copybook: Copybook) e
 
   private def copybookHasVarSizedOccurs: Boolean = {
     var varSizedOccursExist = false
-    copybook.visitPrimitive(field => varSizedOccursExist || field.isDependee)
+    copybook.visitPrimitive(field => varSizedOccursExist |= field.isDependee)
     varSizedOccursExist
   }
 }

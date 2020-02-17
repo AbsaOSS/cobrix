@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader.varlen.iterator
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.parser.recordextractors.RawRecordExtractor
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
@@ -33,6 +34,7 @@ import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
   * @param dataStream         A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
   * @param readerProperties   Additional properties for customizing the reader.
   * @param recordHeaderParser A record parser for multisegment files
+  * @param recordExtractor    A record extractor that can be used instead of the record header parser.
   * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset An offset of the file where parsing should be started
   */
@@ -40,6 +42,7 @@ class VRLRecordReader(cobolSchema: Copybook,
                       dataStream: SimpleStream,
                       readerProperties: ReaderParameters,
                       recordHeaderParser: RecordHeaderParser,
+                      recordExtractor: Option[RawRecordExtractor],
                       startRecordId: Long,
                       startingFileOffset: Long) extends Iterator[(String, Array[Byte])]{
 
@@ -76,10 +79,20 @@ class VRLRecordReader(cobolSchema: Copybook,
   private def fetchNext(): Unit = {
     var recordFetched = false
     while (!recordFetched) {
-      val binaryData = if (readerProperties.isRecordSequence || lengthField.isEmpty) {
-        fetchRecordUsingRdwHeaders()
-      } else {
-        fetchRecordUsingRecordLengthField()
+      val binaryData = recordExtractor match {
+        case Some(extractor) =>
+          if (extractor.hasNext) {
+            Option(extractor.next)
+          } else {
+            None
+          }
+        case None => {
+          if (readerProperties.isRecordSequence || lengthField.isEmpty) {
+            fetchRecordUsingRdwHeaders()
+          } else {
+            fetchRecordUsingRecordLengthField()
+          }
+        }
       }
 
       binaryData match {
