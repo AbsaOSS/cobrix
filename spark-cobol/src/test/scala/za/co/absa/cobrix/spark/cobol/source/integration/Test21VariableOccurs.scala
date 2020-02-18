@@ -16,12 +16,23 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.nio.charset.StandardCharsets
+import java.nio.charset.{Charset, StandardCharsets}
 import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
+import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.encoding.ASCII
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.recordextractors.VarOccursRecordExtractor
+import za.co.absa.cobrix.cobol.parser.stream.{FSStream, SimpleStream}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+
+import scala.collection.immutable.HashMap
+import scala.collection.mutable.ListBuffer
 
 class Test21VariableOccurs extends FunSuite with SparkTestBase {
 
@@ -33,6 +44,29 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
   private val actualResultsPath = "../data/test21_expected/test21_actual.txt"
   private val expectedSchemaPath = "../data/test21_expected/test21_schema.json"
   private val actualSchemaPath = "../data/test21_expected/test21_schema_actual.json"
+
+  test("Test VarLenReader properly splits a file into records") {
+    val inputStream = new FSStream(s"$inputDataPath/data.dat")
+    val copybookContents = Files.readAllLines(Paths.get("../data/test21_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val copybook = CopybookParser.parseTree(ASCII(), copybookContents, true, Nil, HashMap[String, String](), StringTrimmingPolicy.TrimBoth,
+      CommentPolicy(), new CodePageCommon, StandardCharsets.US_ASCII, FloatingPointFormat.IBM, Nil)
+    val recordExtractor = new VarOccursRecordExtractor(inputStream, copybook)
+
+    val expectedRecords = ListBuffer(Array(48.toByte),
+      Array(49.toByte, 48.toByte),
+      Array(49.toByte, 50.toByte, 65.toByte, 66.toByte),
+      Array(50.toByte, 49.toByte, 65.toByte, 50.toByte, 66.toByte, 67.toByte),
+      Array(50.toByte, 49.toByte, 65.toByte, 49.toByte, 66.toByte))
+
+    val records = new ListBuffer[Array[Byte]]
+    while (recordExtractor.hasNext) {
+      records += recordExtractor.next
+    }
+
+    assert(records.length == 5)
+    val sameData = records.zip(expectedRecords).forall{ case (a1, a2) => a1.sameElements(a2)}
+    assert(sameData)
+  }
 
   test(s"Integration test on $exampleName data") {
     val df = spark
