@@ -80,8 +80,8 @@ object RowExtractors {
           var i = from
           var j = 0
           while (i < actualSize) {
-            val value = getGroupValues(offset, grp)
-            offset += grp.binaryProperties.dataSize
+            val (size, value) = getGroupValues(offset, grp)
+            offset += size
             groupValues(j) = value
             i += 1
             j += 1
@@ -107,11 +107,11 @@ object RowExtractors {
       }
     }
 
-    def extractValue(field: Statement, useOffset: Int): Any = {
+    def extractValue(field: Statement, useOffset: Int): (Int, Any) = {
       field match {
         case grp: Group =>
           if (grp.isSegmentRedefine && grp.name.compareToIgnoreCase(activeSegmentRedefine) != 0) {
-            null
+            (grp.binaryProperties.actualSize, null)
           } else {
             getGroupValues(useOffset, grp)
           }
@@ -125,11 +125,11 @@ object RowExtractors {
             }
             dependFields += st.name -> intVal
           }
-          value
+          (st.binaryProperties.actualSize, value)
       }
     }
 
-    def getGroupValues(offset: Int, group: Group): Row = {
+    def getGroupValues(offset: Int, group: Group): (Int, Row) = {
       var bitOffset = offset
 
       val fields = new Array[Any](group.nonFillerSize)
@@ -145,9 +145,13 @@ object RowExtractors {
           }
           value
         } else {
-          val value = extractValue(field, bitOffset)
+          val (size, value) = extractValue(field, bitOffset)
           if (!field.isRedefined) {
-            bitOffset += field.binaryProperties.actualSize
+            if (field.redefines.isDefined) {
+              bitOffset += field.binaryProperties.actualSize
+            } else {
+              bitOffset += size
+            }
           }
           value
         }
@@ -157,14 +161,14 @@ object RowExtractors {
         }
         i += 1
       }
-      new GenericRow(fields)
+      (bitOffset - offset, new GenericRow(fields))
     }
 
     var nextOffset = offsetBytes
 
     val records = for (record <- ast.children) yield {
-      val values = getGroupValues(nextOffset, record.asInstanceOf[Group])
-      nextOffset += record.binaryProperties.actualSize
+      val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
+      nextOffset += size
       values
     }
 

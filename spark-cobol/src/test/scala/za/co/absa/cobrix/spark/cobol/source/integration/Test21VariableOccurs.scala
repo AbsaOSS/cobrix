@@ -29,7 +29,7 @@ import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPol
 import za.co.absa.cobrix.cobol.parser.recordextractors.VarOccursRecordExtractor
 import za.co.absa.cobrix.cobol.parser.stream.{FSStream, SimpleStream}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, RowExtractors}
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
