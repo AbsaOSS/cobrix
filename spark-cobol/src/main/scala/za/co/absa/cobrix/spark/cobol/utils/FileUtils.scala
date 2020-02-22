@@ -37,6 +37,8 @@ object FileUtils {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
+
   private val hiddenFileFilter = new PathFilter() {
     def accept(p: Path): Boolean = {
       val name = p.getName
@@ -195,9 +197,10 @@ object FileUtils {
     */
   def findAndLogFirstNonDivisibleFile(sourceDir: String, divisor: Long, fileSystem: FileSystem): Boolean = {
 
-    val allFiles = fileSystem.listStatus(new Path(sourceDir))
+    val allFiles = expandDirectories(fileSystem, fileSystem.globStatus(new Path(sourceDir), hiddenFileFilter))
 
-    val firstNonDivisibleFile = allFiles.find(isNonDivisible(_, divisor))
+    val firstNonDivisibleFile = allFiles.take(THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK)
+      .find(isNonDivisible(_, divisor))
 
     if (firstNonDivisibleFile.isDefined) {
       logger.error(s"File ${firstNonDivisibleFile.get.getPath} IS NOT divisible by $divisor.")

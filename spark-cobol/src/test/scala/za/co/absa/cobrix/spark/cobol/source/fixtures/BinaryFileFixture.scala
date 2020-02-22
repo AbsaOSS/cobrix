@@ -18,6 +18,9 @@ package za.co.absa.cobrix.spark.cobol.source.fixtures
 
 import java.io.{DataOutputStream, File, FileOutputStream}
 import java.nio.charset.Charset
+import java.nio.file.{Files, Path}
+
+import org.apache.commons.io.{FileSystemUtils, FileUtils}
 
 /**
   * This fixture adds ability for a unit test to create temporary files for using them in the tests.
@@ -65,6 +68,15 @@ trait BinaryFileFixture {
     f(tempFile.getAbsolutePath)
 
     tempFile.delete
+  }
+
+  def withTempDirectory(prefix: String)(f: String => Unit): Unit = {
+    val tmpPath = Files.createTempDirectory(prefix)
+    val pathStr = tmpPath.toAbsolutePath.toString
+
+    f(pathStr)
+
+    FileUtils.deleteDirectory(new File(pathStr))
   }
 
 }
