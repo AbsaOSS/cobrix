@@ -436,7 +436,12 @@ object CobolParametersParser {
     */
   private def validateSparkCobolOptions(params: Parameters): Unit = {
     val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, "false").toBoolean ||
-      params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean
+      params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean ||
+      params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean ||
+      params.contains(PARAM_FILE_START_OFFSET) ||
+      params.contains(PARAM_FILE_END_OFFSET) ||
+      params.contains(PARAM_RECORD_LENGTH)
+
     val isPedantic = params.getOrElse(PARAM_PEDANTIC, "false").toBoolean
     val keysPassed = params.getMap.keys.toSeq
     val unusedKeys = keysPassed.flatMap(key => {
@@ -446,15 +451,6 @@ object CobolParametersParser {
         Some(key)
       }
     })
-    if (unusedKeys.nonEmpty) {
-      val unusedKeyStr = unusedKeys.mkString(",")
-      val msg = s"Redundant or unrecognized option(s) to 'spark-cobol': $unusedKeyStr."
-      if (isPedantic) {
-        throw new IllegalArgumentException(msg)
-      } else {
-        logger.error(msg)
-      }
-    }
     val segmentRedefineParents = getSegmentRedefineParents(params)
     if (segmentRedefineParents.nonEmpty) {
       val segmentIdLevels = parseSegmentLevels(params)
@@ -464,7 +460,18 @@ object CobolParametersParser {
       }
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
-      throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when '$PARAM_IS_RECORD_SEQUENCE' = true.")
+      val recordSequenceCondition = s"one of this holds: '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
+        s" or one of these options is set: '$PARAM_RECORD_LENGTH', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET'"
+      throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
+    }
+    if (unusedKeys.nonEmpty) {
+      val unusedKeyStr = unusedKeys.mkString(",")
+      val msg = s"Redundant or unrecognized option(s) to 'spark-cobol': $unusedKeyStr."
+      if (isPedantic) {
+        throw new IllegalArgumentException(msg)
+      } else {
+        logger.error(msg)
+      }
     }
   }
 

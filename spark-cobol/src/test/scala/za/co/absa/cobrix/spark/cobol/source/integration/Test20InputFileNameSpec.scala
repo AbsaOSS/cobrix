@@ -16,8 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import org.apache.spark.sql.{DataFrame, DataFrameReader}
 import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, DataFrameReader}
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 
@@ -85,7 +85,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
             .load(inputDataPath)
         }
 
-        assert(ex.getMessage.contains("'with_input_file_name_col' is supported only when 'is_record_sequence' = true"))
+        assert(ex.getMessage.contains("'with_input_file_name_col' is supported only when one of this holds"))
       }
     }
 
