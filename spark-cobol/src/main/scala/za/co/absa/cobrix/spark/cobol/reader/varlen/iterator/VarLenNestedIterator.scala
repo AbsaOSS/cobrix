@@ -20,6 +20,7 @@ import org.apache.spark.sql.Row
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.parser.recordextractors.RawRecordExtractor
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.validator.ReaderParametersValidator
@@ -35,6 +36,7 @@ import scala.collection.mutable.ListBuffer
   * @param dataStream         A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
   * @param readerProperties   Additional properties for customizing the reader.
   * @param recordHeaderParser A record parser for multisegment files
+  * @param recordExtractor    A record extractor that can be used instead of the record header parser.
   * @param fileId             A FileId to put to the corresponding column
   * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset An offset of the file where parsing should be started
@@ -45,12 +47,13 @@ final class VarLenNestedIterator(cobolSchema: Copybook,
                                  dataStream: SimpleStream,
                                  readerProperties: ReaderParameters,
                                  recordHeaderParser: RecordHeaderParser,
+                                 recordExtractor: Option[RawRecordExtractor],
                                  fileId: Int,
                                  startRecordId: Long,
                                  startingFileOffset: Long,
                                  segmentIdPrefix: String) extends Iterator[Row] {
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, startRecordId, startingFileOffset)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, recordExtractor, startRecordId, startingFileOffset)
 
   private var cachedValue: Option[Row] = _
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)

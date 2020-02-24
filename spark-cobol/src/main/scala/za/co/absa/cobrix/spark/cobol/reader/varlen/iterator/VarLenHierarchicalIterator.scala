@@ -22,6 +22,7 @@ import org.apache.spark.sql.Row
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.parser.recordextractors.RawRecordExtractor
 import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
@@ -52,7 +53,7 @@ final class VarLenHierarchicalIterator(cobolSchema: Copybook,
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, startRecordId, startingFileOffset)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, None, startRecordId, startingFileOffset)
 
   private var recordIndex = startRecordId
   private var cachedValue: Option[Row] = _
