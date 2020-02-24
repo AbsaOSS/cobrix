@@ -93,8 +93,9 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
         .option("is_record_sequence", "true")
-        .option("generate_record_id", "true")
         .option("schema_retention_policy", "collapse_root")
+        .option("generate_record_id", "true")
+        .option("variable_size_occurs", "true")
         .option("segment_field", "SEG")
         .option("redefine_segment_id_map:1", "SEG1 => 1")
         .option("redefine-segment-id-map:2", "SEG2 => 2")
@@ -172,7 +173,7 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
           |        "FIELD1" : "E"
           |      }, {
           |        "FIELD1" : "F"
-          |      }, { } ]
+          |      } ]
           |    } ],
           |    "SEG2" : [ {
           |      "COUNT2" : 2,
@@ -189,16 +190,15 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
           |          "FIELD2" : "I"
           |        }, {
           |          "FIELD2" : "J"
-          |        }, { } ]
+          |        } ]
           |      } ]
           |    } ]
           |  }
           |} ]""".stripMargin.replace("\r\n", "\n")
 
       val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
-      //println(actual)
 
-      //assertEqualsMultiline(actual, expected)
+      assertEqualsMultiline(actual, expected)
     }
 
   }

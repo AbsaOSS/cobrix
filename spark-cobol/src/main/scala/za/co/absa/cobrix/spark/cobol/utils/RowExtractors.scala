@@ -236,8 +236,8 @@ object RowExtractors {
           var i = from
           var j = 0
           while (i < actualSize) {
-            val value = getGroupValues(offset, grp, data, currentIndex, parentSegmentIds)
-            offset += grp.binaryProperties.dataSize
+            val (size, value) = getGroupValues(offset, grp, data, currentIndex, parentSegmentIds)
+            offset += size
             groupValues(j) = value
             i += 1
             j += 1
@@ -263,7 +263,7 @@ object RowExtractors {
       }
     }
 
-    def extractValue(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): Any = {
+    def extractValue(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Any) = {
       field match {
         case grp: Group =>
           getGroupValues(useOffset, grp, data, currentIndex, parentSegmentIds)
@@ -277,7 +277,7 @@ object RowExtractors {
             }
             dependFields += st.name -> intVal
           }
-          value
+          (st.binaryProperties.actualSize, value)
       }
     }
 
@@ -293,7 +293,8 @@ object RowExtractors {
         segmentsData(i) match {
           case (segmentId, segmentData) =>
             if (segmentIdRedefineMap.get(segmentId).map(_.name).getOrElse("") == field.name) {
-              children += getGroupValues(field.binaryProperties.offset, field, segmentData, i, segmentId :: parentSegmentIds)
+              val (_, child) = getGroupValues(field.binaryProperties.offset, field, segmentData, i, segmentId :: parentSegmentIds)
+              children += child
             } else {
               if (parentSegmentIds.contains(segmentId)) {
                 break = true
@@ -306,7 +307,7 @@ object RowExtractors {
       children.toArray
     }
 
-    def getGroupValues(offset: Int, group: Group, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): Row = {
+    def getGroupValues(offset: Int, group: Group, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Row) = {
       var bitOffset = offset
 
       val childrenNum = if (group.isSegmentRedefine) {
@@ -328,9 +329,13 @@ object RowExtractors {
           }
           value
         } else {
-          val value = extractValue(field, bitOffset, data, currentIndex, parentSegmentIds)
+          val (size, value) = extractValue(field, bitOffset, data, currentIndex, parentSegmentIds)
           if (!field.isRedefined) {
-            bitOffset += field.binaryProperties.actualSize
+            if (field.redefines.isDefined) {
+              bitOffset += field.binaryProperties.actualSize
+            } else {
+              bitOffset += size
+            }
           }
           value
         }
@@ -351,14 +356,14 @@ object RowExtractors {
         })
       }
 
-      new GenericRow(fields)
+      (bitOffset - offset, new GenericRow(fields))
     }
 
     var nextOffset = offsetBytes
 
     val records = ast.children.collect { case grp: Group if grp.parentSegment.isEmpty =>
-      val values = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
-      nextOffset += grp.binaryProperties.actualSize
+      val (size, values) = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
+      nextOffset += size
       values
     }
 
