@@ -304,6 +304,12 @@ public interface copybookParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAlphaX(copybookParser.AlphaXContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link copybookParser#alphaN}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAlphaN(copybookParser.AlphaNContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link copybookParser#alphaA}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

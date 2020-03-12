@@ -26,6 +26,7 @@ class ParserFieldsSpec extends FunSuite {
     val fields: List[String] = List(
       "FIELD",
       "X",
+      "N",
       "X9",
       "A",
       "A9",

@@ -27,7 +27,7 @@ class CopybooksOperationsSpec extends FunSuite {
     val copyBookContents1: String =
       """        01  RECORD-COPYBOOK-1.
         |           05  GROUP-1.
-        |              06  FIELD-1            PIC X(10).
+        |              06  FIELD-1            PIC N(5).
         |              06  FILLER             PIC X(5).
         |              06  GROUP-2.
         |                 10  NESTED-FIELD-1  PIC 9(10).

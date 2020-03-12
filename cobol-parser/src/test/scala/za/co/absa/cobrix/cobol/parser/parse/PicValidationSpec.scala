@@ -110,6 +110,7 @@ class PicValidationSpec extends FunSuite {
     validatePic("S9(3)PPP")
     validatePic("P(3)9(3)")
     validatePic("S9(3)P(3)")
+    validatePic("N(10)")
   }
 
   test("Test various malformed PICs") {

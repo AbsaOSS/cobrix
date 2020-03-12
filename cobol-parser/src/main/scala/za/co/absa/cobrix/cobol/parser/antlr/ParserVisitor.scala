@@ -64,7 +64,7 @@ class ParserVisitor(enc: Encoding,
     s"((?:$char\\(\\d+\\)|$char)$question)"
   }
 
-  val lengthRegex: Regex = "([9XPZA])\\((\\d+)\\)|([9XPZA])".r
+  val lengthRegex: Regex = "([9XNPZA])\\((\\d+)\\)|([9XNPZA])".r
   val numericSPicRegexScaled: Regex = ("(S?)"
                                        + genericLengthRegex('9')
                                        + genericLengthRegex('P', optional = true)
@@ -576,6 +576,9 @@ class ParserVisitor(enc: Encoding,
     else if (ctx.alphaA() != null) {
       visitAlphaA(ctx.alphaA())
     }
+    else if (ctx.alphaN() != null) {
+      visitAlphaN(ctx.alphaN())
+    }
     else if (ctx.COMP_1() != null || ctx.COMP_2() != null) {
       PicExpr(
         Decimal(
@@ -606,6 +609,12 @@ class ParserVisitor(enc: Encoding,
     val text = ctx.getText
     val (char, len) = length(text)
     PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+  }
+
+  override def visitAlphaN(ctx: copybookParser.AlphaNContext): PicExpr = {
+    val text = ctx.getText
+    val (char, len) = length(text)
+    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {

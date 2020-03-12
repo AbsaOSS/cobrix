@@ -29,7 +29,7 @@ class BinaryExtractorSpec extends FunSuite {
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.
       |           05  COMPANY.
-      |               10  SHORT-NAME            PIC X(10).
+      |               10  SHORT-NAME            PIC N(5).
       |               10  COMPANY-ID-NUM        PIC 9(5) COMP-3.
       |               10  COMPANY-ID-STR
       |			         REDEFINES  COMPANY-ID-NUM PIC X(3).
