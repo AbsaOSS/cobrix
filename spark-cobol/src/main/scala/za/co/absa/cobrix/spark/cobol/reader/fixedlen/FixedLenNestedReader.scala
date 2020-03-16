@@ -87,7 +87,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (isEbcdic) EBCDIC() else ASCII()
+    val encoding = if (isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
     val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)

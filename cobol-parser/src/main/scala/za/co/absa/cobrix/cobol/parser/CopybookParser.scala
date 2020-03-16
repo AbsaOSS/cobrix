@@ -78,7 +78,7 @@ object CopybookParser {
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(),
+    parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
       segmentRedefines,

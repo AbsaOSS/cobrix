@@ -18,10 +18,10 @@ package za.co.absa.cobrix.cobol.parser.extract
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
+import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
+import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 
 class BinaryExtractorSpec extends FunSuite {
 
@@ -29,7 +29,7 @@ class BinaryExtractorSpec extends FunSuite {
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.
       |           05  COMPANY.
-      |               10  SHORT-NAME            PIC N(5).
+      |               10  SHORT-NAME            PIC X(10).
       |               10  COMPANY-ID-NUM        PIC 9(5) COMP-3.
       |               10  COMPANY-ID-STR
       |			         REDEFINES  COMPANY-ID-NUM PIC X(3).
@@ -149,7 +149,7 @@ class BinaryExtractorSpec extends FunSuite {
     val level: Int = 10
     val name: String = "SHORT-NAME"
     val lineNumber: Int = 4
-    val dataType: CobolType = AlphaNumeric("X(10)", 10, None, Some(EBCDIC()))
+    val dataType: CobolType = AlphaNumeric("X(10)", 10, None, Some(EBCDIC))
     val redefines: Option[String] = None
     val isRedefined: Boolean = false
     val occurs: Option[Int] = None

@@ -22,7 +22,7 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, UTF16}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
 import scala.util.control.NonFatal
@@ -56,7 +56,7 @@ object DecoderSelector {
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
     val decoder = dataType match {
-      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC()), stringTrimmingPolicy, ebcdicCodePage, asciiCharset)
+      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
@@ -67,15 +67,16 @@ object DecoderSelector {
   /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is EBCDIC or ASCII */
   private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage, asciiCharset: Charset): Decoder = {
     encoding match {
-      case _: EBCDIC =>
+      case EBCDIC =>
         StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
-      case _: ASCII =>
+      case ASCII =>
         if (asciiCharset.name() == "US-ASCII") {
           StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
         } else {
           // A workaround for non serializable class: Charset
           new AsciiStringDecoderWrapper(getStringStrimmingType(stringTrimmingPolicy), asciiCharset.name())
         }
+      case UTF16 => StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy))
     }
   }
 
@@ -90,11 +91,11 @@ object DecoderSelector {
 
   /** Gets a decoder function for a decimal data type. The input array of bytes is always converted to string and then to BigDecimal */
   private def getDecimalDecoder(decimalType: Decimal, floatingPointFormat: FloatingPointFormat): Decoder = {
-    val encoding = decimalType.enc.getOrElse(EBCDIC())
+    val encoding = decimalType.enc.getOrElse(EBCDIC)
 
     val isEbcidic = encoding match {
-      case _: EBCDIC => true
-      case _: ASCII => false
+      case EBCDIC => true
+      case _ => false
     }
 
     val isSigned = decimalType.signPosition.isDefined
@@ -163,11 +164,11 @@ object DecoderSelector {
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
   private def getIntegralDecoder(integralType: Integral): Decoder = {
-    val encoding = integralType.enc.getOrElse(EBCDIC())
+    val encoding = integralType.enc.getOrElse(EBCDIC)
 
     val isEbcidic = encoding match {
-      case _: EBCDIC => true
-      case _: ASCII => false
+      case EBCDIC => true
+      case _ => false
     }
 
     val isSigned = integralType.signPosition.isDefined
