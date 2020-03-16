@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 import org.slf4j.LoggerFactory
 import scodec.Codec
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, Usage}
+import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 
@@ -161,7 +161,7 @@ object BinaryUtils {
     */
   def decodeString(enc: Encoding, bytes: Array[Byte], length: Int): String = {
     val str = enc match {
-      case _: EBCDIC => {
+      case EBCDIC => {
         var i = 0
         val buf = new StringBuffer(length)
         while (i < bytes.length && i < length) {

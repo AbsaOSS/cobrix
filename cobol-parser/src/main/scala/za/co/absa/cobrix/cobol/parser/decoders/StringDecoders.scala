@@ -16,11 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import java.nio.charset.{Charset, StandardCharsets}
+import java.nio.charset.StandardCharsets
 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
 
 object StringDecoders {
@@ -83,6 +82,26 @@ object StringDecoders {
       StringTools.trimRight(buf.toString)
     } else {
       buf.toString.trim
+    }
+  }
+
+  /**
+   * A decoder for any UTF-16 string field
+   *
+   * @param bytes        A byte array that represents the binary data
+   * @param trimmingType Specifies if and how the soutput string should be trimmed
+   * @return A string representation of the binary data
+   */
+  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int): String = {
+    val utf16Str = new String(bytes, StandardCharsets.UTF_16)
+    if (trimmingType == TrimNone) {
+      utf16Str
+    } else if (trimmingType == TrimLeft) {
+      StringTools.trimLeft(utf16Str)
+    } else if (trimmingType == TrimRight) {
+      StringTools.trimRight(utf16Str)
+    } else {
+      utf16Str.trim
     }
   }
 

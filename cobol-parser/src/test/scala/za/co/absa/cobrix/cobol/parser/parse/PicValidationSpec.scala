@@ -32,7 +32,7 @@ class PicValidationSpec extends FunSuite {
 
   private def validatePic(pic: String) = {
 
-    val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
+    val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
       FloatingPointFormat.IBM)

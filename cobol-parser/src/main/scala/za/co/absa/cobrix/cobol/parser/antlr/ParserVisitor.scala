@@ -26,8 +26,8 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.encoding.{Encoding, UTF16}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -614,7 +614,7 @@ class ParserVisitor(enc: Encoding,
   override def visitAlphaN(ctx: copybookParser.AlphaNContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(enc), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(UTF16), Some(ctx.getText)))
   }
 
   override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {

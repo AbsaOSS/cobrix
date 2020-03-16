@@ -24,13 +24,13 @@ class BinaryDecoderSpec extends FunSuite {
   import BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
 
   test("Test string fields decoding") {
-    assert(BinaryUtils.decodeString(ASCII(), "TestString".toCharArray.map(_.toByte), 4) == "Test")
-    assert(BinaryUtils.decodeString(ASCII(), "TestString".toCharArray.map(_.toByte), 10) == "TestString")
+    assert(BinaryUtils.decodeString(ASCII, "TestString".toCharArray.map(_.toByte), 4) == "Test")
+    assert(BinaryUtils.decodeString(ASCII, "TestString".toCharArray.map(_.toByte), 10) == "TestString")
 
     // "TestString"
     val ebcdicString = Array[Byte](0xE3.toByte, 0x85.toByte, 0xA2.toByte, 0xA3.toByte, 0xE2.toByte,
       0xA3.toByte, 0x99.toByte, 0x89.toByte, 0x95.toByte, 0x87.toByte)
-    assert(BinaryUtils.decodeString(EBCDIC(), ebcdicString, 10) == "TestString")
+    assert(BinaryUtils.decodeString(EBCDIC, ebcdicString, 10) == "TestString")
   }
 
 
