@@ -35,6 +35,7 @@ class PicValidationSpec extends FunSuite {
     val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
+      isUtf16BigEndian = true,
       FloatingPointFormat.IBM)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")

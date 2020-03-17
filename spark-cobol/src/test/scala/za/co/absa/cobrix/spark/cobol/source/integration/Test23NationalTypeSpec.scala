@@ -24,7 +24,6 @@ import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTes
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-//noinspection NameBooleanParameters
 class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -34,14 +33,32 @@ class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFile
           02 N PIC N(3).
     """
 
-  val binFileContents: Array[Byte] = Array[Byte](
+  val binFileContentsBE: Array[Byte] = Array[Byte](
     // Record 0
     0xF1.toByte, 0xF2.toByte, 0xF3.toByte, // "123"
-    0x00, 0x31.toByte, 0x00, 0x32.toByte, 0x00, 0x33.toByte, // "123" in UTF-16
+    0x00, 0x31.toByte, 0x00, 0x32.toByte, 0x00, 0x33.toByte, // "123" in UTF-16 BE
     // Record 1
     0x81.toByte, 0x82.toByte, 0x83.toByte, // "abc"
-    0x00, 0x61.toByte, 0x00, 0x62.toByte, 0x00, 0x63.toByte // "abc" in UTF-16
+    0x00, 0x61.toByte, 0x00, 0x62.toByte, 0x00, 0x63.toByte // "abc" in UTF-16 BE
   )
+
+  val binFileContentsLE: Array[Byte] = Array[Byte](
+    // Record 0
+    0xF1.toByte, 0xF2.toByte, 0xF3.toByte, // "123"
+    0x31.toByte, 0x00, 0x32.toByte, 0x00, 0x33.toByte, 0x00, // "123" in UTF-16 LE
+    // Record 1
+    0x81.toByte, 0x82.toByte, 0x83.toByte, // "abc"
+    0x61.toByte, 0x00, 0x62.toByte, 0x00, 0x63.toByte, 0x00 // "abc" in UTF-16 LE
+  )
+
+  val expectedData =
+    """[ {
+      |  "X" : "123",
+      |  "N" : "123"
+      |}, {
+      |  "X" : "abc",
+      |  "N" : "abc"
+      |} ]""".stripMargin.replace("\r\n", "\n")
 
   test("Test that international strings have proper sizes") {
     val parsedCopybook = CopybookParser.parseTree(copybook)
@@ -53,8 +70,8 @@ class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFile
     assert(record.children(1).binaryProperties.actualSize == 6)
   }
 
-  test("Test that national strings are decode properly") {
-    withTempBinFile("national", ".dat", binFileContents) { tmpFileName =>
+  test("Test that big endian national strings are decode properly") {
+    withTempBinFile("national_be", ".dat", binFileContentsBE) { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
@@ -63,21 +80,28 @@ class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFile
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
-      val expected =
-        """[ {
-          |  "X" : "123",
-          |  "N" : "123"
-          |}, {
-          |  "X" : "abc",
-          |  "N" : "abc"
-          |} ]""".stripMargin.replace("\r\n", "\n")
 
       val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
-      assertEqualsMultiline(actual, expected)
+      assertEqualsMultiline(actual, expectedData)
     }
-
   }
 
+  test("Test that little endian national strings are decode properly") {
+    withTempBinFile("national_le", ".dat", binFileContentsLE) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("schema_retention_policy", "collapse_root")
+        .option("is_utf16_big_endian", "false")
+        .load(tmpFileName)
+
+      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+      assertEqualsMultiline(actual, expectedData)
+    }
+  }
 
 }

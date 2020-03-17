@@ -155,6 +155,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.commentPolicy,
         codePage,
         asciiCharset,
+        readerProperties.isUtf16BigEndian,
         readerProperties.floatingPointFormat,
         readerProperties.nonTerminals)
     else
@@ -168,6 +169,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           readerProperties.commentPolicy,
           codePage,
           asciiCharset,
+          readerProperties.isUtf16BigEndian,
           readerProperties.floatingPointFormat,
           nonTerminals = readerProperties.nonTerminals)
       ))

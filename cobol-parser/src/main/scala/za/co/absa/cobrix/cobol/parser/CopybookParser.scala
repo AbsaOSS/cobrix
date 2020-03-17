@@ -64,6 +64,7 @@ object CopybookParser {
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
     * @return Seq[Group] where a group is a record inside the copybook
@@ -76,6 +77,7 @@ object CopybookParser {
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
+                isUtf16BigEndian: Boolean = true,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil): Copybook = {
     parseTree(EBCDIC,
@@ -87,6 +89,7 @@ object CopybookParser {
       commentPolicy,
       ebcdicCodePage,
       asciiCharset,
+      isUtf16BigEndian,
       floatingPointFormat,
       nonTerminals)
   }
@@ -104,6 +107,7 @@ object CopybookParser {
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
     * @return Seq[Group] where a group is a record inside the copybook
@@ -118,10 +122,11 @@ object CopybookParser {
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
+                isUtf16BigEndian: Boolean,
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -133,11 +138,11 @@ object CopybookParser {
     new Copybook(
       if (dropGroupFillers) {
         calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
         )), segmentRedefines), correctedFieldParentMap))
       } else {
         calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
         )), segmentRedefines), correctedFieldParentMap))
       }
     )
@@ -148,6 +153,7 @@ object CopybookParser {
                               stringTrimmingPolicy: StringTrimmingPolicy,
                               ebcdicCodePage: CodePage,
                               asciiCharset: Charset,
+                              isUtf16BigEndian: Boolean,
                               floatingPointFormat: FloatingPointFormat
                              ): CopybookAST = {
 
@@ -173,11 +179,11 @@ object CopybookParser {
         case g: Group => {
           if (nonTerminals contains g.name) {
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat).copy(isRedefined = true)(g.parent)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
@@ -191,7 +197,7 @@ object CopybookParser {
           }
           else
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
             )
         }
       }
