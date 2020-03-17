@@ -65,6 +65,7 @@ object CobolParametersParser {
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
   val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
   val PARAM_ASCII_CHARSET             = "ascii_charset"
+  val PARAM_IS_UTF16_BIG_ENDIAN       = "is_utf16_big_endian"
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
 
@@ -194,6 +195,7 @@ object CobolParametersParser {
       ebcdicCodePageName,
       ebcdicCodePageClass,
       asciiCharset,
+      params.getOrElse(PARAM_IS_UTF16_BIG_ENDIAN, "true").toBoolean,
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,

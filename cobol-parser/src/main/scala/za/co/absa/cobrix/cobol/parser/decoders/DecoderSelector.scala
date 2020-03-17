@@ -47,6 +47,7 @@ object DecoderSelector {
     * @param stringTrimmingPolicy Specifies how the decoder should handle string types
     * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
     * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  Specifies a floating point format (IBM or IEEE754)
     * @return A function that converts an array of bytes to the target data type.
     */
@@ -54,9 +55,10 @@ object DecoderSelector {
                  stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
+                 isUtf16BigEndian: Boolean = true,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
     val decoder = dataType match {
-      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset)
+      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
@@ -65,7 +67,11 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a string data type. Decoder is chosed depending on whether input encoding is EBCDIC or ASCII */
-  private def getStringDecoder(encoding: Encoding, stringTrimmingPolicy: StringTrimmingPolicy, ebcdicCodePage: CodePage, asciiCharset: Charset): Decoder = {
+  private def getStringDecoder(encoding: Encoding,
+                               stringTrimmingPolicy: StringTrimmingPolicy,
+                               ebcdicCodePage: CodePage,
+                               asciiCharset: Charset,
+                               isUtf16BigEndian: Boolean): Decoder = {
     encoding match {
       case EBCDIC =>
         StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
@@ -76,7 +82,8 @@ object DecoderSelector {
           // A workaround for non serializable class: Charset
           new AsciiStringDecoderWrapper(getStringStrimmingType(stringTrimmingPolicy), asciiCharset.name())
         }
-      case UTF16 => StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy))
+      case UTF16 =>
+        StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian)
     }
   }
 

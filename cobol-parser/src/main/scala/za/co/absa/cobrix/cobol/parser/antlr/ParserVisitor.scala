@@ -44,6 +44,7 @@ class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
                     ebcdicCodePage: CodePage,
                     asciiCharset: Charset,
+                    isUtf16BigEndian: Boolean,
                     floatingPointFormat: FloatingPointFormat) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String) extends Expr
@@ -809,7 +810,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) occurs.get.dep else None,
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
       ) (Some(parent))
 
     parent.children.append(prim)

@@ -92,8 +92,13 @@ object StringDecoders {
    * @param trimmingType Specifies if and how the soutput string should be trimmed
    * @return A string representation of the binary data
    */
-  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int): String = {
-    val utf16Str = new String(bytes, StandardCharsets.UTF_16)
+  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int, isUtf16BigEndian: Boolean): String = {
+    val utf16Str = if (isUtf16BigEndian) {
+      new String(bytes, StandardCharsets.UTF_16BE)
+    } else {
+      new String(bytes, StandardCharsets.UTF_16LE)
+    }
+
     if (trimmingType == TrimNone) {
       utf16Str
     } else if (trimmingType == TrimLeft) {

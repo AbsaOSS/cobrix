@@ -145,6 +145,7 @@ class DefaultSource
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
       asciiCharset = parameters.asciiCharset,
+      isUtf16BigEndian = parameters.isUtf16BigEndian,
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = varLenParams.variableSizeOccurs,
       lengthFieldName = recordLengthField,

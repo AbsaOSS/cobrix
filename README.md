@@ -1032,6 +1032,7 @@ Again, the full example is available at
 | .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
 | .option("ascii_charset", "US-ASCII")       | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc. |
+| .option("is_utf16_big_endian", "true")     | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default). |
 | .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 | .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
 

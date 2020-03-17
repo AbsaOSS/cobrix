@@ -102,6 +102,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
         readerProperties.commentPolicy,
         ebcdicCodePage,
         asciiCharset,
+        readerProperties.isUtf16BigEndian,
         floatingPointFormat,
         nonTerminals)
     else
@@ -116,6 +117,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
             readerProperties.commentPolicy,
             ebcdicCodePage,
             asciiCharset,
+            readerProperties.isUtf16BigEndian,
             floatingPointFormat,
             nonTerminals)
         )
