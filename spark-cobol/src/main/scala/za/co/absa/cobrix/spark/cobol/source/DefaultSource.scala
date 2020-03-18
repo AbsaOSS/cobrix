@@ -168,6 +168,7 @@ class DefaultSource
       parameters.commentPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
+      parameters.isDebug,
       varLenParams.recordHeaderParser,
       varLenParams.rhpAdditionalInfo,
       varLenParams.inputFileNameColumn

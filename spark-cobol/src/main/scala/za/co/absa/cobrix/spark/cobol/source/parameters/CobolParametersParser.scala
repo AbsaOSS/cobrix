@@ -54,6 +54,7 @@ object CobolParametersParser {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
+  val PARAM_DEBUG                     = "debug"
 
   // General parsing parameters
   val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
@@ -206,6 +207,7 @@ object CobolParametersParser {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
+      params.getOrElse(PARAM_DEBUG, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
     validateSparkCobolOptions(params)
