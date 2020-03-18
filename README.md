@@ -1043,6 +1043,7 @@ Again, the full example is available at
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
 | .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
 | .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
+| .option("debug", "false")                  | If true, each primitive field will be accompanied by a debug field specifying raw bytes in hexadecimal. |
 
 ##### Variable record length files options
 

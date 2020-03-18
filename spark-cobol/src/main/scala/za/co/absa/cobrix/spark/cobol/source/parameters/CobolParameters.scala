@@ -44,6 +44,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param commentPolicy          A comment truncation policy
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param nonTerminals           A list of non-terminals (GROUPS) to combine and parse as primitive fields
+  * @param isDebug                If true, additional debugging fields will be added
   * @param debugIgnoreFileSize    If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
   */
 case class CobolParameters(
@@ -66,5 +67,6 @@ case class CobolParameters(
                             commentPolicy:         CommentPolicy,
                             dropGroupFillers:      Boolean,
                             nonTerminals:          Seq[String],
+                            isDebug:               Boolean,
                             debugIgnoreFileSize:   Boolean
                           )

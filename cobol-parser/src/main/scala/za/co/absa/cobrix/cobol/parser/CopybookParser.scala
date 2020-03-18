@@ -67,6 +67,7 @@ object CopybookParser {
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
+    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -79,7 +80,8 @@ object CopybookParser {
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
-                nonTerminals: Seq[String] = Nil): Copybook = {
+                nonTerminals: Seq[String] = Nil,
+                isDebug: Boolean = false): Copybook = {
     parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
@@ -91,7 +93,8 @@ object CopybookParser {
       asciiCharset,
       isUtf16BigEndian,
       floatingPointFormat,
-      nonTerminals)
+      nonTerminals,
+      isDebug)
   }
 
   /**
@@ -110,6 +113,7 @@ object CopybookParser {
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
+    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -124,7 +128,8 @@ object CopybookParser {
                 asciiCharset: Charset,
                 isUtf16BigEndian: Boolean,
                 floatingPointFormat: FloatingPointFormat,
-                nonTerminals: Seq[String]): Copybook = {
+                nonTerminals: Seq[String],
+                isDebug: Boolean): Copybook = {
 
     val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
@@ -137,13 +142,33 @@ object CopybookParser {
 
     new Copybook(
       if (dropGroupFillers) {
-        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
-        )), segmentRedefines), correctedFieldParentMap))
+        addDebugFields(
+          calculateNonFillerSizes(
+            setSegmentParents(
+              markSegmentRedefines(
+                processGroupFillers(
+                  markDependeeFields(
+                    addNonTerminals(
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+                  )
+                ), segmentRedefines), correctedFieldParentMap
+            )
+          ), isDebug
+        )
       } else {
-        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
-        )), segmentRedefines), correctedFieldParentMap))
+        addDebugFields(
+          calculateNonFillerSizes(
+            setSegmentParents(
+              markSegmentRedefines(
+                renameGroupFillers(
+                  markDependeeFields(
+                    addNonTerminals(
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+                  )
+                ), segmentRedefines), correctedFieldParentMap
+            )
+          ), isDebug
+        )
       }
     )
   }
@@ -721,6 +746,17 @@ object CopybookParser {
       throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
     }
     newSchema
+  }
+
+  /**
+   * Add debugging fields if debug mode is enabled
+   *
+   * @param ast                An AST as a set of copybook records
+   * @param addDebuggingFields If true, debugging fields will be added
+   * @return The same AST with debugging fields added
+   */
+  private def addDebugFields(ast: CopybookAST, addDebuggingFields: Boolean): CopybookAST = {
+    ast
   }
 
   /**

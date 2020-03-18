@@ -53,6 +53,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param commentPolicy           A comment truncation policy
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
+  * @param isDebug                 If true, additional debugging fields will be added
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
@@ -85,6 +86,7 @@ case class ReaderParameters(
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
+                             isDebug:                 Boolean = false,
                              recordHeaderParser:      Option[String] = None,
                              rhpAdditionalInfo:       Option[String] = None,
                              inputFileNameColumn:     String = ""

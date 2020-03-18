@@ -104,7 +104,8 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
         asciiCharset,
         readerProperties.isUtf16BigEndian,
         floatingPointFormat,
-        nonTerminals)
+        nonTerminals,
+        readerProperties.isDebug)
     else
       Copybook.merge(
         copyBookContents.map(
@@ -119,7 +120,8 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
             asciiCharset,
             readerProperties.isUtf16BigEndian,
             floatingPointFormat,
-            nonTerminals)
+            nonTerminals,
+            readerProperties.isDebug)
         )
       )
     new CobolSchema(schema, schemaRetentionPolicy, "",false)
