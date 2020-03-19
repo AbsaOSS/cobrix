@@ -761,6 +761,7 @@ object CopybookParser {
       val debugField = field.copy(name = debugFieldName,
         dataType = debugDataType,
         redefines = Some(field.name),
+        isDependee = false,
         decode = StringDecoders.decodeHex) (parent = field.parent)
 
       debugField

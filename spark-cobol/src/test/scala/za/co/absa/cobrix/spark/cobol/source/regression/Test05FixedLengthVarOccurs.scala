@@ -37,7 +37,7 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
     """
 
   test("Test input data file having a numeric field with a comma as the decimal separator") {
-    withTempTextFile("text", ".dat", Charsets.UTF_8,"   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
+    withTempTextFile("text", ".dat", Charsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
@@ -47,49 +47,128 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
         .option("encoding", "ascii")
         .load(tmpFileName)
 
-      val expected = """[ {
-                       |  "COUNT" : 5,
-                       |  "GROUP" : [ {
-                       |    "TEXT" : "ABC",
-                       |    "FIELD" : 1
-                       |  }, {
-                       |    "TEXT" : "ABC",
-                       |    "FIELD" : 2
-                       |  }, {
-                       |    "TEXT" : "ABC",
-                       |    "FIELD" : 3
-                       |  }, {
-                       |    "TEXT" : "ABC",
-                       |    "FIELD" : 4
-                       |  }, {
-                       |    "TEXT" : "ABC",
-                       |    "FIELD" : 5
-                       |  } ]
-                       |}, {
-                       |  "COUNT" : 5,
-                       |  "GROUP" : [ {
-                       |    "TEXT" : "DEF",
-                       |    "FIELD" : 1
-                       |  }, {
-                       |    "TEXT" : "DEF",
-                       |    "FIELD" : 2
-                       |  }, {
-                       |    "TEXT" : "DEF",
-                       |    "FIELD" : 3
-                       |  }, {
-                       |    "TEXT" : "DEF",
-                       |    "FIELD" : 4
-                       |  }, {
-                       |    "TEXT" : "DEF",
-                       |    "FIELD" : 5
-                       |  } ]
-                       |} ]""".stripMargin.replace("\r\n", "\n")
+      val expected =
+        """[ {
+          |  "COUNT" : 5,
+          |  "GROUP" : [ {
+          |    "TEXT" : "ABC",
+          |    "FIELD" : 1
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "FIELD" : 2
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "FIELD" : 3
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "FIELD" : 4
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "FIELD" : 5
+          |  } ]
+          |}, {
+          |  "COUNT" : 5,
+          |  "GROUP" : [ {
+          |    "TEXT" : "DEF",
+          |    "FIELD" : 1
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "FIELD" : 2
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "FIELD" : 3
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "FIELD" : 4
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "FIELD" : 5
+          |  } ]
+          |} ]""".stripMargin.replace("\r\n", "\n")
 
       val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
-      //assertEqualsMultiline(actual, expected)
+      assertEqualsMultiline(actual, expected)
     }
+  }
 
+  test("Test debug mode for fixed length variable occurs") {
+    withTempTextFile("text_debug", ".dat", Charsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("schema_retention_policy", "collapse_root")
+        .option("variable_size_occurs", "true")
+        .option("encoding", "ascii")
+        .option("debug", "true")
+        .load(tmpFileName)
+
+      val expected =
+        """[ {
+          |  "COUNT" : 5,
+          |  "COUNT_debug" : "20202035",
+          |  "GROUP" : [ {
+          |    "TEXT" : "ABC",
+          |    "TEXT_debug" : "414243",
+          |    "FIELD" : 1,
+          |    "FIELD_debug" : "31"
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "TEXT_debug" : "414243",
+          |    "FIELD" : 2,
+          |    "FIELD_debug" : "32"
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "TEXT_debug" : "414243",
+          |    "FIELD" : 3,
+          |    "FIELD_debug" : "33"
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "TEXT_debug" : "414243",
+          |    "FIELD" : 4,
+          |    "FIELD_debug" : "34"
+          |  }, {
+          |    "TEXT" : "ABC",
+          |    "TEXT_debug" : "414243",
+          |    "FIELD" : 5,
+          |    "FIELD_debug" : "35"
+          |  } ]
+          |}, {
+          |  "COUNT" : 5,
+          |  "COUNT_debug" : "20202035",
+          |  "GROUP" : [ {
+          |    "TEXT" : "DEF",
+          |    "TEXT_debug" : "444546",
+          |    "FIELD" : 1,
+          |    "FIELD_debug" : "31"
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "TEXT_debug" : "444546",
+          |    "FIELD" : 2,
+          |    "FIELD_debug" : "32"
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "TEXT_debug" : "444546",
+          |    "FIELD" : 3,
+          |    "FIELD_debug" : "33"
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "TEXT_debug" : "444546",
+          |    "FIELD" : 4,
+          |    "FIELD_debug" : "34"
+          |  }, {
+          |    "TEXT" : "DEF",
+          |    "TEXT_debug" : "444546",
+          |    "FIELD" : 5,
+          |    "FIELD_debug" : "35"
+          |  } ]
+          |} ]""".stripMargin.replace("\r\n", "\n")
+
+      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+      assertEqualsMultiline(actual, expected)
+    }
   }
 
 }
