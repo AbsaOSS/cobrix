@@ -289,6 +289,37 @@ class Test17HierarchicalSpec extends WordSpec with SparkTestBase with CobolTestB
         testData(actualDf, actualResultsPath, expectedResultsPath)
       }
 
+      "return a hierarchically structured dataframe with debugging information" in {
+        val expectedSchemaPath = "../data/test17_expected/test17f_schema.json"
+        val actualSchemaPath = "../data/test17_expected/test17f_schema_actual.json"
+        val expectedResultsPath = "../data/test17_expected/test17f.txt"
+        val actualResultsPath = "../data/test17_expected/test17f_actual.txt"
+
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook", inputCopybookPath)
+          .option("encoding", "ascii")
+          .option("is_record_sequence", "true")
+          .option("segment_field", "SEGMENT_ID")
+          .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+          .option("redefine-segment-id-map:2", "CONTACTS => P")
+          .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+          .option("generate_record_id", "true")
+          .option("schema_retention_policy", "collapse_root")
+          .option("debug", "true")
+          .load(inpudDataPath)
+
+        testSchema(df, actualSchemaPath, expectedSchemaPath)
+
+        val actualDf = df
+          .orderBy("File_Id", "Record_Id")
+          .toJSON
+          .take(60)
+
+        testData(actualDf, actualResultsPath, expectedResultsPath)
+      }
+
       "throw an exception if root segment id is specified (ID fields generation is requested)" in {
         val ex = intercept[IllegalArgumentException] {
           spark
