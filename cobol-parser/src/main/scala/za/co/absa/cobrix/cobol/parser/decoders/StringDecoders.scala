@@ -30,6 +30,9 @@ object StringDecoders {
   val TrimRight = 3
   val TrimBoth  = 4
 
+  // Characters used for HEX conversion
+  private val HEX_ARRAY = "0123456789ABCDEF".toCharArray
+
   /**
     * A decoder for any EBCDIC string fields (alphabetical or any char)
     *
@@ -108,6 +111,24 @@ object StringDecoders {
     } else {
       utf16Str.trim
     }
+  }
+
+  /**
+   * A decoder for representing bytes as hex strings
+   *
+   * @param bytes        A byte array that represents the binary data
+   * @return A HEX string representation of the binary data
+   */
+  def decodeHex(bytes: Array[Byte]): String = {
+    val hexChars = new Array[Char](bytes.length * 2)
+    var i = 0
+    while (i < bytes.length) {
+      val v = bytes(i) & 0xFF
+      hexChars(i * 2) = HEX_ARRAY(v >>> 4)
+      hexChars(i * 2 + 1) = HEX_ARRAY(v & 0x0F)
+      i += 1
+    }
+    new String(hexChars)
   }
 
   /**

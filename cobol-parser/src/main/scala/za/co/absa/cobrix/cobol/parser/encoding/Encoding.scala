@@ -25,3 +25,5 @@ case object EBCDIC extends Encoding
 case object ASCII extends Encoding
 
 case object UTF16 extends Encoding
+
+case object HEX extends Encoding
