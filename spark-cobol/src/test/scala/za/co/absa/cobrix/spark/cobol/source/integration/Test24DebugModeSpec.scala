@@ -20,31 +20,29 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.JavaConverters._
 
-//noinspection NameBooleanParameters
-class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
+class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  private val exampleName = "Test6(type variety)"
-  private val inputCopybookPath = "file://../data/test6_copybook.cob"
-  private val inputCopybookFSPath = "../data/test6_copybook.cob"
-  private val inpudDataPath = "../data/test6_data"
+  private val exampleName = "Test24 (debug mode)"
 
-  test(s"Integration test on $exampleName - segment ids") {
+  private val inputCopybookPath = "file://../data/test24_copybook.cob"
+  private val inputCopybookFSPath = "../data/test24_copybook.cob"
+  private val inputDataPath = "../data/test24_data"
 
-    val expectedSchemaPath = "../data/test6_expected/test6_schema.json"
-    val expectedLayoutPath = "../data/test6_expected/test6_layout.txt"
-    val actualSchemaPath = "../data/test6_expected/test6_schema_actual.json"
-    val actualLayoutPath = "../data/test6_expected/test6_layout_actual.txt"
-    //val expectedResultsPath = "../data/test6_expected/test6.csv"
-    val expectedResultsPath = "../data/test6_expected/test6.txt"
-    //val actualResultsPath1 = "../data/test6_expected/test6"
-    val actualResultsPath = "../data/test6_expected/test6_actual.txt"
-    //val actualResultsPathCrc = "../data/test6_expected/.test6_actual.csv.crc"
+  test("Test that debug mode adds columns with hex raw values") {
+    val expectedSchemaPath = "../data/test24_expected/test24_schema.json"
+    val expectedLayoutPath = "../data/test24_expected/test24_layout.txt"
+    val actualSchemaPath = "../data/test24_expected/test24_schema_actual.json"
+    val actualLayoutPath = "../data/test24_expected/test24_layout_actual.txt"
+    val expectedResultsPath = "../data/test24_expected/test24.txt"
+    val actualResultsPath = "../data/test24_expected/test24_actual.txt"
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -64,7 +62,11 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IEEE754")
-      .load(inpudDataPath)
+      .option("pedantic", "true")
+      .option("debug", "true")
+      .load(inputDataPath)
+
+    //df.printSchema()
 
     // This is to print the actual output
     //println(df.schema.json)
@@ -78,19 +80,6 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
       assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
         s"$actualSchemaPath for details.")
     }
-
-    // Uncomment this to compare CSV instead of json
-    /*
-    df
-      //.repartition(1)
-      //.orderBy("ID")
-      .write.format("csv")
-      .option("header", "true")
-      .mode(SaveMode.Overwrite).save(actualResultsPath1)
-
-    merge(actualResultsPath1, actualResultsPath)
-    Files.delete(Paths.get(actualResultsPathCrc))
-    */
 
     // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
     val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
@@ -106,4 +95,5 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
     }
     Files.delete(Paths.get(actualResultsPath))
   }
+
 }

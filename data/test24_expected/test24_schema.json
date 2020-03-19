@@ -1,0 +1,979 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "ID",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "STRING_VAL",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_DEC01",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_DEC01",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_STR_DEC01",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_STR_DEC01",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_DEBUG",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_DEBUG",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FLOAT_01",
+    "type" : "float",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "DOUBLE_01",
+    "type" : "double",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_8_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S3_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S94COMP",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S8_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_DDC97_BIN",
+    "type" : "decimal(8,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_97COMP3",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_915COMP3",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S95COMP3",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S999DCCOMP3",
+    "type" : "decimal(11,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913COMP3",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913DCCOMP3",
+    "type" : "decimal(15,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S911DCC2",
+    "type" : "decimal(13,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S910DCC3",
+    "type" : "decimal(13,3)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S03DDC",
+    "type" : "decimal(5,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_U03DDC",
+    "type" : "decimal(5,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DDC",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPC5DDC",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DDC",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPI5DDC",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DISP",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DISP",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC1BIN",
+    "type" : "decimal(4,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI1BIN",
+    "type" : "decimal(4,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC3BIN",
+    "type" : "decimal(6,6)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI3BIN",
+    "type" : "decimal(6,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5BIN",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5BIN",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC10BIN",
+    "type" : "decimal(13,13)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI10BIN",
+    "type" : "decimal(13,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC01",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC02",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC03",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}
