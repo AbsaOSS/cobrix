@@ -46,7 +46,7 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, isDebug = true)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
@@ -66,12 +66,6 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
       .option("debug", "true")
       .load(inputDataPath)
 
-    //df.printSchema()
-
-    // This is to print the actual output
-    //println(df.schema.json)
-    //df.toJSON.take(60).foreach(println)
-
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
@@ -82,7 +76,7 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
     }
 
     // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
-    val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
+    val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(20)
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
     val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 

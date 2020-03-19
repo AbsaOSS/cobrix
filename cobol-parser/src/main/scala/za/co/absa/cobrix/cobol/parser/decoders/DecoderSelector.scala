@@ -21,8 +21,8 @@ import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, UTF16}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
 import scala.util.control.NonFatal
@@ -84,6 +84,8 @@ object DecoderSelector {
         }
       case UTF16 =>
         StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian)
+      case HEX =>
+        StringDecoders.decodeHex
     }
   }
 
