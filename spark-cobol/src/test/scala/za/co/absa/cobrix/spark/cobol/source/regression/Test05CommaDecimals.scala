@@ -39,7 +39,7 @@ class Test05CommaDecimals extends FunSuite with SparkTestBase with BinaryFileFix
     0x4E.toByte, 0xF0.toByte, 0xF0.toByte, 0xF5.toByte, 0x6B.toByte, 0xF0.toByte, 0xF0.toByte
   )
 
-  test("Test input data file having a numeric field with a commaa as the decimal separator") {
+  test("Test input data file having a numeric field with a comma as the decimal separator") {
     withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
       val df = spark
         .read
