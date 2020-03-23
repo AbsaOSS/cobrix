@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.0.4
+version: 2.0.5
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.0.4
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.0.4
+version: 2.0.5
 ```
 
 ## Using with Spark shell
@@ -81,12 +81,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.5
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.5
 ```
 
 ### Linking legacy `spark-cobol`
@@ -213,16 +213,16 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.0.4.jar
-* cobol-parser_2.11-2.0.4.jar
+* spark-cobol_2.11-2.0.5.jar
+* cobol-parser_2.11-2.0.5.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.4
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.5
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.4.jar,cobol-parser_2.11-2.0.4.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.5.jar,cobol-parser_2.11-2.0.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1179,6 +1179,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.5 released 23 March 2020.
+  - [#239](https://github.com/AbsaOSS/cobrix/issues/69) Added support for generation of debugging fields (`.option("debug", "true")`).
+  - [#249](https://github.com/AbsaOSS/cobrix/issues/260) Added support for NATIONAL (`PIC N`) formatted strings (Thanks [@schaloner-kbc](https://github.com/schaloner-kbc)).
+
 - #### 2.0.4 released 25 February 2020.
   - [#239](https://github.com/AbsaOSS/cobrix/issues/239) Added an ability to load files with variable size OCCURS and no RDWs.
   - [#249](https://github.com/AbsaOSS/cobrix/issues/249) Fixed handling of variable size OCCURS when loading hierarchical files.
