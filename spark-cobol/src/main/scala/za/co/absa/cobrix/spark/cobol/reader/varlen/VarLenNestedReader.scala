@@ -158,6 +158,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.isUtf16BigEndian,
         readerProperties.floatingPointFormat,
         readerProperties.nonTerminals,
+        readerProperties.occursMappings,
         readerProperties.isDebug)
     else
       Copybook.merge(copyBookContents.map(
@@ -173,6 +174,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           readerProperties.isUtf16BigEndian,
           readerProperties.floatingPointFormat,
           nonTerminals = readerProperties.nonTerminals,
+          readerProperties.occursMappings,
           readerProperties.isDebug)
       ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)

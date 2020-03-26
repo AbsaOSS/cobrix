@@ -40,6 +40,7 @@ case class Primitive(
                       occurs: Option[Int] = None,
                       to: Option[Int] = None,
                       dependingOn: Option[String] = None,
+                      dependingOnHandlers: Map[String, Int] = Map(),
                       isDependee: Boolean = false,
                       isFiller: Boolean = false,
                       decode: DecoderSelector.Decoder,
@@ -73,6 +74,11 @@ case class Primitive(
   def withUpdatedIsDependee(newIsDependee: Boolean): Primitive = {
     copy(isDependee = newIsDependee)(parent)
   }
+
+  def withUpdatedDependingOnHandlers(newDependingOnHandlers: Map[String, Int]): Primitive = {
+    copy(dependingOnHandlers = newDependingOnHandlers)(parent)
+  }
+
 
   /** Returns the binary size in bits for the field */
   def getBinarySizeBytes: Int = {

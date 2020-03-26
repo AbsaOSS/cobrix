@@ -81,6 +81,7 @@ object CopybookParser {
                 isUtf16BigEndian: Boolean = true,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil,
+                occursHandlers: Map[String, Map[String, Int]] = Map(),
                 isDebug: Boolean = false): Copybook = {
     parseTree(EBCDIC,
       copyBookContents,
@@ -94,6 +95,7 @@ object CopybookParser {
       isUtf16BigEndian,
       floatingPointFormat,
       nonTerminals,
+      occursHandlers,
       isDebug)
   }
 
@@ -129,6 +131,7 @@ object CopybookParser {
                 isUtf16BigEndian: Boolean,
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String],
+                occursHandlers: Map[String, Map[String, Int]],
                 isDebug: Boolean): Copybook = {
 
     val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
@@ -149,7 +152,8 @@ object CopybookParser {
                 processGroupFillers(
                   markDependeeFields(
                     addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                    occursHandlers
                   )
                 ), segmentRedefines), correctedFieldParentMap
             ), isDebug
@@ -163,7 +167,8 @@ object CopybookParser {
                 renameGroupFillers(
                   markDependeeFields(
                     addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                    occursHandlers
                   )
                 ), segmentRedefines), correctedFieldParentMap
             ), isDebug
@@ -332,11 +337,11 @@ object CopybookParser {
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def markDependeeFields(ast: CopybookAST): CopybookAST = {
+  def markDependeeFields(ast: CopybookAST, occursHandlers: Map[String, Map[String, Int]]): CopybookAST = {
     val flatFields = new mutable.ArrayBuffer[Primitive]()
-    val dependees = new mutable.HashSet[Primitive]()
+    val dependees = new mutable.HashMap[Primitive, ListBuffer[Statement]]()
 
-    def addDependeeField(name: String): Unit = {
+    def addDependeeField(statement: Statement, name: String): Statement = {
       val nameUpper = name.toUpperCase
       // Find all the fields that match DEPENDING ON name
       val foundFields = flatFields.filter(f => f.name.toUpperCase == nameUpper)
@@ -346,34 +351,59 @@ object CopybookParser {
       if (foundFields.length > 1) {
         logger.warn("Field $name used in DEPENDING ON clause has multiple instances.")
       }
-      dependees ++= foundFields
-    }
 
-    def traverseDepends(group: CopybookAST): Unit = {
-      for (field <- group.children) {
-        field.dependingOn.foreach(name => addDependeeField(name))
-        field match {
-          case grp: Group => traverseDepends(grp)
-          case st: Primitive => flatFields += st
-        }
+      val updatedStatement = occursHandlers.get(statement.name) match {
+        case Some(mapping) => statement.withUpdatedDependingOnHandlers(mapping)
+        case _ => statement
       }
+
+      dependees.get(foundFields.head) match {
+        case Some(list) => list += updatedStatement
+        case _ => dependees += (foundFields.head -> ListBuffer(updatedStatement))
+      }
+      updatedStatement
     }
 
-    def markDependeesForGroup(group: Group): Group = {
-      val newChildren = markDependees(group)
+    def traverseDepends(group: CopybookAST): CopybookAST = {
+
+      group.withUpdatedChildren(
+        for (field <- group.children) yield {
+          val updatedField = field.dependingOn match {
+            case Some(depName) => addDependeeField(field, depName)
+            case None => field
+          }
+          val stmt: Statement = updatedField match {
+            case grp: Group => traverseDepends(grp)
+            case st: Primitive => {
+              flatFields += st
+              st
+            }
+          }
+          stmt
+        }
+      )
+    }
+
+    def markDependeesForGroup(group: Group, occursHandlers: Map[String, Map[String, Int]]): Group = {
+      val newChildren = markDependees(group, occursHandlers)
       var groupWithMarkedDependees = group.copy(children = newChildren.children)(group.parent)
       groupWithMarkedDependees
     }
 
-    def markDependees(group: CopybookAST): CopybookAST = {
+    def markDependees(group: CopybookAST, occursHandlers: Map[String, Map[String, Int]]): CopybookAST = {
       val newChildren = for (field <- group.children) yield {
         val newField: Statement = field match {
-          case grp: Group => markDependeesForGroup(grp)
+          case grp: Group => markDependeesForGroup(grp, occursHandlers)
           case primitive: Primitive =>
             val newPrimitive = if (dependees contains primitive) {
               primitive.dataType match {
                 case _: Integral => true
-                case dt => throw new IllegalStateException(s"Field ${primitive.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+                case dt => {
+                  for (stmt <- dependees(primitive)) {
+                    if (stmt.dependingOnHandlers.isEmpty)
+                      throw new IllegalStateException(s"Field ${primitive.name} is a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+                  }
+                }
               }
               primitive.withUpdatedIsDependee(newIsDependee = true)
             } else {
@@ -386,8 +416,10 @@ object CopybookParser {
       group.copy(children = newChildren)(group.parent)
     }
 
-    traverseDepends(ast)
-    markDependees(ast)
+    markDependees(
+      traverseDepends(ast),
+      occursHandlers
+    )
   }
 
   /**

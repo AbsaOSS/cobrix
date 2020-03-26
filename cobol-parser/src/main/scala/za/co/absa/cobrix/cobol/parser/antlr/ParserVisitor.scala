@@ -518,6 +518,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) Some(occurs.get.m) else None,
       if (occurs.isDefined) occurs.get.M else None,
       if (occurs.isDefined) occurs.get.dep else None,
+      Map(),
       identifier.toUpperCase() == Constants.FILLER,
       usage
     )(Some(parent))
@@ -808,6 +809,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) Some(occurs.get.m) else None,
       if (occurs.isDefined) occurs.get.M else None,
       if (occurs.isDefined) occurs.get.dep else None,
+      Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
       DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)

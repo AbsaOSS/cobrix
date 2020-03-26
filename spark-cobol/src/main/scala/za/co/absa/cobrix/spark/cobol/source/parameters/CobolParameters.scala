@@ -67,6 +67,7 @@ case class CobolParameters(
                             commentPolicy:         CommentPolicy,
                             dropGroupFillers:      Boolean,
                             nonTerminals:          Seq[String],
+                            occursMappings:        Map[String, Map[String, Int]],
                             isDebug:               Boolean,
                             debugIgnoreFileSize:   Boolean
                           )
