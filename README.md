@@ -1035,6 +1035,7 @@ Again, the full example is available at
 | .option("is_utf16_big_endian", "true")     | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default). |
 | .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 | .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")   | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping. |
 
 ##### Modifier options
 
