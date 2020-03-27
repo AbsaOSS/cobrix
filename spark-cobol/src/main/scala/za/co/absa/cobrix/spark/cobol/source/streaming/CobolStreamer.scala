@@ -51,6 +51,7 @@ object CobolStreamer {
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,
       nonTerminals = Seq(),
+      occursMappings = Map(),
       readerProperties = ReaderParameters()
     )
   }

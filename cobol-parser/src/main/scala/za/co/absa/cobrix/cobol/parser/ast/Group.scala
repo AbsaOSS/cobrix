@@ -51,6 +51,7 @@ case class Group(
                   occurs: Option[Int] = None,
                   to: Option[Int] = None,
                   dependingOn: Option[String] = None,
+                  dependingOnHandlers: Map[String, Int] = Map(),
                   isFiller: Boolean = false,
                   groupUsage: Option[Usage] = None,
                   nonFillerSize: Int = 0,
@@ -103,6 +104,10 @@ case class Group(
   /** Returns the original AST element with updated `isSegmentRedefine` flag */
   def withUpdatedParentSegment(newParentSegmentOpt: Option[Group]): Group = {
     copy(parentSegment = newParentSegmentOpt)(parent)
+  }
+
+  def withUpdatedDependingOnHandlers(newDependingOnHandlers: Map[String, Int]): Group = {
+    copy(dependingOnHandlers = newDependingOnHandlers)(parent)
   }
 
 }

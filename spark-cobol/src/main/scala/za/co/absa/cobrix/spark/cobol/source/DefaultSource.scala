@@ -95,6 +95,7 @@ class DefaultSource
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
+      parameters.occursMappings,
       getReaderProperties(parameters, spark)
     )
   }
@@ -133,7 +134,8 @@ class DefaultSource
           inputSplitSizeMB = None,
           improveLocality = false,
           optimizeAllocation = false,
-          inputFileNameColumn = "")
+          inputFileNameColumn = "",
+          occursMappings = Map())
       )
 
     val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
@@ -168,6 +170,7 @@ class DefaultSource
       parameters.commentPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
+      parameters.occursMappings,
       parameters.isDebug,
       varLenParams.recordHeaderParser,
       varLenParams.rhpAdditionalInfo,
