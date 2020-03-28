@@ -17,9 +17,10 @@
 package za.co.absa.cobrix.spark.cobol.source.base.impl
 
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
 
 import scala.collection.Seq
 

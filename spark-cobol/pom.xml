@@ -62,6 +62,11 @@
 			<artifactId>cobol-parser_${scala.compat.version}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>za.co.absa.cobrix</groupId>
+			<artifactId>cobol-reader_${scala.compat.version}</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

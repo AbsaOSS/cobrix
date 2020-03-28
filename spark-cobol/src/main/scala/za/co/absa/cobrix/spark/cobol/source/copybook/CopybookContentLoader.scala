@@ -22,7 +22,7 @@ import java.nio.file.{Files, Paths}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParameters
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 
 import scala.collection.JavaConverters._

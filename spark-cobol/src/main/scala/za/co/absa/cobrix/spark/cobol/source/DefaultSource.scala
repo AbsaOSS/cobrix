@@ -22,14 +22,14 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.spark.cobol.reader.Reader
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.{FixedLenNestedReader, FixedLenReader, FixedLenReaderFactory}
-import za.co.absa.cobrix.spark.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.spark.cobol.reader.varlen.{VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.cobol.reader.Parameters
+import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader, ReaderFactory, Reader, VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, VariableLengthParameters}
 import za.co.absa.cobrix.spark.cobol.source.parameters._
-import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils, Parameters}
+import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils}
 
 /**
   * This class represents a Cobol data source.
@@ -38,7 +38,7 @@ class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
     with DataSourceRegister
-    with FixedLenReaderFactory {
+    with ReaderFactory {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

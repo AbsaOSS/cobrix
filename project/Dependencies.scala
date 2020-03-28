@@ -56,5 +56,11 @@ object Dependencies {
     // test
     "org.scalatest" %% "scalatest" % scalatestVersion % Test
   )
+  val CobolReaderDependencies: Seq[ModuleID] = Seq(
+    // compile
+    "org.slf4j"   % "slf4j-api"      % slf4jVersion,
 
+    // test
+    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+  )
 }

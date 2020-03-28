@@ -16,19 +16,17 @@
 
 package za.co.absa.cobrix.spark.cobol.schema
 
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-
 import org.apache.spark.sql.types._
-import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
-
+import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+
 
 /**
   * This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class
@@ -41,18 +39,16 @@ import scala.collection.mutable.ArrayBuffer
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
   */
-class CobolSchema(val copybook: Copybook,
+class CobolSchema(copybook: Copybook,
                   policy: SchemaRetentionPolicy,
                   inputFileNameField: String,
                   generateRecordId: Boolean,
                   generateSegIdFieldsCnt: Int = 0,
-                  segmentIdProvidedPrefix: String = "") extends Serializable {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
-  val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
-
-  def getCobolSchema: Copybook = copybook
+                  segmentIdProvidedPrefix: String = "")
+  extends CobolReaderSchema(
+    copybook, policy, inputFileNameField, generateRecordId,
+    generateSegIdFieldsCnt, segmentIdProvidedPrefix
+  ) with Serializable {
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()
@@ -74,10 +70,6 @@ class CobolSchema(val copybook: Copybook,
   def getSparkFlatSchema: StructType = {
     sparkFlatSchema
   }
-
-  lazy val getRecordSize: Int = copybook.getRecordSize
-
-  def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
 
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
@@ -235,11 +227,17 @@ class CobolSchema(val copybook: Copybook,
 
     fields
   }
+}
 
-  private def getDefaultSegmentIdPrefix: String = {
-    val timestampFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
-    val now = ZonedDateTime.now()
-    timestampFormat.format(now)
+object CobolSchema {
+  def fromBaseReader(schema: CobolReaderSchema): CobolSchema = {
+    new CobolSchema(
+      schema.copybook,
+      schema.policy,
+      schema.inputFileNameField,
+      schema.generateRecordId,
+      schema.generateSegIdFieldsCnt,
+      schema.segmentIdPrefix
+    )
   }
-
 }

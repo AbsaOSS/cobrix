@@ -24,8 +24,9 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
-import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 
 /**
   * This class provides methods for checking the Spark job options after parsed.

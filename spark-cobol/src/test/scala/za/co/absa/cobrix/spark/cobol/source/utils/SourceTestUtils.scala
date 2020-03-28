@@ -21,7 +21,7 @@ import java.io.File
 
 import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.SparkSession
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
+import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
 
 /**
  * Provides utilities methods and data for testing the 'source' package.
