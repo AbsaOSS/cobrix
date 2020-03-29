@@ -18,12 +18,13 @@ package za.co.absa.cobrix.cobol.reader.reader.fixedlen
 
 import java.nio.charset.{Charset, StandardCharsets}
 
+import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.RowType
+import za.co.absa.cobrix.cobol.reader.RecordHandler
 import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.reader.fixedlen.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
@@ -40,7 +41,7 @@ import scala.reflect.ClassTag
   * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
   * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
-class FixedLenNestedReader[T <: RowType[T] : ClassTag](
+class FixedLenNestedReader[T: ClassTag](
                                   copyBookContents: Seq[String],
                                  isEbcdic: Boolean = true,
                                  ebcdicCodePage: CodePage,
@@ -53,7 +54,7 @@ class FixedLenNestedReader[T <: RowType[T] : ClassTag](
                                  nonTerminals: Seq[String],
                                  occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters,
-                                 rowCreate: Array[Any] => T
+                                 handler: RecordHandler[T]
                                  )
   extends FixedLenReader with Serializable {
 
@@ -64,7 +65,7 @@ class FixedLenNestedReader[T <: RowType[T] : ClassTag](
   @throws(classOf[Exception])
   protected def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
-    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, rowCreate = rowCreate)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, handler = handler)
   }
 
   @throws(classOf[IllegalArgumentException])

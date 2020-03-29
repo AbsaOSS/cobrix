@@ -17,13 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.reader.varlen.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.reader.varlen.{VarLenNestedReader => ReaderVarLenNestedReader}
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
-import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.{GenericRowSparkCobol, rowCreator}
+import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
 
 
 /**
@@ -35,7 +36,7 @@ import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.{GenericRowSparkCo
 @throws(classOf[IllegalArgumentException])
 final class VarLenNestedReader(copybookContents: Seq[String],
                          readerProperties: ReaderParameters
-) extends ReaderVarLenNestedReader[GenericRowSparkCobol](copybookContents, readerProperties, rowCreator)
+) extends ReaderVarLenNestedReader[GenericRow](copybookContents, readerProperties, new RowHandler())
   with VarLenReader {
 
   class RowIterator(private val iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
@@ -58,13 +59,13 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     if (cobolSchema.copybook.isHierarchical) {
       new RowIterator(
         new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-          fileNumber, startingRecordIndex, startingFileOffset, rowCreator)
+          fileNumber, startingRecordIndex, startingFileOffset, new RowHandler())
       )
     } else {
       new RowIterator(
         new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
           recordExtractor(binaryData, cobolSchema.copybook),
-          fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, rowCreator)
+          fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, new RowHandler())
       )
     }
 }

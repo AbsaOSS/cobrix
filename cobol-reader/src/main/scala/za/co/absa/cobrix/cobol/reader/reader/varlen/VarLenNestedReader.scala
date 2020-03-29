@@ -19,12 +19,13 @@ package za.co.absa.cobrix.cobol.reader.reader.varlen
 import java.nio.charset.{Charset, StandardCharsets}
 
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.RowType
+import za.co.absa.cobrix.cobol.reader.RecordHandler
 import za.co.absa.cobrix.cobol.reader.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
@@ -46,8 +47,8 @@ import scala.reflect.ClassTag
   * @param readerProperties      Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenNestedReader[T <: RowType[T] : ClassTag](copybookContents: Seq[String],
-                         readerProperties: ReaderParameters, rowCreate: Array[Any] => T) extends VarLenReader {
+class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
+                         readerProperties: ReaderParameters, handler: RecordHandler[T]) extends VarLenReader {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -82,10 +83,10 @@ class VarLenNestedReader[T <: RowType[T] : ClassTag](copybookContents: Seq[Strin
                               startingRecordIndex: Long): Iterator[Seq[Any]] =
     if (cobolSchema.copybook.isHierarchical) {
       new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-        fileNumber, startingRecordIndex, startingFileOffset, rowCreate)
+        fileNumber, startingRecordIndex, startingFileOffset, handler)
     } else {
       new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser, recordExtractor(binaryData, cobolSchema.copybook),
-        fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, rowCreate)
+        fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, handler)
     }
 
   /**

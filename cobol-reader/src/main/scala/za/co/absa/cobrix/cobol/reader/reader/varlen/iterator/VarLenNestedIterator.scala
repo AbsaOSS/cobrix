@@ -17,8 +17,9 @@
 package za.co.absa.cobrix.cobol.reader.reader.varlen.iterator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
-import za.co.absa.cobrix.cobol.reader.{RowExtractors, RowType}
+import za.co.absa.cobrix.cobol.reader.{RecordHandler, RowExtractors}
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.recordextractors.RawRecordExtractor
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
@@ -41,7 +42,7 @@ import scala.reflect.ClassTag
   * @param segmentIdPrefix    A prefix to be used for all segment ID generated fields
   */
 @throws(classOf[IllegalStateException])
-final class VarLenNestedIterator[T <: RowType[T] : ClassTag](cobolSchema: Copybook,
+final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
                                  dataStream: SimpleStream,
                                  readerProperties: ReaderParameters,
                                  recordHeaderParser: RecordHeaderParser,
@@ -49,7 +50,8 @@ final class VarLenNestedIterator[T <: RowType[T] : ClassTag](cobolSchema: Copybo
                                  fileId: Int,
                                  startRecordId: Long,
                                  startingFileOffset: Long,
-                                 segmentIdPrefix: String, rowCreate: Array[Any] => T) extends Iterator[Seq[Any]] {
+                                 segmentIdPrefix: String,
+                                 handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
   private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, recordExtractor, startRecordId, startingFileOffset)
 
@@ -104,7 +106,7 @@ final class VarLenNestedIterator[T <: RowType[T] : ClassTag](cobolSchema: Copybo
                 activeSegmentRedefine = segmentRedefine,
                 generateInputFileName,
                 dataStream.inputFileName,
-                rowCreate
+                handler
               ))
 
               recordFetched = true

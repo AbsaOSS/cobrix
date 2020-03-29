@@ -24,8 +24,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
-trait RowType[T] {
-  def toSeq: Seq[Any]
+trait RecordHandler[T] {
+  def create(values: Array[Any], group: Group): T
+  def toSeq(record: T): Seq[Any]
 }
 
 
@@ -50,7 +51,7 @@ object RowExtractors {
     * @return An Array[Any] object corresponding to the record schema.
     */
   @throws(classOf[IllegalStateException])
-  def extractRecord[T <: RowType[T] : ClassTag](
+  def extractRecord[T: ClassTag](
     ast: CopybookAST,
     data: Array[Byte],
     offsetBytes: Int = 0,
@@ -63,7 +64,7 @@ object RowExtractors {
     activeSegmentRedefine: String = "",
     generateInputFileField: Boolean = false,
     inputFileName: String = "",
-    rowCreate: Array[Any] => T
+    handler: RecordHandler[T]
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
@@ -172,7 +173,7 @@ object RowExtractors {
         }
         i += 1
       }
-      (bitOffset - offset, rowCreate(fields))
+      (bitOffset - offset, handler.create(fields, group))
     }
 
     var nextOffset = offsetBytes
@@ -183,7 +184,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, generateInputFileField, inputFileName)
+    applyRowPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -212,7 +213,7 @@ object RowExtractors {
     * @return An Array[Any] object corresponding to the hierarchical record schema
     */
   @throws(classOf[IllegalStateException])
-  def extractHierarchicalRecord[T <: RowType[T] : ClassTag](
+  def extractHierarchicalRecord[T: ClassTag](
       ast: CopybookAST,
       segmentsData: ArrayBuffer[(String, Array[Byte])],
       segmentRedefines: Array[Group],
@@ -226,8 +227,8 @@ object RowExtractors {
       recordId: Long = 0,
       generateInputFileField: Boolean = false,
       inputFileName: String = "",
-      rowCreate: Array[Any] => T
-    ): Seq[Any] = {
+      handler: RecordHandler[T]
+  ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
     def extractArray(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Array[Any]) = {
@@ -374,7 +375,7 @@ object RowExtractors {
         })
       }
 
-      (bitOffset - offset, rowCreate(fields))
+      (bitOffset - offset, handler.create(fields, group))
     }
 
     var nextOffset = offsetBytes
@@ -385,7 +386,7 @@ object RowExtractors {
       values
     }
 
-    applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, generateInputFileField, inputFileName)
+    applyRowPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -410,7 +411,7 @@ object RowExtractors {
     * @param inputFileName          An input file name to put if its generation is needed
     * @return A [[RowType]] object corresponding to the record schema
     */
-  private def applyRowPostProcessing[T <: RowType[T]](
+  private def applyRowPostProcessing[T](
     ast: CopybookAST,
     records: Seq[T],
     policy: SchemaRetentionPolicy,
@@ -419,33 +420,34 @@ object RowExtractors {
     fileId: Int,
     recordId: Long,
     generateInputFileField: Boolean,
-    inputFileName: String
-  ):Seq[Any] = {
+    inputFileName: String,
+    handler: RecordHandler[T]
+  ): Seq[Any] = {
     (generateRecordId, generateInputFileField) match {
       case (false, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
-        segmentLevelIds ++ records.flatMap(record => record.toSeq)
+        segmentLevelIds ++ records.flatMap(record => handler.toSeq(record))
       case (false, false) =>
         // Return rows as the original sequence of groups
         segmentLevelIds ++ records
       case (true, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId
-      val expandedRows = records.flatMap(record => record.toSeq)
+      val expandedRows = records.flatMap(record => handler.toSeq(record))
         fileId +: recordId +: (segmentLevelIds ++ expandedRows)
       case (true, false) =>
         // Add recordId as the first field
         fileId +: recordId +: (segmentLevelIds ++ records)
       case (false, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields + adding the file name field
-        (segmentLevelIds :+ inputFileName) ++ records.flatMap(record => record.toSeq)
+        (segmentLevelIds :+ inputFileName) ++ records.flatMap(record => handler.toSeq(record))
       case (false, true) =>
         // Return rows as the original sequence of groups + adding the file name field
         (segmentLevelIds :+ inputFileName) ++ records
       case (true, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId  + adding the file name field
-        val expandedRows = records.flatMap(record => record.toSeq)
+        val expandedRows = records.flatMap(record => handler.toSeq(record))
         fileId +: recordId +: inputFileName +: (segmentLevelIds ++ expandedRows)
       case (true, true) =>
         // Add recordId as the first field + adding the file name field

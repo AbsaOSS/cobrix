@@ -17,11 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import za.co.absa.cobrix.cobol.reader.RowType
+import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.reader.RecordHandler
 
 
 object SparkCobolRowType {
-  class GenericRowSparkCobol(values: Array[Any]) extends GenericRow(values) with RowType[GenericRowSparkCobol]
+  class RowHandler extends RecordHandler[GenericRow] with Serializable {
+    override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
 
-  def rowCreator: Array[Any] => GenericRowSparkCobol = (values: Array[Any]) => new GenericRowSparkCobol(values)
+    override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
+  }
 }

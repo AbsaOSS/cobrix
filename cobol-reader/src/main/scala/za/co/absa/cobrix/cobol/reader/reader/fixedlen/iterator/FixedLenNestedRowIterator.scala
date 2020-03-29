@@ -17,7 +17,8 @@
 package za.co.absa.cobrix.cobol.reader.reader.fixedlen.iterator
 
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.reader.{RowExtractors, RowType}
+import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.reader.{RecordHandler, RowExtractors}
 import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.reader.validator.ReaderParametersValidator
@@ -32,14 +33,14 @@ import scala.reflect.ClassTag
   * @param binaryData  A binary data to traverse
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
-class FixedLenNestedRowIterator[T <: RowType[T] : ClassTag](
+class FixedLenNestedRowIterator[T: ClassTag](
     val binaryData: Array[Byte],
     val cobolSchema: CobolSchema,
     readerProperties: ReaderParameters,
     policy: SchemaRetentionPolicy,
     startOffset: Int,
     endOffset: Int,
-    rowCreate: Array[Any] => T
+    handler: RecordHandler[T]
 ) extends Iterator[Seq[Any]] {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -75,7 +76,7 @@ class FixedLenNestedRowIterator[T <: RowType[T] : ClassTag](
       offset,
       policy,
       activeSegmentRedefine = activeSegmentRedefine,
-      rowCreate = rowCreate
+      handler = handler
     )
 
     // Advance byte index to the next record

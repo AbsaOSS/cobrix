@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.reader.reader.varlen.iterator
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
-import za.co.absa.cobrix.cobol.reader.{RowExtractors, RowType}
+import za.co.absa.cobrix.cobol.reader.{RecordHandler, RowExtractors}
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
@@ -39,14 +39,15 @@ import scala.reflect.ClassTag
   * @param startingFileOffset An offset of the file where parsing should be started
   */
 @throws(classOf[IllegalStateException])
-final class VarLenHierarchicalIterator[T <: RowType[T] : ClassTag](
+final class VarLenHierarchicalIterator[T: ClassTag](
                                                                     cobolSchema: Copybook,
                                        dataStream: SimpleStream,
                                        readerProperties: ReaderParameters,
                                        recordHeaderParser: RecordHeaderParser,
                                        fileId: Int,
                                        startRecordId: Long,
-                                       startingFileOffset: Long, rowCreate: Array[Any] => T) extends Iterator[Seq[Any]] {
+                                       startingFileOffset: Long,
+                                       handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
@@ -147,7 +148,7 @@ final class VarLenHierarchicalIterator[T <: RowType[T] : ClassTag](
       recordIndex,
       generateInputFileName,
       dataStream.inputFileName,
-      rowCreate
+      handler
     )
   }
 

@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
@@ -24,7 +25,7 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.reader.fixedlen.{FixedLenNestedReader => ReaderFixedLenNestedReader}
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.{GenericRowSparkCobol, rowCreator}
+import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
@@ -49,11 +50,11 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters
                                  )
-  extends ReaderFixedLenNestedReader[GenericRowSparkCobol](
+  extends ReaderFixedLenNestedReader[GenericRow](
     copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
     startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
     dropGroupFillers, nonTerminals, occursMappings, readerProperties,
-    rowCreator
+    new RowHandler()
   ) with FixedLenReader with Serializable {
 
   class RowIterator(private val iterator: Iterator[Seq[Any]]) extends Iterator[Row] {

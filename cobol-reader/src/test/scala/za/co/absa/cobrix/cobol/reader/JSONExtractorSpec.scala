@@ -21,7 +21,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 
-class RowExtractorSpec extends FunSuite {
+class JSONExtractorSpec extends FunSuite {
   val copyBookContents: String =
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.
@@ -113,39 +113,34 @@ class RowExtractorSpec extends FunSuite {
   val startOffset: Int = 0
 
 
-  class Handler extends RecordHandler[scala.Array[Any]] {
-    override def create(values: Array[Any], group: Group): Array[Any] = values
+  class MapType(val value: String)
 
-    override def toSeq(record: Array[Any]): Seq[Any] = Seq[Any]()
+  class JSONHandler extends RecordHandler[Any] {
+
+    def serialize(value: Any): Any = {
+      value match {
+        case s: Int =>  s
+        case s: Float =>  s
+        case s: String =>  s""""${s}""""
+        case s: Array[Any] => s"[${s.map(x => serialize(x)).mkString(",")}]"
+        case s: MapType => s""""{${s.value}}"""
+      }
+    }
+
+    override def create(values: Array[Any], group: Group): Any = {
+      new MapType(
+        (group.children zip values).map(t => s""""${t._1.name}": ${serialize(t._2)}""" ).mkString(",")
+      )
+    }
+
+    override def toSeq(record: Any): Seq[Any] = Seq[Any]()
   }
 
 
-  test("Test row extractor") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new Handler())
-    // [[6,[EXAMPLE4,0,],[,,3,[Vector([000000000000002000400012,0,], [000000000000003000400102,1,], [000000005006001200301000,2,])]]]]
-
-    val innerRow = row.head.asInstanceOf[Array[Any]]
-
-    // id
-    assert(innerRow.head.asInstanceOf[Int] === 6)
-
-    // short name
-    assert(innerRow(1).asInstanceOf[Array[Any]].head.asInstanceOf[String] === "EXAMPLE4")
-
-    // company id
-    assert(innerRow(1).asInstanceOf[Array[Any]](1).asInstanceOf[Int] === 0)
-
-    // number of accounts
-    assert(innerRow(2).asInstanceOf[Array[Any]](2).asInstanceOf[Int] === 3)
-
-    // account detail
-    val accounts: Array[Any] = innerRow(2).asInstanceOf[Array[Any]](3).asInstanceOf[Array[Any]](0).asInstanceOf[Array[Any]]
-    val account: Array[Any] = accounts(0).asInstanceOf[Array[Any]]
-
-    // account number
-    assert(account(0).asInstanceOf[String] === "000000000000002000400012")
-
-    //account type
-    assert(account(1).asInstanceOf[Int] === 0)
+  test("Test simple JSON generation") {
+    // this is a very simple example serializer, no string escaping happens here, post processing will fail
+    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new JSONHandler())
+    val json = s"{${row.head.asInstanceOf[MapType].value}}"
+    assert(json === """{"ID": 6,"COMPANY": "{"SHORT_NAME": "EXAMPLE4","COMPANY_ID_NUM": 0,"COMPANY_ID_STR": ""},"METADATA": "{"CLIENTID": "","REGISTRATION_NUM": "","NUMBER_OF_ACCTS": 3,"ACCOUNT": "{"ACCOUNT_DETAIL": ["{"ACCOUNT_NUMBER": "000000000000002000400012","ACCOUNT_TYPE_N": 0,"ACCOUNT_TYPE_X": ""},"{"ACCOUNT_NUMBER": "000000000000003000400102","ACCOUNT_TYPE_N": 1,"ACCOUNT_TYPE_X": ""},"{"ACCOUNT_NUMBER": "000000005006001200301000","ACCOUNT_TYPE_N": 2,"ACCOUNT_TYPE_X": ""}]}}}""")
   }
 }
