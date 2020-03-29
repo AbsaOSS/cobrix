@@ -433,7 +433,7 @@ object RowExtractors {
       case (true, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId
-      val expandedRows = records.flatMap(record => handler.toSeq(record))
+        val expandedRows = records.flatMap(record => handler.toSeq(record))
         fileId +: recordId +: (segmentLevelIds ++ expandedRows)
       case (true, false) =>
         // Add recordId as the first field
