@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.source.utils
+package za.co.absa.cobrix.cobol.reader.utils
 
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 
