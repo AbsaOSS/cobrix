@@ -46,6 +46,7 @@ object Dependencies {
     // however, the version of Hadoop imported by Spark relies on that method.
     "com.google.guava" % "guava" % guavaVersion
   )
+
   val CobolParserDependencies: Seq[ModuleID] = Seq(
     // compile
     "org.scodec" %% "scodec-bits"    % scodecBitsVersion,
@@ -56,6 +57,7 @@ object Dependencies {
     // test
     "org.scalatest" %% "scalatest" % scalatestVersion % Test
   )
+
   val CobolReaderDependencies: Seq[ModuleID] = Seq(
     // compile
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,

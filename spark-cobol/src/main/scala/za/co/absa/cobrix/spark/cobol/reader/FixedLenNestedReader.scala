@@ -46,12 +46,13 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  stringTrimmingPolicy: StringTrimmingPolicy,
                                  dropGroupFillers: Boolean,
                                  nonTerminals: Seq[String],
+                                 occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters
                                  )
   extends ReaderFixedLenNestedReader[GenericRowSparkCobol](
     copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
     startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
-    dropGroupFillers, nonTerminals, readerProperties,
+    dropGroupFillers, nonTerminals, occursMappings, readerProperties,
     rowCreator
   ) with FixedLenReader with Serializable {
 

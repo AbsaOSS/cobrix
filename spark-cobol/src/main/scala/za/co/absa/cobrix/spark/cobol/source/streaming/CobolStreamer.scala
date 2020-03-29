@@ -28,7 +28,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
+import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
 
@@ -51,6 +51,7 @@ object CobolStreamer {
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,
       nonTerminals = Seq(),
+      occursMappings = Map(),
       readerProperties = ReaderParameters()
     )
   }

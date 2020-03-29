@@ -86,6 +86,7 @@ case class ReaderParameters(
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
+                             occursMappings:          Map[String, Map[String, Int]] = Map(),
                              isDebug:                 Boolean = false,
                              recordHeaderParser:      Option[String] = None,
                              rhpAdditionalInfo:       Option[String] = None,

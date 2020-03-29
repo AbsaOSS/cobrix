@@ -51,8 +51,9 @@ class FixedLenNestedReader[T <: RowType[T] : ClassTag](
                                  stringTrimmingPolicy: StringTrimmingPolicy,
                                  dropGroupFillers: Boolean,
                                  nonTerminals: Seq[String],
+                                 occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters,
-                           rowCreate: Array[Any] => T
+                                 rowCreate: Array[Any] => T
                                  )
   extends FixedLenReader with Serializable {
 
@@ -105,6 +106,7 @@ class FixedLenNestedReader[T <: RowType[T] : ClassTag](
         readerProperties.isUtf16BigEndian,
         floatingPointFormat,
         nonTerminals,
+        occursMappings,
         readerProperties.isDebug)
     else
       Copybook.merge(
@@ -121,6 +123,7 @@ class FixedLenNestedReader[T <: RowType[T] : ClassTag](
             readerProperties.isUtf16BigEndian,
             floatingPointFormat,
             nonTerminals,
+            occursMappings,
             readerProperties.isDebug)
         )
       )

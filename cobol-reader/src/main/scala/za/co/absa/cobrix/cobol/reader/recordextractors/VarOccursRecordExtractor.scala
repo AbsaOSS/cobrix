@@ -49,14 +49,17 @@ class VarOccursRecordExtractor(inputStream: SimpleStream, copybook: Copybook) ex
   }
 
   private def extractVarOccursRecordBytes(): Array[Byte] = {
-    val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
     def extractArray(field: Statement, useOffset: Int): Int = {
       val arraySize = field.arrayMaxSize
       val actualSize = field.dependingOn match {
         case None => arraySize
         case Some(dependingOn) =>
-          val dependValue = dependFields.getOrElse(dependingOn, arraySize)
+          val dependValue: Int = dependFields.getOrElse(dependingOn, Left(arraySize)) match {
+            case Left(n) => n
+            case Right(s) => field.dependingOnHandlers.getOrElse(s, arraySize)
+          }
           if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
             dependValue
           else
@@ -86,12 +89,13 @@ class VarOccursRecordExtractor(inputStream: SimpleStream, copybook: Copybook) ex
             ensureBytesRead(useOffset + field.binaryProperties.actualSize)
             val value = st.decodeTypeValue(useOffset, bytes)
             if (value != null) {
-              val intVal: Int = value match {
-                case v: Int => v
-                case v: Number => v.intValue()
+              val intStringVal: Either[Int, String] = value match {
+                case v: Int => Left(v)
+                case v: Number => Left(v.intValue())
+                case v: String => Right(v)
                 case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
               }
-              dependFields += st.name -> intVal
+              dependFields += st.name -> intStringVal
             }
           }
           field.binaryProperties.actualSize

@@ -54,5 +54,6 @@ case class VariableLengthParameters(
                                      inputSplitSizeMB:      Option[Int],
                                      improveLocality:       Boolean,
                                      optimizeAllocation:    Boolean,
-                                     inputFileNameColumn:   String
+                                     inputFileNameColumn:   String,
+                                     occursMappings:        Map[String, Map[String, Int]]
                                    )

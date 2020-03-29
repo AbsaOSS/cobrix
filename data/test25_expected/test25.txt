@@ -1,0 +1,2 @@
+{"RECORD":{"ID":1,"DATA":{"FIELD":"A","DETAIL1":[],"DETAIL2":[{"VAL2":"X"}]}}}
+{"RECORD":{"ID":2,"DATA":{"FIELD":"B","DETAIL1":[{"VAL1":"X"}],"DETAIL2":[{"VAL2":"Y"},{"VAL2":"Z"}]}}}
