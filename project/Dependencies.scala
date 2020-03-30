@@ -25,6 +25,7 @@ object Dependencies {
   private val scodecCoreVersion = "1.10.3"
   private val antlrValue = "4.7.2"
   private val slf4jVersion = "1.7.25"
+  private val jacksonVersion = "2.10.3"
 
   private val scalatestVersion = "3.0.1"
 
@@ -55,7 +56,9 @@ object Dependencies {
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,
 
     // test
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+    "org.scalatest" %% "scalatest" % scalatestVersion % Test,
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % jacksonVersion,
   )
 
   val CobolReaderDependencies: Seq[ModuleID] = Seq(

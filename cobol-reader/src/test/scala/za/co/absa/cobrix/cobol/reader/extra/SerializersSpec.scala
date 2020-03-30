@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.reader
+package za.co.absa.cobrix.cobol.reader.extra
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.reader.{RecordHandler, RowExtractors, SchemaRetentionPolicy}
 
 
-class StructExtractorSpec extends FunSuite {
+class SerializersSpec extends FunSuite {
   val copyBookContents: String =
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.
@@ -130,7 +131,6 @@ class StructExtractorSpec extends FunSuite {
 
 
   class StructHandler extends RecordHandler[Any] {
-
     override def create(values: Array[Any], group: Group): Map[String, Any] = {
         (group.children zip values).map(t => t._1.name -> (t._2 match {
           case s: Array[Any] => s.toSeq
@@ -143,27 +143,87 @@ class StructExtractorSpec extends FunSuite {
     }
   }
 
-  test("Test simple struct generation") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
 
-    assert(row.head("COMPANY").asInstanceOf[Map[String, Any]]("SHORT_NAME") === "EXAMPLE4")
-    assert(row.head("METADATA").asInstanceOf[Map[String, Any]]("ACCOUNT").asInstanceOf[Map[String, Any]]("ACCOUNT_DETAIL").asInstanceOf[Seq[Any]].length === 3)
+  test("Test JSON generation") {
+    import com.fasterxml.jackson.databind.ObjectMapper
+    import com.fasterxml.jackson.module.scala.DefaultScalaModule
+    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+
+    val mapper = new ObjectMapper() with ScalaObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+
+    val handler = new StructHandler()
+    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
+    val record = handler.create(row.toArray, copybook.ast)
+
+    val json = mapper.writeValueAsString(record)
+    assert(json === """{"RECORD":{"ID":6,"COMPANY":{"SHORT_NAME":"EXAMPLE4","COMPANY_ID_NUM":0,"COMPANY_ID_STR":""},"METADATA":{"CLIENTID":"","REGISTRATION_NUM":"","NUMBER_OF_ACCTS":3,"ACCOUNT":{"ACCOUNT_DETAIL":[{"ACCOUNT_NUMBER":"000000000000002000400012","ACCOUNT_TYPE_N":0,"ACCOUNT_TYPE_X":""},{"ACCOUNT_NUMBER":"000000000000003000400102","ACCOUNT_TYPE_N":1,"ACCOUNT_TYPE_X":""},{"ACCOUNT_NUMBER":"000000005006001200301000","ACCOUNT_TYPE_N":2,"ACCOUNT_TYPE_X":""}]}}}}""")
   }
 
-  test("Test simple struct generation with record id") {
-    var row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, generateRecordId = true, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
-    assert(row.asInstanceOf[Seq[Any]](0) == 0)
-    assert(row.asInstanceOf[Seq[Any]](1) == 0)
 
-    row = RowExtractors.extractRecord(copybook.ast, bytes, 123, generateRecordId = true, recordId = 1, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
-    assert(row.asInstanceOf[Seq[Any]](0) == 0)
-    assert(row.asInstanceOf[Seq[Any]](1) == 1)
+  test("Test XML generation") {
+    import com.fasterxml.jackson.module.scala.DefaultScalaModule
+    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+    import com.fasterxml.jackson.databind.SerializationFeature
+    import com.fasterxml.jackson.dataformat.xml.XmlMapper
+
+    val mapper = new XmlMapper() with ScalaObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false)
+
+    val handler = new StructHandler()
+    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
+    val record = handler.create(row.toArray, copybook.ast)
+
+    val xml = mapper.writer().withRootName("COBOL-RECORD").writeValueAsString(record)
+    assert(xml === """<COBOL-RECORD><RECORD><ID>6</ID><COMPANY><SHORT_NAME>EXAMPLE4</SHORT_NAME><COMPANY_ID_NUM>0</COMPANY_ID_NUM><COMPANY_ID_STR></COMPANY_ID_STR></COMPANY><METADATA><CLIENTID></CLIENTID><REGISTRATION_NUM></REGISTRATION_NUM><NUMBER_OF_ACCTS>3</NUMBER_OF_ACCTS><ACCOUNT><ACCOUNT_DETAIL><ACCOUNT_NUMBER>000000000000002000400012</ACCOUNT_NUMBER><ACCOUNT_TYPE_N>0</ACCOUNT_TYPE_N><ACCOUNT_TYPE_X></ACCOUNT_TYPE_X></ACCOUNT_DETAIL><ACCOUNT_DETAIL><ACCOUNT_NUMBER>000000000000003000400102</ACCOUNT_NUMBER><ACCOUNT_TYPE_N>1</ACCOUNT_TYPE_N><ACCOUNT_TYPE_X></ACCOUNT_TYPE_X></ACCOUNT_DETAIL><ACCOUNT_DETAIL><ACCOUNT_NUMBER>000000005006001200301000</ACCOUNT_NUMBER><ACCOUNT_TYPE_N>2</ACCOUNT_TYPE_N><ACCOUNT_TYPE_X></ACCOUNT_TYPE_X></ACCOUNT_DETAIL></ACCOUNT></METADATA></RECORD></COBOL-RECORD>""")
   }
 
-  test("Test simple struct generation with collapsing root") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, policy = SchemaRetentionPolicy.CollapseRoot, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
 
-    assert(row(1)("SHORT_NAME") === "EXAMPLE4")
-    assert(row(2)("ACCOUNT").asInstanceOf[Map[String, Any]]("ACCOUNT_DETAIL").asInstanceOf[Seq[Any]].length === 3)
+  val flatCopyBookContents: String =
+    """       01  RECORD.
+      |           05  ID                        PIC S9(4)  COMP.
+      |           05  SHORT-NAME            PIC X(10).
+      |           05  COMPANY-ID-NUM        PIC 9(5) COMP-3.
+      |           05  COMPANY-ID-STR
+      |			         REDEFINES  COMPANY-ID-NUM PIC X(3).
+      |           05  CLIENTID              PIC X(15).
+      |           05  REGISTRATION-NUM      PIC X(10).
+      |           05  NUMBER-OF-ACCTS       PIC 9(03) COMP-3.
+      |           05  ACCOUNT.
+      |           05  ACCOUNT-NUMBER-1     PIC X(24).
+      |           05  ACCOUNT-TYPE-N-1     PIC 9(5) COMP-3.
+      |           05  ACCOUNT-TYPE-X-1     REDEFINES
+      |                           ACCOUNT-TYPE-N-1  PIC X(3).
+      |           05  ACCOUNT-NUMBER-2     PIC X(24).
+      |           05  ACCOUNT-TYPE-N-2     PIC 9(5) COMP-3.
+      |           05  ACCOUNT-TYPE-X-2     REDEFINES
+      |                           ACCOUNT-TYPE-N-2  PIC X(3).
+      |           05  ACCOUNT-NUMBER-3     PIC X(24).
+      |           05  ACCOUNT-TYPE-N-3     PIC 9(5) COMP-3.
+      |           05  ACCOUNT-TYPE-X-3     REDEFINES
+      |                           ACCOUNT-TYPE-N-3  PIC X(3).
+      |
+      |""".stripMargin
+
+  val flatCopybook: Copybook = CopybookParser.parseTree(flatCopyBookContents)
+
+  test("Test CSV generation") {
+    import com.fasterxml.jackson.module.scala.DefaultScalaModule
+    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+    import com.fasterxml.jackson.dataformat.csv.CsvMapper
+    import com.fasterxml.jackson.dataformat.csv.CsvGenerator
+    import com.fasterxml.jackson.dataformat.csv.CsvSchema
+
+    val mapper = new CsvMapper() with ScalaObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+    mapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true)
+
+    val handler = new StructHandler()
+    val row = RowExtractors.extractRecord(flatCopybook.ast, bytes, startOffset, policy=SchemaRetentionPolicy.CollapseRoot, handler = handler)
+
+    val csv = mapper.writeValueAsString(row)
+    assert(csv.stripLineEnd === """"",6,0,"","","","","EXAMPLE4","000000000000003000400102",2,"","000000000000002000400012",3,1,"000000005006001200301000",0""")
   }
+
 }
