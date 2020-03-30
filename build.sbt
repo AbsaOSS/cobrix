@@ -41,7 +41,7 @@ lazy val cobrix = (project in file("."))
     publish := {},
     publishLocal := {}
   )
-  .aggregate(cobolParser, cobolReader, sparkCobol)
+  .aggregate(cobolParser, cobolConverters, sparkCobol)
 
 lazy val cobolParser = (project in file("cobol-parser"))
   .settings(
@@ -50,10 +50,10 @@ lazy val cobolParser = (project in file("cobol-parser"))
     releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
 
-lazy val cobolReader = (project in file("cobol-reader"))
+lazy val cobolConverters = (project in file("cobol-converters"))
   .settings(
-      name := "cobol-reader",
-      libraryDependencies ++= CobolReaderDependencies :+ getScalaDependency(scalaVersion.value),
+      name := "cobol-converters",
+      libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
       releasePublishArtifactsAction := PgpKeys.publishSigned.value
   ).dependsOn(cobolParser)
 
@@ -66,7 +66,7 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     populateBuildInfoTemplate,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
-  .dependsOn(cobolParser, cobolReader)
+  .dependsOn(cobolParser)
 
 // scoverage settings
 ThisBuild / coverageExcludedPackages := ".*examples.*;.*replication.*"

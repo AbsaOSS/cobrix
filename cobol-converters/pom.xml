@@ -36,7 +36,7 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <!-- tests -->
+        <!-- serializers -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>

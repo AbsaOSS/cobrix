@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.reader.extra
+package za.co.absa.cobrix.cobol.converters.extra
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group

@@ -56,14 +56,15 @@ object Dependencies {
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,
 
     // test
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % jacksonVersion,
+    "org.scalatest" %% "scalatest" % scalatestVersion % Test
   )
 
-  val CobolReaderDependencies: Seq[ModuleID] = Seq(
+  val CobolConvertersDependencies: Seq[ModuleID] = Seq(
     // compile
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,
+    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % jacksonVersion,
+    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % jacksonVersion,
 
     // test
     "org.scalatest" %% "scalatest" % scalatestVersion % Test
