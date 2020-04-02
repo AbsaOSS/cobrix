@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.index
 
-import za.co.absa.cobrix.cobol.reader.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 
 case class ExecutorPair(newExecutor: String, busyExecutor: String)
 

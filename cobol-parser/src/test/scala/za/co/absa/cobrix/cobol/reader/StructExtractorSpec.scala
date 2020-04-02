@@ -19,6 +19,8 @@ package za.co.absa.cobrix.cobol.reader
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 
 
 class StructExtractorSpec extends FunSuite {
@@ -144,24 +146,24 @@ class StructExtractorSpec extends FunSuite {
   }
 
   test("Test simple struct generation") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
 
     assert(row.head("COMPANY").asInstanceOf[Map[String, Any]]("SHORT_NAME") === "EXAMPLE4")
     assert(row.head("METADATA").asInstanceOf[Map[String, Any]]("ACCOUNT").asInstanceOf[Map[String, Any]]("ACCOUNT_DETAIL").asInstanceOf[Seq[Any]].length === 3)
   }
 
   test("Test simple struct generation with record id") {
-    var row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, generateRecordId = true, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
+    var row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, generateRecordId = true, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
     assert(row.asInstanceOf[Seq[Any]](0) == 0)
     assert(row.asInstanceOf[Seq[Any]](1) == 0)
 
-    row = RowExtractors.extractRecord(copybook.ast, bytes, 123, generateRecordId = true, recordId = 1, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
+    row = RecordExtractors.extractRecord(copybook.ast, bytes, 123, generateRecordId = true, recordId = 1, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
     assert(row.asInstanceOf[Seq[Any]](0) == 0)
     assert(row.asInstanceOf[Seq[Any]](1) == 1)
   }
 
   test("Test simple struct generation with collapsing root") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, policy = SchemaRetentionPolicy.CollapseRoot, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, policy = SchemaRetentionPolicy.CollapseRoot, handler = new StructHandler()).asInstanceOf[Seq[Map[String, Any]]]
 
     assert(row(1)("SHORT_NAME") === "EXAMPLE4")
     assert(row(2)("ACCOUNT").asInstanceOf[Map[String, Any]]("ACCOUNT_DETAIL").asInstanceOf[Seq[Any]].length === 3)

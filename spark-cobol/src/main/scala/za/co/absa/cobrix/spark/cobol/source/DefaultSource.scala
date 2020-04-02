@@ -23,7 +23,7 @@ import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader, Reader, ReaderFactory, VarLenNestedReader, VarLenReader}
-import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, VariableLengthParameters}

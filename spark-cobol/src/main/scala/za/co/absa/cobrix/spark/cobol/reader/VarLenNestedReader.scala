@@ -19,9 +19,9 @@ package za.co.absa.cobrix.spark.cobol.reader
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.reader.varlen.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
-import za.co.absa.cobrix.cobol.reader.reader.varlen.{VarLenNestedReader => ReaderVarLenNestedReader}
+import za.co.absa.cobrix.cobol.reader.{VarLenNestedReader => ReaderVarLenNestedReader}
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler

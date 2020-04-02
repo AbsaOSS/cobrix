@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.reader
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.reader.reader.varlen.iterator.SegmentIdAccumulator
+import za.co.absa.cobrix.cobol.reader.iterator.SegmentIdAccumulator
 
 class SegmentIdGeneratorSpec extends FunSuite {
 

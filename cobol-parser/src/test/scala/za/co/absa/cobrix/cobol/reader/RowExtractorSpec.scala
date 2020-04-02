@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 
 class RowExtractorSpec extends FunSuite {
@@ -121,7 +122,7 @@ class RowExtractorSpec extends FunSuite {
 
 
   test("Test row extractor") {
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new Handler())
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new Handler())
     // [[6,[EXAMPLE4,0,],[,,3,[Vector([000000000000002000400012,0,], [000000000000003000400102,1,], [000000005006001200301000,2,])]]]]
 
     val innerRow = row.head.asInstanceOf[Array[Any]]

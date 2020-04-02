@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.reader.reader.{Reader => CobolReader}
+import za.co.absa.cobrix.cobol.reader.{Reader => CobolReader}
 
 
 /** The abstract class for Cobol all data readers from various sources */

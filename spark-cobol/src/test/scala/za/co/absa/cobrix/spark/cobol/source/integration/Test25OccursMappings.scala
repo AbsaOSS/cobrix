@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.reader.recordextractors.VarOccursRecordExtractor
+import za.co.absa.cobrix.cobol.reader.extractors.raw.VarOccursRecordExtractor
 import za.co.absa.cobrix.cobol.reader.stream.FSStream
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils

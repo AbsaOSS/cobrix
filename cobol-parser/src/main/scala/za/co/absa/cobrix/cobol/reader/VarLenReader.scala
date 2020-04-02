@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.cobol.reader
 
-import org.apache.spark.sql.Row
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+
 import scala.collection.mutable.ArrayBuffer
 
-
 /** The abstract class for Cobol data readers from various sequential sources (e.g. variable size EBCDIC records) */
-trait VarLenReader extends Reader with Serializable {
+abstract class VarLenReader extends Reader with Serializable {
 
   /** Returns true if index generation is requested */
   def isIndexGenerationNeeded: Boolean
@@ -41,10 +40,10 @@ trait VarLenReader extends Reader with Serializable {
     * @return An iterator of Spark Row objects
     *
     */
-  @throws(classOf[Exception]) def getRowIterator(binaryData: SimpleStream,
+  @throws(classOf[Exception]) def getRecordIterator(binaryData: SimpleStream,
                                                  startingFileOffset: Long,
                                                  fileNumber: Int,
-                                                 startingRecordIndex: Long): Iterator[Row]
+                                                 startingRecordIndex: Long): Iterator[Seq[Any]]
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.

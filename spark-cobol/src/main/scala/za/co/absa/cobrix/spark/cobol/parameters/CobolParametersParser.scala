@@ -25,10 +25,9 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, VariableLengthParameters}
-import za.co.absa.cobrix.cobol.reader.reader.parameters.MultisegmentParameters
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, MultisegmentParameters, VariableLengthParameters}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer

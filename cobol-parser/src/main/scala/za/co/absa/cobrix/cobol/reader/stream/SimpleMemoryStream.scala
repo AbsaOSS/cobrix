@@ -23,7 +23,7 @@ package za.co.absa.cobrix.cobol.reader.stream
   * The pattern of usage for this stream is this.
   * <ul>
   * <li>Create an instance of [[za.co.absa.cobrix.cobol.reader.stream.SimpleStream]].</li>
-  * <li>Create an instance of [[za.co.absa.cobrix.cobol.reader.stream.SimpleMemoryStream]] and pass the lookback buffer size and
+  * <li>Create an instance of [[SimpleMemoryStream]] and pass the lookback buffer size and
   *   the object created at the first step.</li>
   * </ul>
   * <li>Search a sequence of bytes in the stream.</li>

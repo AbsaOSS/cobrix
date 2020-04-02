@@ -14,17 +14,6 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.cobol.reader.index.entry
 
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-import za.co.absa.cobrix.cobol.parser.ast.Group
-import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
-
-
-object SparkCobolRowType {
-  class RowHandler extends RecordHandler[GenericRow] with Serializable {
-    override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
-
-    override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
-  }
-}
+case class SparseIndexEntry(offsetFrom: Long, offsetTo: Long, fileId: Int, recordIndex: Long)

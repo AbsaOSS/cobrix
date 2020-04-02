@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.reader
+package za.co.absa.cobrix.cobol.reader.extractors.raw
 
-import org.apache.spark.sql.catalyst.expressions.GenericRow
-import za.co.absa.cobrix.cobol.parser.ast.Group
-import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
-
-
-object SparkCobolRowType {
-  class RowHandler extends RecordHandler[GenericRow] with Serializable {
-    override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
-
-    override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
-  }
-}
+/**
+ * This trait represents a contract for extracting raw records from a stream of bytes.
+ * A raw record is an array of bytes.
+ *
+ * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
+ * determined neither from the copybook nor from record headers.
+ */
+trait RawRecordExtractor extends Iterator[Array[Byte]]

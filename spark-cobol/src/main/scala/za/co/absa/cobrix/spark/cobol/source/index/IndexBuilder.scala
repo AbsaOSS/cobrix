@@ -22,9 +22,9 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.reader.reader.Constants
+import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.spark.cobol.reader.{Reader, VarLenReader}
-import za.co.absa.cobrix.cobol.reader.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer

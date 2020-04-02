@@ -22,9 +22,9 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
-import za.co.absa.cobrix.cobol.reader.reader.fixedlen.{FixedLenNestedReader => ReaderFixedLenNestedReader}
-import za.co.absa.cobrix.cobol.reader.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.{FixedLenNestedReader => ReaderFixedLenNestedReader}
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 

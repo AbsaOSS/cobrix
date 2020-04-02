@@ -20,7 +20,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 
 import scala.collection.Seq
 

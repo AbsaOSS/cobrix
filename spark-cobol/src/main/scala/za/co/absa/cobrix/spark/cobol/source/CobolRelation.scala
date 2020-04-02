@@ -26,7 +26,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, Reader, VarLenReader}
-import za.co.absa.cobrix.cobol.reader.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanners

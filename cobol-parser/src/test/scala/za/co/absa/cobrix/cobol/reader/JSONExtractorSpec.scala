@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 
 class JSONExtractorSpec extends FunSuite {
@@ -139,7 +140,7 @@ class JSONExtractorSpec extends FunSuite {
 
   test("Test simple JSON generation") {
     // this is a very simple example serializer, no string escaping happens here, post processing will fail
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new JSONHandler())
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new JSONHandler())
     val json = s"{${row.head.asInstanceOf[MapType].value}}"
     assert(json === """{"ID": 6,"COMPANY": "{"SHORT_NAME": "EXAMPLE4","COMPANY_ID_NUM": 0,"COMPANY_ID_STR": ""},"METADATA": "{"CLIENTID": "","REGISTRATION_NUM": "","NUMBER_OF_ACCTS": 3,"ACCOUNT": "{"ACCOUNT_DETAIL": ["{"ACCOUNT_NUMBER": "000000000000002000400012","ACCOUNT_TYPE_N": 0,"ACCOUNT_TYPE_X": ""},"{"ACCOUNT_NUMBER": "000000000000003000400102","ACCOUNT_TYPE_N": 1,"ACCOUNT_TYPE_X": ""},"{"ACCOUNT_NUMBER": "000000005006001200301000","ACCOUNT_TYPE_N": 2,"ACCOUNT_TYPE_X": ""}]}}}""")
   }

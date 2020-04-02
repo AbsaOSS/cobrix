@@ -21,14 +21,8 @@ import java.time.format.DateTimeFormatter
 
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy
-import za.co.absa.cobrix.cobol.reader.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 
 /**
   * This class provides a view on a COBOL schema from the perspective of Spark. When provided with a parsed copybook the class

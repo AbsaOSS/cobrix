@@ -19,7 +19,8 @@ package za.co.absa.cobrix.cobol.converters.extra
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.{RecordHandler, RowExtractors, SchemaRetentionPolicy}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 
 class SerializersSpec extends FunSuite {
@@ -153,7 +154,7 @@ class SerializersSpec extends FunSuite {
     mapper.registerModule(DefaultScalaModule)
 
     val handler = new StructHandler()
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
     val record = handler.create(row.toArray, copybook.ast)
 
     val json = mapper.writeValueAsString(record)
@@ -172,7 +173,7 @@ class SerializersSpec extends FunSuite {
     mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false)
 
     val handler = new StructHandler()
-    val row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = handler)
     val record = handler.create(row.toArray, copybook.ast)
 
     val xml = mapper.writer().withRootName("COBOL-RECORD").writeValueAsString(record)
@@ -220,7 +221,7 @@ class SerializersSpec extends FunSuite {
     mapper.configure(CsvGenerator.Feature.ALWAYS_QUOTE_STRINGS, true)
 
     val handler = new StructHandler()
-    val row = RowExtractors.extractRecord(flatCopybook.ast, bytes, startOffset, policy=SchemaRetentionPolicy.CollapseRoot, handler = handler)
+    val row = RecordExtractors.extractRecord(flatCopybook.ast, bytes, startOffset, policy=SchemaRetentionPolicy.CollapseRoot, handler = handler)
 
     val csv = mapper.writeValueAsString(row)
     assert(csv.stripLineEnd === """"",6,0,"","","","","EXAMPLE4","000000000000003000400102",2,"","000000000000002000400012",3,1,"000000005006001200301000",0""")
