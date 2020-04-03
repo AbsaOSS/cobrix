@@ -474,7 +474,12 @@ object CopybookParser {
             g.withUpdatedIsSegmentRedefine(true)
           } else {
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
-            g
+            // Check nested fields recursively only if segment redefines hasn't been found so far.
+            if (redefineGroupState == 0) {
+              processGroupFields(g)
+            } else {
+              g
+            }
           }
       }
       group.copy(children = childrenWithSegmentRedefines)(group.parent)
