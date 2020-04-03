@@ -1180,6 +1180,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.6 To be released soon.
+  - [#151](https://github.com/AbsaOSS/cobrix/issues/151) Added an option (`occurs_mapping`) to define mappings between non-numeric fields and sizes of corresponding OCCURS (Thanks [@tr11](https://github.com/tr11)).
+  - [#269](https://github.com/AbsaOSS/cobrix/issues/269) Added support for segment redefines deeply nested, instead of requiring them to be defined always at the top record level. 
+
 - #### 2.0.5 released 23 March 2020.
   - [#239](https://github.com/AbsaOSS/cobrix/issues/69) Added support for generation of debugging fields (`.option("debug", "true")`).
   - [#249](https://github.com/AbsaOSS/cobrix/issues/260) Added support for NATIONAL (`PIC N`) formatted strings (Thanks [@schaloner-kbc](https://github.com/schaloner-kbc)).
