@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.0.5
+version: 2.0.6
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.0.5
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.0.5
+version: 2.0.6
 ```
 
 ## Using with Spark shell
@@ -81,12 +81,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.6
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.6
 ```
 
 ### Linking legacy `spark-cobol`
@@ -213,16 +213,16 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.0.5.jar
-* cobol-parser_2.11-2.0.5.jar
+* spark-cobol_2.11-2.0.6.jar
+* cobol-parser_2.11-2.0.6.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.5
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.6
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.5.jar,cobol-parser_2.11-2.0.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.6.jar,cobol-parser_2.11-2.0.6.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1180,7 +1180,7 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 2.0.6 To be released soon.
+- #### 2.0.6 released 6 April 2020.
   - [#151](https://github.com/AbsaOSS/cobrix/issues/151) Added an option (`occurs_mapping`) to define mappings between non-numeric fields and sizes of corresponding OCCURS (Thanks [@tr11](https://github.com/tr11)).
   - [#269](https://github.com/AbsaOSS/cobrix/issues/269) Added support for segment redefines deeply nested, instead of requiring them to be defined always at the top record level. 
 
@@ -1376,9 +1376,12 @@ For multisegment variable lengths tests:
 - Thanks to Tiago Requeijo, the author of the current ANTLR-based COBOL parser contributed to Cobrix.
 - Thanks to the authors of the original COBOL parser. When we started the project we had zero knowledge of COBOL and this parser was a good starting point:
   - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
-   
 
 ## Disclaimer
 
 Companies, Names, Ids and values in all examples present in this project/repository are completely fictional and
 were generated randomly. Any resemblance to actual persons, companies or actual transactions is purely coincidental.
+
+## See also
+If you use Cobrix in an Open Source project, let us know, we will reference you here.
+* [RCOBOLDI](https://github.com/thospfuller/rcoboldi) - R COBOL DI (Data Integration) Package: An R package that facilitates the importation of COBOL CopyBook data directly into the R Project for Statistical Computing as properly structured data frames. 
