@@ -1383,5 +1383,5 @@ Companies, Names, Ids and values in all examples present in this project/reposit
 were generated randomly. Any resemblance to actual persons, companies or actual transactions is purely coincidental.
 
 ## See also
-If you use Cobrix in an Open Source project, let us know, we will reference you here.
+Take a look at other COBOL-related open source projects. If you think a project belongs in the list, please let us know, we will add it.
 * [RCOBOLDI](https://github.com/thospfuller/rcoboldi) - R COBOL DI (Data Integration) Package: An R package that facilitates the importation of COBOL CopyBook data directly into the R Project for Statistical Computing as properly structured data frames. 
