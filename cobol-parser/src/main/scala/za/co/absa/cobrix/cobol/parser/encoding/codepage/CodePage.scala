@@ -68,7 +68,9 @@ object CodePage {
 
   def getCodePageByClass(codePageClass: String): CodePage = {
     log.info(s"Instantiating code page class: $codePageClass")
-    Class.forName(codePageClass)
+    Class.forName(codePageClass,
+                  true,
+                  Thread.currentThread().getContextClassLoader)
       .newInstance()
       .asInstanceOf[CodePage]
   }
