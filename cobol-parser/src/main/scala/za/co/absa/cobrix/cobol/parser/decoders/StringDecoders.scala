@@ -16,11 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import java.nio.charset.{Charset, StandardCharsets}
+import java.nio.charset.StandardCharsets
 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.control.NonFatal
 
 object StringDecoders {
@@ -30,6 +29,9 @@ object StringDecoders {
   val TrimLeft  = 2
   val TrimRight = 3
   val TrimBoth  = 4
+
+  // Characters used for HEX conversion
+  private val HEX_ARRAY = "0123456789ABCDEF".toCharArray
 
   /**
     * A decoder for any EBCDIC string fields (alphabetical or any char)
@@ -84,6 +86,49 @@ object StringDecoders {
     } else {
       buf.toString.trim
     }
+  }
+
+  /**
+   * A decoder for any UTF-16 string field
+   *
+   * @param bytes        A byte array that represents the binary data
+   * @param trimmingType Specifies if and how the soutput string should be trimmed
+   * @return A string representation of the binary data
+   */
+  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int, isUtf16BigEndian: Boolean): String = {
+    val utf16Str = if (isUtf16BigEndian) {
+      new String(bytes, StandardCharsets.UTF_16BE)
+    } else {
+      new String(bytes, StandardCharsets.UTF_16LE)
+    }
+
+    if (trimmingType == TrimNone) {
+      utf16Str
+    } else if (trimmingType == TrimLeft) {
+      StringTools.trimLeft(utf16Str)
+    } else if (trimmingType == TrimRight) {
+      StringTools.trimRight(utf16Str)
+    } else {
+      utf16Str.trim
+    }
+  }
+
+  /**
+   * A decoder for representing bytes as hex strings
+   *
+   * @param bytes        A byte array that represents the binary data
+   * @return A HEX string representation of the binary data
+   */
+  def decodeHex(bytes: Array[Byte]): String = {
+    val hexChars = new Array[Char](bytes.length * 2)
+    var i = 0
+    while (i < bytes.length) {
+      val v = bytes(i) & 0xFF
+      hexChars(i * 2) = HEX_ARRAY(v >>> 4)
+      hexChars(i * 2 + 1) = HEX_ARRAY(v & 0x0F)
+      i += 1
+    }
+    new String(hexChars)
   }
 
   /**

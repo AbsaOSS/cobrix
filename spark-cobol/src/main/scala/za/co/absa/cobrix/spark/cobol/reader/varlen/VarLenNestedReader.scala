@@ -139,7 +139,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (readerProperties.isEbcdic) EBCDIC() else ASCII()
+    val encoding = if (readerProperties.isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
@@ -155,8 +155,11 @@ final class VarLenNestedReader(copybookContents: Seq[String],
         readerProperties.commentPolicy,
         codePage,
         asciiCharset,
+        readerProperties.isUtf16BigEndian,
         readerProperties.floatingPointFormat,
-        readerProperties.nonTerminals)
+        readerProperties.nonTerminals,
+        readerProperties.occursMappings,
+        readerProperties.isDebug)
     else
       Copybook.merge(copyBookContents.map(
         CopybookParser.parseTree(encoding,
@@ -168,8 +171,11 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           readerProperties.commentPolicy,
           codePage,
           asciiCharset,
+          readerProperties.isUtf16BigEndian,
           readerProperties.floatingPointFormat,
-          nonTerminals = readerProperties.nonTerminals)
+          nonTerminals = readerProperties.nonTerminals,
+          readerProperties.occursMappings,
+          readerProperties.isDebug)
       ))
     val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")

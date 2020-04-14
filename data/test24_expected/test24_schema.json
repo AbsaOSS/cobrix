@@ -1,0 +1,1954 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "ID",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "ID_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "STRING_VAL",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "STRING_VAL_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_INT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SINT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_DEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_SDEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STR_EDEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_INT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_SINT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BIN_DEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SBIN_DEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_INT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT05",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT06",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT07",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT08",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT09",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT10",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT11",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT11_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT12",
+    "type" : "decimal(19,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT12_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT13",
+    "type" : "decimal(20,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT13_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT14",
+    "type" : "decimal(37,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SINT14_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_DEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC01",
+    "type" : "decimal(3,1)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC02",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC03",
+    "type" : "decimal(5,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC04",
+    "type" : "decimal(8,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC05",
+    "type" : "decimal(9,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC05_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC06",
+    "type" : "decimal(10,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC06_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC07",
+    "type" : "decimal(17,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC07_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC08",
+    "type" : "decimal(18,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC08_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC09",
+    "type" : "decimal(19,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC09_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC10",
+    "type" : "decimal(28,10)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_BCD_SDEC10_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_DEC01",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SL_STR_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_DEC01",
+    "type" : "decimal(4,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_ST_STR_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_STR_DEC01",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_STR_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_STR_DEC01",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_STR_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_DEBUG",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_SLI_DEBUG_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_DEBUG",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "NUM_STI_DEBUG_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FLOAT_01",
+    "type" : "float",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FLOAT_01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "DOUBLE_01",
+    "type" : "double",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "DOUBLE_01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_8_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_8_BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S3_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S3_BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S94COMP",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S94COMP_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S8_BIN",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S8_BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_DDC97_BIN",
+    "type" : "decimal(8,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_DDC97_BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_97COMP3",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_97COMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_915COMP3",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_915COMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S95COMP3",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S95COMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S999DCCOMP3",
+    "type" : "decimal(11,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S999DCCOMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913COMP3",
+    "type" : "long",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913COMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913DCCOMP3",
+    "type" : "decimal(15,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S913DCCOMP3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S911DCC2",
+    "type" : "decimal(13,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S911DCC2_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S910DCC3",
+    "type" : "decimal(13,3)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S910DCC3_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S03DDC",
+    "type" : "decimal(5,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_S03DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_U03DDC",
+    "type" : "decimal(5,5)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_U03DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DDC",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPC5DDC",
+    "type" : "decimal(7,7)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPC5DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DDC",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPI5DDC",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_SPI5DDC_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DISP",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5DISP_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DISP",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5DISP_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC1BIN",
+    "type" : "decimal(4,4)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC1BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI1BIN",
+    "type" : "decimal(4,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI1BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC3BIN",
+    "type" : "decimal(6,6)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC3BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI3BIN",
+    "type" : "decimal(6,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI3BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5BIN",
+    "type" : "decimal(8,8)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC5BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5BIN",
+    "type" : "decimal(8,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI5BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC10BIN",
+    "type" : "decimal(13,13)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPC10BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI10BIN",
+    "type" : "decimal(13,0)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMMON_UPI10BIN_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT01",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT02",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT03",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT04",
+    "type" : "integer",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_INT04_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC01",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC01_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC02",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC02_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC03",
+    "type" : "decimal(8,2)",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "EX_NUM_DEC03_debug",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

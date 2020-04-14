@@ -27,6 +27,10 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.utils.Parameters
 
+import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
+import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
+
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
@@ -54,6 +58,8 @@ object CobolParametersParser {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
+  val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
+  val PARAM_DEBUG                     = "debug"
 
   // General parsing parameters
   val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
@@ -65,6 +71,7 @@ object CobolParametersParser {
   val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
   val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
   val PARAM_ASCII_CHARSET             = "ascii_charset"
+  val PARAM_IS_UTF16_BIG_ENDIAN       = "is_utf16_big_endian"
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
 
@@ -194,6 +201,7 @@ object CobolParametersParser {
       ebcdicCodePageName,
       ebcdicCodePageClass,
       asciiCharset,
+      params.getOrElse(PARAM_IS_UTF16_BIG_ENDIAN, "true").toBoolean,
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
@@ -204,6 +212,8 @@ object CobolParametersParser {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
+      getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
+      params.getOrElse(PARAM_DEBUG, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
     validateSparkCobolOptions(params)
@@ -248,7 +258,8 @@ object CobolParametersParser {
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
         params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
-        params.getOrElse(PARAM_INPUT_FILE_COLUMN, "")
+        params.getOrElse(PARAM_INPUT_FILE_COLUMN, ""),
+        getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}"))
       ))
     } else {
       None
@@ -380,7 +391,7 @@ object CobolParametersParser {
     * Example:
     * For
     * {{{
-    *   sprak.read
+    *   spark.read
     *     .option("segment-children:0", "COMPANY => DEPT,CUSTOMER")
     *     .option("segment-children:1", "DEPT => EMPLOYEE,OFFICE")
     * }}}
@@ -477,4 +488,17 @@ object CobolParametersParser {
     }
   }
 
+  /**
+   * Parses the options for the occurs mappings.
+   *
+   * @param params Parameters provided by spark.read.option(...)
+   * @return Returns a mapping for OCCURS fields
+   */
+  @throws(classOf[IllegalArgumentException])
+  def getOccursMappings(params: String): Map[String, Map[String, Int]] = {
+    val mapper = new ObjectMapper() with ScalaObjectMapper
+    mapper.registerModule(DefaultScalaModule)
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+    mapper.readValue[Map[String,Map[String,Int]]](params)
+  }
 }

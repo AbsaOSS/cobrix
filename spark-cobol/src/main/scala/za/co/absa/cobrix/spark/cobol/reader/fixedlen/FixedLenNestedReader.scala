@@ -50,6 +50,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  stringTrimmingPolicy: StringTrimmingPolicy,
                                  dropGroupFillers: Boolean,
                                  nonTerminals: Seq[String],
+                                 occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters
                                  )
   extends FixedLenReader with Serializable {
@@ -87,7 +88,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (isEbcdic) EBCDIC() else ASCII()
+    val encoding = if (isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
     val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
@@ -102,8 +103,11 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
         readerProperties.commentPolicy,
         ebcdicCodePage,
         asciiCharset,
+        readerProperties.isUtf16BigEndian,
         floatingPointFormat,
-        nonTerminals)
+        nonTerminals,
+        occursMappings,
+        readerProperties.isDebug)
     else
       Copybook.merge(
         copyBookContents.map(
@@ -116,8 +120,11 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
             readerProperties.commentPolicy,
             ebcdicCodePage,
             asciiCharset,
+            readerProperties.isUtf16BigEndian,
             floatingPointFormat,
-            nonTerminals)
+            nonTerminals,
+            occursMappings,
+            readerProperties.isDebug)
         )
       )
     new CobolSchema(schema, schemaRetentionPolicy, "",false)

@@ -55,8 +55,9 @@ object ANTLRParser {
             commentPolicy: CommentPolicy,
             ebcdicCodePage: CodePage,
             asciiCharset: Charset,
+            isUtf16BigEndian: Boolean,
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
     val strippedContents = copyBookContents.split("\\r?\\n").map(
       line =>

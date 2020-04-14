@@ -70,10 +70,8 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
       .option("drop_group_fillers", dropGroupFillers)
       .load(inpudDataPath)
 
-    df.printSchema()
-
     // This is to print the actual output
-    println(df.schema.json)
+    //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")

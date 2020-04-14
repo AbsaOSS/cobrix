@@ -48,7 +48,7 @@ booleanLiteral
    ;
 
 identifier:
-      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | P_NS | X_S | S_S | S_NS | Z_S | Z_NS | V_S | V_NS
+      IDENTIFIER | THRU_OR_THROUGH | A_S | P_S | P_NS | X_S | | N_S | S_S | S_NS | Z_S | Z_NS | V_S | V_NS
     | SINGLE_QUOTED_IDENTIFIER // is this valid?
     ;
 
@@ -178,6 +178,11 @@ alphaX:
     | LENGTH_TYPE_X
     ;
 
+alphaN:
+      N_S
+    | LENGTH_TYPE_N
+    ;
+
 alphaA:
       A_S
     | LENGTH_TYPE_A
@@ -192,6 +197,7 @@ pic:
     (
       alphaX
     | alphaA
+    | alphaN
     | (
         signPrecision9 usage?
       | usage? signPrecision9

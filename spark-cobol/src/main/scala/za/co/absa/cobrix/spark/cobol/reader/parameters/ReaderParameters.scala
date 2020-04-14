@@ -30,6 +30,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param ebcdicCodePage          Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass     An optional custom code page conversion class provided by a user
   * @param asciiCharset            A charset for ASCII data
+  * @param isUtf16BigEndian        If true UTF-16 strings are considered big-endian.
   * @param floatingPointFormat     A format of floating-point numbers
   * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
@@ -52,6 +53,7 @@ import za.co.absa.cobrix.spark.cobol.schema.SchemaRetentionPolicy.SchemaRetentio
   * @param commentPolicy           A comment truncation policy
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
+  * @param isDebug                 If true, additional debugging fields will be added
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
@@ -61,6 +63,7 @@ case class ReaderParameters(
                              ebcdicCodePage:          String = "common",
                              ebcdicCodePageClass:     Option[String] = None,
                              asciiCharset:            String = "",
+                             isUtf16BigEndian:        Boolean = true,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              variableSizeOccurs:      Boolean = false,
                              lengthFieldName:         Option[String] = None,
@@ -83,6 +86,8 @@ case class ReaderParameters(
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
+                             occursMappings:          Map[String, Map[String, Int]] = Map(),
+                             isDebug:                 Boolean = false,
                              recordHeaderParser:      Option[String] = None,
                              rhpAdditionalInfo:       Option[String] = None,
                              inputFileNameColumn:     String = ""

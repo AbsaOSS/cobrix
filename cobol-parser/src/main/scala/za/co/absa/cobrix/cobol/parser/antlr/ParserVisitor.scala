@@ -26,8 +26,8 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.Encoding
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.encoding.{Encoding, UTF16}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -44,6 +44,7 @@ class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
                     ebcdicCodePage: CodePage,
                     asciiCharset: Charset,
+                    isUtf16BigEndian: Boolean,
                     floatingPointFormat: FloatingPointFormat) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String) extends Expr
@@ -64,7 +65,7 @@ class ParserVisitor(enc: Encoding,
     s"((?:$char\\(\\d+\\)|$char)$question)"
   }
 
-  val lengthRegex: Regex = "([9XPZA])\\((\\d+)\\)|([9XPZA])".r
+  val lengthRegex: Regex = "([9XNPZA])\\((\\d+)\\)|([9XNPZA])".r
   val numericSPicRegexScaled: Regex = ("(S?)"
                                        + genericLengthRegex('9')
                                        + genericLengthRegex('P', optional = true)
@@ -517,6 +518,7 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) Some(occurs.get.m) else None,
       if (occurs.isDefined) occurs.get.M else None,
       if (occurs.isDefined) occurs.get.dep else None,
+      Map(),
       identifier.toUpperCase() == Constants.FILLER,
       usage
     )(Some(parent))
@@ -576,6 +578,9 @@ class ParserVisitor(enc: Encoding,
     else if (ctx.alphaA() != null) {
       visitAlphaA(ctx.alphaA())
     }
+    else if (ctx.alphaN() != null) {
+      visitAlphaN(ctx.alphaN())
+    }
     else if (ctx.COMP_1() != null || ctx.COMP_2() != null) {
       PicExpr(
         Decimal(
@@ -606,6 +611,12 @@ class ParserVisitor(enc: Encoding,
     val text = ctx.getText
     val (char, len) = length(text)
     PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+  }
+
+  override def visitAlphaN(ctx: copybookParser.AlphaNContext): PicExpr = {
+    val text = ctx.getText
+    val (char, len) = length(text)
+    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(UTF16), Some(ctx.getText)))
   }
 
   override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {
@@ -798,9 +809,10 @@ class ParserVisitor(enc: Encoding,
       if (occurs.isDefined) Some(occurs.get.m) else None,
       if (occurs.isDefined) occurs.get.M else None,
       if (occurs.isDefined) occurs.get.dep else None,
+      Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
       ) (Some(parent))
 
     parent.children.append(prim)

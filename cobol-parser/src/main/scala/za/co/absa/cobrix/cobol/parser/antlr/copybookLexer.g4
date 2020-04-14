@@ -118,6 +118,7 @@ NINES: '9'+;
 A_S: A+;
 P_S: P+ '9'*;
 X_S: X+;
+N_S: N+;
 S_S: S '9'+ V? P* '9'* | S '9'* V? P* '9'+;
 Z_S: Z+ '9'* P* | Z+ '9'* V P* '9'*;
 V_S: V+ '9'+;
@@ -174,6 +175,14 @@ LENGTH_TYPE_X_1:
     | X+
     ;
 
+LENGTH_TYPE_N:
+    LENGTH_TYPE_N_1+
+    ;
+
+LENGTH_TYPE_N_1:
+      (N LPARENCHAR POSITIVELITERAL RPARENCHAR)
+    | N+
+    ;
 
 LENGTH_TYPE_Z:
     LENGTH_TYPE_Z_1+;
@@ -190,6 +199,8 @@ STRINGLITERAL: QUOTEDLITERAL | HEXNUMBER;
 fragment HEXNUMBER :
 	X '"' [0-9A-F]+ '"'
 	| X '\'' [0-9A-F]+ '\''
+	| N '"' [0-9A-F]+ '"'
+	| N '\'' [0-9A-F]+ '\''
 ;
 
 fragment QUOTEDLITERAL :

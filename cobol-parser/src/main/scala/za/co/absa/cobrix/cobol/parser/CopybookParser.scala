@@ -24,9 +24,9 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat}
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding, HEX}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
@@ -64,8 +64,10 @@ object CopybookParser {
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
+    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -76,9 +78,12 @@ object CopybookParser {
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
+                isUtf16BigEndian: Boolean = true,
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
-                nonTerminals: Seq[String] = Nil): Copybook = {
-    parseTree(EBCDIC(),
+                nonTerminals: Seq[String] = Nil,
+                occursHandlers: Map[String, Map[String, Int]] = Map(),
+                isDebug: Boolean = false): Copybook = {
+    parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
       segmentRedefines,
@@ -87,8 +92,11 @@ object CopybookParser {
       commentPolicy,
       ebcdicCodePage,
       asciiCharset,
+      isUtf16BigEndian,
       floatingPointFormat,
-      nonTerminals)
+      nonTerminals,
+      occursHandlers,
+      isDebug)
   }
 
   /**
@@ -104,8 +112,10 @@ object CopybookParser {
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
+    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -118,27 +128,52 @@ object CopybookParser {
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
+                isUtf16BigEndian: Boolean,
                 floatingPointFormat: FloatingPointFormat,
-                nonTerminals: Seq[String]): Copybook = {
+                nonTerminals: Seq[String],
+                occursHandlers: Map[String, Map[String, Int]],
+                isDebug: Boolean): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
     ).toSet
-    
+
     val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
     validateFieldParentMap(correctedFieldParentMap)
 
     new Copybook(
       if (dropGroupFillers) {
-        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(processGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
-        )), segmentRedefines), correctedFieldParentMap))
+        calculateNonFillerSizes(
+          addDebugFields(
+            setSegmentParents(
+              markSegmentRedefines(
+                processGroupFillers(
+                  markDependeeFields(
+                    addNonTerminals(
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                    occursHandlers
+                  )
+                ), segmentRedefines), correctedFieldParentMap
+            ), isDebug
+          )
+        )
       } else {
-        calculateNonFillerSizes(setSegmentParents(markSegmentRedefines(renameGroupFillers(markDependeeFields(
-          addNonTerminals(calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
-        )), segmentRedefines), correctedFieldParentMap))
+        calculateNonFillerSizes(
+          addDebugFields(
+            setSegmentParents(
+              markSegmentRedefines(
+                renameGroupFillers(
+                  markDependeeFields(
+                    addNonTerminals(
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                    occursHandlers
+                  )
+                ), segmentRedefines), correctedFieldParentMap
+            ), isDebug
+          )
+        )
       }
     )
   }
@@ -148,11 +183,12 @@ object CopybookParser {
                               stringTrimmingPolicy: StringTrimmingPolicy,
                               ebcdicCodePage: CodePage,
                               asciiCharset: Charset,
+                              isUtf16BigEndian: Boolean,
                               floatingPointFormat: FloatingPointFormat
                              ): CopybookAST = {
 
     def getNonTerminalName(name: String, parent: Group): String = {
-      val existingNames = parent.children.map{
+      val existingNames = parent.children.map {
         case x: Primitive => x.name
         case x: Group => x.name
       }
@@ -167,17 +203,17 @@ object CopybookParser {
     }
 
     val newChildren: ArrayBuffer[Statement] = new ArrayBuffer[Statement]()
-    for(stmt <- copybook.children) {
+    for (stmt <- copybook.children) {
       stmt match {
         case s: Primitive => newChildren.append(s)
-        case g: Group => {
+        case g: Group =>
           if (nonTerminals contains g.name) {
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat).copy(isRedefined = true)(g.parent)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
@@ -191,9 +227,8 @@ object CopybookParser {
           }
           else
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, floatingPointFormat)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
             )
-        }
       }
     }
     copybook.copy(children = newChildren)(copybook.parent)
@@ -238,12 +273,11 @@ object CopybookParser {
 
       val childWithSizes = child match {
         case group: Group => calculateSchemaSizes(group)
-        case st: Primitive => {
+        case st: Primitive =>
           val size = st.getBinarySizeBytes
           val sizeAllOccurs = size * st.arrayMaxSize
           val binProps = BinaryProperties(st.binaryProperties.offset, size, sizeAllOccurs)
           st.withUpdatedBinaryProperties(binProps)
-        }
       }
       redefinedSizes += childWithSizes.binaryProperties.actualSize
       redefinedNames += childWithSizes.name.toUpperCase
@@ -303,11 +337,11 @@ object CopybookParser {
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def markDependeeFields(ast: CopybookAST): CopybookAST = {
+  def markDependeeFields(ast: CopybookAST, occursHandlers: Map[String, Map[String, Int]]): CopybookAST = {
     val flatFields = new mutable.ArrayBuffer[Primitive]()
-    val dependees = new mutable.HashSet[Primitive]()
+    val dependees = new mutable.HashMap[Primitive, ListBuffer[Statement]]()
 
-    def addDependeeField(name: String): Unit = {
+    def addDependeeField(statement: Statement, name: String): Statement = {
       val nameUpper = name.toUpperCase
       // Find all the fields that match DEPENDING ON name
       val foundFields = flatFields.filter(f => f.name.toUpperCase == nameUpper)
@@ -317,34 +351,59 @@ object CopybookParser {
       if (foundFields.length > 1) {
         logger.warn("Field $name used in DEPENDING ON clause has multiple instances.")
       }
-      dependees ++= foundFields
-    }
 
-    def traverseDepends(group: CopybookAST): Unit = {
-      for (field <- group.children) {
-        field.dependingOn.foreach(name => addDependeeField(name))
-        field match {
-          case grp: Group => traverseDepends(grp)
-          case st: Primitive => flatFields += st
-        }
+      val updatedStatement = occursHandlers.get(statement.name) match {
+        case Some(mapping) => statement.withUpdatedDependingOnHandlers(mapping)
+        case _ => statement
       }
+
+      dependees.get(foundFields.head) match {
+        case Some(list) => list += updatedStatement
+        case _ => dependees += (foundFields.head -> ListBuffer(updatedStatement))
+      }
+      updatedStatement
     }
 
-    def markDependeesForGroup(group: Group): Group = {
-      val newChildren = markDependees(group)
+    def traverseDepends(group: CopybookAST): CopybookAST = {
+
+      group.withUpdatedChildren(
+        for (field <- group.children) yield {
+          val updatedField = field.dependingOn match {
+            case Some(depName) => addDependeeField(field, depName)
+            case None => field
+          }
+          val stmt: Statement = updatedField match {
+            case grp: Group => traverseDepends(grp)
+            case st: Primitive => {
+              flatFields += st
+              st
+            }
+          }
+          stmt
+        }
+      )
+    }
+
+    def markDependeesForGroup(group: Group, occursHandlers: Map[String, Map[String, Int]]): Group = {
+      val newChildren = markDependees(group, occursHandlers)
       var groupWithMarkedDependees = group.copy(children = newChildren.children)(group.parent)
       groupWithMarkedDependees
     }
 
-    def markDependees(group: CopybookAST): CopybookAST = {
+    def markDependees(group: CopybookAST, occursHandlers: Map[String, Map[String, Int]]): CopybookAST = {
       val newChildren = for (field <- group.children) yield {
         val newField: Statement = field match {
-          case grp: Group => markDependeesForGroup(grp)
+          case grp: Group => markDependeesForGroup(grp, occursHandlers)
           case primitive: Primitive =>
             val newPrimitive = if (dependees contains primitive) {
               primitive.dataType match {
                 case _: Integral => true
-                case dt => throw new IllegalStateException(s"Field ${primitive.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+                case dt => {
+                  for (stmt <- dependees(primitive)) {
+                    if (stmt.dependingOnHandlers.isEmpty)
+                      throw new IllegalStateException(s"Field ${primitive.name} is a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+                  }
+                }
               }
               primitive.withUpdatedIsDependee(newIsDependee = true)
             } else {
@@ -357,8 +416,10 @@ object CopybookParser {
       group.copy(children = newChildren)(group.parent)
     }
 
-    traverseDepends(ast)
-    markDependees(ast)
+    markDependees(
+      traverseDepends(ast),
+      occursHandlers
+    )
   }
 
   /**
@@ -403,7 +464,7 @@ object CopybookParser {
         case p: Primitive =>
           ensureSegmentRedefinesAreIneGroup(p.name, isCurrentFieldASegmentRedefine = false)
           p
-        case g: Group => {
+        case g: Group =>
           if (isOneOfSegmentRedefines(g)) {
             if (foundRedefines.contains(g.name)) {
               throw new IllegalStateException(s"Duplicate segment redefine field '${g.name}' found.")
@@ -413,9 +474,13 @@ object CopybookParser {
             g.withUpdatedIsSegmentRedefine(true)
           } else {
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
-            g
+            // Check nested fields recursively only if segment redefines hasn't been found so far.
+            if (redefineGroupState == 0) {
+              processGroupFields(g)
+            } else {
+              g
+            }
           }
-        }
       }
       group.copy(children = childrenWithSegmentRedefines)(group.parent)
     }
@@ -715,6 +780,53 @@ object CopybookParser {
       throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
     }
     newSchema
+  }
+
+  /**
+   * Add debugging fields if debug mode is enabled
+   *
+   * @param ast                An AST as a set of copybook records
+   * @param addDebuggingFields If true, debugging fields will be added
+   * @return The same AST with debugging fields added
+   */
+  private def addDebugFields(ast: CopybookAST, addDebuggingFields: Boolean): CopybookAST = {
+    def getDebugField(field: Primitive): Primitive = {
+      val size = field.binaryProperties.dataSize
+      val debugFieldName = field.name + "_debug"
+      val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(HEX), None)
+
+      val debugField = field.copy(name = debugFieldName,
+        dataType = debugDataType,
+        redefines = Some(field.name),
+        isDependee = false,
+        decode = StringDecoders.decodeHex) (parent = field.parent)
+
+      debugField
+    }
+
+    def processGroup(group: Group): Group = {
+      val newChildren = ArrayBuffer[Statement]()
+      group.children.foreach {
+        case grp: Group =>
+          val newGrp = processGroup(grp)
+          newChildren += newGrp
+        case st: Primitive =>
+          if (st.redefines.isDefined) {
+            newChildren += st
+          } else {
+            newChildren += st.withUpdatedIsRedefined(newIsRedefined = true)
+            newChildren += getDebugField(st)
+          }
+      }
+      group.withUpdatedChildren(newChildren)
+    }
+
+    if (addDebuggingFields) {
+      processGroup(ast)
+    } else {
+      ast
+    }
+
   }
 
   /**

@@ -58,7 +58,7 @@ object RowExtractors {
                     activeSegmentRedefine: String = "",
                     generateInputFileField: Boolean = false,
                     inputFileName: String = ""): Row = {
-    val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
     def extractArray(field: Statement, useOffset: Int): (Int, Array[Any]) = {
       val from = 0
@@ -66,7 +66,10 @@ object RowExtractors {
       val actualSize = field.dependingOn match {
         case None => arraySize
         case Some(dependingOn) =>
-          val dependValue = dependFields.getOrElse(dependingOn, arraySize)
+          val dependValue: Int = dependFields.getOrElse(dependingOn, Left(arraySize)) match {
+            case Left(n) => n
+            case Right(s) => field.dependingOnHandlers.getOrElse(s, arraySize)
+          }
           if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
             dependValue
           else
@@ -118,12 +121,13 @@ object RowExtractors {
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
           if (value != null && st.isDependee) {
-            val intVal: Int = value match {
-              case v: Int => v
-              case v: Number => v.intValue()
+            val intStringVal: Either[Int, String] = value match {
+              case v: Int => Left(v)
+              case v: Number => Left(v.intValue())
+              case v: String => Right(v)
               case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
             }
-            dependFields += st.name -> intVal
+            dependFields += st.name -> intStringVal
           }
           (st.binaryProperties.actualSize, value)
       }
@@ -214,7 +218,7 @@ object RowExtractors {
                                 recordId: Long = 0,
                                 generateInputFileField: Boolean = false,
                                 inputFileName: String = ""): Row = {
-    val dependFields = scala.collection.mutable.HashMap.empty[String, Int]
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
     def extractArray(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Array[Any]) = {
       val from = 0
@@ -222,7 +226,10 @@ object RowExtractors {
       val actualSize = field.dependingOn match {
         case None => arraySize
         case Some(dependingOn) =>
-          val dependValue = dependFields.getOrElse(dependingOn, arraySize)
+          val dependValue: Int = dependFields.getOrElse(dependingOn, Left(arraySize)) match {
+            case Left(n) => n
+            case Right(s) => field.dependingOnHandlers.getOrElse(s, arraySize)
+          }
           if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
             dependValue
           else
@@ -270,12 +277,13 @@ object RowExtractors {
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
           if (value != null && st.isDependee) {
-            val intVal: Int = value match {
-              case v: Int => v
-              case v: Number => v.intValue()
+            val intStringVal: Either[Int, String] = value match {
+              case v: Int => Left(v)
+              case v: Number => Left(v.intValue())
+              case v: String => Right(v)
               case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
             }
-            dependFields += st.name -> intVal
+            dependFields += st.name -> intStringVal
           }
           (st.binaryProperties.actualSize, value)
       }

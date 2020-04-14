@@ -32,9 +32,10 @@ class PicValidationSpec extends FunSuite {
 
   private def validatePic(pic: String) = {
 
-    val visitor = new ParserVisitor(ASCII(), StringTrimmingPolicy.TrimNone,
+    val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
+      isUtf16BigEndian = true,
       FloatingPointFormat.IBM)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
@@ -110,6 +111,7 @@ class PicValidationSpec extends FunSuite {
     validatePic("S9(3)PPP")
     validatePic("P(3)9(3)")
     validatePic("S9(3)P(3)")
+    validatePic("N(10)")
   }
 
   test("Test various malformed PICs") {

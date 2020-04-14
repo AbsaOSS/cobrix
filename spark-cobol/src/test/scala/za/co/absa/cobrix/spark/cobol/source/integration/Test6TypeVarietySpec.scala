@@ -66,8 +66,6 @@ class Test6TypeVarietySpec extends FunSuite with SparkTestBase {
       .option("floating_point_format", "IEEE754")
       .load(inpudDataPath)
 
-    df.printSchema()
-
     // This is to print the actual output
     //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)

@@ -95,6 +95,7 @@ class DefaultSource
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
+      parameters.occursMappings,
       getReaderProperties(parameters, spark)
     )
   }
@@ -133,7 +134,8 @@ class DefaultSource
           inputSplitSizeMB = None,
           improveLocality = false,
           optimizeAllocation = false,
-          inputFileNameColumn = "")
+          inputFileNameColumn = "",
+          occursMappings = Map())
       )
 
     val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
@@ -145,6 +147,7 @@ class DefaultSource
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
       asciiCharset = parameters.asciiCharset,
+      isUtf16BigEndian = parameters.isUtf16BigEndian,
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = varLenParams.variableSizeOccurs,
       lengthFieldName = recordLengthField,
@@ -167,6 +170,8 @@ class DefaultSource
       parameters.commentPolicy,
       parameters.dropGroupFillers,
       parameters.nonTerminals,
+      parameters.occursMappings,
+      parameters.isDebug,
       varLenParams.recordHeaderParser,
       varLenParams.rhpAdditionalInfo,
       varLenParams.inputFileNameColumn

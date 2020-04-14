@@ -71,6 +71,9 @@ trait Statement {
   /** Returns a field name this fields depends on. This is used for OCCURS (arrays). */
   def dependingOn: Option[String]
 
+  /** Returns a mapping used for OCCURS (arrays) integral conversion. */
+  def dependingOnHandlers: Map[String, Int]
+
   /** Returns true if this field is redefined by some other field */
   def isRedefined: Boolean
 
@@ -105,4 +108,6 @@ trait Statement {
   /** Returns the original AST element with updated `isRedefined` flag */
   def withUpdatedIsRedefined(newIsRedefined: Boolean): Statement
 
+  /** Returns the original AST element with updated `isRedefined` flag */
+  def withUpdatedDependingOnHandlers(newDependingOnHandlers: Map[String, Int]): Statement
 }

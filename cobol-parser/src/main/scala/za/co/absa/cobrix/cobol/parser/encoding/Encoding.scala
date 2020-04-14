@@ -16,10 +16,14 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding
 
-import za.co.absa.cobrix.cobol.parser.position.Position
-import scodec.Codec
+/** Rncodings supported by the decoders */
 
-/** Trait for character encodings. */
-trait Encoding {
-  def codec(comp: Option[Int], scale: Int, signPosition: Option[Position]): Codec[_ <: AnyVal]
-}
+sealed trait Encoding
+
+case object EBCDIC extends Encoding
+
+case object ASCII extends Encoding
+
+case object UTF16 extends Encoding
+
+case object HEX extends Encoding
