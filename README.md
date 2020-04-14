@@ -1180,6 +1180,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.7 released 14 April 2020.
+  - [#273](https://github.com/AbsaOSS/cobrix/issues/273) Fixed the class loader for custom code pages (Thanks [@schaloner-kbc](https://github.com/schaloner-kbc)). 
+
 - #### 2.0.6 released 6 April 2020.
   - [#151](https://github.com/AbsaOSS/cobrix/issues/151) Added an option (`occurs_mapping`) to define mappings between non-numeric fields and sizes of corresponding OCCURS (Thanks [@tr11](https://github.com/tr11)).
   - [#269](https://github.com/AbsaOSS/cobrix/issues/269) Added support for segment redefines deeply nested, instead of requiring them to be defined always at the top record level. 
