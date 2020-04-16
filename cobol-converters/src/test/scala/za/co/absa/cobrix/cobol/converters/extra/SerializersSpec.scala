@@ -131,7 +131,7 @@ class SerializersSpec extends FunSuite {
   val startOffset: Int = 0
 
 
-  class StructHandler extends RecordHandler[Any] {
+  class StructHandler extends RecordHandler[Map[String, Any]] {
     override def create(values: Array[Any], group: Group): Map[String, Any] = {
         (group.children zip values).map(t => t._1.name -> (t._2 match {
           case s: Array[Any] => s.toSeq
@@ -139,8 +139,8 @@ class SerializersSpec extends FunSuite {
         })).toMap
     }
 
-    override def toSeq(record: Any): Seq[Any] = {
-      record.asInstanceOf[Map[String, Any]].values.toSeq
+    override def toSeq(record: Map[String, Any]): Seq[Any] = {
+      record.values.toSeq
     }
   }
 

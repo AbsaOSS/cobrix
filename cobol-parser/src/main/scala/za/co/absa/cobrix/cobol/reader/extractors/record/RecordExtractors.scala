@@ -36,7 +36,7 @@ object RecordExtractors {
     * @param policy                 A schema retention policy to be applied to the extracted record.
     * @param variableLengthOccurs   If true, OCCURS DEPENDING ON data size will depend on the number of elements.
     * @param generateRecordId       If true a record id field will be added as the first field of the record.
-    * @param segmentLevelIds        Segent ids to put to the extracted record if id generation it turned on.
+    * @param segmentLevelIds        Segment ids to put to the extracted record if id generation it turned on.
     * @param fileId                 A file id to be put to the extractor record if generateRecordId == true.
     * @param recordId               The record id to be saved to the record id field.
     * @param activeSegmentRedefine  An active segment redefine (the one that will be parsed).
@@ -53,7 +53,7 @@ object RecordExtractors {
     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
     variableLengthOccurs: Boolean = false,
     generateRecordId: Boolean = false,
-    segmentLevelIds: Seq[Any] = Nil,
+    segmentLevelIds: Seq[String] = Nil,
     fileId: Int = 0,
     recordId: Long = 0,
     activeSegmentRedefine: String = "",
@@ -398,20 +398,20 @@ object RecordExtractors {
     * </p>
     *
     * @param ast                    The parsed copybook
-    * @param records                The array of [[RowType]] object for each Group of the copybook
+    * @param records                The array of [[T]] object for each Group of the copybook
     * @param generateRecordId       If true a record id field will be added as the first field of the record.
     * @param fileId                 The file id to be saved to the file id field
     * @param recordId               The record id to be saved to the record id field
     * @param generateInputFileField if true, a field containing input file name will be generated
     * @param inputFileName          An input file name to put if its generation is needed
-    * @return A [[RowType]] object corresponding to the record schema
+    * @return A [[T]] object corresponding to the record schema
     */
   private def applyRecordPostProcessing[T](
     ast: CopybookAST,
     records: Seq[T],
     policy: SchemaRetentionPolicy,
     generateRecordId: Boolean,
-    segmentLevelIds: Seq[Any],
+    segmentLevelIds: Seq[String],
     fileId: Int,
     recordId: Long,
     generateInputFileField: Boolean,
