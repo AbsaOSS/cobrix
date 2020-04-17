@@ -25,7 +25,7 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.{FixedLenNestedReader => ReaderFixedLenNestedReader}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
+import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 

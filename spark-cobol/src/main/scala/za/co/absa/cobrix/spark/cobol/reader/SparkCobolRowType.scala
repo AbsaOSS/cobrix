@@ -21,10 +21,8 @@ import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 
 
-object SparkCobolRowType {
-  class RowHandler extends RecordHandler[GenericRow] with Serializable {
-    override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
+class RowHandler extends RecordHandler[GenericRow] with Serializable {
+  override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
 
-    override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
-  }
+  override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
 }

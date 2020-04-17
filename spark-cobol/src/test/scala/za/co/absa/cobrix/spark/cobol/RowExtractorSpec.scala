@@ -20,7 +20,7 @@ import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
-import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
+import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 
 
 class RowExtractorSpec extends FunSuite {

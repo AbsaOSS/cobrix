@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
-import za.co.absa.cobrix.spark.cobol.reader.SparkCobolRowType.RowHandler
+import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 
 
 /**
