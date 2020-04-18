@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
-import za.co.absa.cobrix.spark.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}

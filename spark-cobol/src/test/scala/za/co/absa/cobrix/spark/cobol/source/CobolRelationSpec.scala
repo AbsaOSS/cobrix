@@ -23,7 +23,7 @@ import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
+import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
 import za.co.absa.cobrix.spark.cobol.source.base.impl.{DummyCobolSchema, DummyFixedLenReader}

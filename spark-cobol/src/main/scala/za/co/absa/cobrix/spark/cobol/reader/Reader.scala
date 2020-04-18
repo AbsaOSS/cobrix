@@ -17,18 +17,10 @@
 package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.cobol.reader.{Reader => CobolReader}
+
 
 /** The abstract class for Cobol all data readers from various sources */
-abstract class Reader extends Serializable {
-  type Field = String
-  type Value = String
-
-  def getCobolSchema: CobolSchema
-
+trait Reader extends CobolReader {
   def getSparkSchema: StructType
-
-  def getRecordStartOffset: Int
-
-  def getRecordEndOffset: Int
 }

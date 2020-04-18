@@ -18,7 +18,8 @@ package za.co.absa.cobrix.spark.cobol
 
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.immutable.HashMap
 

@@ -65,6 +65,7 @@ class Test10CustomRDWParser extends Serializable with RecordHeaderParser {
   }
 
 }
+
 /**
   * The companion object is used for custom record header parser purposes.
   */

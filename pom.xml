@@ -79,6 +79,7 @@
 
     <modules>
         <module>cobol-parser</module>
+        <module>cobol-converters</module>
         <module>spark-cobol</module>
     </modules>
 

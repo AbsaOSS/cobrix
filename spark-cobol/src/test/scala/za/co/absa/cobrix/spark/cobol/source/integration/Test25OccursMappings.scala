@@ -26,8 +26,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.parser.recordextractors.VarOccursRecordExtractor
-import za.co.absa.cobrix.cobol.parser.stream.FSStream
+import za.co.absa.cobrix.cobol.reader.extractors.raw.VarOccursRecordExtractor
+import za.co.absa.cobrix.cobol.reader.stream.FSStream
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
@@ -101,7 +101,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
         .option("variable_size_occurs", "true")
         .load(inputDataPath + "/data.dat")
     }
-    assert(exc.getMessage.contains("Can not construct instance of int from String"))
+    assert(exc.getMessage.contains("not a valid Integer value"))
   }
 
   test(s"Integration test on $exampleName data for variable occurs") {
