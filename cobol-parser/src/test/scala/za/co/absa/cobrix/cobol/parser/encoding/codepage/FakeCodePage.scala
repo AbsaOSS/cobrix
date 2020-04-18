@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
 class FakeCodePage extends CodePage {

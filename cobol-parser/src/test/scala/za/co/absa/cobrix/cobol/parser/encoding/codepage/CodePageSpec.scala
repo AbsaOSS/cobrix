@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
 import org.scalatest.FunSuite

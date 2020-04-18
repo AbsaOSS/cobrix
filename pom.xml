@@ -372,6 +372,41 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <version>${maven.rat.plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.sbt</exclude>
+                        <exclude>**/*.properties</exclude>
+                        <exclude>**/*.json</exclude>
+                        <exclude>**/*.csv</exclude>
+                        <exclude>**/*.txt</exclude>
+                        <exclude>**/*.bin</exclude>
+                        <exclude>**/*.md</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/*.csv</exclude>
+                        <exclude>**/*.svg</exclude>
+                        <exclude>**/*.plot</exclude>
+                        <exclude>**/_*</exclude>
+                        <exclude>**/dependency-reduced-pom.xml</exclude>
+                        <exclude>**/.idea/**</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/org.apache.spark.sql.sources.DataSourceRegister</exclude>
+                        <exclude>dependency-reduced-pom.xml</exclude>
+                        <exclude>.github/CODEOWNERS</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -380,41 +415,6 @@
             <id>public</id>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.rat</groupId>
-                        <artifactId>apache-rat-plugin</artifactId>
-                        <version>${maven.rat.plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>check</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*.sbt</exclude>
-                                <exclude>**/*.properties</exclude>
-                                <exclude>**/*.json</exclude>
-                                <exclude>**/*.csv</exclude>
-                                <exclude>**/*.txt</exclude>
-                                <exclude>**/*.bin</exclude>
-                                <exclude>**/*.md</exclude>
-                                <exclude>**/*.iml</exclude>
-                                <exclude>**/*.csv</exclude>
-                                <exclude>**/*.svg</exclude>
-                                <exclude>**/*.plot</exclude>
-                                <exclude>**/_*</exclude>
-                                <exclude>**/dependency-reduced-pom.xml</exclude>
-                                <exclude>**/.idea/**</exclude>
-                                <exclude>**/target/**</exclude>
-                                <exclude>**/org.apache.spark.sql.sources.DataSourceRegister</exclude>
-                                <exclude>dependency-reduced-pom.xml</exclude>
-                                <exclude>.github/CODEOWNERS</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
