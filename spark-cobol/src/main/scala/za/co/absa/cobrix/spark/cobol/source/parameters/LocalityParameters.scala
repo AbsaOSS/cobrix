@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
+
 case class LocalityParameters(improveLocality: Boolean, optimizeAllocation: Boolean)
 
 object LocalityParameters {

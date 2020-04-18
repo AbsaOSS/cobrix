@@ -41,7 +41,7 @@ lazy val cobrix = (project in file("."))
     publish := {},
     publishLocal := {}
   )
-  .aggregate(cobolParser, sparkCobol)
+  .aggregate(cobolParser, cobolConverters, sparkCobol)
 
 lazy val cobolParser = (project in file("cobol-parser"))
   .settings(
@@ -49,6 +49,13 @@ lazy val cobolParser = (project in file("cobol-parser"))
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value
   )
+
+lazy val cobolConverters = (project in file("cobol-converters"))
+  .settings(
+      name := "cobol-converters",
+      libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
+      releasePublishArtifactsAction := PgpKeys.publishSigned.value
+  ).dependsOn(cobolParser)
 
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(

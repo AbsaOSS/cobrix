@@ -43,6 +43,7 @@ build.log
 #SHITTY output not in target directory
 build.log
 
+gen
 .cache*
 dependency-reduced-pom.xml
 

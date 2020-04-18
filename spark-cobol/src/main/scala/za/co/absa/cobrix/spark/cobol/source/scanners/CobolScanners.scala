@@ -21,10 +21,9 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.reader.Constants
-import za.co.absa.cobrix.spark.cobol.reader.fixedlen.FixedLenReader
-import za.co.absa.cobrix.spark.cobol.reader.index.entry.SparseIndexEntry
-import za.co.absa.cobrix.spark.cobol.reader.varlen.VarLenReader
+import za.co.absa.cobrix.cobol.reader.common.Constants
+import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder

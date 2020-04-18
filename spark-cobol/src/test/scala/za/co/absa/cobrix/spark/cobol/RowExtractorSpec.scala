@@ -18,12 +18,10 @@ package za.co.absa.cobrix.spark.cobol
 
 import org.apache.spark.sql.Row
 import org.scalatest.FunSuite
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
-import za.co.absa.cobrix.spark.cobol.utils.RowExtractors
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
+import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 
-import scala.collection.mutable
 
 class RowExtractorSpec extends FunSuite {
   val copyBookContents: String =
@@ -117,7 +115,7 @@ class RowExtractorSpec extends FunSuite {
   val startOffset: Int = 0
 
   test("Test row extractor") {
-    val row: Row = RowExtractors.extractRecord(copybook.ast, bytes, startOffset)
+    val row: Row = Row.fromSeq(RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new RowHandler()))
     // [[6,[EXAMPLE4,0,],[,,3,[Vector([000000000000002000400012,0,], [000000000000003000400102,1,], [000000005006001200301000,2,])]]]]
     val innerRow: Row = row(0).asInstanceOf[Row]
 

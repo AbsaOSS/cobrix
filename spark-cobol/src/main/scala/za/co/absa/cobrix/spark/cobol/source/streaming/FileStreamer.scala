@@ -18,9 +18,9 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 import org.apache.log4j.Logger
-import za.co.absa.cobrix.cobol.parser.stream.SimpleStream
-import za.co.absa.cobrix.spark.cobol.reader.Constants
+import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import org.apache.hadoop.fs.ContentSummary
+import za.co.absa.cobrix.cobol.reader.common.Constants
 
 /**
   * This class provides methods for streaming bytes from an HDFS file.

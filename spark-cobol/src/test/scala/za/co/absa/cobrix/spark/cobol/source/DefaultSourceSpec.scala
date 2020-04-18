@@ -26,7 +26,7 @@ import za.co.absa.cobrix.spark.cobol.source.utils.SourceTestUtils
 class DefaultSourceSpec extends SparkCobolTestBase {
    
   import SourceTestUtils._
-  import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersParser._
+  import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
   
   private var defaultSource: DefaultSource = _
     
