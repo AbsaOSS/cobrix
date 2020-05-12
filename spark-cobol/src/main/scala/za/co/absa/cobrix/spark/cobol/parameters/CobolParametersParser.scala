@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPol
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, MultisegmentParameters, VariableLengthParameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -210,7 +211,7 @@ object CobolParametersParser {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
-      getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
+      JsonUtils.getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       params.getOrElse(PARAM_DEBUG, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
@@ -257,7 +258,7 @@ object CobolParametersParser {
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
         params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
         params.getOrElse(PARAM_INPUT_FILE_COLUMN, ""),
-        getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}"))
+        JsonUtils.getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}"))
       ))
     } else {
       None
@@ -484,19 +485,5 @@ object CobolParametersParser {
         logger.error(msg)
       }
     }
-  }
-
-  /**
-   * Parses the options for the occurs mappings.
-   *
-   * @param params Parameters provided by spark.read.option(...)
-   * @return Returns a mapping for OCCURS fields
-   */
-  @throws(classOf[IllegalArgumentException])
-  def getOccursMappings(params: String): Map[String, Map[String, Int]] = {
-    val mapper = new ObjectMapper() with ScalaObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    mapper.readValue[Map[String,Map[String,Int]]](params)
   }
 }

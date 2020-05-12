@@ -20,6 +20,7 @@ import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -81,7 +82,7 @@ class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFile
         .load(tmpFileName)
 
 
-      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+      val actual = JsonUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
       assertEqualsMultiline(actual, expectedData)
     }
@@ -98,7 +99,7 @@ class Test23NationalTypeSpec extends FunSuite with SparkTestBase with BinaryFile
         .option("is_utf16_big_endian", "false")
         .load(tmpFileName)
 
-      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+      val actual = JsonUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
       assertEqualsMultiline(actual, expectedData)
     }

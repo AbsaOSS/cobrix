@@ -21,6 +21,7 @@ import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
@@ -75,7 +76,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+    val actualSchema = JsonUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)

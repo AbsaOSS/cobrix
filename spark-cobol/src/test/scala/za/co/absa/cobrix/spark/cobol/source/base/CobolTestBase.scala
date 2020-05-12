@@ -22,7 +22,8 @@ import java.nio.file.{Files, Paths}
 import org.apache.spark.sql.DataFrame
 import org.scalatest.{Assertion, TestSuite}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
+import za.co.absa.cobrix.cobol.utils.JsonUtils
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import scala.collection.JavaConverters._
 
@@ -47,7 +48,7 @@ trait CobolTestBase extends TestSuite {
 
   def testSchema(df: DataFrame, actualSchemaPath: String, expectedSchemaPath: String): Assertion = {
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+    val actualSchema = JsonUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)

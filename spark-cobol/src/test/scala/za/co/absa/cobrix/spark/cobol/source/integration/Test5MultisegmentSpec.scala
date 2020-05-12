@@ -27,6 +27,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
@@ -293,7 +294,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .load(inputDataPathBigEndian)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+    val actualSchema = JsonUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)

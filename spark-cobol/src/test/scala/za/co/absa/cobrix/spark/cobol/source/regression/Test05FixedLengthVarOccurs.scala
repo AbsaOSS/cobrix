@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 import org.apache.commons.io.Charsets
 import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -86,7 +87,7 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
           |  } ]
           |} ]""".stripMargin.replace("\r\n", "\n")
 
-      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+      val actual = JsonUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
       assertEqualsMultiline(actual, expected)
     }
@@ -165,7 +166,7 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
           |  } ]
           |} ]""".stripMargin.replace("\r\n", "\n")
 
-      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+      val actual = JsonUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
       assertEqualsMultiline(actual, expected)
     }

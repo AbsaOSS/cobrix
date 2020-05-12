@@ -774,7 +774,7 @@ A possible hierarchical record output is
 ```
 scala> import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-scala> println(SparkUtils.prettyJSON(df.toJSON.take(1).mkString("[", ", ", "]")))
+scala> println(JsonUtils.prettyJSON(df.toJSON.take(1).mkString("[", ", ", "]")))
 {
   "SEGMENT_ID" : "C",
   "COMPANY_ID" : "9377942526",

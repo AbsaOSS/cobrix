@@ -116,7 +116,7 @@ object SparkCobolHierarchical {
     df.show(10, truncate = false)
 
     val s = df.toJSON.take(5).mkString("[", ", ", "]")
-    println(SparkUtils.prettyJSON(s))
+    println(JsonUtils.prettyJSON(s))
   }
 
 }

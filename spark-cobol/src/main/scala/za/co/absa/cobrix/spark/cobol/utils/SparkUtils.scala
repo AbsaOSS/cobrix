@@ -22,6 +22,7 @@ import org.apache.spark.sql.functions.{concat_ws, expr, max}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame}
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -210,15 +211,7 @@ object SparkUtils {
 
     val json = "[" + "}\n".r.replaceAllIn(collected, "},\n") + "]"
 
-    prettyJSON(json)
-  }
-
-  def prettyJSON(jsonIn: String): String = {
-    val mapper = new ObjectMapper()
-
-    val jsonUnindented = mapper.readValue(jsonIn, classOf[Any])
-    val indented = mapper.writerWithDefaultPrettyPrinter.writeValueAsString(jsonUnindented)
-    indented.replace("\r\n", "\n")
+    JsonUtils.prettyJSON(json)
   }
 
 }

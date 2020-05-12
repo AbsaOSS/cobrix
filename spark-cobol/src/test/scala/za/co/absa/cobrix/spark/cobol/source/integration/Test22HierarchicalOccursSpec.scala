@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.utils.JsonUtils
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -196,7 +197,7 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
           |  }
           |} ]""".stripMargin.replace("\r\n", "\n")
 
-      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+      val actual = JsonUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
 
       assertEqualsMultiline(actual, expected)
     }
