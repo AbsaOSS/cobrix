@@ -19,7 +19,6 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
@@ -91,7 +90,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
   }
 
   test("Integration test fail on bad occurs mappings") {
-    val exc = intercept[InvalidFormatException] {
+    val exc = intercept[ClassCastException] {
       spark
         .read
         .format("cobol")
@@ -101,7 +100,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
         .option("variable_size_occurs", "true")
         .load(inputDataPath + "/data.dat")
     }
-    assert(exc.getMessage.contains("not a valid Integer value"))
+    assert(exc.getMessage.contains("java.lang.Double cannot be cast to java.lang.Integer"))
   }
 
   test(s"Integration test on $exampleName data for variable occurs") {

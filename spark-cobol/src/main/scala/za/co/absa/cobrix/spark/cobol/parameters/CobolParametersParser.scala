@@ -16,11 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.parameters
 
-import com.fasterxml.jackson.databind.{DeserializationFeature, ObjectMapper}
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
-import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.antlr.ParserJson
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
@@ -494,9 +492,8 @@ object CobolParametersParser {
    */
   @throws(classOf[IllegalArgumentException])
   def getOccursMappings(params: String): Map[String, Map[String, Int]] = {
-    val mapper = new ObjectMapper() with ScalaObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-    mapper.readValue[Map[String,Map[String,Int]]](params)
+    val parser = new ParserJson()
+    val parsedParams = parser.parseMap(params)
+    parsedParams.map( kv => kv._1 -> kv._2.asInstanceOf[Map[String, Any]].map(x => x._1 -> x._2.asInstanceOf[Int]))
   }
 }
