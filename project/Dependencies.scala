@@ -46,8 +46,6 @@ object Dependencies {
     // version of Guava which has removed 'com.google.common.base.Stopwatch.elapsedMillis',
     // however, the version of Hadoop imported by Spark relies on that method.
     "com.google.guava" % "guava" % guavaVersion,
-    // Make sure the jackson dependency doesn't conflict with Spark's
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion
   )
 
   val CobolParserDependencies: Seq[ModuleID] = Seq(
