@@ -398,7 +398,6 @@
                         <exclude>**/*.csv</exclude>
                         <exclude>**/*.svg</exclude>
                         <exclude>**/*.plot</exclude>
-                        <exclude>**/*.g4</exclude>
                         <exclude>**/_*</exclude>
                         <exclude>**/dependency-reduced-pom.xml</exclude>
                         <exclude>**/.idea/**</exclude>
