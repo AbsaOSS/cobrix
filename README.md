@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.0.7
+version: 2.0.8
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.0.7
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.0.7
+version: 2.0.8
 ```
 
 ## Using with Spark shell
@@ -81,22 +81,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.7
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.8
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.7
-```
-
-### Linking legacy `spark-cobol`
-
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol)
-
-```
-groupId: za.co.absa.cobrix
-artifactId: spark-cobol
-version: 1.1.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.0.8
 ```
 
 ## Usage
@@ -213,16 +203,16 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.0.7.jar
-* cobol-parser_2.11-2.0.7.jar
+* spark-cobol_2.11-2.0.8.jar
+* cobol-parser_2.11-2.0.8.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.7
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.0.8
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.7.jar,cobol-parser_2.11-2.0.7.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.0.8.jar,cobol-parser_2.11-2.0.8.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1180,6 +1170,13 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.0.8 released 14 May 2020.
+  - [#184](https://github.com/AbsaOSS/cobrix/issues/184) Record extractors are made generic to be reusable for other targets in addition to Sspark Row. (Thanks [@tr11](https://github.com/tr11)). 
+  - [#283](https://github.com/AbsaOSS/cobrix/issues/283) Added a custom JSON parser to mitigate jackson compatibility when `spark-cobol` is used in Spark 3.0. (Thanks [@tr11](https://github.com/tr11)).
+
+- #### 2.0.7 released 14 April 2020.
+  - [#273](https://github.com/AbsaOSS/cobrix/issues/273) Fixed the class loader for custom code pages (Thanks [@schaloner-kbc](https://github.com/schaloner-kbc)). 
+
 - #### 2.0.7 released 14 April 2020.
   - [#273](https://github.com/AbsaOSS/cobrix/issues/273) Fixed the class loader for custom code pages (Thanks [@schaloner-kbc](https://github.com/schaloner-kbc)). 
 
