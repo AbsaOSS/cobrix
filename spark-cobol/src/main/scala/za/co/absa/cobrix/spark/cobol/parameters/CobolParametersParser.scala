@@ -116,7 +116,7 @@ object CobolParametersParser {
       case Some(p) =>
         p
       case None =>
-        throw new IllegalArgumentException(s"Invalid value '$stringTrimmingPolicy' for '$PARAM_STRING_TRIMMING_POLICY' option.")
+        throw new IllegalArgumentException(s"Invalid value '$stringTrimmingPolicyName' for '$PARAM_STRING_TRIMMING_POLICY' option.")
     }
   }
 
@@ -164,7 +164,7 @@ object CobolParametersParser {
       case Some(p) =>
         p
       case None =>
-        throw new IllegalArgumentException(s"Invalid value '$floatingPointFormat' for '$PARAM_FLOATING_POINT_FORMAT' option.")
+        throw new IllegalArgumentException(s"Invalid value '$floatingPointFormatName' for '$PARAM_FLOATING_POINT_FORMAT' option.")
     }
   }
 
