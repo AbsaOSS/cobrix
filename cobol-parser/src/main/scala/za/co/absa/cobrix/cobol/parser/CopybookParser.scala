@@ -56,6 +56,55 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
+    * @param dataEnncoding        Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param copyBookContents     A string containing all lines of a copybook
+    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    *                             resolving segment redefines.
+    * @param fieldParentMap       A segment fields parent mapping
+    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
+    * @param ebcdicCodePage       A code page for EBCDIC encoded data
+    * @param asciiCharset         A charset for ASCII encoded data
+    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
+    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals         A list of non-terminals that should be extracted as strings
+    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
+    * @return Seq[Group] where a group is a record inside the copybook
+    */
+  def parse(copyBookContents: String,
+            dataEnncoding: Encoding = EBCDIC,
+            dropGroupFillers: Boolean = false,
+            segmentRedefines: Seq[String] = Nil,
+            fieldParentMap: Map[String, String] = HashMap[String, String](),
+            stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+            commentPolicy: CommentPolicy = CommentPolicy(),
+            ebcdicCodePage: CodePage = new CodePageCommon,
+            asciiCharset: Charset = StandardCharsets.US_ASCII,
+            isUtf16BigEndian: Boolean = true,
+            floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
+            nonTerminals: Seq[String] = Nil,
+            occursHandlers: Map[String, Map[String, Int]] = Map(),
+            isDebug: Boolean = false): Copybook = {
+    parseTree(dataEnncoding,
+      copyBookContents,
+      dropGroupFillers,
+      segmentRedefines,
+      fieldParentMap,
+      stringTrimmingPolicy,
+      commentPolicy,
+      ebcdicCodePage,
+      asciiCharset,
+      isUtf16BigEndian,
+      floatingPointFormat,
+      nonTerminals,
+      occursHandlers,
+      isDebug)
+  }
+
+  /**
+    * Tokenizes a Cobol Copybook contents and returns the AST.
+    *
     * @param copyBookContents     A string containing all lines of a copybook
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
