@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.source.scanners
 
+import java.nio.charset.StandardCharsets
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
@@ -29,7 +31,7 @@ import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-private [source] object CobolScanners {
+private[source] object CobolScanners {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -43,10 +45,10 @@ private [source] object CobolScanners {
       val filePathName = filesMap(indexEntry.fileId)
       val fileName = new Path(filePathName).getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
-      val numOfBytesMsg = if (numOfBytes>0) s"${numOfBytes/Constants.megabyte} MB" else "until the end"
+      val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-      val dataStream =  new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
+      val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
       reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }
@@ -57,11 +59,9 @@ private [source] object CobolScanners {
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
     filesRDD.mapPartitions(
-      partition =>
-      {
+      partition => {
         val fileSystem = FileSystem.get(sconf.value)
-        partition.flatMap(row =>
-        {
+        partition.flatMap(row => {
           val filePath = row.filePath
           val fileOrder = row.order
 
@@ -73,7 +73,7 @@ private [source] object CobolScanners {
   }
 
   private[source] def buildScanForFixedLength(reader: FixedLenReader, sourceDir: String,
-                                              recordParser: (FixedLenReader,RDD[Array[Byte]]) => RDD[Row],
+                                              recordParser: (FixedLenReader, RDD[Array[Byte]]) => RDD[Row],
                                               debugIgnoreFileSize: Boolean,
                                               sqlContext: SQLContext): RDD[Row] = {
     // This reads whole text files as RDD[String]
@@ -90,6 +90,22 @@ private [source] object CobolScanners {
     val schema = reader.getSparkSchema
 
     val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
+    recordParser(reader, records)
+  }
+
+  private[source] def buildScanForTextFiles(reader: FixedLenReader, sourceDir: String,
+                                            recordParser: (FixedLenReader, RDD[Array[Byte]]) => RDD[Row],
+                                            sqlContext: SQLContext): RDD[Row] = {
+    sqlContext.read.text()
+
+    val rddText = sqlContext.sparkContext
+      .textFile(sourceDir)
+
+    val records = rddText
+      .filter(str => str.length > 0)
+      .map(str => {
+        str.getBytes(StandardCharsets.UTF_8)
+      })
     recordParser(reader, records)
   }
 

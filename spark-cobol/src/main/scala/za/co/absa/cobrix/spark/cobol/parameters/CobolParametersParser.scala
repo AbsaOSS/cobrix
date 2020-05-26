@@ -74,6 +74,7 @@ object CobolParametersParser {
   // Parameters for multisegment variable length files
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
+  val PARAM_IS_TEXT                   = "is_text"
   val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
   val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
   val PARAM_RDW_ADJUSTMENT            = "rdw_adjustment"
@@ -193,6 +194,7 @@ object CobolParametersParser {
       params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       getParameter(PARAM_SOURCE_PATH, params),
+      params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
@@ -451,6 +453,8 @@ object CobolParametersParser {
       params.contains(PARAM_FILE_END_OFFSET) ||
       params.contains(PARAM_RECORD_LENGTH)
 
+    val isText = params.getOrElse(PARAM_IS_TEXT, "false").toBoolean
+
     val isPedantic = params.getOrElse(PARAM_PEDANTIC, "false").toBoolean
     val keysPassed = params.getMap.keys.toSeq
     val unusedKeys = keysPassed.flatMap(key => {
@@ -472,6 +476,21 @@ object CobolParametersParser {
       val recordSequenceCondition = s"one of this holds: '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
         s" or one of these options is set: '$PARAM_RECORD_LENGTH', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET'"
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
+    }
+    if (isText) {
+      val incorrectParameters = new ListBuffer[String]
+      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
+        incorrectParameters += PARAM_IS_RECORD_SEQUENCE
+      }
+      if (params.contains(PARAM_IS_XCOM)) {
+        incorrectParameters += PARAM_IS_XCOM
+      }
+      if (params.contains(PARAM_RECORD_LENGTH)) {
+        incorrectParameters += PARAM_RECORD_LENGTH
+      }
+      if (incorrectParameters.nonEmpty) {
+        throw new IllegalArgumentException(s"Option '$PARAM_IS_TEXT' and ${incorrectParameters.mkString(", ")} cannot be used together.")
+      }
     }
     if (unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")

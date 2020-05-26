@@ -22,7 +22,7 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader, Reader, ReaderFactory, VarLenNestedReader, VarLenReader}
+import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader, FixedLenTextReader, Reader, ReaderFactory, VarLenNestedReader, VarLenReader}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
@@ -71,12 +71,34 @@ class DefaultSource
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
   private def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
-    if (cobolParameters.variableLengthParams.isEmpty) {
+    if (cobolParameters.isText) {
+      createTextReader(cobolParameters, spark)
+    } else if (cobolParameters.variableLengthParams.isEmpty) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {
       createVariableLengthReader(cobolParameters, spark)
     }
+  }
+
+  /**
+    * Creates a Reader that knows how to consume text Cobol records.
+    */
+  private def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
+    val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    new FixedLenTextReader(copybookContent,
+      parameters.isEbcdic,
+      getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
+      parameters.floatingPointFormat,
+      parameters.recordStartOffset,
+      parameters.recordEndOffset,
+      parameters.schemaRetentionPolicy,
+      parameters.stringTrimmingPolicy,
+      parameters.dropGroupFillers,
+      parameters.nonTerminals,
+      parameters.occursMappings,
+      getReaderProperties(parameters, spark)
+    )
   }
 
   /**
