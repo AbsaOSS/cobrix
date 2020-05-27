@@ -472,7 +472,20 @@ fully qualified class name to the following option:
 ## Reading ASCII text file
 Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
 
-Working example:
+Working example 1:
+```scala
+    // A new experimental way
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("is_text", "true")
+      .option("encoding", "ascii")
+      .option("schema_retention_policy", "collapse_root")
+      .load(tmpFileName)
+````
+
+Working example 2:
 ```scala
     val spark = SparkSession
       .builder()
