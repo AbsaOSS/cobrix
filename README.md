@@ -490,16 +490,23 @@ Working example:
         |               10  PERSON    	PIC X(3).
       """.stripMargin
 
-    val parsedCopybook = CopybookParser.parseTree(ASCII(), copybook, dropGroupFillers = false, segmentRedefines = Seq(), stringTrimmingPolicy = StringTrimmingPolicy.TrimNone, ebcdicCodePage = CodePage.getCodePageByName("common"), nonTerminals = Seq())
-    val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, false)
+    val parsedCopybook = CopybookParser.parse(copybook, dataEnncoding = ASCII, stringTrimmingPolicy = StringTrimmingPolicy.TrimNone)
+    val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, "", false)
     val sparkSchema = cobolSchema.getSparkSchema
-
 
     val rddText = spark.sparkContext.textFile("src/main/resources/mini.txt")
 
-    val rddRow = rddText.map(str => {
-      RowExtractors.extractRecord(parsedCopybook.ast, str.getBytes(), 0, SchemaRetentionPolicy.CollapseRoot)
-    })
+    val recordHandler = new RowHandler()
+
+    val rddRow = rddText
+      .filter(str => str.length > 0)
+      .map(str => {
+        val record = RecordExtractors.extractRecord[GenericRow](parsedCopybook.ast,
+          str.getBytes(),
+          0,
+          SchemaRetentionPolicy.CollapseRoot, handler = recordHandler)
+        Row.fromSeq(record)
+      })
 
     val dfOut = spark.createDataFrame(rddRow, sparkSchema)
 
@@ -1047,6 +1054,7 @@ Again, the full example is available at
 | .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
 | .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
 | .option("rhp_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record header parser (RHP). A custom RHP can get that additional info by overriding `onReceiveAdditionalInfo()`  |
+| .option("is_text", "true")                    | `Experimental` If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. |
 
 
 ##### Multisegment files options
