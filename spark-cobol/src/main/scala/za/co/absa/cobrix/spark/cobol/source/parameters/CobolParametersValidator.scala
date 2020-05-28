@@ -18,15 +18,13 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Paths}
-import java.security.InvalidParameterException
 
-import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkConf
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
+import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 
 /**
   * This class provides methods for checking the Spark job options after parsed.
@@ -65,36 +63,39 @@ object CobolParametersValidator {
         if (!Files.exists(Paths.get(copyBookFileName))) {
           throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
+        if (!Files.isRegularFile(Paths.get(copyBookFileName))) {
+          throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not a file.")
+        }
         if (!Files.isReadable(Paths.get(copyBookFileName))) {
-          throw new InvalidParameterException(s"Value does not point at a valid Copybook file: $copyBookFileName")
+          throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not readable.")
         }
       } else {
         if (!hdfs.exists(new Path(copyBookFileName))) {
           throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
         if (!hdfs.isFile(new Path(copyBookFileName))) {
-          throw new InvalidParameterException(s"Please specify copybook file location via '$fileName' option or provide copybook " +
-            s"contents via '$PARAM_COPYBOOK_CONTENTS' option.")
+          throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not a file.")
         }
       }
     }
 
     (copyBookContents, copyBookPathFileName, copyBookMultiPathFileNames) match {
-      case (Some(contents), Some(fileName), _) =>
+      case (Some(_), Some(_), _) =>
         throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
-      case (Some(contents), _, Some(filenames)) =>
+      case (Some(_), _, Some(_)) =>
         throw new IllegalStateException(s"Both '$PARAM_MULTI_COPYBOOK_PATH' and '$PARAM_COPYBOOK_CONTENTS' options cannot be specified at the same time")
-      case (_, Some(filename), Some(filenames)) =>
+      case (_, Some(_), Some(_)) =>
         throw new IllegalStateException(s"Both '$PARAM_COPYBOOK_PATH' and '$PARAM_MULTI_COPYBOOK_PATH' options cannot be specified at the same time")
-      case (Some(contents), None, None) =>
-      // This is fine
-      case (None, Some(fileName), None) => validatePath(fileName)
-      // This is fine
+      case (None, None, None) =>
+        throw new IllegalStateException("COPYBOOK is not provided. Please, provide one of the options: " +
+          s"'$PARAM_COPYBOOK_PATH', '$PARAM_COPYBOOK_CONTENTS', '$PARAM_MULTI_COPYBOOK_PATH'.")
+      case (Some(_), None, None) =>
+        // Nothing to validate
+      case (None, Some(fileName), None) =>
+        validatePath(fileName)
       case (None, None, Some(fileNames)) =>
         for(fileName <-fileNames.split(","))
           validatePath(fileName)
-      case (None, None, None) =>
-        throw new IllegalStateException(s"Cannot define path to source files: missing parameter: '$PARAM_SOURCE_PATH'")
     }
   }
 }
