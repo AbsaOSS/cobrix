@@ -78,8 +78,8 @@ class DefaultSourceSpec extends SparkCobolTestBase {
      }    
   }      
   
-  it must "throw InvalidParameterException if path to Copybook does not point at a file" in {         
-     intercept[InvalidParameterException] {       
+  it must "throw IllegalArgumentException if path to Copybook does not point at a file" in {
+     intercept[IllegalArgumentException] {
        defaultSource.createRelation(sqlContext, Map[String,String](
            PARAM_COPYBOOK_PATH -> testDir.getAbsolutePath, 
            PARAM_SOURCE_PATH -> testDir.getAbsolutePath
