@@ -86,6 +86,8 @@ object DecoderSelector {
         StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian)
       case HEX =>
         StringDecoders.decodeHex
+      case RAW =>
+        StringDecoders.decodeRaw
     }
   }
 

@@ -69,8 +69,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
         "B" -> 2
       )
     )
-    val copybook = CopybookParser.parseTree(ASCII, copybookContents, true, Nil, HashMap[String, String](), StringTrimmingPolicy.TrimBoth,
-      CommentPolicy(), new CodePageCommon, StandardCharsets.US_ASCII, true, FloatingPointFormat.IBM, Nil, occursMapping, false)
+    val copybook = CopybookParser.parse(copybookContents, ASCII, occursHandlers = occursMapping)
 
     val recordExtractor = new VarOccursRecordExtractor(inputStream, copybook)
 

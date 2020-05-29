@@ -18,8 +18,9 @@ package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 
@@ -53,7 +54,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
   * @param commentPolicy           A comment truncation policy
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
-  * @param isDebug                 If true, additional debugging fields will be added
+  * @param debugFieldsPolicy       Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
@@ -87,7 +88,7 @@ case class ReaderParameters(
                              dropGroupFillers:        Boolean = false,
                              nonTerminals:            Seq[String] = Nil,
                              occursMappings:          Map[String, Map[String, Int]] = Map(),
-                             isDebug:                 Boolean = false,
+                             debugFieldsPolicy:       DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
                              recordHeaderParser:      Option[String] = None,
                              rhpAdditionalInfo:       Option[String] = None,
                              inputFileNameColumn:     String = ""

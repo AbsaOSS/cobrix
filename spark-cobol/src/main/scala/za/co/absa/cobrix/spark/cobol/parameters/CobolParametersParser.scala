@@ -21,8 +21,9 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.antlr.ParserJson
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, MultisegmentParameters, VariableLengthParameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -169,6 +170,19 @@ object CobolParametersParser {
     }
   }
 
+  private def getDebuggingFieldsPolicy(params: Parameters): DebugFieldsPolicy = {
+    val debugFieldsPolicyName = params.getOrElse(PARAM_DEBUG, "false")
+    val debugFieldsPolicy = DebugFieldsPolicy.withNameOpt(debugFieldsPolicyName)
+
+    debugFieldsPolicy match {
+      case Some(p) =>
+        p
+      case None =>
+        throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
+          "Allowed one of: 'true' = 'hex', 'raw', 'false' = 'none'. ")
+    }
+  }
+
   def parse(params: Parameters): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
@@ -211,7 +225,7 @@ object CobolParametersParser {
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
-      params.getOrElse(PARAM_DEBUG, "false").toBoolean,
+      getDebuggingFieldsPolicy(params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
     validateSparkCobolOptions(params)

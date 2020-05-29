@@ -193,7 +193,7 @@ class DefaultSource
       parameters.dropGroupFillers,
       parameters.nonTerminals,
       parameters.occursMappings,
-      parameters.isDebug,
+      parameters.debugFieldsPolicy,
       varLenParams.recordHeaderParser,
       varLenParams.rhpAdditionalInfo,
       varLenParams.inputFileNameColumn

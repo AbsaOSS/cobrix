@@ -132,6 +132,14 @@ object StringDecoders {
   }
 
   /**
+    * A decoder that doesn't decode, but just passes the bytes the way they are.
+    *
+    * @param bytes        A byte array that represents the binary data
+    * @return A string representation of the bytes
+    */
+  def decodeRaw(bytes: Array[Byte]): Array[Byte] = bytes
+
+  /**
     * A decoder for any EBCDIC uncompressed numbers supporting
     * <ul>
     * <li> Separate leading and trailing sign</li>

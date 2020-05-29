@@ -107,7 +107,7 @@ class FixedLenNestedReader[T: ClassTag](
         floatingPointFormat,
         nonTerminals,
         occursMappings,
-        readerProperties.isDebug)
+        readerProperties.debugFieldsPolicy)
     else
       Copybook.merge(
         copyBookContents.map(
@@ -124,7 +124,7 @@ class FixedLenNestedReader[T: ClassTag](
             floatingPointFormat,
             nonTerminals,
             occursMappings,
-            readerProperties.isDebug)
+            readerProperties.debugFieldsPolicy)
         )
       )
     new CobolSchema(schema, schemaRetentionPolicy, "",false)

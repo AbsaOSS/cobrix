@@ -27,3 +27,5 @@ case object ASCII extends Encoding
 case object UTF16 extends Encoding
 
 case object HEX extends Encoding
+
+case object RAW extends Encoding

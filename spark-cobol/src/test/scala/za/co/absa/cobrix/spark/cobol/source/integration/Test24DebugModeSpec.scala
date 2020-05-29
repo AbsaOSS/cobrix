@@ -22,6 +22,7 @@ import java.nio.file.{Files, Paths}
 import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
@@ -46,7 +47,7 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents, isDebug = true)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, debugFieldsPolicy = DebugFieldsPolicy.HexValue)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
@@ -89,5 +90,60 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
     }
     Files.delete(Paths.get(actualResultsPath))
   }
+
+  test("Test that debug mode adds columns with binary raw values") {
+    val expectedSchemaPath = "../data/test24_expected/test24b_schema.json"
+    val expectedLayoutPath = "../data/test24_expected/test24b_layout.txt"
+    val actualSchemaPath = "../data/test24_expected/test24b_schema_actual.json"
+    val actualLayoutPath = "../data/test24_expected/test24b_layout_actual.txt"
+    val expectedResultsPath = "../data/test24_expected/test24b.txt"
+    val actualResultsPath = "../data/test24_expected/test24b_actual.txt"
+
+    // Comparing layout
+    val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val cobolSchema = CopybookParser.parseTree(copybookContents, debugFieldsPolicy = DebugFieldsPolicy.RawValue)
+    val actualLayout = cobolSchema.generateRecordLayoutPositions()
+    val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+
+    if (actualLayout != expectedLayout) {
+      FileUtils.writeStringToFile(actualLayout, actualLayoutPath)
+      assert(false, s"The actual layout doesn't match what is expected for $exampleName example. Please compare contents of $expectedLayoutPath to " +
+        s"$actualLayoutPath for details.")
+    }
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("schema_retention_policy", "collapse_root")
+      .option("floating_point_format", "IEEE754")
+      .option("pedantic", "true")
+      .option("debug", "raw")
+      .load(inputDataPath)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
+    val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(20)
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+  }
+
 
 }
