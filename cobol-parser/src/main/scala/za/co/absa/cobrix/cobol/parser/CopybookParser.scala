@@ -64,6 +64,7 @@ object CopybookParser {
     *                             resolving segment redefines.
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param isDisplayAlwaysString  If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
@@ -79,6 +80,7 @@ object CopybookParser {
             segmentRedefines: Seq[String] = Nil,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+            isDisplayAlwaysString: Boolean = false,
             commentPolicy: CommentPolicy = CommentPolicy(),
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
@@ -93,6 +95,7 @@ object CopybookParser {
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
+      isDisplayAlwaysString,
       commentPolicy,
       ebcdicCodePage,
       asciiCharset,
@@ -111,6 +114,7 @@ object CopybookParser {
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param isDisplayAlwaysString  If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
@@ -125,6 +129,7 @@ object CopybookParser {
                 segmentRedefines: Seq[String] = Nil,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                isDisplayAlwaysString: Boolean = false,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
@@ -139,6 +144,7 @@ object CopybookParser {
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
+      isDisplayAlwaysString,
       commentPolicy,
       ebcdicCodePage,
       asciiCharset,
@@ -159,6 +165,7 @@ object CopybookParser {
     *                             resolving segment redefines.
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
+    * @param isDisplayAlwaysString  If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
     * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage       A code page for EBCDIC encoded data
     * @param asciiCharset         A charset for ASCII encoded data
@@ -175,6 +182,7 @@ object CopybookParser {
                 segmentRedefines: Seq[String],
                 fieldParentMap: Map[String,String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
+                isDisplayAlwaysString: Boolean,
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,

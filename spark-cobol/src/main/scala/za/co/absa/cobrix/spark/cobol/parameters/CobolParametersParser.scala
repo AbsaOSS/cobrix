@@ -51,12 +51,13 @@ object CobolParametersParser {
   val PARAM_FILE_END_OFFSET           = "file_end_offset"
 
   // Schema transformation parameters
+  val PARAM_DEBUG                     = "debug"
+  val PARAM_DISPLAY_PIC_ALWAYS_STRING = "display_pic_always_string"
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
-  val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
-  val PARAM_DEBUG                     = "debug"
+  val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
 
   // General parsing parameters
   val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
@@ -220,6 +221,7 @@ object CobolParametersParser {
       parseVariableLengthParameters(params),
       schemaRetentionPolicy,
       stringTrimmingPolicy,
+      params.getOrElse(PARAM_DISPLAY_PIC_ALWAYS_STRING, "false").toBoolean,
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
