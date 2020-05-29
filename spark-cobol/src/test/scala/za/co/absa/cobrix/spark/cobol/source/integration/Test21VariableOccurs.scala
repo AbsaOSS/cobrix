@@ -47,8 +47,7 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
   test("Test VarLenReader properly splits a file into records") {
     val inputStream = new FSStream(s"$inputDataPath/data.dat")
     val copybookContents = Files.readAllLines(Paths.get("../data/test21_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val copybook = CopybookParser.parseTree(ASCII, copybookContents, true, Nil, HashMap[String, String](), StringTrimmingPolicy.TrimBoth,
-      CommentPolicy(), new CodePageCommon, StandardCharsets.US_ASCII, true, FloatingPointFormat.IBM, Nil, Map(), false)
+    val copybook = CopybookParser.parse(copybookContents, ASCII)
     val recordExtractor = new VarOccursRecordExtractor(inputStream, copybook)
 
     val expectedRecords = ListBuffer(Array(48.toByte),

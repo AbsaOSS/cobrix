@@ -26,10 +26,11 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding, HEX}
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding, HEX, RAW}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
 
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
@@ -69,7 +70,7 @@ object CopybookParser {
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
+    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parse(copyBookContents: String,
@@ -85,7 +86,7 @@ object CopybookParser {
             floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
             nonTerminals: Seq[String] = Nil,
             occursHandlers: Map[String, Map[String, Int]] = Map(),
-            isDebug: Boolean = false): Copybook = {
+            debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug): Copybook = {
     parseTree(dataEnncoding,
       copyBookContents,
       dropGroupFillers,
@@ -99,7 +100,7 @@ object CopybookParser {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
-      isDebug)
+      debugFieldsPolicy)
   }
 
   /**
@@ -116,7 +117,7 @@ object CopybookParser {
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
+    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -131,7 +132,7 @@ object CopybookParser {
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil,
                 occursHandlers: Map[String, Map[String, Int]] = Map(),
-                isDebug: Boolean = false): Copybook = {
+                debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug): Copybook = {
     parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
@@ -145,7 +146,7 @@ object CopybookParser {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
-      isDebug)
+      debugFieldsPolicy)
   }
 
   /**
@@ -164,7 +165,7 @@ object CopybookParser {
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param isDebug              If true, additional debug fields will be added alongside all non-redefined primitives
+    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -181,7 +182,7 @@ object CopybookParser {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String],
                 occursHandlers: Map[String, Map[String, Int]],
-                isDebug: Boolean): Copybook = {
+                debugFieldsPolicy: DebugFieldsPolicy): Copybook = {
 
     val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
@@ -205,7 +206,7 @@ object CopybookParser {
                     occursHandlers
                   )
                 ), segmentRedefines), correctedFieldParentMap
-            ), isDebug
+            ), debugFieldsPolicy
           )
         )
       } else {
@@ -220,7 +221,7 @@ object CopybookParser {
                     occursHandlers
                   )
                 ), segmentRedefines), correctedFieldParentMap
-            ), isDebug
+            ), debugFieldsPolicy
           )
         )
       }
@@ -835,20 +836,32 @@ object CopybookParser {
    * Add debugging fields if debug mode is enabled
    *
    * @param ast                An AST as a set of copybook records
-   * @param addDebuggingFields If true, debugging fields will be added
+   * @param debugFieldsPolicy  Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
    * @return The same AST with debugging fields added
    */
-  private def addDebugFields(ast: CopybookAST, addDebuggingFields: Boolean): CopybookAST = {
+  private def addDebugFields(ast: CopybookAST, debugFieldsPolicy: DebugFieldsPolicy): CopybookAST = {
     def getDebugField(field: Primitive): Primitive = {
+      val debugEncoding = debugFieldsPolicy match {
+        case DebugFieldsPolicy.HexValue => HEX
+        case DebugFieldsPolicy.RawValue => RAW
+        case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
+      }
+
+      val debugDecoder = debugFieldsPolicy match {
+        case DebugFieldsPolicy.HexValue => StringDecoders.decodeHex _
+        case DebugFieldsPolicy.RawValue => StringDecoders.decodeRaw _
+        case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
+      }
+
       val size = field.binaryProperties.dataSize
       val debugFieldName = field.name + "_debug"
-      val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(HEX), None)
+      val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(debugEncoding), None)
 
       val debugField = field.copy(name = debugFieldName,
         dataType = debugDataType,
         redefines = Some(field.name),
         isDependee = false,
-        decode = StringDecoders.decodeHex) (parent = field.parent)
+        decode = debugDecoder) (parent = field.parent)
 
       debugField
     }
@@ -870,7 +883,7 @@ object CopybookParser {
       group.withUpdatedChildren(newChildren)
     }
 
-    if (addDebuggingFields) {
+    if (debugFieldsPolicy != DebugFieldsPolicy.NoDebug) {
       processGroup(ast)
     } else {
       ast

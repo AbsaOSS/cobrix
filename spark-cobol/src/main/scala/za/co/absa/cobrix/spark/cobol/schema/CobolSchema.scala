@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
@@ -148,7 +149,11 @@ class CobolSchema(copybook: Copybook,
           case Some(COMP2()) => DoubleType
           case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
         }
-      case _: AlphaNumeric => StringType
+      case a: AlphaNumeric =>
+        a.enc match {
+          case Some(RAW) => BinaryType
+          case _ => StringType
+        }
       case dt: Integral =>
         if (dt.precision > Constants.maxLongPrecision) {
           DecimalType(precision = dt.precision, scale = 0)
@@ -205,7 +210,11 @@ class CobolSchema(copybook: Copybook,
           val dataType: DataType = s.dataType match {
             case d: Decimal =>
               DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
-            case _: AlphaNumeric => StringType
+            case a: AlphaNumeric =>
+              a.enc match {
+                case Some(RAW) => BinaryType
+                case _ => StringType
+              }
             case dt: Integral =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
