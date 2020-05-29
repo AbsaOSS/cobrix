@@ -18,7 +18,7 @@ import sbt._
 
 object Dependencies {
 
-  private val sparkVersion = "2.4.4"
+  private val sparkVersion = "2.4.5"
 
   private val guavaVersion = "15.0"
   private val scodecBitsVersion = "1.1.4"
@@ -33,7 +33,6 @@ object Dependencies {
 
   val SparkCobolDependencies: Seq[ModuleID] = Seq(
     // provided
-    "org.apache.spark" %% "spark-core"       % sparkVersion % Provided,
     "org.apache.spark" %% "spark-sql"        % sparkVersion % Provided,
     "org.apache.spark" %% "spark-streaming"  % sparkVersion % Provided,
 
