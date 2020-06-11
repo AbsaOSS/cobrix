@@ -76,4 +76,46 @@ class Test01DisplayPicAsStrings extends FunSuite with SparkTestBase with BinaryF
     }
   }
 
+  test("Test a numeric fields having DISPLAY format are parsed as numbers") {
+    withTempBinFile("num_display1", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("encoding", "ascii")
+        .option("schema_retention_policy", "collapse_root")
+        .option("display_pic_always_string", "true")
+        .load(tmpFileName)
+
+      val expectedSchema =
+        """root
+          | |-- N: integer (nullable = true)
+          | |-- D1: decimal(4,2) (nullable = true)
+          | |-- D2: decimal(4,2) (nullable = true)
+          |""".stripMargin.replace("\r\n", "\n")
+
+      val expectedData =
+        """[ {
+          |  "N" : 1,
+          |  "D1" : 1.1,
+          |  "D2" : 12.34
+          |}, {
+          |  "N" : 2010,
+          |  "D1" : 0.22,
+          |  "D2" : 0.01
+          |}, {
+          |  "N" : 300,
+          |  "D1" : 0.01,
+          |  "D2" : 0.02
+          |} ]""".stripMargin.replace("\r\n", "\n")
+
+      val actualSchema = df.schema.treeString
+      val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+      assertEqualsMultiline(actualSchema, expectedSchema)
+      assertEqualsMultiline(actualData, expectedData)
+    }
+  }
+
 }

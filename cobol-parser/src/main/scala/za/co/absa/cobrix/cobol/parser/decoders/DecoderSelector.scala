@@ -45,6 +45,7 @@ object DecoderSelector {
     *
     * @param dataType             A daatype of a copybook field
     * @param stringTrimmingPolicy Specifies how the decoder should handle string types
+    * @param isDisplayAlwaysString  If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
     * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
     * @param asciiCharset         A charset for ASCII encoded data
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
@@ -53,6 +54,7 @@ object DecoderSelector {
     */
   def getDecoder(dataType: CobolType,
                  stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
+                 isDisplayAlwaysString: Boolean = false,
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
                  isUtf16BigEndian: Boolean = true,
@@ -60,6 +62,7 @@ object DecoderSelector {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
+      case integralType: Integral if isDisplayAlwaysString => getStringDecoder(integralType.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian)
       case integralType: Integral => getIntegralDecoder(integralType)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
