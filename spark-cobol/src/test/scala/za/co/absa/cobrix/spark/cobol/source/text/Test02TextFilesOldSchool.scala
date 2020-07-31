@@ -45,7 +45,7 @@ class Test02TextFilesOldSchool extends FunSuite with SparkTestBase with BinaryFi
   private val textFileContent: String =
     Seq("1Tes  0123456789",
         "2 est2 SomeText ",
-        "3None Data¡3    ",
+        "3None Data+3    ",
         "4 on      Data 4").mkString("\n")
 
   test("Test a the 'old school' way of handling ASCII text files") {
@@ -72,7 +72,7 @@ class Test02TextFilesOldSchool extends FunSuite with SparkTestBase with BinaryFi
 
       val df = spark.createDataFrame(rddRow, sparkSchema)
 
-      val expected = """[{"A1":"1","A2":"Tes  ","A3":"0123456789"},{"A1":"2","A2":" est2","A3":" SomeText "},{"A1":"3","A2":"None ","A3":"Data  3   "},{"A1":"4","A2":" on  ","A3":"    Data 4"}]"""
+      val expected = """[{"A1":"1","A2":"Tes  ","A3":"0123456789"},{"A1":"2","A2":" est2","A3":" SomeText "},{"A1":"3","A2":"None ","A3":"Data+3    "},{"A1":"4","A2":" on  ","A3":"    Data 4"}]"""
 
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
