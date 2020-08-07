@@ -59,7 +59,7 @@ object ANTLRParser {
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
     val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
-    val strippedContents = copyBookContents.split("\\r?\\n").map(
+    val strippedContents = filterSpecialCharacters(copyBookContents).split("\\r?\\n").map(
       line =>
         truncateComments(line, commentPolicy)
     ).mkString("\n")
@@ -72,6 +72,15 @@ object ANTLRParser {
 
     visitor.visitMain(parser.main())
     visitor.ast
+  }
+
+  /**
+    * Replace special characters that have semantics of spaces.
+    */
+  private def filterSpecialCharacters(copybook: String): String = {
+    copybook
+      .replace('\u00a0', ' ') // Non-breakable spaces
+      .replace(0x09.toByte.toChar, ' ') // Tabs
   }
 
   /**
