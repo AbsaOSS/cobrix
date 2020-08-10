@@ -57,7 +57,25 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param dataEnncoding        Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * This method accepts arguments that affect only structure of the output AST.
+    *
+    * @param copyBookContents     A string containing all lines of a copybook
+    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
+    * @return Seq[Group] where a group is a record inside the copybook
+    */
+  def parseSimple(copyBookContents: String,
+                  dropGroupFillers: Boolean = false,
+                  commentPolicy: CommentPolicy = CommentPolicy()): Copybook = {
+    parse(copyBookContents = copyBookContents,
+      dropGroupFillers = dropGroupFillers,
+      commentPolicy = commentPolicy)
+  }
+
+  /**
+    * Tokenizes a Cobol Copybook contents and returns the AST.
+    *
+    * @param dataEncoding        Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
     * @param copyBookContents     A string containing all lines of a copybook
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
@@ -74,7 +92,7 @@ object CopybookParser {
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parse(copyBookContents: String,
-            dataEnncoding: Encoding = EBCDIC,
+            dataEncoding: Encoding = EBCDIC,
             dropGroupFillers: Boolean = false,
             segmentRedefines: Seq[String] = Nil,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
@@ -87,7 +105,7 @@ object CopybookParser {
             nonTerminals: Seq[String] = Nil,
             occursHandlers: Map[String, Map[String, Int]] = Map(),
             debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug): Copybook = {
-    parseTree(dataEnncoding,
+    parseTree(dataEncoding,
       copyBookContents,
       dropGroupFillers,
       segmentRedefines,

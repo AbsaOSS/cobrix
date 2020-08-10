@@ -51,7 +51,7 @@ class Test02TextFilesOldSchool extends FunSuite with SparkTestBase with BinaryFi
   test("Test a the 'old school' way of handling ASCII text files") {
     withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
 
-      val parsedCopybook = CopybookParser.parse(copybook, dataEnncoding = ASCII, stringTrimmingPolicy = StringTrimmingPolicy.TrimNone)
+      val parsedCopybook = CopybookParser.parse(copybook, dataEncoding = ASCII, stringTrimmingPolicy = StringTrimmingPolicy.TrimNone)
       val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, "", false)
       val sparkSchema = cobolSchema.getSparkSchema
 
