@@ -80,7 +80,7 @@ object ANTLRParser {
   private def filterSpecialCharacters(copybook: String): String = {
     copybook
       .replace('\u00a0', ' ') // Non-breakable spaces
-      .replace(0x09.toByte.toChar, ' ') // Tabs
+      .replace('\u0009', ' ') // Tabs
   }
 
   /**
