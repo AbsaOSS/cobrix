@@ -1,0 +1,63 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "COMPANY_NAME",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_1",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "STR1",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "STR2",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "ADDRESS",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_2",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "STR4",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "CONTACT_PERSON",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "FIRST_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "AMOUNT",
+    "type" : "decimal(11,2)",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}
