@@ -21,8 +21,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 /**
   * These are properties for customizing mainframe binary data reader.
@@ -53,6 +53,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
   * @param multisegment            Parameters specific to reading multisegment files
   * @param commentPolicy           A comment truncation policy
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
+  * @param dropValueFillers       If true the parser will drop all value FILLER fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param debugFieldsPolicy       Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param recordHeaderParser      A parser used to parse data field record headers
@@ -86,6 +87,7 @@ case class ReaderParameters(
                              multisegment:            Option[MultisegmentParameters] = None,
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              dropGroupFillers:        Boolean = false,
+                             dropValueFillers:        Boolean = true,
                              nonTerminals:            Seq[String] = Nil,
                              occursMappings:          Map[String, Map[String, Int]] = Map(),
                              debugFieldsPolicy:       DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,

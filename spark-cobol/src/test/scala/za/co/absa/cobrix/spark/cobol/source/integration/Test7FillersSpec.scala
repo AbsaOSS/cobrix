@@ -42,11 +42,11 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
   }
 
   test(s"Integration test on $exampleName - retain fillers, but drop group fillers") {
-    //runTest("test7b", dropFillers = false, dropGroupFillers = true)
+    runTest("test7b", dropValueFillers = false, dropGroupFillers = true)
   }
 
   test(s"Integration test on $exampleName - retain fillers and group fillers") {
-    //runTest("test7c", dropFillers = false, dropGroupFillers = false)
+    runTest("test7c", dropValueFillers = false, dropGroupFillers = false)
   }
 
   private def runTest(namePrefix: String, dropValueFillers: Boolean, dropGroupFillers: Boolean): Unit = {
@@ -60,7 +60,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers, dropValueFillers)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 

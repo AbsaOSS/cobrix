@@ -44,6 +44,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
   * @param commentPolicy          A comment truncation policy
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
+  * @param dropValueFillers       If true the parser will drop all value FILLER fields
   * @param nonTerminals           A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param debugFieldsPolicy      Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param debugIgnoreFileSize    If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
@@ -68,6 +69,7 @@ case class CobolParameters(
                             multisegmentParams:    Option[MultisegmentParameters],
                             commentPolicy:         CommentPolicy,
                             dropGroupFillers:      Boolean,
+                            dropValueFillers:      Boolean,
                             nonTerminals:          Seq[String],
                             occursMappings:        Map[String, Map[String, Int]],
                             debugFieldsPolicy:     DebugFieldsPolicy,

@@ -40,13 +40,13 @@ class ParentSegmentFieldsSpec extends WordSpec {
 
     "CopybookParser.parseTree" should {
       "not throw if no segment redefines or parent fields are provided" in {
-        CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
       }
     }
 
     "CopybookParser.getParentToChildrenMap" should {
       "return an empty map" in {
-        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
         val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
         assert(map.isEmpty)
@@ -70,7 +70,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
 
     "CopybookParser.parseTree" should {
       "work with a simple 2 segments having a parent-child relationship" in {
-        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
         assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].parentSegment.isEmpty)
         assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].parentSegment.nonEmpty)
@@ -81,7 +81,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
     "CopybookParser.getParentToChildrenMap" should {
       "return a single entity map" in {
 
-        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
         val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
@@ -117,7 +117,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
     "CopybookParser.getParentToChildrenMap" should {
       "return a proper parent-children map" in {
 
-        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+        val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
         val map = CopybookParser.getParentToChildrenMap(parsedCopybook.ast)
 
@@ -156,7 +156,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
       val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: Nil
       val fieldParentMap = HashMap[String, String]("SEGMENT-B" -> "SEGMENT-A", "SEGMENT-C" -> "SEGMENT-B")
 
-      val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
       val bos = new ByteArrayOutputStream
       val out = new ObjectOutputStream(bos)
@@ -188,14 +188,14 @@ class ParentSegmentFieldsSpec extends WordSpec {
       "a correct mapping is specified, should no throw" in {
         val fieldParentMapOk = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-A")
 
-        CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapOk)
+        CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapOk)
       }
 
       "a one of the mapped fields is not a segment redefine, should throw an exception" in {
         val fieldParentMapSegmentRedefine = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-A", "SEGMENT-A" -> "SEGMENT-D")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapSegmentRedefine)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapSegmentRedefine)
         }
         assert(ex.getMessage.contains("Field SEGMENT_D is specified to be the parent of SEGMENT_A, but SEGMENT_D is not a segment redefine."))
       }
@@ -204,7 +204,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val fieldParentMapTwoRoots = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapTwoRoots)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapTwoRoots)
         }
         assert(ex.getMessage.contains("Only one root segment is allowed. Found root segments: [ SEGMENT_A, SEGMENT_B ]"))
       }
@@ -213,7 +213,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val fieldParentMapNonSegment = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "RECORD-1")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapNonSegment)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapNonSegment)
         }
         assert(ex.getMessage.contains("Field RECORD_1 is specified to be the parent of SEGMENT_B, but RECORD_1 is not a segment redefine"))
       }
@@ -222,7 +222,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val fieldParentMapSelfParent = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-C", "SEGMENT-B" -> "SEGMENT-B")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapSelfParent)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapSelfParent)
         }
         assert(ex.getMessage.contains("A segment SEGMENT_C cannot be a parent of itself"))
       }
@@ -231,7 +231,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val fieldParentMapCycle = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-B", "SEGMENT-B" -> "SEGMENT-C")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapCycle)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapCycle)
         }
         assert(ex.getMessage.contains("Segments parent-child relation form a cycle: SEGMENT_C, SEGMENT_B, SEGMENT_C"))
       }
@@ -240,7 +240,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val fieldParentMapNotExist = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-Z")
 
         val ex = intercept[IllegalStateException] {
-          CopybookParser.parseTree(copybook, dropGroupFillers = false, segmentRedefines, fieldParentMapNotExist)
+          CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapNotExist)
         }
         assert(ex.getMessage.contains("Field SEGMENT_Z is specified to be the parent of SEGMENT_B, but SEGMENT_Z is not a segment redefine"))
       }

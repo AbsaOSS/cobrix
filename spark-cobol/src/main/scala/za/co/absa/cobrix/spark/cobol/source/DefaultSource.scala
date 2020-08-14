@@ -22,12 +22,11 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader, FixedLenTextReader, Reader, ReaderFactory, VarLenNestedReader, VarLenReader}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters, VariableLengthParameters}
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, VariableLengthParameters}
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.spark.cobol.reader._
+import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters._
 import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils}
 
@@ -95,6 +94,7 @@ class DefaultSource
       parameters.schemaRetentionPolicy,
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
+      parameters.dropValueFillers,
       parameters.nonTerminals,
       parameters.occursMappings,
       getReaderProperties(parameters, spark)
@@ -116,6 +116,7 @@ class DefaultSource
       parameters.schemaRetentionPolicy,
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
+      parameters.dropValueFillers,
       parameters.nonTerminals,
       parameters.occursMappings,
       getReaderProperties(parameters, spark)
@@ -191,6 +192,7 @@ class DefaultSource
       parameters.multisegmentParams,
       parameters.commentPolicy,
       parameters.dropGroupFillers,
+      parameters.dropValueFillers,
       parameters.nonTerminals,
       parameters.occursMappings,
       parameters.debugFieldsPolicy,

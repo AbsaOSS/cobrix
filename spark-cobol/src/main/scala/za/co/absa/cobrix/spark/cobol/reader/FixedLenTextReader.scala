@@ -45,6 +45,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
                                schemaRetentionPolicy: SchemaRetentionPolicy,
                                stringTrimmingPolicy: StringTrimmingPolicy,
                                dropGroupFillers: Boolean,
+                               dropValueFillers: Boolean,
                                nonTerminals: Seq[String],
                                occursMappings: Map[String, Map[String, Int]],
                                readerProperties: ReaderParameters
@@ -52,7 +53,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
   extends ReaderFixedLenNestedReader[GenericRow](
     copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
     startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
-    dropGroupFillers, nonTerminals, occursMappings, readerProperties,
+    dropGroupFillers, dropValueFillers, nonTerminals, occursMappings, readerProperties,
     new RowHandler()
   ) with FixedLenReader with Serializable {
 
