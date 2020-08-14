@@ -24,12 +24,12 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractor, VarOccursRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractor, VarOccursRecordExtractor}
-import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
@@ -147,6 +147,7 @@ class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
         readerProperties.dropGroupFillers,
+        readerProperties.dropValueFillers,
         segmentRedefines,
         fieldParentMap,
         readerProperties.stringTrimmingPolicy,
@@ -163,6 +164,7 @@ class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
         CopybookParser.parseTree(encoding,
           _,
           readerProperties.dropGroupFillers,
+          readerProperties.dropValueFillers,
           segmentRedefines,
           fieldParentMap,
           readerProperties.stringTrimmingPolicy,

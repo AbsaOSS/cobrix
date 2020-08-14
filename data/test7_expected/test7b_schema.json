@@ -6,34 +6,21 @@
     "nullable" : true,
     "metadata" : { }
   }, {
-    "name" : "FILLER_1",
-    "type" : {
-      "type" : "struct",
-      "fields" : [ {
-        "name" : "STR1",
-        "type" : "string",
-        "nullable" : true,
-        "metadata" : { }
-      }, {
-        "name" : "STR2",
-        "type" : "string",
-        "nullable" : true,
-        "metadata" : { }
-      } ]
-    },
-    "nullable" : true,
-    "metadata" : { }
-  }, {
     "name" : "ADDRESS",
     "type" : "string",
     "nullable" : true,
     "metadata" : { }
   }, {
-    "name" : "FILLER_2",
+    "name" : "FILL_FIELD",
     "type" : {
       "type" : "struct",
       "fields" : [ {
-        "name" : "STR4",
+        "name" : "FILLER_P3",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "FILLER_P4",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }

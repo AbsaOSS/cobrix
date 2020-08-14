@@ -96,7 +96,7 @@ class ParserUtilsSpec extends WordSpec {
       val segmentRedefines: Seq[String] = Nil
       val fieldParentMap = HashMap[String, String]()
 
-      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
       val redefines = CopybookParser.getAllSegmentRedefines(parsedCopybook.ast)
 
@@ -104,7 +104,7 @@ class ParserUtilsSpec extends WordSpec {
     }
 
     "return a list of segment redefines for a hierarchical copybook" in {
-      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
       val redefines = CopybookParser.getAllSegmentRedefines(parsedCopybook.ast)
 
@@ -117,7 +117,7 @@ class ParserUtilsSpec extends WordSpec {
       val segmentRedefines: Seq[String] = Nil
       val fieldParentMap = HashMap[String, String]()
 
-      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
       val rootAst = CopybookParser.getRootSegmentAST(parsedCopybook.ast)
 
@@ -127,7 +127,7 @@ class ParserUtilsSpec extends WordSpec {
     }
 
     "return an AST without parent segments for a hierarchical copybook" in {
-      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
 
       val rootAst = CopybookParser.getRootSegmentAST(parsedCopybook.ast)
 

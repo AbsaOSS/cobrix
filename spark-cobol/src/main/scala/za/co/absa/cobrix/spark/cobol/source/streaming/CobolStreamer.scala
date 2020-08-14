@@ -50,6 +50,7 @@ object CobolStreamer {
       schemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,
+      dropValueFillers = true,
       nonTerminals = Seq(),
       occursMappings = Map(),
       readerProperties = ReaderParameters()

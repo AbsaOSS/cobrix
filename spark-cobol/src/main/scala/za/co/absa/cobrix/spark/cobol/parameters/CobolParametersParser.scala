@@ -54,6 +54,8 @@ object CobolParametersParser {
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
+  val PARAM_VALUE_FILLERS             = "drop_value_fillers"
+
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
   val PARAM_DEBUG                     = "debug"
@@ -223,6 +225,7 @@ object CobolParametersParser {
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
+      params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(params),

@@ -633,6 +633,11 @@ You can change this behaviour if you would like to drop such filler groups by pr
 .option("drop_group_fillers", "true")
 ```
 
+In order to retain *value FILLERs* (e.g. non-group FILLERs) as well, use this option:
+```
+.option("drop_value_fillers", "false")
+```
+
 
 ## <a id="ims"/>Reading hierarchical data sets
 
@@ -1051,6 +1056,8 @@ Again, the full example is available at
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("drop_group_fillers", "false")     | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained. |
+| .option("drop_value_fillers", "false")     | If `true` (default), all non-GROUP FILLERs will be dropped from the output schema. If `false`, such fields will be retained. |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
 | .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
 | .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |

@@ -22,9 +22,9 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.{FixedLenNestedReader => ReaderFixedLenNestedReader}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
@@ -45,6 +45,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
                                  schemaRetentionPolicy: SchemaRetentionPolicy,
                                  stringTrimmingPolicy: StringTrimmingPolicy,
                                  dropGroupFillers: Boolean,
+                                 dropValueFillers: Boolean,
                                  nonTerminals: Seq[String],
                                  occursMappings: Map[String, Map[String, Int]],
                                  readerProperties: ReaderParameters
@@ -52,7 +53,7 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
   extends ReaderFixedLenNestedReader[GenericRow](
     copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
     startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
-    dropGroupFillers, nonTerminals, occursMappings, readerProperties,
+    dropGroupFillers, dropValueFillers, nonTerminals, occursMappings, readerProperties,
     new RowHandler()
   ) with FixedLenReader with Serializable {
 
