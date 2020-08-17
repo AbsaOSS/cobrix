@@ -1,6 +1,11 @@
 {
   "type" : "struct",
   "fields" : [ {
+    "name" : "COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
     "name" : "COMPANY_NAME",
     "type" : "string",
     "nullable" : true,

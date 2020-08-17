@@ -1,6 +1,26 @@
 {
   "type" : "struct",
   "fields" : [ {
+    "name" : "FILLER_P1",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_P2",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_P3",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
     "name" : "COMPANY_NAME",
     "type" : "string",
     "nullable" : true,
@@ -20,7 +40,7 @@
         "nullable" : true,
         "metadata" : { }
       }, {
-        "name" : "FILLER_P1",
+        "name" : "FILLER_P4",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }
@@ -43,7 +63,7 @@
         "nullable" : true,
         "metadata" : { }
       }, {
-        "name" : "FILLER_P2",
+        "name" : "FILLER_P5",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }
@@ -56,12 +76,12 @@
     "type" : {
       "type" : "struct",
       "fields" : [ {
-        "name" : "FILLER_P3",
+        "name" : "FILLER_P6",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }
       }, {
-        "name" : "FILLER_P4",
+        "name" : "FILLER_P7",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }

@@ -1,8 +1,9 @@
 [ {
-  "COMPANY_NAME" : "Joan Q & Z",
+  "COMPANY_PREFIX" : "oan",
+  "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "Joan",
-    "STR2" : "Q"
+    "STR1" : "& Z",
+    "STR2" : ""
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -13,10 +14,11 @@
   },
   "AMOUNT" : 0.01
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -27,10 +29,11 @@
   },
   "AMOUNT" : 2.14
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -41,10 +44,11 @@
   },
   "AMOUNT" : 2.81
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -55,10 +59,11 @@
   },
   "AMOUNT" : 3.47
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -69,10 +74,11 @@
   },
   "AMOUNT" : 4.08
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -83,10 +89,11 @@
   },
   "AMOUNT" : 5.51
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -97,10 +104,11 @@
   },
   "AMOUNT" : 7.33
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -111,10 +119,11 @@
   },
   "AMOUNT" : 10.13
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -125,10 +134,11 @@
   },
   "AMOUNT" : 11.34
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -139,10 +149,11 @@
   },
   "AMOUNT" : 13.37
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -153,10 +164,11 @@
   },
   "AMOUNT" : 14.0
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -167,10 +179,11 @@
   },
   "AMOUNT" : 14.0
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -181,10 +194,11 @@
   },
   "AMOUNT" : 15.74
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -195,10 +209,11 @@
   },
   "AMOUNT" : 15.95
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -209,10 +224,11 @@
   },
   "AMOUNT" : 16.14
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -223,10 +239,11 @@
   },
   "AMOUNT" : 16.78
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -237,10 +254,11 @@
   },
   "AMOUNT" : 17.4
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -251,10 +269,11 @@
   },
   "AMOUNT" : 20.03
 }, {
-  "COMPANY_NAME" : "Xingzhoug",
+  "COMPANY_PREFIX" : "ing",
+  "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "Xingz",
-    "STR2" : "ho"
+    "STR1" : "oug",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -265,10 +284,11 @@
   },
   "AMOUNT" : 20.86
 }, {
-  "COMPANY_NAME" : "Joan Q & Z",
+  "COMPANY_PREFIX" : "oan",
+  "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "Joan",
-    "STR2" : "Q"
+    "STR1" : "& Z",
+    "STR2" : ""
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -279,10 +299,11 @@
   },
   "AMOUNT" : 26.19
 }, {
-  "COMPANY_NAME" : "Joan Q & Z",
+  "COMPANY_PREFIX" : "oan",
+  "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "Joan",
-    "STR2" : "Q"
+    "STR1" : "& Z",
+    "STR2" : ""
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -293,10 +314,11 @@
   },
   "AMOUNT" : 29.53
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -307,10 +329,11 @@
   },
   "AMOUNT" : 29.66
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -321,10 +344,11 @@
   },
   "AMOUNT" : 31.48
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -335,10 +359,11 @@
   },
   "AMOUNT" : 31.91
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -349,10 +374,11 @@
   },
   "AMOUNT" : 32.02
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -363,10 +389,11 @@
   },
   "AMOUNT" : 32.49
 }, {
-  "COMPANY_NAME" : "Xingzhoug",
+  "COMPANY_PREFIX" : "ing",
+  "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "Xingz",
-    "STR2" : "ho"
+    "STR1" : "oug",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -377,10 +404,11 @@
   },
   "AMOUNT" : 32.73
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -391,10 +419,11 @@
   },
   "AMOUNT" : 32.96
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -405,10 +434,11 @@
   },
   "AMOUNT" : 33.86
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -419,10 +449,11 @@
   },
   "AMOUNT" : 35.84
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -433,10 +464,11 @@
   },
   "AMOUNT" : 36.46
 }, {
-  "COMPANY_NAME" : "Xingzhoug",
+  "COMPANY_PREFIX" : "ing",
+  "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "Xingz",
-    "STR2" : "ho"
+    "STR1" : "oug",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -447,10 +479,11 @@
   },
   "AMOUNT" : 37.54
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -461,10 +494,11 @@
   },
   "AMOUNT" : 39.81
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -475,10 +509,11 @@
   },
   "AMOUNT" : 39.93
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -489,10 +524,11 @@
   },
   "AMOUNT" : 39.98
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -503,10 +539,11 @@
   },
   "AMOUNT" : 40.55
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -517,10 +554,11 @@
   },
   "AMOUNT" : 45.63
 }, {
-  "COMPANY_NAME" : "Xingzhoug",
+  "COMPANY_PREFIX" : "ing",
+  "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "Xingz",
-    "STR2" : "ho"
+    "STR1" : "oug",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -531,10 +569,11 @@
   },
   "AMOUNT" : 46.43
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -545,10 +584,11 @@
   },
   "AMOUNT" : 47.16
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -559,10 +599,11 @@
   },
   "AMOUNT" : 47.22
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -573,10 +614,11 @@
   },
   "AMOUNT" : 51.43
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -587,10 +629,11 @@
   },
   "AMOUNT" : 55.11
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -601,10 +644,11 @@
   },
   "AMOUNT" : 57.13
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -615,10 +659,11 @@
   },
   "AMOUNT" : 59.26
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -629,10 +674,11 @@
   },
   "AMOUNT" : 59.33
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -643,10 +689,11 @@
   },
   "AMOUNT" : 60.74
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -657,10 +704,11 @@
   },
   "AMOUNT" : 61.08
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -671,10 +719,11 @@
   },
   "AMOUNT" : 61.9
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -685,10 +734,11 @@
   },
   "AMOUNT" : 62.98
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -699,10 +749,11 @@
   },
   "AMOUNT" : 65.56
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -713,10 +764,11 @@
   },
   "AMOUNT" : 66.29
 }, {
-  "COMPANY_NAME" : "Xingzhoug",
+  "COMPANY_PREFIX" : "ing",
+  "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "Xingz",
-    "STR2" : "ho"
+    "STR1" : "oug",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -727,10 +779,11 @@
   },
   "AMOUNT" : 68.63
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -741,10 +794,11 @@
   },
   "AMOUNT" : 69.65
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -755,10 +809,11 @@
   },
   "AMOUNT" : 70.09
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -769,10 +824,11 @@
   },
   "AMOUNT" : 70.73
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -783,10 +839,11 @@
   },
   "AMOUNT" : 73.63
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -797,10 +854,11 @@
   },
   "AMOUNT" : 75.71
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -811,10 +869,11 @@
   },
   "AMOUNT" : 76.08
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -825,10 +884,11 @@
   },
   "AMOUNT" : 76.1
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -839,10 +899,11 @@
   },
   "AMOUNT" : 76.6
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -853,10 +914,11 @@
   },
   "AMOUNT" : 79.23
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -867,10 +929,11 @@
   },
   "AMOUNT" : 79.87
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -881,10 +944,11 @@
   },
   "AMOUNT" : 79.92
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -895,10 +959,11 @@
   },
   "AMOUNT" : 80.14
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -909,10 +974,11 @@
   },
   "AMOUNT" : 81.14
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -923,10 +989,11 @@
   },
   "AMOUNT" : 82.11
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -937,10 +1004,11 @@
   },
   "AMOUNT" : 83.86
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -951,10 +1019,11 @@
   },
   "AMOUNT" : 85.55
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -965,10 +1034,11 @@
   },
   "AMOUNT" : 86.27
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -979,10 +1049,11 @@
   },
   "AMOUNT" : 86.64
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -993,10 +1064,11 @@
   },
   "AMOUNT" : 88.39
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -1007,10 +1079,11 @@
   },
   "AMOUNT" : 88.54
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -1021,10 +1094,11 @@
   },
   "AMOUNT" : 88.92
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -1035,10 +1109,11 @@
   },
   "AMOUNT" : 91.49
 }, {
-  "COMPANY_NAME" : "Beierbauh.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "ba"
+    "STR1" : "auh.",
+    "STR2" : ""
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -1049,10 +1124,11 @@
   },
   "AMOUNT" : 93.51
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -1063,10 +1139,11 @@
   },
   "AMOUNT" : 94.65
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -1077,10 +1154,11 @@
   },
   "AMOUNT" : 94.68
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -1091,10 +1169,11 @@
   },
   "AMOUNT" : 96.2
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1105,10 +1184,11 @@
   },
   "AMOUNT" : 96.87
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -1119,10 +1199,11 @@
   },
   "AMOUNT" : 99.72
 }, {
-  "COMPANY_NAME" : "Joan Q & Z",
+  "COMPANY_PREFIX" : "oan",
+  "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "Joan",
-    "STR2" : "Q"
+    "STR1" : "& Z",
+    "STR2" : ""
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -1133,10 +1214,11 @@
   },
   "AMOUNT" : 101.36
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -1147,10 +1229,11 @@
   },
   "AMOUNT" : 103.86
 }, {
-  "COMPANY_NAME" : "Robotrd Inc.",
+  "COMPANY_PREFIX" : "obo",
+  "COMPANY_NAME" : "d Inc.",
   "FILLER_1" : {
-    "STR1" : "Robot",
-    "STR2" : "rd"
+    "STR1" : "d Inc",
+    "STR2" : "."
   },
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILLER_2" : {
@@ -1161,10 +1244,11 @@
   },
   "AMOUNT" : 104.47
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -1175,10 +1259,11 @@
   },
   "AMOUNT" : 107.35
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1189,10 +1274,11 @@
   },
   "AMOUNT" : 108.88
 }, {
-  "COMPANY_NAME" : "Joan Q & Z",
+  "COMPANY_PREFIX" : "oan",
+  "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "Joan",
-    "STR2" : "Q"
+    "STR1" : "& Z",
+    "STR2" : ""
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -1203,10 +1289,11 @@
   },
   "AMOUNT" : 109.06
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -1217,10 +1304,11 @@
   },
   "AMOUNT" : 110.68
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -1231,10 +1319,11 @@
   },
   "AMOUNT" : 111.49
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1245,10 +1334,11 @@
   },
   "AMOUNT" : 112.13
 }, {
-  "COMPANY_NAME" : "ABCD Ltd.",
+  "COMPANY_PREFIX" : "BCD",
+  "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "ABCD",
-    "STR2" : "Lt"
+    "STR1" : "td.",
+    "STR2" : ""
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1259,10 +1349,11 @@
   },
   "AMOUNT" : 117.52
 }, {
-  "COMPANY_NAME" : "Beiereqweq.",
+  "COMPANY_PREFIX" : "eie",
+  "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "Beier",
-    "STR2" : "eq"
+    "STR1" : "qweq.",
+    "STR2" : ""
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -1273,10 +1364,11 @@
   },
   "AMOUNT" : 119.53
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1287,10 +1379,11 @@
   },
   "AMOUNT" : 122.19
 }, {
-  "COMPANY_NAME" : "ZjkLPj",
+  "COMPANY_PREFIX" : "jkL",
+  "COMPANY_NAME" : "",
   "FILLER_1" : {
-    "STR1" : "ZjkLP",
-    "STR2" : "j"
+    "STR1" : "",
+    "STR2" : ""
   },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
@@ -1301,10 +1394,11 @@
   },
   "AMOUNT" : 122.41
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -1315,10 +1409,11 @@
   },
   "AMOUNT" : 123.4
 }, {
-  "COMPANY_NAME" : "ECSRONO",
+  "COMPANY_PREFIX" : "CSR",
+  "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "ECSRO",
-    "STR2" : "NO"
+    "STR1" : "O",
+    "STR2" : ""
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1329,10 +1424,11 @@
   },
   "AMOUNT" : 125.23
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -1343,10 +1439,11 @@
   },
   "AMOUNT" : 129.15
 }, {
-  "COMPANY_NAME" : "Eqartion Inc.",
+  "COMPANY_PREFIX" : "qar",
+  "COMPANY_NAME" : "on Inc.",
   "FILLER_1" : {
-    "STR1" : "Eqart",
-    "STR2" : "io"
+    "STR1" : "on In",
+    "STR2" : "c."
   },
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILLER_2" : {
@@ -1357,10 +1454,11 @@
   },
   "AMOUNT" : 129.48
 }, {
-  "COMPANY_NAME" : "Delta Pivovar",
+  "COMPANY_PREFIX" : "elt",
+  "COMPANY_NAME" : "Pivovar",
   "FILLER_1" : {
-    "STR1" : "Delta",
-    "STR2" : "P"
+    "STR1" : "Pivov",
+    "STR2" : "ar"
   },
   "ADDRESS" : "74 Staromestka., Prague",
   "FILLER_2" : {
@@ -1371,10 +1469,11 @@
   },
   "AMOUNT" : 129.87
 }, {
-  "COMPANY_NAME" : "Test Bank",
+  "COMPANY_PREFIX" : "est",
+  "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "Test",
-    "STR2" : "Ba"
+    "STR1" : "ank",
+    "STR2" : ""
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -1385,10 +1484,11 @@
   },
   "AMOUNT" : 135.05
 }, {
-  "COMPANY_NAME" : "Pear GMBH.",
+  "COMPANY_PREFIX" : "ear",
+  "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "Pear",
-    "STR2" : "GM"
+    "STR1" : "MBH.",
+    "STR2" : ""
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {

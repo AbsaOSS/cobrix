@@ -1199,6 +1199,7 @@ For multisegment variable lengths tests:
 
 ## Changelog
 - #### 2.1.1 to be released soon
+  - [#53](https://github.com/AbsaOSS/cobrix/issues/53) Added an option to retain FILLERs. `.option("drop_value_fillers", "false")`. Use together with `.option("drop_group_fillers", "false")`. 
   - [#315](https://github.com/AbsaOSS/cobrix/issues/315) Added `CopybookParser.parseSimple()` that requires only essential arguments.
   - [#316](https://github.com/AbsaOSS/cobrix/issues/316) Added support for copybooks that contain non-breakable spaces (0xA0) and tabs.
 
