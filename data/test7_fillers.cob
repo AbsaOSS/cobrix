@@ -17,7 +17,11 @@
       ****************************************************************************
 
         01  RECORD.
-            05  COMPANY_NAME     PIC X(15).
+            05  FILLER           PIC X(1).
+            05  COMPANY_PREFIX   PIC X(3).
+            05  FILLER           PIC X(1).
+            05  FILLER           PIC X(1).
+            05  COMPANY_NAME     PIC X(9).
             05  FILLER REDEFINES COMPANY_NAME.
                10   STR1         PIC X(5).
                10   STR2         PIC X(2).
