@@ -30,23 +30,21 @@ temp*
 dist
 test-output
 build.log
+gen
+.cache*
+dependency-reduced-pom.xml
 
 # other scm
 .svn
 .CVS
 .hg*
 
+# temporary test dirs
+_testOutput
+output
+.attach_pid*
+
 # switch to regexp syntax.
 #  syntax: regexp
 #  ^\.pc/
 
-#SHITTY output not in target directory
-build.log
-
-gen
-.cache*
-dependency-reduced-pom.xml
-
-_testOutput
-output
-.attach_pid*
