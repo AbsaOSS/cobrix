@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.decode
+package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.scalatest.{BeforeAndAfter, FunSuite}
 import scodec.bits.BitVector
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 
 import scala.util.Random
 
