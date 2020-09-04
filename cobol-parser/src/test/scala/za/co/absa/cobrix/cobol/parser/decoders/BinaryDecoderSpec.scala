@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.decode
+package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.decoders.{BCDNumberDecoders, BinaryUtils, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 
 class BinaryDecoderSpec extends FunSuite {
