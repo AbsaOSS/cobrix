@@ -16,22 +16,31 @@
 
 package za.co.absa.cobrix.cobol.testutils
 
-object ebcdicEncoder {
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
+
+object EbcdicEncoder {
 
   // Routines to be used to generate test examples. Not to be used in production code.
 
-  def encodeEbcdicString(str: String, conversionTable: Array[Char]): Array[Byte] = {
+  private val ebcdicToAsciiTable = (new CodePageCommon).getEbcdicToAsciiMapping
+
+  private val asciiToEbcdicTable = {
+    Range(0, 256).map(charCode => {
+      val ind = ebcdicToAsciiTable.indexOf(charCode.toByte)
+      if (ind >= 0) {
+        ind.toByte
+      } else {
+        0x40.toByte
+      }
+    }).toArray
+  }
+
+  def toEbcdic(str: String): Array[Byte] = {
     var i = 0
     val buf = new Array[Byte](str.length)
 
     while (i < str.length) {
-      val ind = conversionTable.indexOf(str.charAt(i))
-
-      if (ind >= 0) {
-        buf(i) = ind.toByte
-      } else {
-        buf(i) = 0x40
-      }
+      buf(i) = asciiToEbcdicTable(str.charAt(i).toByte & 0xFF)
       i = i + 1
     }
     buf
