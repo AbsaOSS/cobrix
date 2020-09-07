@@ -19,16 +19,32 @@ package za.co.absa.cobrix.cobol.parser.decoders
 import java.nio.charset.StandardCharsets
 
 import org.scalatest.WordSpec
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 
 class StringDecodersSpec extends WordSpec {
+
   import StringDecoders._
 
   private val asciiString = "AbCdEfGhIjKlMnOpQrStUvWxYz 0123456789 !@#$%^&*()[]{};'\\\"/.,"
   private val unicodeString = "AbCdEfGhIjKlMnOpQrStUvWxYz ěščřžýáíé 0123456789 !@#$%^&*()[]{};'\\\"/.,"
+  private val ebcdicBytes = Array[Byte](
+    0xc1.toByte, 0x82.toByte, 0xc3.toByte, 0x84.toByte, 0xc5.toByte, 0x86.toByte, 0xc7.toByte, 0x88.toByte,
+    0xc9.toByte, 0x91.toByte, 0xd2.toByte, 0x93.toByte, 0xd4.toByte, 0x95.toByte, 0xd6.toByte, 0x97.toByte,
+    0xd8.toByte, 0x99.toByte, 0xe2.toByte, 0xa3.toByte, 0xe4.toByte, 0xa5.toByte, 0xe6.toByte, 0xa7.toByte,
+    0xe8.toByte, 0xa9.toByte, 0x0.toByte, 0xf0.toByte, 0xf1.toByte, 0xf2.toByte, 0xf3.toByte, 0xf4.toByte,
+    0xf5.toByte, 0xf6.toByte, 0xf7.toByte, 0xf8.toByte, 0xf9.toByte, 0x0.toByte, 0x5a.toByte, 0x7c.toByte,
+    0x7b.toByte, 0x5b.toByte, 0x6c.toByte, 0xb0.toByte, 0x50.toByte, 0x5c.toByte, 0x4d.toByte, 0x5d.toByte,
+    0xba.toByte, 0xbb.toByte, 0xc0.toByte, 0xd0.toByte, 0x5e.toByte, 0x7d.toByte, 0xe0.toByte, 0x7f.toByte,
+    0x61.toByte, 0x4b.toByte, 0x6b.toByte
+  )
+
+  private val codePage = new CodePageCommon
 
   "decodeEbcdicString()" should {
     "work" in {
+      val actual = decodeEbcdicString(ebcdicBytes, TrimNone, codePage.getEbcdicToAsciiMapping)
 
+      assert(actual == asciiString)
     }
   }
 
