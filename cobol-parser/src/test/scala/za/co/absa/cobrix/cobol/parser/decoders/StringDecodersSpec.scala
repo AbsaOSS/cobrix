@@ -24,6 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 class StringDecodersSpec extends WordSpec {
 
   import StringDecoders._
+  import za.co.absa.cobrix.cobol.testutils.EbcdicEncoder._
 
   private val asciiString = "AbCdEfGhIjKlMnOpQrStUvWxYz 0123456789 !@#$%^&*()[]{};'\\\"/.,"
   private val unicodeString = "AbCdEfGhIjKlMnOpQrStUvWxYz ěščřžýáíé 0123456789 !@#$%^&*()[]{};'\\\"/.,"
@@ -41,11 +42,33 @@ class StringDecodersSpec extends WordSpec {
   private val codePage = new CodePageCommon
 
   "decodeEbcdicString()" should {
-    "work" in {
+    "decode an EBCDIC string" in {
       val actual = decodeEbcdicString(ebcdicBytes, TrimNone, codePage.getEbcdicToAsciiMapping)
 
       assert(actual == asciiString)
     }
+
+    "decode an EBCDIC string with left trimming" in {
+      val bytes = toEbcdic(asciiString + "  \t ")
+      val actual = decodeEbcdicString(bytes, TrimRight, codePage.getEbcdicToAsciiMapping)
+
+      assert(actual == asciiString)
+    }
+
+    "decode an EBCDIC string with right trimming" in {
+      val bytes = toEbcdic("  \t " + asciiString)
+      val actual = decodeEbcdicString(bytes, TrimLeft, codePage.getEbcdicToAsciiMapping)
+
+      assert(actual == asciiString)
+    }
+
+    "decode an EBCDIC string with left+right trimming" in {
+      val bytes = toEbcdic("  \t " + asciiString + "  \t ")
+      val actual = decodeEbcdicString(bytes, TrimBoth, codePage.getEbcdicToAsciiMapping)
+
+      assert(actual == asciiString)
+    }
+
   }
 
   "decodeAsciiString()" should {
@@ -157,8 +180,57 @@ class StringDecodersSpec extends WordSpec {
   }
 
   "decodeEbcdicNumber()" should {
-    "work" in {
+    "decode ebcdic strings as parsable strings" in {
+      assert(decodeEbcdicNumber(toEbcdic("1"), isUnsigned = true) == "1")
+      assert(decodeEbcdicNumber(toEbcdic("1"), isUnsigned = false) == "1")
+      assert(decodeEbcdicNumber(toEbcdic(" 1 "), isUnsigned = true) == "1")
+      assert(decodeEbcdicNumber(toEbcdic(" 1 "), isUnsigned = false) == "1")
+      assert(decodeEbcdicNumber(toEbcdic("-1"), isUnsigned = false) == "-1")
 
+      assert(decodeEbcdicNumber(toEbcdic(" 18938717862,00 "), isUnsigned = true) == "18938717862.00")
+      assert(decodeEbcdicNumber(toEbcdic(" 18938717862.00 "), isUnsigned = true) == "18938717862.00")
+      assert(decodeEbcdicNumber(toEbcdic(" + 18938717862.00 "), isUnsigned = true) == "+18938717862.00")
+      assert(decodeEbcdicNumber(toEbcdic(" - 18938717862.00 "), isUnsigned = false) == "-18938717862.00")
+      assert(decodeEbcdicNumber(toEbcdic(" + 18938717862.00 "), isUnsigned = false) == "+18938717862.00")
+    }
+
+    "return null if negative number encountered while parsing unsigned numbers" in {
+      assert(decodeEbcdicNumber(toEbcdic("-1"), isUnsigned = true) == null)
+      assert(decodeEbcdicNumber(toEbcdic(" - 18938717862.00 "), isUnsigned = true) == null)
+    }
+
+    "re-position leading and trailing sign" in {
+      assert(decodeEbcdicNumber(toEbcdic("+100,00"), isUnsigned = false) == "+100.00")
+      assert(decodeEbcdicNumber(toEbcdic("100.00+"), isUnsigned = false) == "+100.00")
+      assert(decodeEbcdicNumber(toEbcdic("-100.00"), isUnsigned = false) == "-100.00")
+      assert(decodeEbcdicNumber(toEbcdic("100,00-"), isUnsigned = false) == "-100.00")
+    }
+
+    "decode sign punched numbers" in {
+      assert(decodeEbcdicNumber(toEbcdic("A00,00"), isUnsigned = false) == "+100.00")
+      assert(decodeEbcdicNumber(toEbcdic("J00,00"), isUnsigned = false) == "-100.00")
+      assert(decodeEbcdicNumber(toEbcdic("B02"), isUnsigned = false) == "+202")
+      assert(decodeEbcdicNumber(toEbcdic("K02"), isUnsigned = false) == "-202")
+      assert(decodeEbcdicNumber(toEbcdic("30C"), isUnsigned = false) == "+303")
+      assert(decodeEbcdicNumber(toEbcdic("30L"), isUnsigned = false) == "-303")
+      assert(decodeEbcdicNumber(toEbcdic("40D"), isUnsigned = false) == "+404")
+      assert(decodeEbcdicNumber(toEbcdic("40M"), isUnsigned = false) == "-404")
+      assert(decodeEbcdicNumber(toEbcdic("E05"), isUnsigned = false) == "+505")
+      assert(decodeEbcdicNumber(toEbcdic("N05"), isUnsigned = false) == "-505")
+      assert(decodeEbcdicNumber(toEbcdic("F06"), isUnsigned = false) == "+606")
+      assert(decodeEbcdicNumber(toEbcdic("O06"), isUnsigned = false) == "-606")
+      assert(decodeEbcdicNumber(toEbcdic("G07"), isUnsigned = false) == "+707")
+      assert(decodeEbcdicNumber(toEbcdic("P07"), isUnsigned = false) == "-707")
+      assert(decodeEbcdicNumber(toEbcdic("H08"), isUnsigned = false) == "+808")
+      assert(decodeEbcdicNumber(toEbcdic("Q08"), isUnsigned = false) == "-808")
+      assert(decodeEbcdicNumber(toEbcdic("I09"), isUnsigned = false) == "+909")
+      assert(decodeEbcdicNumber(toEbcdic("R09"), isUnsigned = false) == "-909")
+      assert(decodeEbcdicNumber(toEbcdic("90{"), isUnsigned = false) == "+900")
+      assert(decodeEbcdicNumber(toEbcdic("90}"), isUnsigned = false) == "-900")
+    }
+
+    "return null if a number is malformed" in {
+      assert(decodeEbcdicNumber(toEbcdic("AAABBBCCC"), isUnsigned = false) == null)
     }
   }
 
@@ -195,8 +267,30 @@ class StringDecodersSpec extends WordSpec {
   }
 
   "decodeEbcdicInt()" should {
-    "work" in {
+    "decode parsable ints" in {
+      assert(decodeEbcdicInt(toEbcdic("+100"), isUnsigned = false) == 100)
+      assert(decodeEbcdicInt(toEbcdic("100+"), isUnsigned = false) == 100)
+      assert(decodeEbcdicInt(toEbcdic("-100"), isUnsigned = false) == -100)
+      assert(decodeEbcdicInt(toEbcdic("100-"), isUnsigned = false) == -100)
+    }
 
+    "decode unsigned numbers with sign" in {
+      assert(decodeEbcdicInt(toEbcdic("+100"), isUnsigned = true) == 100)
+      assert(decodeEbcdicInt(toEbcdic("100+"), isUnsigned = true) == 100)
+      assert(decodeEbcdicInt(toEbcdic("-100"), isUnsigned = true) == null)
+      assert(decodeEbcdicInt(toEbcdic("100-"), isUnsigned = true) == null)
+    }
+
+    "return null on non-ints ints" in {
+      assert(decodeEbcdicInt(toEbcdic("+100,0"), isUnsigned = true) == null)
+      assert(decodeEbcdicInt(toEbcdic("100.00+"), isUnsigned = false) == null)
+      assert(decodeEbcdicInt(toEbcdic("-100,000"), isUnsigned = false) == null)
+      assert(decodeEbcdicInt(toEbcdic("100.000-"), isUnsigned = false) == null)
+    }
+
+    "return null on unparsable ints" in {
+      assert(decodeEbcdicInt(toEbcdic("+1000000000000"), isUnsigned = true) == null)
+      assert(decodeEbcdicInt(toEbcdic("AAA"), isUnsigned = false) == null)
     }
   }
 
@@ -229,9 +323,31 @@ class StringDecodersSpec extends WordSpec {
   }
 
   "decodeEbcdicLong()" should {
-    "work" in {
-
+    "decode parsable longs" in {
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = false) == -1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = false) == -1000000000000000L)
     }
+
+    "decode unsigned numbers with sign" in {
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = true) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = true) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = true) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = true) == null)
+    }
+
+    "return null on non-ints longs" in {
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000,0"), isUnsigned = true) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000.00+"), isUnsigned = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000,000"), isUnsigned = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000.000-"), isUnsigned = false) == null)
+    }
+
+    "return null on unparsable longs" in {
+      assert(decodeEbcdicLong(toEbcdic("AAA"), isUnsigned = false) == null)
+    }
+
   }
 
   "decodeAsciiLong()" should {
@@ -262,8 +378,22 @@ class StringDecodersSpec extends WordSpec {
   }
 
   "decodeEbcdicBigNumber()" should {
-    "work" in {
+    "decode parsable decimals" in {
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 0, 0) == BigDecimal("1000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 1, 0) == BigDecimal("100.0"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 3, 0) == BigDecimal("1.000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 4, 0) == BigDecimal("0.1000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 5, 0) == null)
+    }
 
+    "decode numbers with scale factor" in {
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 0, -1) == BigDecimal("0.01000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("1000"), isUnsigned = false, 0, -1) == BigDecimal("0.01000"))
+
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 1, 1) == BigDecimal("10000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 3, 2) == BigDecimal("100000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 4, 3) == BigDecimal("1000000"))
+      assert(decodeEbcdicBigNumber(toEbcdic("+1000"), isUnsigned = false, 5, 4) == BigDecimal("10000000"))
     }
   }
 
@@ -288,8 +418,21 @@ class StringDecodersSpec extends WordSpec {
   }
 
   "decodeEbcdicBigDecimal()" should {
-    "work" in {
+    "decode parsable decimals" in {
+      assert(decodeEbcdicBigDecimal(toEbcdic("+1000"), isUnsigned = false) == BigDecimal("1000"))
+      assert(decodeEbcdicBigDecimal(toEbcdic("1000,25+"), isUnsigned = false) == BigDecimal("1000.25"))
+      assert(decodeEbcdicBigDecimal(toEbcdic("-1000"), isUnsigned = false) == BigDecimal("-1000"))
+      assert(decodeEbcdicBigDecimal(toEbcdic("1000,25-"), isUnsigned = false) == BigDecimal("-1000.25"))
+      assert(decodeEbcdicBigDecimal(toEbcdic("12345678901234567890123456"), isUnsigned = true) == BigDecimal("12345678901234567890123456"))
+      assert(decodeEbcdicBigDecimal(toEbcdic("12345678901234567890123456.12345678901234567890123456"), isUnsigned = true) == BigDecimal("12345678901234567890123456.12345678901234567890123456"))
+    }
 
+    "return null for numbers in scientific format" in {
+      assert(decodeEbcdicBigDecimal(toEbcdic("200E+10"), isUnsigned = false) == null)
+    }
+
+    "return null for malformed numbers" in {
+      assert(decodeEbcdicBigDecimal(toEbcdic("ABC"), isUnsigned = false) == null)
     }
   }
 
@@ -303,10 +446,12 @@ class StringDecodersSpec extends WordSpec {
       assert(decodeAsciiBigDecimal("12345678901234567890123456.12345678901234567890123456".getBytes, isUnsigned = true) == BigDecimal("12345678901234567890123456.12345678901234567890123456"))
     }
 
-    "thrown an exceotion on numbers in scientific format" in {
-      intercept[NumberFormatException] {
-        decodeAsciiBigDecimal("200E+10".getBytes, isUnsigned = false) == BigDecimal("200+E10")
-      }
+    "decode numbers in scientific format" in {
+      assert(decodeAsciiBigDecimal("200E+10".getBytes, isUnsigned = false) == 2.00E+12)
+    }
+
+    "return null for malformed numbers" in {
+      assert(decodeAsciiBigDecimal("ABC".getBytes(), isUnsigned = false) == null)
     }
   }
 
