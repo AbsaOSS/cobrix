@@ -43,6 +43,13 @@ class FloatingPointDecodersSpec extends WordSpec {
         0xCA.toByte, 0xF7.toByte, 0x09.toByte, 0xB7.toByte)
       assertDoubleEqual(FloatingPointDecoders.decodeIbmDoubleBigEndian(bytes), 322.936717)
     }
+
+    "decode IBM double precision / big-endian FP vary small numbers" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte,
+        0xCA.toByte, 0xF7.toByte, 0x09.toByte, 0xB7.toByte)
+      assertDoubleEqual(FloatingPointDecoders.decodeIbmDoubleBigEndian(bytes), 4.08114837E-85)
+    }
   }
 
   "decodeIbmSingleLittleEndian()" should {
