@@ -26,7 +26,7 @@ class CodePage875 extends CodePage {
 
   override protected def ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC Code Page 875 to ASCII conversion table with non-printable characters mapping
-       from https://en.wikipedia.org/wiki/EBCDIC_037 */
+       from https://wutils.com/encodings/cp875 */
     val ebcdic2ascii: Array[Char] = {
           val clf = '\r'
           val ccr = '\n'
