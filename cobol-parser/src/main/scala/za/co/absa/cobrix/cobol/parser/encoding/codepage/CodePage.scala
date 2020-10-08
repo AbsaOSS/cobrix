@@ -61,7 +61,7 @@ object CodePage {
       case "common"          => new CodePageCommon
       case "common_extended" => new CodePageCommonExt
       case "cp037"           => new CodePage037
-	  case "cp875"           => new CodePage875
+      case "cp875"           => new CodePage875
       case "cp037_extended"  => new CodePage037Ext
       case codePage => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the builtin EBCDIC code pages.")
     }
