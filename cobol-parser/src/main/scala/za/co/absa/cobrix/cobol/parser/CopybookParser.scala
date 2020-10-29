@@ -997,7 +997,7 @@ object CopybookParser {
     * @param m A mapping from field name to its parent field name.
     * @return A list of fields in a cycle if there is one, an empty list otherwise
     */
-  def findCycleIntAMap(m: Map[String, String]): List[String] = {
+  def findCycleInAMap(m: Map[String, String]): List[String] = {
     @tailrec
     def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
       val i = fieldsInPath.indexOf(field)
@@ -1030,7 +1030,7 @@ object CopybookParser {
         }
     }
 
-    val cycle = findCycleIntAMap(identifierMap)
+    val cycle = findCycleInAMap(identifierMap)
     if (cycle.nonEmpty) {
       val listStr = cycle.mkString(", ")
       throw new IllegalStateException(s"Segments parent-child relation form a cycle: $listStr.")

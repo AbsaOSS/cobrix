@@ -54,22 +54,22 @@ class ParserUtilsSpec extends WordSpec {
   "CopybookParser.findCycleIntAMap" should {
     "return an empty list if the input map is empty" in {
       val m = HashMap[String, String]()
-      assert(CopybookParser.findCycleIntAMap(m).isEmpty)
+      assert(CopybookParser.findCycleInAMap(m).isEmpty)
     }
 
     "return an empty list if there are no cycles in the map" in {
       val m = HashMap[String, String]("A" -> "B", "B" -> "C", "X" -> "A", "Y" -> "A")
-      assert(CopybookParser.findCycleIntAMap(m).isEmpty)
+      assert(CopybookParser.findCycleInAMap(m).isEmpty)
     }
 
     "return a list of fields for a trivial self-reference cycle" in {
       val m = HashMap[String, String]("A" -> "B", "C" -> "C")
-      assert(CopybookParser.findCycleIntAMap(m) == "C" :: "C" :: Nil)
+      assert(CopybookParser.findCycleInAMap(m) == "C" :: "C" :: Nil)
     }
 
     "return a list of fields for a multiple fields cycle chain self-reference cycle" in {
       val m = HashMap[String, String]("A" -> "B", "B" -> "C", "C" -> "D", "D" -> "A")
-      val cycle = CopybookParser.findCycleIntAMap(m)
+      val cycle = CopybookParser.findCycleInAMap(m)
 
       // Due the nature of HashMap the cycle elements can start from any cycle element
       assert(cycle.contains("A"))
@@ -81,7 +81,7 @@ class ParserUtilsSpec extends WordSpec {
 
     "return a cycle part of a path that contains a cycle" in {
       val m = HashMap[String, String]("0" -> "A", "A" -> "B", "B" -> "C", "C1" -> "C", "C" -> "D", "D1" -> "E", "D" -> "B")
-      val cycle = CopybookParser.findCycleIntAMap(m)
+      val cycle = CopybookParser.findCycleInAMap(m)
 
       // Due the nature of HashMap the cycle elements can start from any cycle element
       assert(cycle.contains("B"))
