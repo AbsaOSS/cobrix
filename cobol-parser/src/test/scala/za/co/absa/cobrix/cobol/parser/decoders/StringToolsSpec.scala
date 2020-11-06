@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.decode
+package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.decoders.StringTools
 
 class StringToolsSpec extends FunSuite {
   import StringTools._

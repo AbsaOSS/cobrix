@@ -1,7 +1,22 @@
 {
   "type" : "struct",
   "fields" : [ {
+    "name" : "FILLER_P1",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
     "name" : "COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_P2",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILLER_P3",
     "type" : "string",
     "nullable" : true,
     "metadata" : { }
@@ -24,6 +39,11 @@
         "type" : "string",
         "nullable" : true,
         "metadata" : { }
+      }, {
+        "name" : "FILLER_P4",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
       } ]
     },
     "nullable" : true,
@@ -39,6 +59,29 @@
       "type" : "struct",
       "fields" : [ {
         "name" : "STR4",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "FILLER_P5",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILL_FIELD",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "FILLER_P6",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : { }
+      }, {
+        "name" : "FILLER_P7",
         "type" : "string",
         "nullable" : true,
         "metadata" : { }

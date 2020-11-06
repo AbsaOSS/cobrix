@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.1.0
+version: 2.1.2
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.1.0
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.1.0
+version: 2.1.2
 ```
 
 ## Using with Spark shell
@@ -81,12 +81,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.2
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.1.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.1.2
 ```
 
 ## Usage
@@ -203,16 +203,16 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.1.0.jar
-* cobol-parser_2.11-2.1.0.jar
+* spark-cobol_2.11-2.1.2.jar
+* cobol-parser_2.11-2.1.2.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.0
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.0.jar,cobol-parser_2.11-2.1.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.2.jar,cobol-parser_2.11-2.1.2.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -633,6 +633,11 @@ You can change this behaviour if you would like to drop such filler groups by pr
 .option("drop_group_fillers", "true")
 ```
 
+In order to retain *value FILLERs* (e.g. non-group FILLERs) as well, use this option:
+```
+.option("drop_value_fillers", "false")
+```
+
 
 ## <a id="ims"/>Reading hierarchical data sets
 
@@ -1039,7 +1044,7 @@ Again, the full example is available at
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
-| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
+| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp875`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
 | .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
 | .option("ascii_charset", "US-ASCII")       | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc. |
 | .option("is_utf16_big_endian", "true")     | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default). |
@@ -1051,6 +1056,8 @@ Again, the full example is available at
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("drop_group_fillers", "false")     | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained. |
+| .option("drop_value_fillers", "false")     | If `true` (default), all non-GROUP FILLERs will be dropped from the output schema. If `false`, such fields will be retained. |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
 | .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
 | .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
@@ -1191,7 +1198,11 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 2.1.1 to be released soon
+- #### 2.1.2 released 2 November 2020.
+  - Added support for EBCDIC code page 875 (Thanks [@vbarakou](https://github.com/vbarakou)).
+
+- #### 2.1.1 released 18 August 2020.
+  - [#53](https://github.com/AbsaOSS/cobrix/issues/53) Added an option to retain FILLERs. `.option("drop_value_fillers", "false")`. Use together with `.option("drop_group_fillers", "false")`. 
   - [#315](https://github.com/AbsaOSS/cobrix/issues/315) Added `CopybookParser.parseSimple()` that requires only essential arguments.
   - [#316](https://github.com/AbsaOSS/cobrix/issues/316) Added support for copybooks that contain non-breakable spaces (0xA0) and tabs.
 

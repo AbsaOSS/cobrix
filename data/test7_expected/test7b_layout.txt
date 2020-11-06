@@ -1,22 +1,22 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
 RECORD                                                       1     60     60
-  5 FILLER                                            1      1      1      1
+  5 FILLER_P1                                         1      1      1      1
   5 COMPANY_PREFIX                                    2      2      4      3
-  5 FILLER                                            3      5      5      1
-  5 FILLER                                            4      6      6      1
+  5 FILLER_P2                                         3      5      5      1
+  5 FILLER_P3                                         4      6      6      1
   5 COMPANY_NAME                       r              5      7     15      9
   5 FILLER                             R              9      7     15      9
     10 STR1                                           7      7     11      5
     10 STR2                                           8     12     13      2
-    10 FILLER                                         9     14     14      1
+    10 FILLER_P4                                      9     14     14      1
   5 ADDRESS                            r             10     16     45     30
   5 FILLER                             R             13     16     45     30
     10 STR4                                          12     16     25     10
-    10 FILLER                                        13     26     45     20
+    10 FILLER_P5                                     13     26     45     20
   5 FILL_FIELD                         r             16     46     52      7
-    10 FILLER                                        15     46     50      5
-    10 FILLER                                        16     51     52      2
+    10 FILLER_P6                                     15     46     50      5
+    10 FILLER_P7                                     16     51     52      2
   5 CONTACT_PERSON                     R             18     46     52      7
     10 FIRST_NAME                                    18     46     51      6
   5 AMOUNT                                           19     53     60      8

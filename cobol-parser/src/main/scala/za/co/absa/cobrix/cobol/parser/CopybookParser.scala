@@ -59,25 +59,29 @@ object CopybookParser {
     *
     * This method accepts arguments that affect only structure of the output AST.
     *
-    * @param copyBookContents     A string containing all lines of a copybook
-    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
-    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
+    * @param copyBookContents A string containing all lines of a copybook
+    * @param dropGroupFillers Drop groups marked as fillers from the output AST
+    * @param dropValueFillers Drop primitive fields marked as fillers from the output AST
+    * @param commentPolicy    Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseSimple(copyBookContents: String,
                   dropGroupFillers: Boolean = false,
+                  dropValueFillers: Boolean = true,
                   commentPolicy: CommentPolicy = CommentPolicy()): Copybook = {
     parse(copyBookContents = copyBookContents,
       dropGroupFillers = dropGroupFillers,
+      dropValueFillers = dropValueFillers,
       commentPolicy = commentPolicy)
   }
 
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param dataEncoding        Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param dataEncoding         Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
     * @param copyBookContents     A string containing all lines of a copybook
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                             resolving segment redefines.
     * @param fieldParentMap       A segment fields parent mapping
@@ -94,6 +98,7 @@ object CopybookParser {
   def parse(copyBookContents: String,
             dataEncoding: Encoding = EBCDIC,
             dropGroupFillers: Boolean = false,
+            dropValueFillers: Boolean = true,
             segmentRedefines: Seq[String] = Nil,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
@@ -108,6 +113,7 @@ object CopybookParser {
     parseTree(dataEncoding,
       copyBookContents,
       dropGroupFillers,
+      dropValueFillers,
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
@@ -126,6 +132,7 @@ object CopybookParser {
     *
     * @param copyBookContents     A string containing all lines of a copybook
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     * @param fieldParentMap       A segment fields parent mapping
     * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
@@ -140,6 +147,7 @@ object CopybookParser {
     */
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
+                dropValueFillers: Boolean = true,
                 segmentRedefines: Seq[String] = Nil,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
@@ -154,6 +162,7 @@ object CopybookParser {
     parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
+      dropValueFillers,
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
@@ -173,6 +182,7 @@ object CopybookParser {
     * @param enc                  Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
     * @param copyBookContents     A string containing all lines of a copybook
     * @param dropGroupFillers     Drop groups marked as fillers from the output AST
+    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
     * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                             resolving segment redefines.
     * @param fieldParentMap       A segment fields parent mapping
@@ -190,8 +200,9 @@ object CopybookParser {
   def parseTree(enc: Encoding,
                 copyBookContents: String,
                 dropGroupFillers: Boolean,
+                dropValueFillers: Boolean,
                 segmentRedefines: Seq[String],
-                fieldParentMap: Map[String,String],
+                fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 commentPolicy: CommentPolicy,
                 ebcdicCodePage: CodePage,
@@ -206,7 +217,7 @@ object CopybookParser {
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
-    ).toSet
+      ).toSet
 
     val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
     validateFieldParentMap(correctedFieldParentMap)
@@ -217,13 +228,16 @@ object CopybookParser {
           addDebugFields(
             setSegmentParents(
               markSegmentRedefines(
-                processGroupFillers(
-                  markDependeeFields(
-                    addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
-                    occursHandlers
-                  )
-                ), segmentRedefines), correctedFieldParentMap
+                renameGroupFillers(
+                  processGroupFillers(
+                    markDependeeFields(
+                      addNonTerminals(
+                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                      occursHandlers
+                    ), dropValueFillers
+                  ), dropGroupFillers, dropValueFillers
+                ), segmentRedefines
+              ), correctedFieldParentMap
             ), debugFieldsPolicy
           )
         )
@@ -237,7 +251,8 @@ object CopybookParser {
                     addNonTerminals(
                       calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
                     occursHandlers
-                  )
+                  ),
+                  dropGroupFillers, dropValueFillers
                 ), segmentRedefines), correctedFieldParentMap
             ), debugFieldsPolicy
           )
@@ -500,7 +515,7 @@ object CopybookParser {
     * * All segment fields should belong to the level 1 (one level down record root level)
     * * A segment redefine cannot be inside an array
     *
-    * @param ast   An AST as a set of copybook records
+    * @param ast              An AST as a set of copybook records
     * @param segmentRedefines The list of fields names that correspond to segment GROUPs.
     * @return The same AST with binary properties set for every field
     */
@@ -591,12 +606,12 @@ object CopybookParser {
     * * isSegmentRedefine should be already set for all segment redefines.
     * * A parent of a segment redefine should be a segment redefine as well
     *
-    * @param originalSchema   An AST as a set of copybook records
+    * @param originalSchema An AST as a set of copybook records
     * @param fieldParentMap A mapping between field names and their parents
     * @return The same AST with binary properties set for every field
     */
   @throws(classOf[IllegalStateException])
-  def setSegmentParents(originalSchema: CopybookAST, fieldParentMap: Map[String,String]): CopybookAST = {
+  def setSegmentParents(originalSchema: CopybookAST, fieldParentMap: Map[String, String]): CopybookAST = {
     val rootSegments = ListBuffer[String]()
     val redefinedFields = getAllSegmentRedefines(originalSchema)
 
@@ -627,7 +642,7 @@ object CopybookParser {
           } else {
             if (fieldParentMap.contains(g.name)) {
               throw new IllegalStateException("Parent field is defined for a field that is not a segment redefine. " +
-              s"Field: '${g.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
+                s"Field: '${g.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
             }
             processGroupFields(g)
           }
@@ -761,13 +776,24 @@ object CopybookParser {
     * @param ast An AST as a set of copybook records
     * @return The same AST with group fillers renamed
     */
-  private def renameGroupFillers(ast: CopybookAST): CopybookAST = {
+  private def renameGroupFillers(ast: CopybookAST, dropGroupFillers: Boolean, dropValueFillers: Boolean): CopybookAST = {
     var lastFillerIndex = 0
+    var lastFillerPrimitiveIndex = 0
+
+    def processPrimitive(st: Primitive): Primitive = {
+      if (dropValueFillers || !st.isFiller) {
+        st
+      } else {
+        lastFillerPrimitiveIndex += 1
+        val newName = s"${Constants.FILLER}_P$lastFillerPrimitiveIndex"
+        st.copy(name = newName, isFiller = false)(st.parent)
+      }
+    }
 
     def renameSubGroupFillers(group: Group): Group = {
       val (newChildren, hasNonFillers) = renameFillers(group)
       val renamedGroup = if (hasNonFillers) {
-        if (group.isFiller) {
+        if (group.isFiller && !dropGroupFillers) {
           lastFillerIndex += 1
           group.copy(name = s"${
             Constants.FILLER
@@ -782,7 +808,7 @@ object CopybookParser {
       renamedGroup
     }
 
-    def renameFillers(group: CopybookAST): (CopybookAST, Boolean) = {
+    def renameFillers(group: Group): (Group, Boolean) = {
       val newChildren = ArrayBuffer[Statement]()
       var hasNonFillers = false
       group.children.foreach {
@@ -793,8 +819,9 @@ object CopybookParser {
           }
           if (!grp.isFiller) hasNonFillers = true
         case st: Primitive =>
-          newChildren += st
-          if (!st.isFiller) hasNonFillers = true
+          val newSt = processPrimitive(st)
+          newChildren += newSt
+          if (!newSt.isFiller) hasNonFillers = true
       }
       (group.withUpdatedChildren(newChildren), hasNonFillers)
     }
@@ -814,9 +841,10 @@ object CopybookParser {
     * </ul>
     *
     * @param ast An AST as a set of copybook records
+    * @param dropValueFillers is there intention to drop primitive fields fillers
     * @return The same AST with group fillers processed
     */
-  private def processGroupFillers(ast: CopybookAST): CopybookAST = {
+  private def processGroupFillers(ast: CopybookAST, dropValueFillers: Boolean): CopybookAST = {
 
     def processSubGroupFillers(group: Group): Group = {
       val (newChildren, hasNonFillers) = processFillers(group)
@@ -838,7 +866,7 @@ object CopybookParser {
           if (!grp.isFiller) hasNonFillers = true
         case st: Primitive =>
           newChildren += st
-          if (!st.isFiller) hasNonFillers = true
+          if (!st.isFiller || !dropValueFillers) hasNonFillers = true
       }
       (group.withUpdatedChildren(newChildren), hasNonFillers)
     }
@@ -851,12 +879,12 @@ object CopybookParser {
   }
 
   /**
-   * Add debugging fields if debug mode is enabled
-   *
-   * @param ast                An AST as a set of copybook records
-   * @param debugFieldsPolicy  Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
-   * @return The same AST with debugging fields added
-   */
+    * Add debugging fields if debug mode is enabled
+    *
+    * @param ast               An AST as a set of copybook records
+    * @param debugFieldsPolicy Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @return The same AST with debugging fields added
+    */
   private def addDebugFields(ast: CopybookAST, debugFieldsPolicy: DebugFieldsPolicy): CopybookAST = {
     def getDebugField(field: Primitive): Primitive = {
       val debugEncoding = debugFieldsPolicy match {
@@ -879,7 +907,7 @@ object CopybookParser {
         dataType = debugDataType,
         redefines = Some(field.name),
         isDependee = false,
-        decode = debugDecoder) (parent = field.parent)
+        decode = debugDecoder)(parent = field.parent)
 
       debugField
     }
@@ -950,7 +978,7 @@ object CopybookParser {
   }
 
   /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
-  def transformIdentifierMap(identifierMap: Map[String,String]): Map[String,String] = {
+  def transformIdentifierMap(identifierMap: Map[String, String]): Map[String, String] = {
     identifierMap.map {
       case (k, v) =>
         val newKey = transformIdentifier(k)
@@ -965,7 +993,7 @@ object CopybookParser {
     * @param m A mapping from field name to its parent field name.
     * @return A list of fields in a cycle if there is one, an empty list otherwise
     */
-  def findCycleIntAMap(m: Map[String, String]): List[String] = {
+  def findCycleInAMap(m: Map[String, String]): List[String] = {
     @tailrec
     def findCycleHelper(field: String, fieldsInPath: List[String]): List[String] = {
       val i = fieldsInPath.indexOf(field)
@@ -983,7 +1011,8 @@ object CopybookParser {
 
     m.view
       .map({ case (k, _) =>
-        findCycleHelper(k, Nil) })
+        findCycleHelper(k, Nil)
+      })
       .find(_.nonEmpty)
       .getOrElse(List[String]())
   }
@@ -997,7 +1026,7 @@ object CopybookParser {
         }
     }
 
-    val cycle = findCycleIntAMap(identifierMap)
+    val cycle = findCycleInAMap(identifierMap)
     if (cycle.nonEmpty) {
       val listStr = cycle.mkString(", ")
       throw new IllegalStateException(s"Segments parent-child relation form a cycle: $listStr.")

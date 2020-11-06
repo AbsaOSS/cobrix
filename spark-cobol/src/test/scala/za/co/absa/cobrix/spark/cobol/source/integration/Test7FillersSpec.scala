@@ -34,14 +34,22 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
   private val inputCopybookFSPath = "../data/test7_fillers.cob"
   private val inpudDataPath = "../data/test7_data"
 
-  test(s"Integration test on $exampleName - drop group fillers handling") {
-    runTest("test7", dropGroupFillers = true)  }
+  test(s"Integration test on $exampleName - drop fillers and group fillers") {
+    runTest("test7", dropValueFillers = true, dropGroupFillers = true)  }
 
-  test(s"Integration test on $exampleName - retain group fillers handling") {
-    runTest("test7a", dropGroupFillers = false)
+  test(s"Integration test on $exampleName - drop fillers but retain group fillers") {
+    runTest("test7a", dropValueFillers = true, dropGroupFillers = false)
   }
 
-  private def runTest(namePrefix: String, dropGroupFillers: Boolean): Unit = {
+  test(s"Integration test on $exampleName - retain fillers, but drop group fillers") {
+    runTest("test7b", dropValueFillers = false, dropGroupFillers = true)
+  }
+
+  test(s"Integration test on $exampleName - retain fillers and group fillers") {
+    runTest("test7c", dropValueFillers = false, dropGroupFillers = false)
+  }
+
+  private def runTest(namePrefix: String, dropValueFillers: Boolean, dropGroupFillers: Boolean): Unit = {
 
     val expectedSchemaPath = s"../data/test7_expected/${namePrefix}_schema.json"
     val expectedLayoutPath = s"../data/test7_expected/${namePrefix}_layout.txt"
@@ -52,7 +60,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers, dropValueFillers)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
@@ -68,6 +76,7 @@ class Test7FillersSpec extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("schema_retention_policy", "collapse_root")
       .option("drop_group_fillers", dropGroupFillers)
+      .option("drop_value_fillers", dropValueFillers)
       .load(inpudDataPath)
 
     // This is to print the actual output
