@@ -919,12 +919,8 @@ object CopybookParser {
           val newGrp = processGroup(grp)
           newChildren += newGrp
         case st: Primitive =>
-          if (st.redefines.isDefined) {
-            newChildren += st
-          } else {
             newChildren += st.withUpdatedIsRedefined(newIsRedefined = true)
             newChildren += getDebugField(st)
-          }
       }
       group.withUpdatedChildren(newChildren)
     }
