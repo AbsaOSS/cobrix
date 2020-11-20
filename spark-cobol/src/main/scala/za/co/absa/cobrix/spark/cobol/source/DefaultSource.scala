@@ -70,7 +70,7 @@ class DefaultSource
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
   private def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
-    if (cobolParameters.isText) {
+    if (cobolParameters.isText && cobolParameters.variableLengthParams.isEmpty) {
       createTextReader(cobolParameters, spark)
     } else if (cobolParameters.variableLengthParams.isEmpty) {
       createFixedLengthReader(cobolParameters, spark)
@@ -167,6 +167,7 @@ class DefaultSource
       None
 
     ReaderParameters(isEbcdic = parameters.isEbcdic,
+      isText = parameters.isText,
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
       asciiCharset = parameters.asciiCharset,

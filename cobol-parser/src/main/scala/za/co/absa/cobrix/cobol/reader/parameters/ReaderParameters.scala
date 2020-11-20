@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * These are properties for customizing mainframe binary data reader.
   *
   * @param isEbcdic                If true the input data file encoding is EBCDIC, otherwise it is ASCII
+  * @param isText                  If true line ending characters will be used (LF / CRLF) as the record separator
   * @param ebcdicCodePage          Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass     An optional custom code page conversion class provided by a user
   * @param asciiCharset            A charset for ASCII data
@@ -62,6 +63,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   */
 case class ReaderParameters(
                              isEbcdic:                Boolean = true,
+                             isText:                  Boolean = false,
                              ebcdicCodePage:          String = "common",
                              ebcdicCodePageClass:     Option[String] = None,
                              asciiCharset:            String = "",

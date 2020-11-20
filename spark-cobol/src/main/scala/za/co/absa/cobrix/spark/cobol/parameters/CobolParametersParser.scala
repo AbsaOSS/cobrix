@@ -496,8 +496,14 @@ object CobolParametersParser {
     }
     if (isText) {
       val incorrectParameters = new ListBuffer[String]
-      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
-        incorrectParameters += PARAM_IS_RECORD_SEQUENCE
+      if (params.contains(PARAM_IS_RDW_BIG_ENDIAN)) {
+        incorrectParameters += PARAM_IS_RDW_BIG_ENDIAN
+      }
+      if (params.contains(PARAM_IS_RDW_PART_REC_LENGTH)) {
+        incorrectParameters += PARAM_IS_RDW_PART_REC_LENGTH
+      }
+      if (params.contains(PARAM_RDW_ADJUSTMENT)) {
+        incorrectParameters += PARAM_RDW_ADJUSTMENT
       }
       if (params.contains(PARAM_IS_XCOM)) {
         incorrectParameters += PARAM_IS_XCOM

@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractor, VarOccursRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractor, TextRecordExtractor, VarOccursRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -40,14 +40,14 @@ import scala.reflect.ClassTag
 
 
 /**
-  *  The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
+  * The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
   *
-  * @param copybookContents      The contents of a copybook.
-  * @param readerProperties      Additional properties for customizing the reader.
+  * @param copybookContents The contents of a copybook.
+  * @param readerProperties Additional properties for customizing the reader.
   */
 @throws(classOf[IllegalArgumentException])
-class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
-                         readerProperties: ReaderParameters, handler: RecordHandler[T]) extends VarLenReader {
+class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
+                                      readerProperties: ReaderParameters, handler: RecordHandler[T]) extends VarLenReader {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -58,13 +58,17 @@ class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
   }
 
   protected def recordExtractor(binaryData: SimpleStream, copybook: Copybook): Option[RawRecordExtractor] = {
-    if (readerProperties.variableSizeOccurs &&
-      readerProperties.recordHeaderParser.isEmpty &&
-      !readerProperties.isRecordSequence &&
-      readerProperties.lengthFieldName.isEmpty) {
-      Some(new VarOccursRecordExtractor(binaryData, copybook))
+    if (readerProperties.isText) {
+      Some(new TextRecordExtractor(binaryData, copybook.getRecordSize + 4))
     } else {
-      None
+      if (readerProperties.variableSizeOccurs &&
+        readerProperties.recordHeaderParser.isEmpty &&
+        !readerProperties.isRecordSequence &&
+        readerProperties.lengthFieldName.isEmpty) {
+        Some(new VarOccursRecordExtractor(binaryData, copybook))
+      } else {
+        None
+      }
     }
   }
 
@@ -77,9 +81,9 @@ class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
 
   override def getRecordIterator(binaryData: SimpleStream,
-                              startingFileOffset: Long,
-                              fileNumber: Int,
-                              startingRecordIndex: Long): Iterator[Seq[Any]] =
+                                 startingFileOffset: Long,
+                                 fileNumber: Int,
+                                 startingRecordIndex: Long): Iterator[Seq[Any]] =
     if (cobolSchema.copybook.isHierarchical) {
       new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
         fileNumber, startingRecordIndex, startingFileOffset, handler)
@@ -139,7 +143,7 @@ class VarLenNestedReader[T : ClassTag](copybookContents: Seq[String],
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (readerProperties.isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
+    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
     val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
     val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
 
