@@ -22,8 +22,8 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -61,9 +61,9 @@ object IndexGenerator {
       val (headerSize, recordSize, isValid) = recordExtractor match {
         case Some(extractor) =>
           if (extractor.hasNext) {
-            (0, -1, false)
-          } else {
             (0, extractor.next().length, true)
+          } else {
+            (0, -1, false)
           }
         case None =>
           val headerSize = recordHeaderParser.getHeaderLength
