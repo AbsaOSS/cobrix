@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.text
 
 import java.nio.charset.StandardCharsets
 
+import org.apache.spark.sql.DataFrame
 import org.scalatest.WordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
@@ -37,15 +38,93 @@ class Test03AsciiMultisegment extends WordSpec with SparkTestBase with BinaryFil
              10  B2       PIC X(5).
     """
 
-  ""
-
   "Multisegment ASCII files should be parsed" when {
     "Records perfectly match the schema" in {
       val textFileContent: String =
-        Seq("1Tes  0123456789",
-          "2Test 012345",
-          "1None Data¡3    ",
-          "2 on  Data 4").mkString("\n")
+        Seq(
+          "1Tes  0123456789",
+          "2Test 01234",
+          "1None Data  3   ",
+          "2 on  Data ").mkString("\n")
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = getDataFrame(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "1", "R1": { "A2": "Tes", "A3": "0123456789" } },
+            |  { "T": "2", "R2": { "B1": "Test", "B2": "01234" } },
+            |  { "T": "1", "R1": { "A2": "None", "A3": "Data  3" } },
+            |  { "T": "2", "R2": { "B1": "on", "B2": "Data" } }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "Records are separated by CRLF" in {
+      val textFileContent: String =
+        Seq(
+          "1Tes  0123456789",
+          "2Test 01234",
+          "1None Data  3   ",
+          "2 on  Data ").mkString("\r\n")
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = getDataFrame(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "1", "R1": { "A2": "Tes", "A3": "0123456789" } },
+            |  { "T": "2", "R2": { "B1": "Test", "B2": "01234" } },
+            |  { "T": "1", "R1": { "A2": "None", "A3": "Data  3" } },
+            |  { "T": "2", "R2": { "B1": "on", "B2": "Data" } }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "Records are too short or too long" in {
+      val textFileContent: String =
+        Seq(
+          "1Tes  0123456",
+          "2Test 01234567",
+          "1None Data   3",
+          "2 on  Data 411111111",
+          "2222222222").mkString("\r\n")
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = getDataFrame(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "1", "R1": { "A2": "Tes", "A3": "0123456" } },
+            |  { "T": "2", "R2": { "B1": "Test", "B2": "01234" } },
+            |  { "T": "1", "R1": { "A2": "None", "A3": "Data   3" } },
+            |  { "T": "2", "R2": { "B1": "on", "B2": "Data" } },
+            |  { "T": "1", "R1": { "A2": "111" } },
+            |  { "T": "2", "R2": { "B1": "22222", "B2": "2222" } }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "Support hierarchical data" in {
+      val textFileContent: String =
+        Seq(
+          "1Root10123456789",
+          "2Chld101234",
+          "2Chld2abcde",
+          "1Root2AbCdE",
+          "2Chld31").mkString("\n")
 
       withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
         val df = spark
@@ -60,15 +139,58 @@ class Test03AsciiMultisegment extends WordSpec with SparkTestBase with BinaryFil
           .option("segment_field", "T")
           .option("redefine-segment-id-map:00", "R1 => 1")
           .option("redefine-segment-id-map:01", "R2 => 2")
+          .option("segment-children:1", "R1 => R2")
           .load(tmpFileName)
 
-        val expected = """[{"T":"1","R1":{"A2":"Tes","A3":"0123456789"}},{"T":"2","R2":{"B1":"Test","B2":"01234"}},{"T":"1","R1":{"A2":"None","A3":"Data  3"}},{"T":""}]"""
+        val expected = removeWhiteSpace(
+          """[
+            |  {
+            |    "T": "1",
+            |    "R1": {
+            |      "A2": "Root1",
+            |      "A3": "0123456789",
+            |      "R2": [
+            |        { "B1": "Chld1", "B2": "01234" },
+            |        { "B1": "Chld2", "B2": "abcde" }
+            |      ]
+            |    }
+            |  },
+            |  {
+            |    "T": "1",
+            |    "R1": {
+            |      "A2": "Root2",
+            |      "A3": "AbCdE",
+            |      "R2": [{ "B1": "Chld3", "B2": "1" }] }
+            |  }
+            |]
+            |""".stripMargin)
 
-        val actual = df.toJSON.collect().mkString("[", ",", "]")
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
 
         assertEqualsMultiline(actual, expected)
       }
     }
+
+  }
+
+  def getDataFrame(tmpFileName: String): DataFrame = {
+    spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("pedantic", "true")
+      .option("is_text", "true")
+      .option("encoding", "ascii")
+      .option("is_record_sequence", "true")
+      .option("schema_retention_policy", "collapse_root")
+      .option("segment_field", "T")
+      .option("redefine-segment-id-map:00", "R1 => 1")
+      .option("redefine-segment-id-map:01", "R2 => 2")
+      .load(tmpFileName)
+  }
+
+  def removeWhiteSpace(s: String): String = {
+    s.replaceAll("[\\r\\n ]", "")
   }
 
 }
