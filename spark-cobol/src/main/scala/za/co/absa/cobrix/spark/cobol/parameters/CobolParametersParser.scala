@@ -511,6 +511,13 @@ object CobolParametersParser {
       if (params.contains(PARAM_RECORD_LENGTH)) {
         incorrectParameters += PARAM_RECORD_LENGTH
       }
+      if (params.contains(PARAM_RECORD_HEADER_PARSER)) {
+        incorrectParameters += PARAM_RECORD_HEADER_PARSER
+      }
+      if (params.contains(PARAM_RHP_ADDITIONAL_INFO)) {
+        incorrectParameters += PARAM_RHP_ADDITIONAL_INFO
+      }
+
       if (incorrectParameters.nonEmpty) {
         throw new IllegalArgumentException(s"Option '$PARAM_IS_TEXT' and ${incorrectParameters.mkString(", ")} cannot be used together.")
       }

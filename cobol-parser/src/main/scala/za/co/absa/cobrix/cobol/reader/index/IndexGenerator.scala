@@ -58,10 +58,12 @@ object IndexGenerator {
 
     var endOfFileReached = false
     while (!endOfFileReached) {
+      var record: Array[Byte] = null
       val (headerSize, recordSize, isValid) = recordExtractor match {
         case Some(extractor) =>
           if (extractor.hasNext) {
-            (0, extractor.next().length, true)
+            record = extractor.next()
+            (extractor.getHeaderSize + extractor.getFooterSize, record.length, extractor.getFooterSize > 0)
           } else {
             (0, -1, false)
           }
@@ -69,12 +71,14 @@ object IndexGenerator {
           val headerSize = recordHeaderParser.getHeaderLength
           val headerBytes = dataStream.next(headerSize)
           val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
+          if (recordMetadata.recordLength > 0) {
+            record = dataStream.next(recordMetadata.recordLength)
+          }
           (headerSize, recordMetadata.recordLength, recordMetadata.isValid)
       }
       if (recordSize <= 0) {
         endOfFileReached = true
       } else {
-        val record = dataStream.next(recordSize)
         if (record.length < recordSize) {
           endOfFileReached = true
         } else if (isValid) {

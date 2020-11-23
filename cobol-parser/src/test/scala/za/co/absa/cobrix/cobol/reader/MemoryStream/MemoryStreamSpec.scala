@@ -21,9 +21,11 @@ import za.co.absa.cobrix.cobol.reader.stream.{SimpleMemoryStream, SimpleStream}
 
 class MemoryStreamSpec extends FunSuite {
 
+  private val textStr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
   test("Test memory stream reading capabilities") {
 
-    val testSimpleStream: SimpleStream = new TestStringStream
+    val testSimpleStream: SimpleStream = new TestStringStream(textStr)
     val testMemoryStream = new SimpleMemoryStream(testSimpleStream, 10)
 
     val arr1 = new Array[Byte](10)
@@ -75,7 +77,7 @@ class MemoryStreamSpec extends FunSuite {
   }
 
   test("Test memory stream search capabilities") {
-    val testSimpleStream: SimpleStream = new TestStringStream
+    val testSimpleStream: SimpleStream = new TestStringStream(textStr)
     val testMemoryStream = new SimpleMemoryStream(testSimpleStream, 10)
 
     val searchBytes1 = "BCD".toCharArray.map(_.toByte)

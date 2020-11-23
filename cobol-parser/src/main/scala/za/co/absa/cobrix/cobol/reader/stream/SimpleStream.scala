@@ -25,6 +25,8 @@ trait SimpleStream {
 
   def inputFileName: String
 
+  def isEndOfStream: Boolean = offset >= size
+
   @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
 
   @throws(classOf[Exception]) def close(): Unit

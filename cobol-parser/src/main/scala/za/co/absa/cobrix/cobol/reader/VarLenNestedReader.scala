@@ -59,7 +59,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   protected def recordExtractor(binaryData: SimpleStream, copybook: Copybook): Option[RawRecordExtractor] = {
     if (readerProperties.isText) {
-      Some(new TextRecordExtractor(binaryData, copybook.getRecordSize + 4))
+      Some(new TextRecordExtractor(binaryData, copybook.getRecordSize + 2))
     } else {
       if (readerProperties.variableSizeOccurs &&
         readerProperties.recordHeaderParser.isEmpty &&
@@ -85,7 +85,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                  fileNumber: Int,
                                  startingRecordIndex: Long): Iterator[Seq[Any]] =
     if (cobolSchema.copybook.isHierarchical) {
-      new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+      new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser, recordExtractor(binaryData, cobolSchema.copybook),
         fileNumber, startingRecordIndex, startingFileOffset, handler)
     } else {
       new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser, recordExtractor(binaryData, cobolSchema.copybook),

@@ -19,9 +19,10 @@ package za.co.absa.cobrix.cobol.reader.iterator
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
@@ -34,25 +35,27 @@ import scala.reflect.ClassTag
   * @param dataStream         A source of bytes for sequential reading and parsing. It should implement [[SimpleStream]] interface.
   * @param readerProperties   Additional properties for customizing the reader.
   * @param recordHeaderParser A record parser for multisegment files
+  * @param rawRecordExtractor A raw record extractor, if available
   * @param fileId             A FileId to put to the corresponding column
   * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset An offset of the file where parsing should be started
   */
 @throws(classOf[IllegalStateException])
 final class VarLenHierarchicalIterator[T: ClassTag](
-                                                                    cobolSchema: Copybook,
-                                       dataStream: SimpleStream,
-                                       readerProperties: ReaderParameters,
-                                       recordHeaderParser: RecordHeaderParser,
-                                       fileId: Int,
-                                       startRecordId: Long,
-                                       startingFileOffset: Long,
-                                       handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
+                                                     cobolSchema: Copybook,
+                                                     dataStream: SimpleStream,
+                                                     readerProperties: ReaderParameters,
+                                                     recordHeaderParser: RecordHeaderParser,
+                                                     rawRecordExtractor: Option[RawRecordExtractor],
+                                                     fileId: Int,
+                                                     startRecordId: Long,
+                                                     startingFileOffset: Long,
+                                                     handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, None, startRecordId, startingFileOffset)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, rawRecordExtractor, startRecordId, startingFileOffset)
 
   private var recordIndex = startRecordId
   private var cachedValue: Option[Seq[Any]] = _
@@ -70,7 +73,7 @@ final class VarLenHierarchicalIterator[T: ClassTag](
   private val parentChildrenMap = cobolSchema.getParentChildrenSegmentMap
 
   private val segmentRedefineMap: Map[String, Group] = readerProperties.multisegment.map(
-    _.segmentIdRedefineMap.map{ case (segmentId, redefineName) =>
+    _.segmentIdRedefineMap.map { case (segmentId, redefineName) =>
       val redefineField = segmentRedefines.find(_.name == redefineName).get
       (segmentId, redefineField)
     }

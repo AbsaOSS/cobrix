@@ -29,8 +29,9 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends RawRecordExtractor {
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
+  private var lastFooterSize = 1
 
-  override def hasNext: Boolean = inputStream.offset < inputStream.size
+  override def hasNext: Boolean = !inputStream.isEndOfStream || bytesSize > 0
 
   override def next(): Array[Byte] = {
     if (!hasNext) {
@@ -40,6 +41,10 @@ class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends
     findEol()
   }
 
+  override def getHeaderSize: Int = 0
+
+  override def getFooterSize: Int = lastFooterSize
+
   private def findEol(): Array[Byte] = {
     var recordLength = 0
     var recordPayload = 0
@@ -47,7 +52,7 @@ class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends
     var i = 0
     while (recordLength == 0 && i < bytesSize) {
       if (bytes(i) == 0x0D) {
-        if (i + 1 < bytesSize && bytes(i) == 0x0A) {
+        if (i + 1 < maxRecordSize && bytes(i + 1) == 0x0A) {
           recordLength = i + 2
           recordPayload = i
         }
@@ -63,8 +68,17 @@ class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends
     } else {
       // Last record or a record is too large?
       // In the latter case
-      recordLength = bytesSize
-      bytes
+      if (inputStream.isEndOfStream) {
+        // Last record
+        recordLength = bytesSize
+        recordPayload = bytesSize
+      } else {
+        // This is an errors situation - no line breaks between records
+        // Return a record worth of data minus line break.
+        recordLength = bytesSize - lastFooterSize
+        recordPayload = bytesSize - lastFooterSize
+      }
+      bytes.take(recordLength)
     }
 
     if (bytesSize > recordLength) {
@@ -73,6 +87,8 @@ class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends
     bytesSize -= recordLength
 
     util.Arrays.fill(bytes, bytesSize, maxRecordSize, 0.toByte)
+
+    lastFooterSize = recordLength - recordPayload
 
     record
   }
