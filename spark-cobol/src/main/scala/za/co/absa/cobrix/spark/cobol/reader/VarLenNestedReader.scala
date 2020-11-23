@@ -19,10 +19,10 @@ package za.co.absa.cobrix.spark.cobol.reader
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.reader.{VarLenNestedReader => ReaderVarLenNestedReader}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.cobol.reader.{VarLenNestedReader => ReaderVarLenNestedReader}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 
@@ -58,6 +58,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     if (cobolSchema.copybook.isHierarchical) {
       new RowIterator(
         new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
+          recordExtractor(binaryData, cobolSchema.copybook),
           fileNumber, startingRecordIndex, startingFileOffset, new RowHandler())
       )
     } else {

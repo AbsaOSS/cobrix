@@ -23,4 +23,8 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
  * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
  * determined neither from the copybook nor from record headers.
  */
-trait RawRecordExtractor extends Iterator[Array[Byte]]
+trait RawRecordExtractor extends Iterator[Array[Byte]] {
+  def getHeaderSize: Int
+
+  def getFooterSize: Int
+}

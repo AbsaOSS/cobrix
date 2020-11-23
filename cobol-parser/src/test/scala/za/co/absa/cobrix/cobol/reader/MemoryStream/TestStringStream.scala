@@ -18,10 +18,9 @@ package za.co.absa.cobrix.cobol.reader.MemoryStream
 
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
-class TestStringStream extends SimpleStream{
+class TestStringStream(str: String) extends SimpleStream{
 
   var position = 0
-  val str = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   val sz: Int = str.length
 
   override def inputFileName: String = "dummy"
