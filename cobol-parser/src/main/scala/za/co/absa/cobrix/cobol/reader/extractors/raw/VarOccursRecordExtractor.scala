@@ -48,9 +48,7 @@ class VarOccursRecordExtractor(inputStream: SimpleStream, copybook: Copybook) ex
     }
   }
 
-  def getHeaderSize: Int = 0
-
-  def getFooterSize: Int = 0
+  def offset: Long = inputStream.offset
 
   private def extractVarOccursRecordBytes(): Array[Byte] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]

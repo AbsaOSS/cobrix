@@ -24,7 +24,5 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
  * determined neither from the copybook nor from record headers.
  */
 trait RawRecordExtractor extends Iterator[Array[Byte]] {
-  def getHeaderSize: Int
-
-  def getFooterSize: Int
+  def offset: Long
 }
