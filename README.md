@@ -207,12 +207,13 @@ The jars that you need to get are:
 * cobol-parser_2.11-2.1.3.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
+* antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
 $ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.3
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.3.jar,cobol-parser_2.11-2.1.3.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.3.jar,cobol-parser_2.11-2.1.3.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1074,7 +1075,7 @@ Again, the full example is available at
 | .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
 | .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
 | .option("rhp_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record header parser (RHP). A custom RHP can get that additional info by overriding `onReceiveAdditionalInfo()`  |
-| .option("is_text", "true")                    | `Experimental` If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. |
+| .option("is_text", "true")                    | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `is_record_sequence`, multisegment and hierarchical text record files can be loaded. |
 
 
 ##### Multisegment files options
@@ -1198,6 +1199,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.1.4 (to be released soon).
+  - [#334](https://github.com/AbsaOSS/cobrix/issues/334) Added support for reading multisegment ASCII text files. 
+  - [#335](https://github.com/AbsaOSS/cobrix/issues/335) Fixed sparse index generation for files that have variable length occurs, but no RDWs.
+
 - #### 2.1.3 released 11 November 2020.
   - [#329](https://github.com/AbsaOSS/cobrix/issues/329) Added debug fields generation for redefines (Thanks [@codealways](https://github.com/codealways)).
 
