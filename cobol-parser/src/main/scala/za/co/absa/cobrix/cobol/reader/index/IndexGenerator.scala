@@ -59,14 +59,18 @@ object IndexGenerator {
     var endOfFileReached = false
     while (!endOfFileReached) {
       var record: Array[Byte] = null
-      val (headerSize, recordSize, isValid) = recordExtractor match {
+      val (recordSize: Long, isValid) = recordExtractor match {
         case Some(extractor) =>
-          if (extractor.hasNext) {
+          val offset0 = extractor.offset
+          val isValid = if (extractor.hasNext) {
             record = extractor.next()
-            (extractor.getHeaderSize + extractor.getFooterSize, record.length, extractor.getFooterSize > 0)
+            true
           } else {
-            (0, -1, false)
+            false
           }
+          val offset1 = extractor.offset
+          val recordLength = offset1 - offset0
+          (recordLength, isValid)
         case None =>
           val headerSize = recordHeaderParser.getHeaderLength
           val headerBytes = dataStream.next(headerSize)
@@ -74,14 +78,13 @@ object IndexGenerator {
           if (recordMetadata.recordLength > 0) {
             record = dataStream.next(recordMetadata.recordLength)
           }
-          (headerSize, recordMetadata.recordLength, recordMetadata.isValid)
+          val recordSize = dataStream.offset - byteIndex
+          (recordSize, recordMetadata.isValid)
       }
-      if (recordSize <= 0) {
+      if (dataStream.isEndOfStream) {
         endOfFileReached = true
       } else {
-        if (record.length < recordSize) {
-          endOfFileReached = true
-        } else if (isValid) {
+        if (isValid) {
           if (isReallyHierarchical && rootRecordId.isEmpty) {
             val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
             if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
@@ -108,10 +111,10 @@ object IndexGenerator {
           }
         }
       }
-      byteIndex += headerSize + recordSize
       recordIndex += 1
       recordsInChunk += 1
-      bytesInChunk += headerSize + recordSize
+      byteIndex += recordSize
+      bytesInChunk += recordSize
     }
     if (isReallyHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
       logger.error(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")

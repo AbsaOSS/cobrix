@@ -41,9 +41,7 @@ class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends
     findEol()
   }
 
-  override def getHeaderSize: Int = 0
-
-  override def getFooterSize: Int = lastFooterSize
+  override def offset: Long = inputStream.offset - bytesSize
 
   private def findEol(): Array[Byte] = {
     var recordLength = 0
