@@ -63,7 +63,7 @@ class SparseIndexSpecSpec extends WordSpec  {
 
       val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
 
-      val recordExtractor = new TextRecordExtractor(stream, copybook.getRecordSize + 2)
+      val recordExtractor = new TextRecordExtractor(0L, stream, copybook, "")
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,

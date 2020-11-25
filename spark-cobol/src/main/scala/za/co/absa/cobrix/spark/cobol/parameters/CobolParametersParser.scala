@@ -86,7 +86,9 @@ object CobolParametersParser {
   val PARAM_SEGMENT_FILTER            = "segment_filter"
   val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
   val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
+  val PARAM_RECORD_EXTRACTOR          = "record_extractor"
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
+  val PARAM_RE_ADDITIONAL_INFO        = "re_additional_info"
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
 
   // Indexed multisegment file processing
@@ -262,7 +264,9 @@ object CobolParametersParser {
         params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
         params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
         params.get(PARAM_RECORD_HEADER_PARSER),
+        params.get(PARAM_RECORD_EXTRACTOR),
         params.get(PARAM_RHP_ADDITIONAL_INFO),
+        params.get(PARAM_RE_ADDITIONAL_INFO).getOrElse(""),
         recordLengthFieldOpt.getOrElse(""),
         fileStartOffset,
         fileEndOffset,

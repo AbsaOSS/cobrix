@@ -21,16 +21,12 @@ import java.nio.file.{Files, Paths}
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.reader.extractors.raw.VarOccursRecordExtractor
 import za.co.absa.cobrix.cobol.reader.stream.FSStream
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 
@@ -71,7 +67,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
     )
     val copybook = CopybookParser.parse(copybookContents, ASCII, occursHandlers = occursMapping)
 
-    val recordExtractor = new VarOccursRecordExtractor(inputStream, copybook)
+    val recordExtractor = new VarOccursRecordExtractor(0L, inputStream, copybook, "")
 
     val expectedRecords = ListBuffer(
       "1AX".getBytes,

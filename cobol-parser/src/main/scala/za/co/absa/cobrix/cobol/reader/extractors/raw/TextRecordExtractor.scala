@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import java.util
 
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 /**
@@ -25,8 +26,17 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
   *
   * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
   * determined neither from the copybook nor from record headers.
+  *
+  * @param startingRecordNumber A record number the input stream is pointing to (zero-based).
+  * @param inputStream          An input stream pointing to the beginning of a file or a record in a file.
+  * @param copybook             A copybook of the input stream.
+  * @param additionalInfo       A string provided by a client for the raw record extractor.
   */
-class TextRecordExtractor(inputStream: SimpleStream, maxRecordSize: Int) extends RawRecordExtractor {
+class TextRecordExtractor(startingRecordNumber: Long,
+                          inputStream: SimpleStream,
+                          copybook: Copybook,
+                          additionalInfo: String) extends RawRecordExtractor {
+  private val maxRecordSize = copybook.getRecordSize + 2
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
   private var lastFooterSize = 1

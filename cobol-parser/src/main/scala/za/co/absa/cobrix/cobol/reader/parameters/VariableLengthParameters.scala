@@ -24,7 +24,9 @@ package za.co.absa.cobrix.cobol.reader.parameters
   * @param isRdwPartRecLength     Does RDW count itself as part of record length itself
   * @param rdwAdjustment          Controls a mismatch between RDW and record length
   * @param recordHeaderParser     An optional custom record header parser for non-standard RDWs
+  * @param recordExtractor        An optional custom raw record parser class non-standard record types
   * @param rhpAdditionalInfo      An optional additional option string passed to a custom record header parser
+  * @param reAdditionalInfo       An optional additional option string passed to a custom record extractor
   * @param recordLengthField      A field that stores record length
   * @param fileStartOffset        A number of bytes to skip at the beginning of each file
   * @param fileEndOffset          A number of bytes to skip at the end of each file
@@ -43,7 +45,9 @@ case class VariableLengthParameters(
                                      isRdwPartRecLength:    Boolean,
                                      rdwAdjustment:         Int,
                                      recordHeaderParser:    Option[String],
+                                     recordExtractor:       Option[String],
                                      rhpAdditionalInfo:     Option[String],
+                                     reAdditionalInfo:      String,
                                      recordLengthField:     String,
                                      fileStartOffset:       Int,
                                      fileEndOffset:         Int,
