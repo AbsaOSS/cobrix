@@ -94,6 +94,8 @@ case class ReaderParameters(
                              occursMappings:          Map[String, Map[String, Int]] = Map(),
                              debugFieldsPolicy:       DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
                              recordHeaderParser:      Option[String] = None,
+                             recordExtractor:         Option[String] = None,
                              rhpAdditionalInfo:       Option[String] = None,
+                             reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = ""
                            )

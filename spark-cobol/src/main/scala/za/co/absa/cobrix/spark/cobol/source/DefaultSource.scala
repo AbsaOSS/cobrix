@@ -146,7 +146,9 @@ class DefaultSource
           isRdwPartRecLength = false,
           rdwAdjustment = 0,
           recordHeaderParser = None,
+          recordExtractor = None,
           rhpAdditionalInfo = None,
+          reAdditionalInfo = "",
           recordLengthField = "",
           fileStartOffset = 0,
           fileEndOffset = 0,
@@ -198,7 +200,9 @@ class DefaultSource
       parameters.occursMappings,
       parameters.debugFieldsPolicy,
       varLenParams.recordHeaderParser,
+      varLenParams.recordExtractor,
       varLenParams.rhpAdditionalInfo,
+      varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn
     )
   }

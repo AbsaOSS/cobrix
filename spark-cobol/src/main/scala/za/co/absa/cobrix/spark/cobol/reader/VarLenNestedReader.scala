@@ -57,15 +57,28 @@ final class VarLenNestedReader(copybookContents: Seq[String],
                               startingRecordIndex: Long): Iterator[Row] =
     if (cobolSchema.copybook.isHierarchical) {
       new RowIterator(
-        new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-          recordExtractor(binaryData, cobolSchema.copybook),
-          fileNumber, startingRecordIndex, startingFileOffset, new RowHandler())
+        new VarLenHierarchicalIterator(cobolSchema.copybook,
+          binaryData,
+          readerProperties,
+          recordHeaderParser,
+          recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+          fileNumber,
+          startingRecordIndex,
+          startingFileOffset,
+          new RowHandler())
       )
     } else {
       new RowIterator(
-        new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser,
-          recordExtractor(binaryData, cobolSchema.copybook),
-          fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, new RowHandler())
+        new VarLenNestedIterator(cobolSchema.copybook,
+          binaryData,
+          readerProperties,
+          recordHeaderParser,
+          recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+          fileNumber,
+          startingRecordIndex,
+          startingFileOffset,
+          cobolSchema.segmentIdPrefix,
+          new RowHandler())
       )
     }
 }

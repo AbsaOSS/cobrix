@@ -28,8 +28,16 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
   *
   * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
   * determined neither from the copybook nor from record headers.
+  *
+  * @param startingRecordNumber A record number the input stream is pointing to (zero-based).
+  * @param inputStream          An input stream pointing to the beginning of a file or a record in a file.
+  * @param copybook             A copybook of the input stream.
+  * @param additionalInfo       A string provided by a client for the raw record extractor.
   */
-class VarOccursRecordExtractor(inputStream: SimpleStream, copybook: Copybook) extends RawRecordExtractor {
+class VarOccursRecordExtractor(startingRecordNumber: Long,
+                          inputStream: SimpleStream,
+                          copybook: Copybook,
+                          additionalInfo: String) extends RawRecordExtractor {
   private val maxRecordSize = copybook.getRecordSize
   private val ast = copybook.ast
   private val hasVarSizeOccurs = copybookHasVarSizedOccurs

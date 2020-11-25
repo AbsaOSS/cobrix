@@ -57,15 +57,19 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     getRecordHeaderParser
   }
 
-  protected def recordExtractor(binaryData: SimpleStream, copybook: Copybook): Option[RawRecordExtractor] = {
+  protected def recordExtractor(startingRecordNumber: Long,
+                                binaryData: SimpleStream,
+                                copybook: Copybook,
+                                additionalInfo: String
+                               ): Option[RawRecordExtractor] = {
     if (readerProperties.isText) {
-      Some(new TextRecordExtractor(binaryData, copybook.getRecordSize + 2))
+      Some(new TextRecordExtractor(startingRecordNumber, binaryData, copybook, additionalInfo))
     } else {
       if (readerProperties.variableSizeOccurs &&
         readerProperties.recordHeaderParser.isEmpty &&
         !readerProperties.isRecordSequence &&
         readerProperties.lengthFieldName.isEmpty) {
-        Some(new VarOccursRecordExtractor(binaryData, copybook))
+        Some(new VarOccursRecordExtractor(startingRecordNumber, binaryData, copybook, additionalInfo))
       } else {
         None
       }
@@ -85,11 +89,26 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                  fileNumber: Int,
                                  startingRecordIndex: Long): Iterator[Seq[Any]] =
     if (cobolSchema.copybook.isHierarchical) {
-      new VarLenHierarchicalIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser, recordExtractor(binaryData, cobolSchema.copybook),
-        fileNumber, startingRecordIndex, startingFileOffset, handler)
+      new VarLenHierarchicalIterator(cobolSchema.copybook,
+        binaryData,
+        readerProperties,
+        recordHeaderParser,
+        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+        fileNumber,
+        startingRecordIndex,
+        startingFileOffset,
+        handler)
     } else {
-      new VarLenNestedIterator(cobolSchema.copybook, binaryData, readerProperties, recordHeaderParser, recordExtractor(binaryData, cobolSchema.copybook),
-        fileNumber, startingRecordIndex, startingFileOffset, cobolSchema.segmentIdPrefix, handler)
+      new VarLenNestedIterator(cobolSchema.copybook,
+        binaryData,
+        readerProperties,
+        recordHeaderParser,
+        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+        fileNumber,
+        startingRecordIndex,
+        startingFileOffset,
+        cobolSchema.segmentIdPrefix,
+        handler)
     }
 
   /**
@@ -101,7 +120,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     * @return An index of the file
     *
     */
-  override def generateIndex(binaryData: SimpleStream, fileNumber: Int, isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
+  override def generateIndex(binaryData: SimpleStream,
+                             fileNumber: Int,
+                             isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
     var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
     val inputSplitSizeMB: Option[Int] = getSplitSizeMB
@@ -133,10 +154,27 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     }
 
     segmentIdField match {
-      case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, recordExtractor(binaryData, copybook), inputSplitSizeRecords, inputSplitSizeMB, Some(copybook), Some(field), isHierarchical, segmentIdValue)
-      case None => IndexGenerator.sparseIndexGenerator(fileNumber, binaryData, isRdwBigEndian,
-        recordHeaderParser, recordExtractor(binaryData, copybook), inputSplitSizeRecords, inputSplitSizeMB, None, None, isHierarchical)
+      case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber,
+        binaryData,
+        isRdwBigEndian,
+        recordHeaderParser,
+        recordExtractor(0L, binaryData, copybook, readerProperties.reAdditionalInfo),
+        inputSplitSizeRecords,
+        inputSplitSizeMB,
+        Some(copybook),
+        Some(field),
+        isHierarchical,
+        segmentIdValue)
+      case None => IndexGenerator.sparseIndexGenerator(fileNumber,
+        binaryData,
+        isRdwBigEndian,
+        recordHeaderParser,
+        recordExtractor(0L, binaryData, copybook, readerProperties.reAdditionalInfo),
+        inputSplitSizeRecords,
+        inputSplitSizeMB,
+        None,
+        None,
+        isHierarchical)
     }
   }
 

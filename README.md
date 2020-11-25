@@ -460,7 +460,48 @@ For example:
 ```
 will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
 
-### Custom record headers parser
+### Custom record extractors
+
+Custom record extractors can be used for customizing splitting of input files into a set of records. Cobrix supports
+text files, fixed length binary files and binary files with RDWs. If your input file is not in one of the supported
+formats you can implement a custom record extractor interface and provide it to `spark-cobol` as a option:
+
+```
+.option("record_extractor", "com.example.record.header.parser")
+```
+
+A custom record extractor needs to be a class having this precice constructor signature:
+```scala
+class TextRecordExtractor(startingRecordNumber: Long,
+                          inputStream: SimpleStream,
+                          copybook: Copybook,
+                          additionalInfo: String) extends RawRecordExtractor {
+                             // Your implementation
+                          }
+```
+
+A record extractor is essentially iterator of records. Each returned record is an array of bytes parsable by the
+copybook.  
+
+A record extractor is invoked two times. First, it is invoked at the beginning each file to go thought the file and
+create a sparse index. The second time it is invoked by parallel processes starting from different records in the file.
+The starting record number is provided in constructor. The starting file offset is available from `inputStream`.
+
+* `startingRecordNumber` - A record number the input stream is pointing to.
+* `inputStream` - The input stream of bytes of the input file.
+* `copybook` - The parsed copybook of the input stream.
+* `additionalInfo` - An arbitrary info that can be passed as an option (see below).
+
+If your record extractor needs additional information in order to extract records properly, you can provide
+an arbitrary additional info to the record extracted at runtime by specifying this option:
+
+```
+.option("re_additional_info", "some info")
+```
+
+### Custom record header parsers (deprecated)
+
+Custom record header parsers are deprecated. Use custom record extractors instead. They are more flexible and easier to use. 
 
 If your variable length file does not have RDW headers, but has fields that can be used for determining record lengths
 you can provide a custom record header parser that takes starting bytes of each record and returns record lengths.
@@ -1073,8 +1114,8 @@ Again, the full example is available at
 | .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. |
 | .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
 | .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
-| .option("record_header_parser", "com.example.record.header.parser")  | Specifies a class for parsing custom record headers. The class must inherit `RecordHeaderParser` and `Serializable` traits.   |
-| .option("rhp_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record header parser (RHP). A custom RHP can get that additional info by overriding `onReceiveAdditionalInfo()`  |
+| .option("record_extractor", "com.example.record.extractor")  | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.  |
+| .option("re_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.  |
 | .option("is_text", "true")                    | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `is_record_sequence`, multisegment and hierarchical text record files can be loaded. |
 
 

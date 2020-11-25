@@ -24,5 +24,29 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
  * determined neither from the copybook nor from record headers.
  */
 trait RawRecordExtractor extends Iterator[Array[Byte]] {
+  /**
+    * Returns the byte offset of the next record.
+    *
+    * The offset should point to the absolute beginning of the record, e.g. including headers,
+    * so that if a record extractor is started from this offset it would be able to extract the record
+    * by invoking .next().
+    */
   def offset: Long
+
+  /**
+    * Clients of 'spark-cobol' can pass additional information to custom record header parsers using
+    *
+    * ```
+    * .option("re_additional_info", "...anything as a string...")
+    * ```
+    *
+    * If a client provides any additional info the method will be executed just after constructing
+    * the record header parser.
+    *
+    * Built-in record header parsers ignore the additional info. This info string is intended for
+    * custom record header parsers.
+    *
+    * @param additionalInfo A string provided by a client for the record header parser.
+    */
+  def onReceiveAdditionalInfo(additionalInfo: String): Unit = { }
 }
