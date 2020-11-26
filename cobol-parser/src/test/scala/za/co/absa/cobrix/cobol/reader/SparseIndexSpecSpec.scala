@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.cobol.reader.MemoryStream.TestStringStream
-import za.co.absa.cobrix.cobol.reader.extractors.raw.TextRecordExtractor
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractorParameters, TextRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 
 
@@ -63,7 +63,7 @@ class SparseIndexSpecSpec extends WordSpec  {
 
       val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
 
-      val recordExtractor = new TextRecordExtractor(0L, stream, copybook, "")
+      val recordExtractor = new TextRecordExtractor(RawRecordExtractorParameters(0L, stream, copybook, ""))
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,

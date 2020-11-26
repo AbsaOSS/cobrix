@@ -472,10 +472,7 @@ formats you can implement a custom record extractor interface and provide it to 
 
 A custom record extractor needs to be a class having this precice constructor signature:
 ```scala
-class TextRecordExtractor(startingRecordNumber: Long,
-                          inputStream: SimpleStream,
-                          copybook: Copybook,
-                          additionalInfo: String) extends RawRecordExtractor {
+class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecordExtractor {
                              // Your implementation
                           }
 ```
@@ -487,6 +484,8 @@ A record extractor is invoked two times. First, it is invoked at the beginning e
 create a sparse index. The second time it is invoked by parallel processes starting from different records in the file.
 The starting record number is provided in constructor. The starting file offset is available from `inputStream`.
 
+RawRecordParserParameters consists of the following fields that the custom record extractor will get from Cobrix
+in runtime:
 * `startingRecordNumber` - A record number the input stream is pointing to.
 * `inputStream` - The input stream of bytes of the input file.
 * `copybook` - The parsed copybook of the input stream.

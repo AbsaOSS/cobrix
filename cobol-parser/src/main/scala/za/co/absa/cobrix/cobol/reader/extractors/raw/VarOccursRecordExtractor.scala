@@ -18,9 +18,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import java.util
 
-import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 /**
   * This implementation of a record extractor
@@ -28,23 +26,15 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
   *
   * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
   * determined neither from the copybook nor from record headers.
-  *
-  * @param startingRecordNumber A record number the input stream is pointing to (zero-based).
-  * @param inputStream          An input stream pointing to the beginning of a file or a record in a file.
-  * @param copybook             A copybook of the input stream.
-  * @param additionalInfo       A string provided by a client for the raw record extractor.
   */
-class VarOccursRecordExtractor(startingRecordNumber: Long,
-                          inputStream: SimpleStream,
-                          copybook: Copybook,
-                          additionalInfo: String) extends RawRecordExtractor {
-  private val maxRecordSize = copybook.getRecordSize
-  private val ast = copybook.ast
+class VarOccursRecordExtractor(params: RawRecordExtractorParameters) extends RawRecordExtractor {
+  private val maxRecordSize = params.copybook.getRecordSize
+  private val ast = params.copybook.ast
   private val hasVarSizeOccurs = copybookHasVarSizedOccurs
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
 
-  override def hasNext: Boolean = inputStream.offset < inputStream.size
+  override def hasNext: Boolean = params.inputStream.offset < params.inputStream.size
 
   override def next(): Array[Byte] = {
     if (hasVarSizeOccurs) {
@@ -52,11 +42,11 @@ class VarOccursRecordExtractor(startingRecordNumber: Long,
       util.Arrays.fill(bytes, 0.toByte)
       extractVarOccursRecordBytes()
     } else {
-      inputStream.next(maxRecordSize)
+      params.inputStream.next(maxRecordSize)
     }
   }
 
-  def offset: Long = inputStream.offset
+  def offset: Long = params.inputStream.offset
 
   private def extractVarOccursRecordBytes(): Array[Byte] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
@@ -148,7 +138,7 @@ class VarOccursRecordExtractor(startingRecordNumber: Long,
   private def ensureBytesRead(numOfBytes: Int): Unit = {
     val bytesToRead = numOfBytes - bytesSize
     if (bytesToRead > 0) {
-      val newBytes = inputStream.next(bytesToRead)
+      val newBytes = params.inputStream.next(bytesToRead)
       if (newBytes.length > 0) {
         System.arraycopy(newBytes, 0, bytes, bytesSize, newBytes.length)
         bytesSize = numOfBytes
@@ -158,7 +148,7 @@ class VarOccursRecordExtractor(startingRecordNumber: Long,
 
   private def copybookHasVarSizedOccurs: Boolean = {
     var varSizedOccursExist = false
-    copybook.visitPrimitive(field => varSizedOccursExist |= field.isDependee)
+    params.copybook.visitPrimitive(field => varSizedOccursExist |= field.isDependee)
     varSizedOccursExist
   }
 }
