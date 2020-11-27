@@ -16,10 +16,6 @@
 
 package com.example.spark.cobol.app
 
-import org.apache.log4j.{Level, Logger}
-import org.apache.spark.sql.SparkSession
-import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
-
 /**
   * This is an example Spark/Cobol Application.
   *
@@ -64,24 +60,9 @@ object SparkCobolHierarchical {
     * Each record of the resulting dataframe correspond to a root segment. Child segments
     */
   def main(args: Array[String]): Unit = {
-    // This is the copybook for the data file.
-    val copybook =
-      """        01  COMPANY-DETAILS.
-        |            05  SEGMENT-ID           PIC X(5).
-        |            05  COMPANY-ID           PIC X(10).
-        |            05  STATIC-DETAILS.
-        |               10  COMPANY-NAME      PIC X(15).
-        |               10  ADDRESS           PIC X(25).
-        |               10  TAXPAYER.
-        |                  15  TAXPAYER-TYPE  PIC X(1).
-        |                  15  TAXPAYER-STR   PIC X(8).
-        |                  15  TAXPAYER-NUM  REDEFINES TAXPAYER-STR
-        |                                     PIC 9(8) COMP.
-        |
-        |            05  CONTACTS REDEFINES STATIC-DETAILS.
-        |               10  PHONE-NUMBER      PIC X(17).
-        |               10  CONTACT-PERSON    PIC X(28).
-        |""".stripMargin
+    // Fetching the copybook for the data file.
+    // It is stored in resources.
+    val copybook = IOUtils.toString(getClass.getResourceAsStream("/copybooks/example_copybook.cpy"))
 
     // Switch logging level to WARN
     Logger.getLogger("org").setLevel(Level.WARN)
@@ -96,8 +77,8 @@ object SparkCobolHierarchical {
       .read
       .format("cobol")                             // Alternatively can use "za.co.absa.cobrix.spark.cobol.source"
       .option("copybook_contents", copybook)               // A copybook can be provided inline
-      .option("is_record_sequence", "true")                // This file is a sequence of records with 4 byte record headers
       //.option("copybook", "../example_data/companies_copybook.cpy") // Or as a path name in HDFS. For local filesystem use file:// prefix
+      .option("is_record_sequence", "true")                // This file is a sequence of records with 4 byte record headers
       //.option("generate_record_id", true)                // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")  // Collapses the root group returning it's field on the top level of the schema
       .option("segment_field", "SEGMENT_ID")               // The SEGMENT_ID field contains IDs of segments
