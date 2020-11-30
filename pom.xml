@@ -396,6 +396,8 @@
                         <exclude>**/*.md</exclude>
                         <exclude>**/*.iml</exclude>
                         <exclude>**/*.csv</exclude>
+                        <exclude>**/*.cob</exclude>
+                        <exclude>**/*.cpy</exclude>
                         <exclude>**/*.svg</exclude>
                         <exclude>**/*.plot</exclude>
                         <exclude>**/_*</exclude>
