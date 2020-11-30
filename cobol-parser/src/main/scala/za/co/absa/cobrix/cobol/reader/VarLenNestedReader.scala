@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordExtractor, RawRecordExtractorParameters, TextRecordExtractor, VarOccursRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw._
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -59,20 +59,22 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   protected def recordExtractor(startingRecordNumber: Long,
                                 binaryData: SimpleStream,
-                                copybook: Copybook,
-                                additionalInfo: String
+                                copybook: Copybook
                                ): Option[RawRecordExtractor] = {
-    if (readerProperties.isText) {
-      Some(new TextRecordExtractor(RawRecordExtractorParameters(startingRecordNumber, binaryData, copybook, additionalInfo)))
-    } else {
-      if (readerProperties.variableSizeOccurs &&
+    val reParams = RawRecordExtractorParameters(startingRecordNumber, binaryData, copybook, readerProperties.reAdditionalInfo)
+
+    readerProperties.recordExtractor match {
+      case Some(recordExtractorClass) =>
+        Some(RawRecordExtractorFactory.createRecordHeaderParser(recordExtractorClass, reParams))
+      case None if readerProperties.isText =>
+        Some(new TextRecordExtractor(reParams))
+      case None if readerProperties.variableSizeOccurs &&
         readerProperties.recordHeaderParser.isEmpty &&
         !readerProperties.isRecordSequence &&
-        readerProperties.lengthFieldName.isEmpty) {
-        Some(new VarOccursRecordExtractor(RawRecordExtractorParameters(startingRecordNumber, binaryData, copybook, additionalInfo)))
-      } else {
+        readerProperties.lengthFieldName.isEmpty =>
+        Some(new VarOccursRecordExtractor(reParams))
+      case None =>
         None
-      }
     }
   }
 
@@ -93,7 +95,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         binaryData,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -103,7 +105,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         binaryData,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook, readerProperties.reAdditionalInfo),
+        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -158,7 +160,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         binaryData,
         isRdwBigEndian,
         recordHeaderParser,
-        recordExtractor(0L, binaryData, copybook, readerProperties.reAdditionalInfo),
+        recordExtractor(0L, binaryData, copybook),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         Some(copybook),
@@ -169,7 +171,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         binaryData,
         isRdwBigEndian,
         recordHeaderParser,
-        recordExtractor(0L, binaryData, copybook, readerProperties.reAdditionalInfo),
+        recordExtractor(0L, binaryData, copybook),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         None,
