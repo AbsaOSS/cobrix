@@ -24,13 +24,13 @@ import java.util
   * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
   * determined neither from the copybook nor from record headers.
   */
-class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecordExtractor {
-  private val maxRecordSize = params.copybook.getRecordSize + 2
+class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  private val maxRecordSize = ctx.copybook.getRecordSize + 2
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
   private var lastFooterSize = 1
 
-  override def hasNext: Boolean = !params.inputStream.isEndOfStream || bytesSize > 0
+  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream || bytesSize > 0
 
   override def next(): Array[Byte] = {
     if (!hasNext) {
@@ -40,7 +40,7 @@ class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecor
     findEol()
   }
 
-  override def offset: Long = params.inputStream.offset - bytesSize
+  override def offset: Long = ctx.inputStream.offset - bytesSize
 
   private def findEol(): Array[Byte] = {
     var recordLength = 0
@@ -65,7 +65,7 @@ class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecor
     } else {
       // Last record or a record is too large?
       // In the latter case
-      if (params.inputStream.isEndOfStream) {
+      if (ctx.inputStream.isEndOfStream) {
         // Last record
         recordLength = bytesSize
         recordPayload = bytesSize
@@ -93,7 +93,7 @@ class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecor
   private def ensureBytesRead(numOfBytes: Int): Unit = {
     val bytesToRead = numOfBytes - bytesSize
     if (bytesToRead > 0) {
-      val newBytes = params.inputStream.next(bytesToRead)
+      val newBytes = ctx.inputStream.next(bytesToRead)
       if (newBytes.length > 0) {
         System.arraycopy(newBytes, 0, bytes, bytesSize, newBytes.length)
         bytesSize = numOfBytes

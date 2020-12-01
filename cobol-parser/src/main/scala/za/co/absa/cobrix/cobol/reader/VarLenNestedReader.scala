@@ -61,7 +61,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                 binaryData: SimpleStream,
                                 copybook: Copybook
                                ): Option[RawRecordExtractor] = {
-    val reParams = RawRecordExtractorParameters(startingRecordNumber, binaryData, copybook, readerProperties.reAdditionalInfo)
+    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, readerProperties.reAdditionalInfo)
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
