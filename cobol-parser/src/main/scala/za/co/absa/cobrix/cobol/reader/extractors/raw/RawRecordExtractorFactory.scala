@@ -18,16 +18,16 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 object RawRecordExtractorFactory {
   def createRecordHeaderParser(recordExtractorClass: String,
-                               params: RawRecordExtractorParameters): RawRecordExtractor = {
+                               params: RawRecordContext): RawRecordExtractor = {
     try {
       Class.forName(recordExtractorClass)
-        .getConstructor(classOf[RawRecordExtractorParameters])
+        .getConstructor(classOf[RawRecordContext])
         .newInstance(params)
         .asInstanceOf[RawRecordExtractor]
     } catch {
       case ex: NoSuchMethodException =>
         throw new IllegalArgumentException(s"Custom record parser '$recordExtractorClass' does not extend RawRecordExtractor" +
-          s"or does not conform to the required signature: class ExampleRecordExtractor(params: RawRecordParserParameters) extends RawRecordExtractor.", ex)
+          s"or does not conform to the required signature: class ExampleRecordExtractor(params: RawRecordContext) extends RawRecordExtractor.", ex)
       case ex: Throwable => throw ex
     }
   }

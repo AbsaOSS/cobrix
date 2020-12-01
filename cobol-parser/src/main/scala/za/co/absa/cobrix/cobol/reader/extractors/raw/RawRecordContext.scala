@@ -25,9 +25,9 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
   * @param copybook             A copybook of the input stream.
   * @param additionalInfo       A string provided by a client for the raw record extractor.
   */
-case class RawRecordExtractorParameters(
-                                         startingRecordNumber: Long,
-                                         inputStream: SimpleStream,
-                                         copybook: Copybook,
-                                         additionalInfo: String
-                                       )
+case class RawRecordContext(
+                             startingRecordNumber: Long,
+                             inputStream: SimpleStream,
+                             copybook: Copybook,
+                             additionalInfo: String
+                           )

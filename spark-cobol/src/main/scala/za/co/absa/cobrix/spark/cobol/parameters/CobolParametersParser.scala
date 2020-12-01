@@ -244,6 +244,7 @@ object CobolParametersParser {
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
+    val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
     if (params.contains(PARAM_RECORD_LENGTH) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
@@ -255,6 +256,7 @@ object CobolParametersParser {
       isRecordIdGenerationEnabled ||
       fileStartOffset > 0 ||
       fileEndOffset > 0 ||
+      hasRecordExtractor ||
       varLenOccursEnabled
     ) {
       Some(VariableLengthParameters

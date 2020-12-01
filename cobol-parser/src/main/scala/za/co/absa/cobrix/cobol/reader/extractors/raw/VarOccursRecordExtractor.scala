@@ -27,14 +27,14 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
   * Record extractors are used for in situations where the size of records in a file is not fixed and cannot be
   * determined neither from the copybook nor from record headers.
   */
-class VarOccursRecordExtractor(params: RawRecordExtractorParameters) extends RawRecordExtractor {
-  private val maxRecordSize = params.copybook.getRecordSize
-  private val ast = params.copybook.ast
+class VarOccursRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  private val maxRecordSize = ctx.copybook.getRecordSize
+  private val ast = ctx.copybook.ast
   private val hasVarSizeOccurs = copybookHasVarSizedOccurs
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
 
-  override def hasNext: Boolean = params.inputStream.offset < params.inputStream.size
+  override def hasNext: Boolean = ctx.inputStream.offset < ctx.inputStream.size
 
   override def next(): Array[Byte] = {
     if (hasVarSizeOccurs) {
@@ -42,11 +42,11 @@ class VarOccursRecordExtractor(params: RawRecordExtractorParameters) extends Raw
       util.Arrays.fill(bytes, 0.toByte)
       extractVarOccursRecordBytes()
     } else {
-      params.inputStream.next(maxRecordSize)
+      ctx.inputStream.next(maxRecordSize)
     }
   }
 
-  def offset: Long = params.inputStream.offset
+  def offset: Long = ctx.inputStream.offset
 
   private def extractVarOccursRecordBytes(): Array[Byte] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
@@ -138,7 +138,7 @@ class VarOccursRecordExtractor(params: RawRecordExtractorParameters) extends Raw
   private def ensureBytesRead(numOfBytes: Int): Unit = {
     val bytesToRead = numOfBytes - bytesSize
     if (bytesToRead > 0) {
-      val newBytes = params.inputStream.next(bytesToRead)
+      val newBytes = ctx.inputStream.next(bytesToRead)
       if (newBytes.length > 0) {
         System.arraycopy(newBytes, 0, bytes, bytesSize, newBytes.length)
         bytesSize = numOfBytes
@@ -148,7 +148,7 @@ class VarOccursRecordExtractor(params: RawRecordExtractorParameters) extends Raw
 
   private def copybookHasVarSizedOccurs: Boolean = {
     var varSizedOccursExist = false
-    params.copybook.visitPrimitive(field => varSizedOccursExist |= field.isDependee)
+    ctx.copybook.visitPrimitive(field => varSizedOccursExist |= field.isDependee)
     varSizedOccursExist
   }
 }

@@ -470,9 +470,9 @@ formats you can implement a custom record extractor interface and provide it to 
 .option("record_extractor", "com.example.record.header.parser")
 ```
 
-A custom record extractor needs to be a class having this precice constructor signature:
+A custom record extractor needs to be a class having this precise constructor signature:
 ```scala
-class TextRecordExtractor(params: RawRecordExtractorParameters) extends RawRecordExtractor {
+class TextRecordExtractor(ctx: RawRecordExtractorParameters) extends Serializable with RawRecordExtractor {
                              // Your implementation
                           }
 ```
@@ -484,7 +484,7 @@ A record extractor is invoked two times. First, it is invoked at the beginning e
 create a sparse index. The second time it is invoked by parallel processes starting from different records in the file.
 The starting record number is provided in constructor. The starting file offset is available from `inputStream`.
 
-RawRecordParserParameters consists of the following fields that the custom record extractor will get from Cobrix
+RawRecordContext consists of the following fields that the custom record extractor will get from Cobrix
 in runtime:
 * `startingRecordNumber` - A record number the input stream is pointing to.
 * `inputStream` - The input stream of bytes of the input file.
@@ -493,6 +493,8 @@ in runtime:
 
 If your record extractor needs additional information in order to extract records properly, you can provide
 an arbitrary additional info to the record extracted at runtime by specifying this option:
+
+Take a look at `CustomRecordExtractorMock` inside `spark-cobol` project to see how a custom record extractor can be built.
 
 ```
 .option("re_additional_info", "some info")
