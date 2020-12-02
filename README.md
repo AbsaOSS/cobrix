@@ -1242,6 +1242,7 @@ For multisegment variable lengths tests:
 
 ## Changelog
 - #### 2.1.4 (to be released soon).
+  - [#338](https://github.com/AbsaOSS/cobrix/issues/338) Added support for custom record extractors that are better replacement for custom record header parsers.
   - [#334](https://github.com/AbsaOSS/cobrix/issues/334) Added support for reading multisegment ASCII text files. 
   - [#335](https://github.com/AbsaOSS/cobrix/issues/335) Fixed sparse index generation for files that have variable length occurs, but no RDWs.
 
