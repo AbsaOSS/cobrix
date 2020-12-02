@@ -41,6 +41,7 @@ object IndexGenerator {
                            segmentField: Option[Primitive] = None,
                            isHierarchical: Boolean,
                            rootSegmentId: String = ""): ArrayBuffer[SparseIndexEntry] = {
+    val rootSegmentIds = rootSegmentId.split(',').toList
     var byteIndex = 0L
     val index = new ArrayBuffer[SparseIndexEntry]
     var rootRecordId: String = ""
@@ -87,13 +88,13 @@ object IndexGenerator {
         if (isValid) {
           if (isReallyHierarchical && rootRecordId.isEmpty) {
             val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
-            if ((curSegmentId.nonEmpty && rootSegmentId.isEmpty)
-              || (rootSegmentId.nonEmpty && curSegmentId == rootSegmentId)) {
+            if ((curSegmentId.nonEmpty && rootSegmentIds.isEmpty)
+              || (rootSegmentIds.nonEmpty && rootSegmentIds.contains(curSegmentId))) {
               rootRecordId = curSegmentId
             }
           }
           if (needSplit(recordsInChunk, bytesInChunk)) {
-            if (!isReallyHierarchical || isSegmentGoodForSplit(rootRecordId, copybook.get, segmentField.get, record)) {
+            if (!isReallyHierarchical || isSegmentGoodForSplit(rootSegmentIds, copybook.get, segmentField.get, record)) {
               val indexEntry = SparseIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
               index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
@@ -140,11 +141,12 @@ object IndexGenerator {
     }
   }
 
-  private def isSegmentGoodForSplit(rootRecordId: String,
+  private def isSegmentGoodForSplit(rootSegmentIds: List[String],
                                     copybook: Copybook,
                                     segmentField: Primitive,
                                     record: Array[Byte]): Boolean = {
-    rootRecordId == getSegmentId(copybook, segmentField, record)
+    val segmentId = getSegmentId(copybook, segmentField, record)
+    rootSegmentIds.contains(segmentId)
   }
 
   private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
