@@ -476,6 +476,8 @@ object CobolParametersParser {
       params.contains(PARAM_FILE_END_OFFSET) ||
       params.contains(PARAM_RECORD_LENGTH)
 
+    val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
+
     val isText = params.getOrElse(PARAM_IS_TEXT, "false").toBoolean
 
     val isPedantic = params.getOrElse(PARAM_PEDANTIC, "false").toBoolean
@@ -487,6 +489,43 @@ object CobolParametersParser {
         Some(key)
       }
     })
+
+    if (hasRecordExtractor) {
+      val incorrectParameters = new ListBuffer[String]
+      if (isText) {
+        incorrectParameters += PARAM_IS_TEXT
+      }
+      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
+        incorrectParameters += PARAM_IS_RECORD_SEQUENCE
+      }
+      if (params.contains(PARAM_IS_XCOM)) {
+        incorrectParameters += PARAM_IS_XCOM
+      }
+      if (params.contains(PARAM_IS_RDW_BIG_ENDIAN)) {
+        incorrectParameters += PARAM_IS_RDW_BIG_ENDIAN
+      }
+      if (params.contains(PARAM_IS_RDW_PART_REC_LENGTH)) {
+        incorrectParameters += PARAM_IS_RDW_PART_REC_LENGTH
+      }
+      if (params.contains(PARAM_RDW_ADJUSTMENT)) {
+        incorrectParameters += PARAM_RDW_ADJUSTMENT
+      }
+      if (params.contains(PARAM_RECORD_LENGTH)) {
+        incorrectParameters += PARAM_RECORD_LENGTH
+      }
+      if (params.contains(PARAM_RECORD_HEADER_PARSER)) {
+        incorrectParameters += PARAM_RECORD_HEADER_PARSER
+      }
+      if (params.contains(PARAM_RHP_ADDITIONAL_INFO)) {
+        incorrectParameters += PARAM_RHP_ADDITIONAL_INFO
+      }
+
+      if (incorrectParameters.nonEmpty) {
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_EXTRACTOR' and ${incorrectParameters.mkString(", ")} cannot be used together.")
+      }
+    }
+
+
     val segmentRedefineParents = getSegmentRedefineParents(params)
     if (segmentRedefineParents.nonEmpty) {
       val segmentIdLevels = parseSegmentLevels(params)
@@ -500,6 +539,7 @@ object CobolParametersParser {
         s" or one of these options is set: '$PARAM_RECORD_LENGTH', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET'"
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
     }
+
     if (isText) {
       val incorrectParameters = new ListBuffer[String]
       if (params.contains(PARAM_IS_RDW_BIG_ENDIAN)) {
