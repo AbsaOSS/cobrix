@@ -35,6 +35,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param isUtf16BigEndian        If true UTF-16 strings are considered big-endian.
   * @param floatingPointFormat     A format of floating-point numbers
   * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
+  * @param recordLength            Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
   * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence        Does input files have 4 byte record length headers
   * @param isRdwBigEndian          Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
@@ -70,6 +71,7 @@ case class ReaderParameters(
                              isUtf16BigEndian:        Boolean = true,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              variableSizeOccurs:      Boolean = false,
+                             recordLength:            Option[Int] = None ,
                              lengthFieldName:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
                              isRdwBigEndian:          Boolean = false,

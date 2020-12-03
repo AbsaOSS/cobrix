@@ -1069,6 +1069,7 @@ Again, the full example is available at
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("record_length", "100")            | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files. |
 | .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
 | .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
 | .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
@@ -1244,6 +1245,7 @@ For multisegment variable lengths tests:
 - #### 2.1.4 (to be released soon).
   - [#334](https://github.com/AbsaOSS/cobrix/issues/334) Added support for reading multisegment ASCII text files.
   - [#338](https://github.com/AbsaOSS/cobrix/issues/338) Added support for custom record extractors that are better replacement for custom record header parsers.
+  - [#340](https://github.com/AbsaOSS/cobrix/issues/340) Added the option to enforce record length: `.option("record_length", "123")`.
   - [#335](https://github.com/AbsaOSS/cobrix/issues/335) Fixed sparse index generation for files that have variable length occurs, but no RDWs.
   - [#342](https://github.com/AbsaOSS/cobrix/issues/342) Fixed sparse index generation for files with multiple values of the root segment id.
 

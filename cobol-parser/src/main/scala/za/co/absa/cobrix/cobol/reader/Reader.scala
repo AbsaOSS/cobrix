@@ -26,7 +26,5 @@ trait Reader extends Serializable {
 
   def getCobolSchema: CobolSchema
 
-  def getRecordStartOffset: Int
-
-  def getRecordEndOffset: Int
+  def getRecordSize: Int
 }

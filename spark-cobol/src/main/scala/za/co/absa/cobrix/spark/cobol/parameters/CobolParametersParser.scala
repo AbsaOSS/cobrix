@@ -44,7 +44,7 @@ object CobolParametersParser {
   val PARAM_SOURCE_PATH               = "path"
   val PARAM_ENCODING                  = "encoding"
   val PARAM_PEDANTIC                  = "pedantic"
-  val PARAM_RECORD_LENGTH             = "record_length_field"
+  val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
@@ -75,6 +75,7 @@ object CobolParametersParser {
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
 
   // Parameters for multisegment variable length files
+  val PARAM_RECORD_LENGTH             = "record_length"
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_IS_TEXT                   = "is_text"
@@ -221,6 +222,7 @@ object CobolParametersParser {
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
+      params.get(PARAM_RECORD_LENGTH).map(_.toInt),
       parseVariableLengthParameters(params),
       schemaRetentionPolicy,
       stringTrimmingPolicy,
@@ -238,7 +240,7 @@ object CobolParametersParser {
   }
 
   private def parseVariableLengthParameters(params: Parameters): Option[VariableLengthParameters] = {
-    val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH)
+    val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
     val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
@@ -246,9 +248,9 @@ object CobolParametersParser {
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
-    if (params.contains(PARAM_RECORD_LENGTH) &&
+    if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
-      throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
+      throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH_FIELD' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
     }
 
     if (recordLengthFieldOpt.isDefined ||
@@ -474,7 +476,7 @@ object CobolParametersParser {
       params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean ||
       params.contains(PARAM_FILE_START_OFFSET) ||
       params.contains(PARAM_FILE_END_OFFSET) ||
-      params.contains(PARAM_RECORD_LENGTH)
+      params.contains(PARAM_RECORD_LENGTH_FIELD)
 
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
@@ -495,6 +497,9 @@ object CobolParametersParser {
       if (isText) {
         incorrectParameters += PARAM_IS_TEXT
       }
+      if (params.contains(PARAM_RECORD_LENGTH)) {
+        incorrectParameters += PARAM_RECORD_LENGTH
+      }
       if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
         incorrectParameters += PARAM_IS_RECORD_SEQUENCE
       }
@@ -510,8 +515,8 @@ object CobolParametersParser {
       if (params.contains(PARAM_RDW_ADJUSTMENT)) {
         incorrectParameters += PARAM_RDW_ADJUSTMENT
       }
-      if (params.contains(PARAM_RECORD_LENGTH)) {
-        incorrectParameters += PARAM_RECORD_LENGTH
+      if (params.contains(PARAM_RECORD_LENGTH_FIELD)) {
+        incorrectParameters += PARAM_RECORD_LENGTH_FIELD
       }
       if (params.contains(PARAM_RECORD_HEADER_PARSER)) {
         incorrectParameters += PARAM_RECORD_HEADER_PARSER
@@ -525,6 +530,40 @@ object CobolParametersParser {
       }
     }
 
+    if (params.contains(PARAM_RECORD_LENGTH)) {
+      val incorrectParameters = new ListBuffer[String]
+      if (isText) {
+        incorrectParameters += PARAM_IS_TEXT
+      }
+      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
+        incorrectParameters += PARAM_IS_RECORD_SEQUENCE
+      }
+      if (params.contains(PARAM_IS_XCOM)) {
+        incorrectParameters += PARAM_IS_XCOM
+      }
+      if (params.contains(PARAM_IS_RDW_BIG_ENDIAN)) {
+        incorrectParameters += PARAM_IS_RDW_BIG_ENDIAN
+      }
+      if (params.contains(PARAM_IS_RDW_PART_REC_LENGTH)) {
+        incorrectParameters += PARAM_IS_RDW_PART_REC_LENGTH
+      }
+      if (params.contains(PARAM_RDW_ADJUSTMENT)) {
+        incorrectParameters += PARAM_RDW_ADJUSTMENT
+      }
+      if (params.contains(PARAM_RECORD_LENGTH_FIELD)) {
+        incorrectParameters += PARAM_RECORD_LENGTH_FIELD
+      }
+      if (params.contains(PARAM_RECORD_HEADER_PARSER)) {
+        incorrectParameters += PARAM_RECORD_HEADER_PARSER
+      }
+      if (params.contains(PARAM_RHP_ADDITIONAL_INFO)) {
+        incorrectParameters += PARAM_RHP_ADDITIONAL_INFO
+      }
+
+      if (incorrectParameters.nonEmpty) {
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' and ${incorrectParameters.mkString(", ")} cannot be used together.")
+      }
+    }
 
     val segmentRedefineParents = getSegmentRedefineParents(params)
     if (segmentRedefineParents.nonEmpty) {
@@ -536,7 +575,8 @@ object CobolParametersParser {
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
       val recordSequenceCondition = s"one of this holds: '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
-        s" or one of these options is set: '$PARAM_RECORD_LENGTH', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET'"
+        s" or one of these options is set: '$PARAM_RECORD_LENGTH_FIELD', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET' or " +
+        "a custom record extractor is specified"
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
     }
 

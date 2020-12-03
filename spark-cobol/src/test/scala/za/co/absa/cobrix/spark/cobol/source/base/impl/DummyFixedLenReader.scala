@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.spark.cobol.source.base.impl
 
+import org.apache.commons.lang3.NotImplementedException
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
-import org.apache.commons.lang3.NotImplementedException
 import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -52,7 +52,5 @@ class DummyFixedLenReader(sparkSchema: StructType, cobolSchema: CobolSchema, dat
     throw new NotImplementedException("")
   }
 
-  override def getRecordStartOffset: Int = 0
-
-  override def getRecordEndOffset: Int = 0
+  override def getRecordSize: Int = cobolSchema.copybook.getRecordSize
 }

@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
   * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 class FixedLenNestedReader[T: ClassTag](
-                                  copyBookContents: Seq[String],
+                                 copyBookContents: Seq[String],
                                  isEbcdic: Boolean = true,
                                  ebcdicCodePage: CodePage,
                                  floatingPointFormat: FloatingPointFormat,
@@ -62,6 +62,11 @@ class FixedLenNestedReader[T: ClassTag](
 
   override def getCobolSchema: CobolSchema = cobolSchema
 
+  override def getRecordSize: Int = {
+    val recordInternalsSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
+    recordInternalsSize + startOffset + endOffset
+  }
+
   @throws(classOf[Exception])
   protected def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
@@ -76,11 +81,18 @@ class FixedLenNestedReader[T: ClassTag](
     if (endOffset < 0) {
       throw new IllegalArgumentException(s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
     }
-    if (binaryData.length < getExpectedLength) {
-      throw new IllegalArgumentException(s"Binary record too small. Expected binary record size = $getExpectedLength, got ${binaryData.length} ")
-    }
-    if (binaryData.length % getExpectedLength > 0) {
-      throw new IllegalArgumentException(s"Binary record size $getExpectedLength does not divide data size ${binaryData.length}.")
+    readerProperties.recordLength match {
+      case Some(len) =>
+        if (len < 1) {
+          throw new IllegalArgumentException(s"The specified record size $len cannot be used. The record length should be greater then zero.")
+        }
+      case None =>
+        if (binaryData.length < getExpectedLength) {
+          throw new IllegalArgumentException(s"Binary record too small. Expected binary record size = $getExpectedLength, got ${binaryData.length} ")
+        }
+        if (binaryData.length % getExpectedLength > 0) {
+          throw new IllegalArgumentException(s"Binary record size $getExpectedLength does not divide data size ${binaryData.length}.")
+        }
     }
   }
 
@@ -132,8 +144,4 @@ class FixedLenNestedReader[T: ClassTag](
       )
     new CobolSchema(schema, schemaRetentionPolicy, "",false)
   }
-
-  override def getRecordStartOffset: Int = startOffset
-
-  override def getRecordEndOffset: Int = endOffset
 }

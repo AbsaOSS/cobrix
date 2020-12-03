@@ -17,11 +17,11 @@
 package za.co.absa.cobrix.cobol.reader.iterator
 
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
@@ -44,7 +44,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val recordSize = cobolSchema.getRecordSize
+  private val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
   private var byteIndex = startOffset
 
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema.copybook)
