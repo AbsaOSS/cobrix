@@ -1248,6 +1248,7 @@ For multisegment variable lengths tests:
   - [#340](https://github.com/AbsaOSS/cobrix/issues/340) Added the option to enforce record length: `.option("record_length", "123")`.
   - [#335](https://github.com/AbsaOSS/cobrix/issues/335) Fixed sparse index generation for files that have variable length occurs, but no RDWs.
   - [#342](https://github.com/AbsaOSS/cobrix/issues/342) Fixed sparse index generation for files with multiple values of the root segment id.
+  - [#346](https://github.com/AbsaOSS/cobrix/issues/346) Updated Spark dependency to 2.4.7 (was 2.4.5).
 
 - #### 2.1.3 released 11 November 2020.
   - [#329](https://github.com/AbsaOSS/cobrix/issues/329) Added debug fields generation for redefines (Thanks [@codealways](https://github.com/codealways)).
