@@ -82,6 +82,8 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   override def getCobolSchema: CobolSchema = cobolSchema
 
+  override def getRecordSize: Int = cobolSchema.copybook.getRecordSize
+
   override def isIndexGenerationNeeded: Boolean = (readerProperties.lengthFieldName.isEmpty || readerProperties.isRecordSequence) && readerProperties.isIndexGenerationNeeded
 
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
@@ -225,10 +227,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.inputFileNameColumn, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
   }
-
-  override def getRecordStartOffset: Int = readerProperties.startOffset
-
-  override def getRecordEndOffset: Int = readerProperties.endOffset
 
   @throws(classOf[IllegalArgumentException])
   private def checkInputArgumentsValidity(): Unit = {

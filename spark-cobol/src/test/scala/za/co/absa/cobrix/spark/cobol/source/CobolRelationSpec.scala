@@ -51,7 +51,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
 
   after {
     // BE CAREFUL when changing this line, DO NOT point at the wrong directory
-    println("Removing test dir: "+copybookFile.getParentFile.getAbsolutePath)
+    println("Removing test dir: " + copybookFile.getParentFile.getAbsolutePath)
     FileUtils.deleteDirectory(copybookFile.getParentFile)
   }
 
@@ -102,11 +102,11 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)
-    
+
     val caught = intercept[SparkException] {
       relation.parseRecords(testReader, oneRowRDD).collect()
-    }    
-    
+    }
+
     assert(caught.getMessage.contains("key not found: absentField"))
   }
 

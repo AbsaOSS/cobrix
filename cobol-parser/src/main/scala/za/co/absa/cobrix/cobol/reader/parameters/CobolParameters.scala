@@ -38,6 +38,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param floatingPointFormat    A format of floating-point numbers
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
+  * @param recordLength           Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
@@ -63,6 +64,7 @@ case class CobolParameters(
                             floatingPointFormat:   FloatingPointFormat,
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
+                            recordLength:          Option[Int],
                             variableLengthParams:  Option[VariableLengthParameters],
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             stringTrimmingPolicy:  StringTrimmingPolicy,

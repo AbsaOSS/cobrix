@@ -176,6 +176,7 @@ class DefaultSource
       isUtf16BigEndian = parameters.isUtf16BigEndian,
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = varLenParams.variableSizeOccurs,
+      recordLength = parameters.recordLength,
       lengthFieldName = recordLengthField,
       isRecordSequence = varLenParams.isRecordSequence,
       isRdwBigEndian = varLenParams.isRdwBigEndian,
