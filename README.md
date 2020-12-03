@@ -1305,7 +1305,10 @@ For multisegment variable lengths tests:
 - #### 2.0.0 released 11 December 2019.
   - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks @GeorgiChochov).
   - Added sbt build for the example project.
-
+  
+<details><summary>Older versions</summary>
+<p>
+  
 - #### 1.1.2 released 28 November 2019.
   - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
   - Fixed too permissive parsing of uncompressed (DISPLAY) numbers.
@@ -1464,6 +1467,9 @@ For multisegment variable lengths tests:
   - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split a dataset into individual segments and then join them.
     The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets above](#ims).
   - Fixed many performance issues that should make reading mainframe files several times faster. The actual performance depends on concrete copybooks.
+
+</p>
+</details>
 
 ## Acknowledgements
 
