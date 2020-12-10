@@ -1242,6 +1242,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.1.5 (to be released soon)
+  - [#349](https://github.com/AbsaOSS/cobrix/issues/349) Fixed regression bug introduced in 2.1.4 resulting in an infinite loop in the sparse index generation for fixed-record length multisegment files.
+  
 - #### 2.1.4 released 4 December 2020.
   - [#334](https://github.com/AbsaOSS/cobrix/issues/334) Added support for reading multisegment ASCII text files.
   - [#338](https://github.com/AbsaOSS/cobrix/issues/338) Added support for custom record extractors that are better replacement for custom record header parsers.

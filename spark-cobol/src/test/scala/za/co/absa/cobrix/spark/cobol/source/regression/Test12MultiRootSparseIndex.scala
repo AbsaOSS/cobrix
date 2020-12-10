@@ -71,5 +71,21 @@ class Test12MultiRootSparseIndex extends WordSpec with SparkTestBase with Binary
         assert(indexes.length == 3)
       }
     }
+
+    "be able to parse files that when record size does not divide file size" in {
+      withTempBinFile("sp_ind_test1", ".dat", binFileContents.dropRight(2)) { tmpFileName =>
+        val copybook = CopybookParser.parseTree(copybookContents)
+        val segmentIdField = copybook.getFieldByName("S").asInstanceOf[Primitive]
+        val segmentIdRootValues = "0,1"
+
+        val stream = new FileStreamer(tmpFileName, FileSystem.get(new Configuration()))
+
+        val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength, 3, 0, 0, 0)
+        val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+          recordHeaderParser = recordHeaderParser, recordExtractor = None, recordsPerIndexEntry = Some(4), sizePerIndexEntryMB = None,
+          copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValues)
+        assert(indexes.length == 3)
+      }
+    }
   }
 }
