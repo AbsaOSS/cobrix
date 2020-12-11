@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.1.4
+version: 2.1.5
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.1.4
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.1.4
+version: 2.1.5
 ```
 
 ## Using with Spark shell
@@ -81,12 +81,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.5
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.1.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.1.5
 ```
 
 ## Usage
@@ -203,17 +203,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.1.4.jar
-* cobol-parser_2.11-2.1.4.jar
+* spark-cobol_2.11-2.1.5.jar
+* cobol-parser_2.11-2.1.5.jar
 * scodec-core_2.11-1.10.3.jar
 * scodec-bits_2.11-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.4
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.1.5
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.4.jar,cobol-parser_2.11-2.1.4.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.1.5.jar,cobol-parser_2.11-2.1.5.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1242,7 +1242,7 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 2.1.5 (to be released soon)
+- #### 2.1.5 released 11 December 2020.
   - [#349](https://github.com/AbsaOSS/cobrix/issues/349) Fixed regression bug introduced in 2.1.4 resulting in an infinite loop in the sparse index generation for fixed-record length multisegment files.
   
 - #### 2.1.4 released 4 December 2020.
