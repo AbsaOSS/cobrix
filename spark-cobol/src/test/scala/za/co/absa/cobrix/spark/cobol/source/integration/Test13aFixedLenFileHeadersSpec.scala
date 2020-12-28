@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
+import org.apache.spark.sql.functions._
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
@@ -123,7 +124,7 @@ class Test13aFixedLenFileHeadersSpec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    val actual = df.toJSON.take(60)
+    val actual = df.orderBy(col("COMPANY_ID")).toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
     if (!actual.sameElements(expected)) {
