@@ -40,8 +40,6 @@ class SparseIndexSpecSpec extends WordSpec  {
              10  B2       PIC X(5).
     """
 
-  ""
-
   "sparseIndexGenerator()" should {
     "Generate a sparse index for ASCII text data" in {
       val copybook = CopybookParser.parse(copybookContents, ASCII)

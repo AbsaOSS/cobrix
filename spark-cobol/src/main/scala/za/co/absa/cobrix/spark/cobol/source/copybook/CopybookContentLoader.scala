@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 
@@ -63,8 +63,9 @@ object CopybookContentLoader {
   }
 
   private def loadCopybookFromHDFS(hadoopConfiguration: Configuration, copyBookHDFSPath: String): String = {
-    val hdfs = FileSystem.get(hadoopConfiguration)
-    val stream = hdfs.open(new Path(copyBookHDFSPath))
+    val copybookPath = new Path(copyBookHDFSPath)
+    val hdfs = copybookPath.getFileSystem(hadoopConfiguration)
+    val stream = hdfs.open(copybookPath)
     try IOUtils.readLines(stream).asScala.mkString("\n") finally stream.close()
   }
 }

@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.scanners
 import java.nio.charset.StandardCharsets
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
 import org.slf4j.LoggerFactory
@@ -41,9 +41,10 @@ private[source] object CobolScanners {
     val sconf = new SerializableConfiguration(conf)
 
     indexes.flatMap(indexEntry => {
-      val fileSystem = FileSystem.get(sconf.value)
       val filePathName = filesMap(indexEntry.fileId)
-      val fileName = new Path(filePathName).getName
+      val path = new Path(filePathName)
+      val fileSystem = path.getFileSystem(sconf.value)
+      val fileName = path.getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
       val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
@@ -60,10 +61,11 @@ private[source] object CobolScanners {
     val sconf = new SerializableConfiguration(conf)
     filesRDD.mapPartitions(
       partition => {
-        val fileSystem = FileSystem.get(sconf.value)
         partition.flatMap(row => {
           val filePath = row.filePath
           val fileOrder = row.order
+          val path = new Path(filePath)
+          val fileSystem = path.getFileSystem(sconf.value)
 
           logger.info(s"Going to parse file: $filePath")
           reader.getRowIterator(new FileStreamer(filePath, fileSystem), 0L, fileOrder, 0L)
@@ -86,8 +88,6 @@ private[source] object CobolScanners {
     if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
       throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
     }
-
-    val schema = reader.getSparkSchema
 
     val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
     recordParser(reader, records)
