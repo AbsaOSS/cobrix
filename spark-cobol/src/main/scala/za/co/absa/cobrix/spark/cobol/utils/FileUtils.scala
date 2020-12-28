@@ -52,7 +52,7 @@ object FileUtils {
     * The directory may be informed through a glob pattern.
     */
   def getFiles(dir: String, hadoopConf: Configuration, recursive: Boolean = false): List[String] = {
-    getFiles(dir, FileSystem.get(hadoopConf), recursive)
+    getFiles(dir, new Path(dir).getFileSystem(hadoopConf), recursive)
   }
 
   /**

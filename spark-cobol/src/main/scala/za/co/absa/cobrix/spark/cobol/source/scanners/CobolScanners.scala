@@ -111,7 +111,7 @@ private[source] object CobolScanners {
 
   private def areThereNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Boolean = {
 
-    val fileSystem = FileSystem.get(hadoopConfiguration)
+    val fileSystem = new Path(sourceDir).getFileSystem(hadoopConfiguration)
 
     if (FileUtils.getNumberOfFilesInDir(sourceDir, fileSystem) < FileUtils.THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK) {
       FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem) > 0
