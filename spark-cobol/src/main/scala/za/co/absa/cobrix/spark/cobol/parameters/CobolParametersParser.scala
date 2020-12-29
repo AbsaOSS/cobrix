@@ -93,7 +93,7 @@ object CobolParametersParser {
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
 
   // Indexed multisegment file processing
-  val PARAM_ALLOW_INDEXING            = "allow_indexing"
+  val PARAM_ENABLE_INDEXES            = "enable_indexes"
   val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
   val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
   val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
@@ -276,7 +276,7 @@ object CobolParametersParser {
         fileEndOffset,
         varLenOccursEnabled,
         isRecordIdGenerationEnabled,
-        params.getOrElse(PARAM_ALLOW_INDEXING, "true").toBoolean,
+        params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,

@@ -189,8 +189,4 @@ class Test03AsciiMultisegment extends WordSpec with SparkTestBase with BinaryFil
       .load(tmpFileName)
   }
 
-  def removeWhiteSpace(s: String): String = {
-    s.replaceAll("[\\r\\n ]", "")
-  }
-
 }
