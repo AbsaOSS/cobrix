@@ -23,6 +23,7 @@ import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
@@ -31,6 +32,7 @@ import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.utils.SourceTestUtils.{createFileInRandomDirectory, sampleCopybook}
 
 class CobolRelationSpec extends SparkCobolTestBase with Serializable {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val copybookFileName: String = "testCopybookFile.cob"
   private var copybookFile: File = _
@@ -51,7 +53,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
 
   after {
     // BE CAREFUL when changing this line, DO NOT point at the wrong directory
-    println("Removing test dir: " + copybookFile.getParentFile.getAbsolutePath)
+    logger.debug("Removing test dir: " + copybookFile.getParentFile.getAbsolutePath)
     FileUtils.deleteDirectory(copybookFile.getParentFile)
   }
 

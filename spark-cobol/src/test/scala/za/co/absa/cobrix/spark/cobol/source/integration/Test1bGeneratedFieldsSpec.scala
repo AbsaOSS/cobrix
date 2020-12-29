@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -26,7 +25,6 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 //noinspection NameBooleanParameters
 class Test1bGeneratedFieldsSpec extends FunSuite with SparkTestBase {
-
   private val exampleName = "Test1b"
   private val inputCopybookPath = "file://../data/test1_copybook.cob"
   private val inpudDataPath = "../data/test1_data"
@@ -46,7 +44,7 @@ class Test1bGeneratedFieldsSpec extends FunSuite with SparkTestBase {
       .load(inpudDataPath)
 
     // This is to print the actual output
-    println(df.schema.json)
+    //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
