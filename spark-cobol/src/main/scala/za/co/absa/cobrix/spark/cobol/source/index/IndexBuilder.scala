@@ -218,11 +218,20 @@ private[source] object IndexBuilder {
   }
 
   def isFileRandomAccessSupported(fs: FileSystem): Boolean = {
+    import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
+
+    val isSupportedFx =
     fs.isInstanceOf[DistributedFileSystem] ||
       fs.isInstanceOf[RawLocalFileSystem] ||
       fs.isInstanceOf[FilterFileSystem] ||
       fs.isInstanceOf[LocalFileSystem] ||
       fs.isInstanceOf[ChecksumFileSystem]
+    if (!isSupportedFx) {
+      val q = "\""
+      logger.warn(s"Filesystem '${fs.getScheme}://' might not support random file access. Please, disable indexes if the job fails. " +
+      s" You can do this using '.option($q$PARAM_ENABLE_INDEXES$q, false)' ")
+    }
+    true
   }
 
   def isDataLocalitySupported(fs: FileSystem): Boolean = {

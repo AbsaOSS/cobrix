@@ -23,6 +23,10 @@ import org.slf4j.Logger
  * This trait extends a test suite with the method for comparing small multiline strings.
  */
 trait SimpleComparisonBase extends TestSuite {
+  def removeWhiteSpace(s: String): String = {
+    s.replaceAll("[\\r\\n ]", "")
+  }
+
   def assertEqualsMultiline(actualResults: String, expectedResults: String)(implicit logger: Logger): Unit = {
     if (actualResults != expectedResults) {
       logger.error(s"EXPECTED:\n$expectedResults")

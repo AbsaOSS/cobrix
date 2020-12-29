@@ -1128,9 +1128,9 @@ Again, the full example is available at
 | .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
 | .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so the option keys are unique. |
 | .option("segment-children:0", "COMPANY => EMPLOYEE,DEPARTMENT") | Specifies a mapping between segment redefined fields and their children. Each option specifies a mapping for a single parent field. The numeric value for each mapping option must be incremented so the option keys are unique. If such mapping is specified hierarchical record structure will be automatically reconstructed. This require `redefine-segment-id-map` to be set. | 
-| .option("allow_indexing", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
-| .option("records_per_partition", 50000)    | Specifies how many records will be allocated to each partition. It will be processed by Spark tasks. |
-| .option("partition_size_mb", 100)          | Specify how many megabytes to allocate to each partition. This overrides the above option. |
+| .option("enable_indexes", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
+| .option("input_split_records", 50000)      | Specifies how many records will be allocated to each split/partition. It will be processed by Spark tasks. (The default is not set and the split will happen according to size, see the next option) |
+| .option("input_split_size_mb", 100)        | Specify how many megabytes to allocate to each partition/split. (The default is 100 MB) |
 
 ##### Helper fields generation options    
 
@@ -1466,7 +1466,7 @@ For multisegment variable lengths tests:
 
 - #### 0.2.9 released 21 Nov 2018
   - Added an index generation for multisegment variable record size files to make the reader scalable.
-    - It is turned on by default, you can restore old behaviour using .option("allow_indexing", "false")
+    - It is turned on by default, you can restore old behaviour using .option("enable_indexes", "false")
   - Added options to control index generation (first table below).
   - Added generation of helper fields for hierarchical databases (second table below). These helper fields allows to split a dataset into individual segments and then join them.
     The helper fields will contain segment ids that can be used for joining the resulting tables. See [the guide on loading hierarchical data sets above](#ims).
