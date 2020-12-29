@@ -20,12 +20,14 @@ import java.io.{DataOutputStream, FileOutputStream}
 
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TempDir
 
 // These examples are provided by Peter Moon
 
 class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with SparkTestBase {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val baseTestDir = TempDir.getNew
 
@@ -75,7 +77,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("input_split_records", 5)
       .option("is_xcom", true)
       .load(dataWithHeaderPath)
-    println("Data With Header, No segment options # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data With Header, No segment options # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 10)
   }
@@ -91,7 +93,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_field", "I")
       .option("segment_filter", "1")
       .load(dataWithHeaderPath)
-    println("Data With Header, segment field and filter specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data With Header, segment field and filter specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 9)
   }
@@ -108,7 +110,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_filter", "1,0")
       .option("segment_id_root", "1")
       .load(dataWithHeaderPath)
-    println("Data With Header, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data With Header, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 9)
   }
@@ -122,7 +124,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("input_split_records", 5)
       .option("is_xcom", true)
       .load(dataWithoutHeaderPath)
-    println("Data Without Header, No segment options # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data Without Header, No segment options # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 9)
   }
@@ -138,7 +140,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_field", "I")
       .option("segment_filter", "1")
       .load(dataWithoutHeaderPath)
-    println("Data Without Header, segment field and filter specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data Without Header, segment field and filter specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 9)
   }
@@ -155,7 +157,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_filter", "1,0")
       .option("segment_id_root", "1")
       .load(dataWithoutHeaderPath)
-    println("Data Without Header, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data Without Header, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 2)
     assert(df.count() == 9)
   }
@@ -169,7 +171,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("input_split_records", 5)
       .option("is_xcom", true)
       .load(dataWithHeaderOnly)
-    println("Data With Header only, No segment options # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data With Header only, No segment options # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 1)
     assert(df.count() == 1)
   }
@@ -185,7 +187,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_field", "I")
       .option("segment_filter", "1")
       .load(dataWithHeaderOnly)
-    println("Data Header Only, segment field and filter specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data Header Only, segment field and filter specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 1)
     assert(df.count() == 0)
   }
@@ -202,7 +204,7 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
       .option("segment_filter", "1,0")
       .option("segment_id_root", "1")
       .load(dataWithHeaderOnly)
-    println("Data Header Only, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
+    logger.debug("Data Header Only, segment field, filter and id root specified # partitions: " + df.rdd.partitions.size)
     assert(df.rdd.partitions.size == 1)
     assert(df.count() == 0)
   }

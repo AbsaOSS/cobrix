@@ -23,9 +23,11 @@ import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
+import org.slf4j.LoggerFactory
 import org.spark_project.guava.io.Files
 
 class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val baseTestDir = TempDir.getNew // tmpDir/8377740/
   private val innerTestDir1 = new File(s"$baseTestDir/inner1") // tmpDir/8377740/inner1
@@ -48,7 +50,7 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
   override def beforeAll(): Unit = {
 
     if (baseTestDir.exists() && baseTestDir.isDirectory) {
-      println(s"Created base test dir at ${baseTestDir.getAbsolutePath}")
+      logger.debug(s"Created base test dir at ${baseTestDir.getAbsolutePath}")
     }
     else {
       throw new IllegalArgumentException(s"Could not create test dir at ${baseTestDir.getAbsolutePath}")
@@ -67,7 +69,7 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
   }
 
   override def afterAll() {
-    println(s"Deleting test directory at ${baseTestDir.getAbsolutePath}")
+    logger.debug(s"Deleting test directory at ${baseTestDir.getAbsolutePath}")
     CommonsFileUtils.deleteDirectory(baseTestDir)
   }
 

@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
@@ -47,7 +46,7 @@ class Test2RecordOffsetsSpec extends FunSuite with SparkTestBase {
       .load(inpudDataPath)
 
     // This is to print the actual output
-    println(df.schema.json)
+    //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
