@@ -20,7 +20,7 @@ import java.io.FileNotFoundException
 import java.nio.file.{Files, Paths}
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
@@ -49,7 +49,6 @@ object CobolParametersValidator {
   }
 
   def validateOrThrow(parameters: Map[String, String], hadoopConf: Configuration): Unit = {
-    val hdfs = FileSystem.get(hadoopConf)
     val copyBookContents = parameters.get(PARAM_COPYBOOK_CONTENTS)
     val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
     val copyBookMultiPathFileNames = parameters.get(PARAM_MULTI_COPYBOOK_PATH)
@@ -70,10 +69,11 @@ object CobolParametersValidator {
           throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not readable.")
         }
       } else {
-        if (!hdfs.exists(new Path(copyBookFileName))) {
+        val fs = new Path(fileName).getFileSystem(hadoopConf)
+        if (!fs.exists(new Path(copyBookFileName))) {
           throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
-        if (!hdfs.isFile(new Path(copyBookFileName))) {
+        if (!fs.isFile(new Path(copyBookFileName))) {
           throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not a file.")
         }
       }
