@@ -18,4 +18,7 @@ package com.example.spark.cobol.utils
 
 trait SparkLocalMaster {
   System.getProperties.setProperty("spark.master", "local[*]")
+  System.getProperties.setProperty("spark.ui.enabled", "false")
+  System.getProperties.setProperty("spark.driver.bindAddress", "127.0.0.1")
+  System.getProperties.setProperty("spark.driver.host", "127.0.0.1")
 }

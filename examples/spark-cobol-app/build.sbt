@@ -17,18 +17,16 @@
 ThisBuild / organization := "com.example"
 ThisBuild / name         := "spark-cobol-app"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "2.11.12"
+ThisBuild / scalaVersion := "2.12.12"
 
-val sparkVersion = "2.4.4"
+val sparkVersion = "3.0.1"
 val sparkCobolVersion = "2.1.5"
 val scalatestVersion = "3.0.1"
 
 ThisBuild / libraryDependencies ++= Seq(
   "za.co.absa.cobrix" %% "spark-cobol"     % sparkCobolVersion,
   "org.scalatest"     %% "scalatest"       % scalatestVersion   % Test,
-  "org.apache.spark"  %% "spark-core"      % sparkVersion       % Provided,
   "org.apache.spark"  %% "spark-sql"       % sparkVersion       % Provided,
-  "org.apache.spark"  %% "spark-streaming" % sparkVersion       % Provided
 )
 
 // Do not run tests in parallel

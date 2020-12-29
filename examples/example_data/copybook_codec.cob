@@ -17,7 +17,7 @@
       ****************************************************************************
 
         01  COMPANY-DETAILS.
-            05  SEGMENT-ID        PIC N(5).
+            05  SEGMENT-ID        PIC A(5).
             05  COMPANY-ID        PIC X(10).
             05  STATIC-DETAILS.
                10  COMPANY-NAME      PIC X(15).
