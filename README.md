@@ -1242,6 +1242,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.2.0 will be released soon.
+  - [#146](https://github.com/AbsaOSS/cobrix/issues/146) Added support for S3 storage.
+
 - #### 2.1.5 released 11 December 2020.
   - [#349](https://github.com/AbsaOSS/cobrix/issues/349) Fixed regression bug introduced in 2.1.4 resulting in an infinite loop in the sparse index generation for fixed-record length multisegment files.
   
@@ -1269,6 +1272,9 @@ For multisegment variable lengths tests:
   - [#295](https://github.com/AbsaOSS/cobrix/issues/295) Added `is_text` option for easier processing ASCII text files that uses EOL characters as record separators.
   - [#294](https://github.com/AbsaOSS/cobrix/issues/294) Updated Spark compile-time dependency to `2.4.5` to remove security alerts.
   - [#293](https://github.com/AbsaOSS/cobrix/issues/293) Copybook-related error messages are made more clear.  
+
+<details><summary>Older versions</summary>
+<p>
 
 - #### 2.0.8 released 14 May 2020.
   - [#184](https://github.com/AbsaOSS/cobrix/issues/184) Record extractors are made generic to be reusable for other targets in addition to Sspark Row. (Thanks [@tr11](https://github.com/tr11)). 
@@ -1309,9 +1315,6 @@ For multisegment variable lengths tests:
 - #### 2.0.0 released 11 December 2019.
   - Added cross-compilation for Scala `2.11` and `2.12` via `sbt` build (Thanks @GeorgiChochov).
   - Added sbt build for the example project.
-  
-<details><summary>Older versions</summary>
-<p>
   
 - #### 1.1.2 released 28 November 2019.
   - This is the last `Maven` release. New versions are going to be released via `sbt` and cross-compiled for Scala `2.11` and `2.12`.
