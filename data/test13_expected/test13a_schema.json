@@ -16,7 +16,7 @@
     "nullable" : true,
     "metadata" : { }
   }, {
-    "name" : "COMPIANY_ID",
+    "name" : "COMPANY_ID",
     "type" : "string",
     "nullable" : true,
     "metadata" : { }

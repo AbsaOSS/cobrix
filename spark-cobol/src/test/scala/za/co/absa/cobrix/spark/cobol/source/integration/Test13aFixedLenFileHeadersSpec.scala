@@ -92,7 +92,7 @@ class Test13aFixedLenFileHeadersSpec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    val actual = df.toJSON.take(60)
+    val actual = df.orderBy(col("COMPANY_ID"), col("AMOUNT")).toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
     if (!actual.sameElements(expected)) {
@@ -124,7 +124,7 @@ class Test13aFixedLenFileHeadersSpec extends FunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    val actual = df.orderBy(col("COMPANY_ID")).toJSON.take(60)
+    val actual = df.orderBy(col("COMPANY_ID"), col("AMOUNT")).toJSON.take(60)
     val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).toArray
 
     if (!actual.sameElements(expected)) {
