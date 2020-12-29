@@ -16,6 +16,11 @@
 
 package com.example.spark.cobol.app
 
+import org.apache.commons.io.IOUtils
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.sql.SparkSession
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
+
 /**
   * This is an example Spark/Cobol Application.
   *
