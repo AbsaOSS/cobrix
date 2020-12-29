@@ -17,8 +17,6 @@
 package com.example.spark.cobol.examples.parser.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
-import za.co.absa.cobrix.cobol.parser.examples.generators.model.{CommonLists, Company}
-import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
 
 import scala.util.Random
 
@@ -39,7 +37,7 @@ object TestDataGen13aFileHeaderAndFooter {
               05  CURRENCY          PIC X(3).
               05  SIGNATURE         PIC X(8).
               05  COMPANY-NAME      PIC X(15).
-              05  COMPIANY-ID       PIC X(10).
+              05  COMPANY-ID        PIC X(10).
               05  WEALTH-QFY        PIC 9(1).
               05  AMOUNT            PIC S9(09)V99  BINARY.
    */
