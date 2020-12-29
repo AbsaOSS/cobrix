@@ -18,7 +18,7 @@ import sbt._
 
 object Dependencies {
 
-  private val sparkVersion = "2.4.5"
+  private val sparkVersion = "2.4.7"
 
   private val guavaVersion = "15.0"
   private val scodecBitsVersion = "1.1.4"
