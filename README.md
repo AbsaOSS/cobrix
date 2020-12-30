@@ -1243,7 +1243,9 @@ For multisegment variable lengths tests:
 
 ## Changelog
 - #### 2.2.0 will be released soon.
-  - [#146](https://github.com/AbsaOSS/cobrix/issues/146) Added support for S3 storage.
+  - [#146](https://github.com/AbsaOSS/cobrix/issues/146) Added support for S3 storage. 
+    The S3 support could be considered experimental since only S3A connector has been tested. However, since Cobrix is built on
+    filesystem abstractions provided by Hadoop and Spark libraries, there shouldn't be any issues using other S3 connectors. 
 
 - #### 2.1.5 released 11 December 2020.
   - [#349](https://github.com/AbsaOSS/cobrix/issues/349) Fixed regression bug introduced in 2.1.4 resulting in an infinite loop in the sparse index generation for fixed-record length multisegment files.
