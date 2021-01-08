@@ -98,7 +98,7 @@
         <maven.scala.version>3.2.1</maven.scala.version>
         <maven.shade.version>2.3</maven.shade.version>
         <maven.sources.version>3.0.1</maven.sources.version>
-        <maven.surefire.version>2.18.1</maven.surefire.version>
+        <maven.surefire.version>2.19.1</maven.surefire.version>
         <maven.scalatest.version>1.0</maven.scalatest.version>
         <maven.release.version>2.4.2</maven.release.version>
         <maven.scm.provider.gitexe.version>1.8.1</maven.scm.provider.gitexe.version>
