@@ -1,4 +1,4 @@
-name: Build for Scala 2.12, Spark 2.4
+name: Scala 2.12, Spark 2.4
 
 on:
   push:
