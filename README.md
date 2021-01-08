@@ -1,8 +1,8 @@
 # Cobrix - COBOL Data Source for Apache Spark
 
-| master |
-| ------------- |
-| [![Build Status](https://opensource.bigusdatus.com/jenkins/buildStatus/icon?job=Absa-OSS-Projects%2Fcobrix%2Fmaster)](https://opensource.bigusdatus.com/jenkins/job/Absa-OSS-Projects/job/cobrix/job/master/) |
+| Scala 2.11 | Scala 2.12 |
+| ------------- | ------------- |
+| [![Build Scala 2.11 Spark 2.4](https://github.com/AbsaOSS/cobrix/workflows/Build+for+Scala+2.11%2c+Spark+2.4/badge.svg)](https://github.com/AbsaOSS/cobrix/actions) | [![Build Scala 2.12 Spark 2.4](https://github.com/AbsaOSS/cobrix/workflows/Build+for+Scala+2.12%2c+Spark+2.4/badge.svg)](https://github.com/AbsaOSS/cobrix/actions) |
 
 Pain free Spark/Cobol files integration.
 
