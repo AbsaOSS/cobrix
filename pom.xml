@@ -22,7 +22,7 @@
     <groupId>za.co.absa.cobrix</groupId>
     <artifactId>cobrix_2.11</artifactId>
 
-    <version>2.2.0-SNAPSHOT</version>
+    <version>2.2.1-SNAPSHOT</version>
 
     <packaging>pom</packaging>
 
@@ -400,6 +400,7 @@
                         <exclude>**/*.cpy</exclude>
                         <exclude>**/*.svg</exclude>
                         <exclude>**/*.plot</exclude>
+                        <exclude>**/*.yml</exclude>
                         <exclude>**/_*</exclude>
                         <exclude>**/dependency-reduced-pom.xml</exclude>
                         <exclude>**/.idea/**</exclude>
