@@ -18,8 +18,6 @@ import sbt._
 
 object Dependencies {
 
-  private val sparkVersion = "2.4.7"
-
   private val guavaVersion = "15.0"
   private val scodecBitsVersion = "1.1.4"
   private val scodecCoreVersion = "1.10.3"
@@ -28,6 +26,8 @@ object Dependencies {
   private val jacksonVersion = "2.10.3"
 
   private val scalatestVersion = "3.0.1"
+
+  def sparkVersion: String = sys.props.getOrElse("SPARK_VERSION", "2.4.7")
 
   def getScalaDependency(scalaVersion: String): ModuleID = "org.scala-lang" % "scala-library" % scalaVersion % Provided
 
