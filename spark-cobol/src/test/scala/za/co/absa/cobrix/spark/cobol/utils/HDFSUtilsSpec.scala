@@ -16,12 +16,10 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.File
-import java.nio.charset.Charset
+import java.io.{DataOutputStream, File, FileOutputStream}
 import java.util.UUID
 
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
-import org.spark_project.guava.io.Files
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -34,7 +32,9 @@ class HDFSUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
   private val fileSystem = FileSystem.get(new Configuration())
 
   override def beforeAll(): Unit = {
-    Files.write(UUID.randomUUID().toString, validFile, Charset.defaultCharset())
+    val ostream = new DataOutputStream(new FileOutputStream(validFile))
+    ostream.write(UUID.randomUUID().toString.getBytes)
+    ostream.close()
     invalidFile.mkdir()
   }
 

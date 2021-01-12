@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.File
+import java.io.{File, RandomAccessFile}
 import java.util.{Random, UUID}
 
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
@@ -24,7 +24,6 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
 import org.slf4j.LoggerFactory
-import org.spark_project.guava.io.Files
 
 class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -225,7 +224,9 @@ class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterE
   private def getRandomFileToBeWritten: File = new File(controlledLengthFilesDir, UUID.randomUUID().toString)
 
   private def produceFileOfLength(destination: File, length: Int): Unit = {
-    Files.write(getBytes(length), destination)
+    val f = new RandomAccessFile(destination, "rw")
+    f.setLength(length)
+    f.close()
   }
 
   private def getBytes(length: Int): Array[Byte] = {
