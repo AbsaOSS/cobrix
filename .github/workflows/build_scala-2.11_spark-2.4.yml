@@ -1,4 +1,4 @@
-name: Scala 2.11, Spark 2.4
+name: scala-2.11_spark-2.4
 
 on:
   push:
@@ -17,4 +17,4 @@ jobs:
         with:
           java-version: 1.8
       - name: Build and run tests
-        run: sbt ++2.11.12 test
+        run: sbt ++2.11.12 test -DSPARK_VERSION=2.4.7
