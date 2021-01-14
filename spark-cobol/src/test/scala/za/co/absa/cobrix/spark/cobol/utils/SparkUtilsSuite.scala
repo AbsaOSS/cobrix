@@ -145,10 +145,11 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
     )
 
     val expectedOrigSchema = """root
-                               | |-- value: array (nullable = false)
-                               | |    |-- element: array (containsNull = true)
-                               | |    |    |-- element: integer (containsNull = false)
+                               | |-- value: array (nullable = _)
+                               | |    |-- element: array (containsNull = _)
+                               | |    |    |-- element: integer (containsNull = _)
                                |""".stripMargin.replace("\r\n", "\n")
+
     val expectedOrigData = """{"value":[[1,2,3,4,5,6],[7,8,9,10,11,12,13]]}
                              |{"value":[[201,202,203,204,205,206],[207,208,209,210,211,212,213]]}
                              |{"value":[[201,202,203,204,205,206],[207,208,209,210,211,212,213]]}
@@ -186,6 +187,9 @@ class SparkUtilsSuite extends FunSuite with SparkTestBase {
     val dfFlattened2 = SparkUtils.flattenSchema(df, useShortFieldNames = true)
 
     val originalSchema = df.schema.treeString
+      .replace("true", "_")
+      .replace("false", "_")
+
     val originalData = df.toJSON.collect().mkString("\n")
 
     val flatSchema1 = dfFlattened1.schema.treeString
