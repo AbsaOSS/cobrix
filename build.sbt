@@ -32,6 +32,8 @@ ThisBuild / scalacOptions := Seq("-unchecked", "-deprecation")
 // Scala shouldn't be packaged so it is explicitly added as a provided dependency below
 ThisBuild / autoScalaLibrary := false
 
+lazy val printSparkVersion = taskKey[Unit]("Print Spark version spark-cobol is building against.")
+
 lazy val cobrix = (project in file("."))
   .settings(
     name := "cobrix",
@@ -60,6 +62,12 @@ lazy val cobolConverters = (project in file("cobol-converters"))
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
     name := "spark-cobol",
+    printSparkVersion := {
+      val log = streams.value.log
+      log.info(s"Building with Spark $sparkVersion")
+      sparkVersion
+    },
+    (Compile / compile) := ((Compile / compile) dependsOn printSparkVersion).value,
     libraryDependencies ++= SparkCobolDependencies :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
