@@ -56,7 +56,7 @@ class ParserVisitor(enc: Encoding,
 
   /* aux classes */
   case class Level(n: Int, el: Group, context: ParserRuleContext, children: Option[Int] = None)
-  private var levels: mutable.Stack[Level] = mutable.Stack()
+  private var levels: Stack[Level] = Stack()
   var ast: CopybookAST = Group.root
 
   /* regex */
@@ -441,7 +441,7 @@ class ParserVisitor(enc: Encoding,
   override def visitMain(ctx: copybookParser.MainContext): Expr = {
     // initialize AST
     ast = Group.root.copy(children = mutable.ArrayBuffer())(None)
-    levels = mutable.Stack(Level(0, ast, ctx))
+    levels = Stack[Level](Level(0, ast, ctx))
 
     visitChildren(ctx)
   }
