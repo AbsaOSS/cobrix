@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.antlr
 import org.antlr.v4.runtime.{BailErrorStrategy, CharStreams, CommonTokenStream}
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 class ParserJson {
@@ -82,7 +82,7 @@ class ParserJsonVisitor extends jsonBaseVisitor[Any] {
    * @return the visitor result
    */
   override def visitValue_obj(ctx: jsonParser.Value_objContext): Any = {
-    ctx.obj().pair().map(x => this.visit(x).asInstanceOf[(String, Any)]).toMap
+    ctx.obj().pair().asScala.map(x => this.visit(x).asInstanceOf[(String, Any)]).toMap
   }
 
   /**
@@ -93,7 +93,7 @@ class ParserJsonVisitor extends jsonBaseVisitor[Any] {
    * @return the visitor result
    */
   override def visitValue_array(ctx: jsonParser.Value_arrayContext): Any = {
-    ctx.arr.value.map(x => this.visit(x)).toArray
+    ctx.arr.value.asScala.map(x => this.visit(x)).toArray
   }
 
   /**
