@@ -33,10 +33,6 @@
         <!-- binary codecs -->
         <dependency>
             <groupId>org.scodec</groupId>
-            <artifactId>scodec-bits_${scala.compat.version}</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scodec</groupId>
             <artifactId>scodec-core_${scala.compat.version}</artifactId>
         </dependency>
         <!-- parser -->
