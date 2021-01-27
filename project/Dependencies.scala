@@ -49,7 +49,6 @@ object Dependencies {
 
   val CobolParserDependencies: Seq[ModuleID] = Seq(
     // compile
-    "org.scodec" %% "scodec-bits"    % scodecBitsVersion,
     "org.scodec" %% "scodec-core"    % scodecCoreVersion,
     "org.antlr"   % "antlr4-runtime" % antlrValue,
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,
