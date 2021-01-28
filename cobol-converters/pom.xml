@@ -30,12 +30,6 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-
         <!-- serializers -->
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -58,6 +52,17 @@
             <groupId>za.co.absa.cobrix</groupId>
             <artifactId>cobol-parser_${scala.compat.version}</artifactId>
             <version>${project.version}</version>
+        </dependency>
+
+        <!-- logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

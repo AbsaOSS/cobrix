@@ -37,7 +37,7 @@ object Dependencies {
     "org.apache.spark" %% "spark-streaming"  % sparkVersion % Provided,
 
     // test
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+    "org.scalatest" %% "scalatest"    % scalatestVersion % Test
   )
 
   val SparkCobolDependenciesOverride: Seq[ModuleID] = Seq(
@@ -54,7 +54,8 @@ object Dependencies {
     "org.slf4j"   % "slf4j-api"      % slf4jVersion,
 
     // test
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+    "org.scalatest" %% "scalatest"    % scalatestVersion % Test,
+    "org.slf4j"      % "slf4j-simple" % slf4jVersion     % Test
   )
 
   val CobolConvertersDependencies: Seq[ModuleID] = Seq(
@@ -65,6 +66,7 @@ object Dependencies {
     "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % jacksonVersion,
 
     // test
-    "org.scalatest" %% "scalatest" % scalatestVersion % Test
+    "org.scalatest" %% "scalatest"    % scalatestVersion % Test,
+    "org.slf4j"      % "slf4j-simple" % slf4jVersion     % Test
   )
 }
