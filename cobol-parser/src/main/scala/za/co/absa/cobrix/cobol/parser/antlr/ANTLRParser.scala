@@ -16,9 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 
-import java.nio.charset.Charset
-
 import org.antlr.v4.runtime._
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
@@ -26,6 +25,8 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+
+import java.nio.charset.Charset
 
 
 class ThrowErrorStrategy() extends DefaultErrorStrategy {
@@ -49,6 +50,8 @@ class ThrowErrorStrategy() extends DefaultErrorStrategy {
 
 
 object ANTLRParser {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   def parse(copyBookContents: String,
             enc: Encoding,
             stringTrimmingPolicy: StringTrimmingPolicy,
@@ -66,8 +69,13 @@ object ANTLRParser {
 
     val charStream = CharStreams.fromString(strippedContents)
     val lexer = new copybookLexer(charStream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(new LogErrorListener(logger))
+
     val tokens = new CommonTokenStream(lexer)
     val parser = new copybookParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(new LogErrorListener(logger))
     parser.setErrorHandler(new ThrowErrorStrategy())
 
     visitor.visitMain(parser.main())
