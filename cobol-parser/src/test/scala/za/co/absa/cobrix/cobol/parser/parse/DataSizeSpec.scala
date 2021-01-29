@@ -16,11 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import java.nio.charset.StandardCharsets
-
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.FunSuite
-import za.co.absa.cobrix.cobol.parser.antlr.{ParserVisitor, ThrowErrorStrategy, copybookLexer, copybookParser}
+import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.parser.antlr._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
@@ -28,7 +27,11 @@ import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
 
+import java.nio.charset.StandardCharsets
+
 class DataSizeSpec extends FunSuite {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   private def parse(pic: String): Primitive = {
     val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
       CodePage.getCodePageByName("common"),
@@ -38,8 +41,13 @@ class DataSizeSpec extends FunSuite {
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(new LogErrorListener(logger))
+
     val tokens = new CommonTokenStream(lexer)
     val parser = new copybookParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(new LogErrorListener(logger))
     parser.setErrorHandler(new ThrowErrorStrategy())
     visitor.visit(parser.main())
     visitor.ast.children.head.asInstanceOf[Group].children.head.asInstanceOf[Primitive]

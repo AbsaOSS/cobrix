@@ -16,18 +16,27 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 import org.antlr.v4.runtime.{BailErrorStrategy, CharStreams, CommonTokenStream}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 
 
 class ParserJson {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   def parse(text: String): Any = {
     val visitor = new ParserJsonVisitor()
     val charStream = CharStreams.fromString(text)
     val lexer = new jsonLexer(charStream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(new LogErrorListener(logger))
+
     val tokens = new CommonTokenStream(lexer)
     val parser = new jsonParser(tokens)
-    parser.setErrorHandler(new BailErrorStrategy());
+    parser.removeErrorListeners()
+    parser.addErrorListener(new LogErrorListener(logger))
+    parser.setErrorHandler(new BailErrorStrategy())
+
     visitor.visit(parser.json())
   }
 

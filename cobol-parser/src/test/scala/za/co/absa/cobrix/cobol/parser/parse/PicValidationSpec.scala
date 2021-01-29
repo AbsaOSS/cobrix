@@ -17,11 +17,11 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import java.nio.charset.StandardCharsets
-
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
 import org.scalatest.FunSuite
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.antlr.{ParserVisitor, ThrowErrorStrategy, copybookLexer, copybookParser}
+import za.co.absa.cobrix.cobol.parser.antlr.{LogErrorListener, ParserVisitor, ThrowErrorStrategy, copybookLexer, copybookParser}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
@@ -29,6 +29,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
 
 class PicValidationSpec extends FunSuite {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private def validatePic(pic: String) = {
 
@@ -40,8 +41,13 @@ class PicValidationSpec extends FunSuite {
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(new LogErrorListener(logger))
+
     val tokens = new CommonTokenStream(lexer)
     val parser = new copybookParser(tokens)
+    parser.removeErrorListeners()
+    parser.addErrorListener(new LogErrorListener(logger))
     parser.setErrorHandler(new ThrowErrorStrategy())
     visitor.visit(parser.main())
   }
