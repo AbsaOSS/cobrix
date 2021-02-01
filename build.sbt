@@ -35,6 +35,7 @@ ThisBuild / autoScalaLibrary := false
 lazy val printSparkVersion = taskKey[Unit]("Print Spark version spark-cobol is building against.")
 
 lazy val cobrix = (project in file("."))
+  .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings(
     name := "cobrix",
 
@@ -49,10 +50,12 @@ lazy val cobolParser = (project in file("cobol-parser"))
   .settings(
     name := "cobol-parser",
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    assemblySettings
   )
 
 lazy val cobolConverters = (project in file("cobol-converters"))
+  .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings(
       name := "cobol-converters",
       libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
@@ -72,7 +75,8 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
     populateBuildInfoTemplate,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value
+    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+    assemblySettings
   )
   .dependsOn(cobolParser)
 
@@ -83,3 +87,21 @@ ThisBuild / coverageExcludedFiles := ".*Example.*;Test.*"
 // release settings
 releaseCrossBuild := true
 addCommandAlias("releaseNow", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")
+
+lazy val assemblySettings = Seq(
+  // This merge strategy retains service entries for all services in manifest.
+  // It allows custom Spark data sources to be used together, e.g. 'spark-xml' and 'spark-cobol'.
+  assemblyMergeStrategy in assembly := {
+    case PathList("META-INF", xs @ _*) =>
+      xs map {_.toLowerCase} match {
+        case "manifest.mf" :: Nil =>
+          MergeStrategy.discard
+        case "services" :: x =>
+          MergeStrategy.filterDistinctLines
+        case _ => MergeStrategy.deduplicate
+      }
+    case _ => MergeStrategy.deduplicate
+  },
+  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
+  test in assembly := {}
+)
