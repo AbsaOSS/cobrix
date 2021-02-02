@@ -253,16 +253,22 @@ scala>
 #### Creating an uber jar
 
 Gathering all dependencies manually maybe a tiresome task. A better approach would be to create a jar file that contains
-all of the dependencies.
+all required dependencies (an uber jar aka fat jar). 
 
-Creating an uber jar for Cobrix is very easy. Just go to a folder with one of the examples, say, `examples/spark-cobol-app`.
-After that run `mvn package`. Then, copy `target/spark-cobol-app-0.0.1-SNAPSHOT.jar` to a clustrr and run:
-
+Creating an uber jar for Cobrix is very easy. Just clone the repository and run one of the following commands:
+```sh
+sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.7
+sbt ++2.12.12 assembly -DSPARK_VERSION=2.4.7
+sbt ++2.12.12 assembly -DSPARK_VERSION=3.0.1
 ```
-$ spark-shell --jars spark-cobol-app-0.0.1-SNAPSHOT.jar
-```
 
-Our example pom projects are set up so an uber jar is built every time you build it using Maven.
+You can collect the uber jar of `spark-cobol` either at
+`spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
+
+Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
+```sh
+$ spark-shell --jars spark-cobol-assembly-2.2.1-SNAPSHOT.jar
+```
 
 ## Other Features
 
