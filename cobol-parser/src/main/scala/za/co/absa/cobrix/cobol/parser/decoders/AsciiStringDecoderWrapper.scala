@@ -29,8 +29,9 @@ import scala.collection.mutable.ArrayBuffer
   * @param asciiCharsetName A charset name of input strings
   * @return A string representation of the binary data
   */
-class AsciiStringDecoderWrapper(trimmingType: Int, asciiCharsetName: String) extends Serializable with (Array[Byte] => Any) {
+class AsciiStringDecoderWrapper(trimmingType: Int, asciiCharsetName: String, improvedNullDetection: Boolean) extends Serializable with (Array[Byte] => Any) {
   import StringDecoders._
+  import StringTools._
 
   lazy val charset: Charset = Charset.forName(asciiCharsetName)
 
@@ -41,6 +42,9 @@ class AsciiStringDecoderWrapper(trimmingType: Int, asciiCharsetName: String) ext
     * @return A string representation of the binary data
     */
   def apply(bytes: Array[Byte]): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     var i = 0
 
     // Filter out all special characters

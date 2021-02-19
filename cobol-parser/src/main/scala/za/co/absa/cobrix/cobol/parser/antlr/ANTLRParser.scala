@@ -56,11 +56,12 @@ object ANTLRParser {
             enc: Encoding,
             stringTrimmingPolicy: StringTrimmingPolicy,
             commentPolicy: CommentPolicy,
+            improvedNullDetection: Boolean,
             ebcdicCodePage: CodePage,
             asciiCharset: Charset,
             isUtf16BigEndian: Boolean,
             floatingPointFormat: FloatingPointFormat): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection)
 
     val strippedContents = filterSpecialCharacters(copyBookContents).split("\\r?\\n").map(
       line =>

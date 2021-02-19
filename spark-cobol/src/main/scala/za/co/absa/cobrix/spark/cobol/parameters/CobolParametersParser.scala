@@ -73,6 +73,7 @@ object CobolParametersParser {
   val PARAM_IS_UTF16_BIG_ENDIAN       = "is_utf16_big_endian"
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
+  val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
 
   // Parameters for multisegment variable length files
   val PARAM_RECORD_LENGTH             = "record_length"
@@ -228,6 +229,7 @@ object CobolParametersParser {
       stringTrimmingPolicy,
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
+      params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),

@@ -78,21 +78,22 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param dataEncoding         Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
-    * @param copyBookContents     A string containing all lines of a copybook
-    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
-    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
-    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
-    *                             resolving segment redefines.
-    * @param fieldParentMap       A segment fields parent mapping
-    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
-    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
-    * @param ebcdicCodePage       A code page for EBCDIC encoded data
-    * @param asciiCharset         A charset for ASCII encoded data
-    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
-    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
-    * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param dataEncoding          Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param copyBookContents      A string containing all lines of a copybook
+    * @param dropGroupFillers      Drop groups marked as fillers from the output AST
+    * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    *                              resolving segment redefines.
+    * @param fieldParentMap        A segment fields parent mapping
+    * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
+    * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
+    * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
+    * @param ebcdicCodePage        A code page for EBCDIC encoded data
+    * @param asciiCharset          A charset for ASCII encoded data
+    * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
+    * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parse(copyBookContents: String,
@@ -103,6 +104,7 @@ object CopybookParser {
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
             commentPolicy: CommentPolicy = CommentPolicy(),
+            improvedNullDetection: Boolean = false,
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
             isUtf16BigEndian: Boolean = true,
@@ -118,6 +120,7 @@ object CopybookParser {
       fieldParentMap,
       stringTrimmingPolicy,
       commentPolicy,
+      improvedNullDetection,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -130,19 +133,20 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param copyBookContents     A string containing all lines of a copybook
-    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
-    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
-    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
-    * @param fieldParentMap       A segment fields parent mapping
-    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
-    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
-    * @param ebcdicCodePage       A code page for EBCDIC encoded data
-    * @param asciiCharset         A charset for ASCII encoded data
-    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
-    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
-    * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param copyBookContents      A string containing all lines of a copybook
+    * @param dropGroupFillers      Drop groups marked as fillers from the output AST
+    * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param fieldParentMap        A segment fields parent mapping
+    * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
+    * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
+    * @param ebcdicCodePage        A code page for EBCDIC encoded data
+    * @param asciiCharset          A charset for ASCII encoded data
+    * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
+    * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -152,6 +156,7 @@ object CopybookParser {
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
+                improvedNullDetection: Boolean = false,
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
@@ -167,6 +172,7 @@ object CopybookParser {
       fieldParentMap,
       stringTrimmingPolicy,
       commentPolicy,
+      improvedNullDetection,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -179,21 +185,22 @@ object CopybookParser {
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
-    * @param enc                  Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
-    * @param copyBookContents     A string containing all lines of a copybook
-    * @param dropGroupFillers     Drop groups marked as fillers from the output AST
-    * @param dropValueFillers     Drop primitive fields marked as fillers from the output AST
-    * @param segmentRedefines     A list of redefined fields that correspond to various segments. This needs to be specified for automatically
-    *                             resolving segment redefines.
-    * @param fieldParentMap       A segment fields parent mapping
-    * @param stringTrimmingPolicy Specifies if and how strings should be trimmed when parsed
-    * @param commentPolicy        Specifies a policy for comments truncation inside a copybook
-    * @param ebcdicCodePage       A code page for EBCDIC encoded data
-    * @param asciiCharset         A charset for ASCII encoded data
-    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
-    * @param floatingPointFormat  A format of floating-point numbers (IBM/IEEE754)
-    * @param nonTerminals         A list of non-terminals that should be extracted as strings
-    * @param debugFieldsPolicy    Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param enc                   Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
+    * @param copyBookContents      A string containing all lines of a copybook
+    * @param dropGroupFillers      Drop groups marked as fillers from the output AST
+    * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    *                              resolving segment redefines.
+    * @param fieldParentMap        A segment fields parent mapping
+    * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
+    * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
+    * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
+    * @param ebcdicCodePage        A code page for EBCDIC encoded data
+    * @param asciiCharset          A charset for ASCII encoded data
+    * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
+    * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
+    * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -205,6 +212,7 @@ object CopybookParser {
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 commentPolicy: CommentPolicy,
+                improvedNullDetection: Boolean,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
                 isUtf16BigEndian: Boolean,
@@ -213,7 +221,7 @@ object CopybookParser {
                 occursHandlers: Map[String, Map[String, Int]],
                 debugFieldsPolicy: DebugFieldsPolicy): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -232,7 +240,7 @@ object CopybookParser {
                   processGroupFillers(
                     markDependeeFields(
                       addNonTerminals(
-                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection),
                       occursHandlers
                     ), dropValueFillers
                   ), dropGroupFillers, dropValueFillers
@@ -249,7 +257,7 @@ object CopybookParser {
                 renameGroupFillers(
                   markDependeeFields(
                     addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat),
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection),
                     occursHandlers
                   ),
                   dropGroupFillers, dropValueFillers
@@ -267,7 +275,8 @@ object CopybookParser {
                               ebcdicCodePage: CodePage,
                               asciiCharset: Charset,
                               isUtf16BigEndian: Boolean,
-                              floatingPointFormat: FloatingPointFormat
+                              floatingPointFormat: FloatingPointFormat,
+                              improvedNullDetection: Boolean
                              ): CopybookAST = {
 
     def getNonTerminalName(name: String, parent: Group): String = {
@@ -292,11 +301,11 @@ object CopybookParser {
         case g: Group =>
           if (nonTerminals contains g.name) {
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat).copy(isRedefined = true)(g.parent)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
@@ -310,7 +319,7 @@ object CopybookParser {
           }
           else
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection)
             )
       }
     }
@@ -840,7 +849,7 @@ object CopybookParser {
     * <li>Remove all groups that don't have child nodes.</li>
     * </ul>
     *
-    * @param ast An AST as a set of copybook records
+    * @param ast              An AST as a set of copybook records
     * @param dropValueFillers is there intention to drop primitive fields fillers
     * @return The same AST with group fillers processed
     */
@@ -919,8 +928,8 @@ object CopybookParser {
           val newGrp = processGroup(grp)
           newChildren += newGrp
         case st: Primitive =>
-            newChildren += st.withUpdatedIsRedefined(newIsRedefined = true)
-            newChildren += getDebugField(st)
+          newChildren += st.withUpdatedIsRedefined(newIsRedefined = true)
+          newChildren += getDebugField(st)
       }
       group.withUpdatedChildren(newChildren)
     }

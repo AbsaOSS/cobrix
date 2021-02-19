@@ -34,18 +34,26 @@ class BinaryDecoderSpec extends FunSuite {
 
 
   test("Test uncompressed number decoding") {
-    assert(StringDecoders.decodeAsciiNumber("100200".toCharArray.map(_.toByte), isUnsigned = false).contains("100200"))
-    assert(StringDecoders.decodeAsciiBigNumber("1002551".toCharArray.map(_.toByte), isUnsigned = false, 3).toString.contains("1002.551"))
-    assert(StringDecoders.decodeAsciiBigNumber("1002.551".toCharArray.map(_.toByte), isUnsigned = false, 0).toString.contains("1002.551"))
+    assert(StringDecoders.decodeAsciiNumber("100200".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false).contains("100200"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002551".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false, 3).toString.contains("1002.551"))
+    assert(StringDecoders.decodeAsciiBigNumber("1002.551".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false, 0).toString.contains("1002.551"))
 
     // "1002551"
     val ebcdicNum = Array[Byte](0xF1.toByte, 0xF0.toByte, 0xF0.toByte, 0xF2.toByte, 0xF5.toByte, 0xF5.toByte, 0xF1.toByte)
-    assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, isUnsigned = false, 2).toString().contains("10025.51"))
+    assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, isUnsigned = false, improvedNullDetection = false, 2).toString().contains("10025.51"))
   }
 
   test("Test positive COMP-3 format decoding") {
     val comp3BytesPositive = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4F.toByte)
     val comp3ValuePositive = "101144750000004"
+
+    val v = BCDNumberDecoders.decodeBigBCDNumber(comp3BytesPositive, 0, 0)
+    assert (v.contains(comp3ValuePositive))
+  }
+
+  test("Test positive COMP-3 format decoding2") {
+    val comp3BytesPositive = Array[Byte](0x00.toByte,0x00.toByte,0x5F.toByte)
+    val comp3ValuePositive = "5"
 
     val v = BCDNumberDecoders.decodeBigBCDNumber(comp3BytesPositive, 0, 0)
     assert (v.contains(comp3ValuePositive))

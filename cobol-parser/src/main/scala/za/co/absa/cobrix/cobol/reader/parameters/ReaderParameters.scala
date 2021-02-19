@@ -54,6 +54,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
   * @param multisegment            Parameters specific to reading multisegment files
   * @param commentPolicy           A comment truncation policy
+  * @param improvedNullDetection   If true, string values that contain only zero bytes (0x0) will be considered null.
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param dropValueFillers       If true the parser will drop all value FILLER fields
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
@@ -90,6 +91,7 @@ case class ReaderParameters(
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              multisegment:            Option[MultisegmentParameters] = None,
                              commentPolicy:           CommentPolicy = CommentPolicy(),
+                             improvedNullDetection:   Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,
                              nonTerminals:            Seq[String] = Nil,

@@ -22,57 +22,70 @@ import java.nio.charset.StandardCharsets
 import org.scalatest.WordSpec
 
 class AsciiStringDecoderWrapperSpec extends WordSpec {
+
   import StringDecoders._
 
   "AsciiStringDecoderWrapper" should {
 
+    "be able to decode empty strings" in {
+      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "UTF8", false)
+
+      assert(decoder(Array[Byte](0, 0, 0, 0)) == "")
+    }
+
+    "be able to decode nulls" in {
+      val decoder = new AsciiStringDecoderWrapper(TrimNone, "UTF8", true)
+
+      assert(decoder(Array[Byte](0, 0, 0, 0)) == null)
+    }
+
     "be able to decode strings" in {
-      val decoder = new AsciiStringDecoderWrapper(TrimNone, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimNone, "UTF8", false)
 
       assert(decoder(" Hello ".getBytes(StandardCharsets.UTF_8)) == " Hello ")
     }
 
     "be able to decode UTF-8 strings" in {
       val str = "ěščřžýáíé"
-      val decoder = new AsciiStringDecoderWrapper(TrimNone, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimNone, "UTF8", false)
 
       assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == str)
     }
 
     "be able to decode strings with special characters" in {
       val str = "\u0001\u0005A\u0008\u0010B\u0015\u001F"
-      val decoder = new AsciiStringDecoderWrapper(TrimNone, "ASCII")
+      val decoder = new AsciiStringDecoderWrapper(TrimNone, "ASCII", false)
 
       assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "  A  B  ")
     }
 
     "support left trimming" in {
-      val decoder = new AsciiStringDecoderWrapper(TrimLeft, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimLeft, "UTF8", false)
 
       assert(decoder(" Hello ".getBytes(StandardCharsets.UTF_8)) == "Hello ")
     }
 
     "support right trimming" in {
-      val decoder = new AsciiStringDecoderWrapper(TrimRight, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimRight, "UTF8", false)
 
       assert(decoder(" Hello ".getBytes(StandardCharsets.UTF_8)) == " Hello")
     }
 
     "support trimming on both sides" in {
-      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "UTF8", false)
 
       assert(decoder(" Hello ".getBytes(StandardCharsets.UTF_8)) == "Hello")
     }
 
     "be able to decode strings with trimming and special characters" in {
       val str = "\u0002\u0004A\u0007\u000FB\u0014\u001E"
-      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "ASCII")
+      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "ASCII", false)
 
       assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "A  B")
     }
 
     "be serializable and deserializable" in {
-      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "UTF8")
+      val decoder = new AsciiStringDecoderWrapper(TrimBoth, "UTF8", false)
 
       val bos = new ByteArrayOutputStream
       val out = new ObjectOutputStream(bos)
