@@ -17,14 +17,13 @@
 package za.co.absa.cobrix.cobol.reader
 
 import java.nio.charset.{Charset, StandardCharsets}
-
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw._
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -38,16 +37,15 @@ import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
 /**
   * The Cobol data reader for variable length records that gets input binary data as a stream and produces nested structure schema
   *
   * @param copybookContents The contents of a copybook.
   * @param readerProperties Additional properties for customizing the reader.
   */
-@throws(classOf[IllegalArgumentException])
 class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
-                                      readerProperties: ReaderParameters, handler: RecordHandler[T]) extends VarLenReader {
+                                      readerProperties: ReaderParameters,
+                                      handler: RecordHandler[T]) extends VarLenReader with Serializable {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -56,6 +54,8 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
   protected val recordHeaderParser: RecordHeaderParser = {
     getRecordHeaderParser
   }
+
+  checkInputArgumentsValidity()
 
   protected def recordExtractor(startingRecordNumber: Long,
                                 binaryData: SimpleStream,
@@ -77,8 +77,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         None
     }
   }
-
-  checkInputArgumentsValidity()
 
   override def getCobolSchema: CobolSchema = cobolSchema
 
@@ -148,7 +146,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     val copybook = cobolSchema.copybook
     val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, copybook)
 
-    // TODO Add support for multiple Ids (https://github.com/AbsaOSS/cobrix/issues/197)
     val segmentIdValue = getRootSegmentId
 
     // It makes sense to parse data hierarchically only if hierarchical id generation is requested
@@ -206,9 +203,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         readerProperties.occursMappings,
         readerProperties.debugFieldsPolicy)
     else
-      Copybook.merge(copyBookContents.map(
+      Copybook.merge(copyBookContents.map(cpb =>
         CopybookParser.parseTree(encoding,
-          _,
+          cpb,
           readerProperties.dropGroupFillers,
           readerProperties.dropValueFillers,
           segmentRedefines,
@@ -228,7 +225,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.inputFileNameColumn, readerProperties.generateRecordId, segIdFieldCount, segmentIdPrefix)
   }
 
-  @throws(classOf[IllegalArgumentException])
   private def checkInputArgumentsValidity(): Unit = {
     if (readerProperties.startOffset < 0) {
       throw new IllegalArgumentException(s"Invalid record start offset = ${readerProperties.startOffset}. A record start offset cannot be negative.")

@@ -40,17 +40,15 @@ import scala.reflect.ClassTag
   * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset An offset of the file where parsing should be started
   */
-@throws(classOf[IllegalStateException])
-final class VarLenHierarchicalIterator[T: ClassTag](
-                                                     cobolSchema: Copybook,
-                                                     dataStream: SimpleStream,
-                                                     readerProperties: ReaderParameters,
-                                                     recordHeaderParser: RecordHeaderParser,
-                                                     rawRecordExtractor: Option[RawRecordExtractor],
-                                                     fileId: Int,
-                                                     startRecordId: Long,
-                                                     startingFileOffset: Long,
-                                                     handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
+final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
+                                                    dataStream: SimpleStream,
+                                                    readerProperties: ReaderParameters,
+                                                    recordHeaderParser: RecordHeaderParser,
+                                                    rawRecordExtractor: Option[RawRecordExtractor],
+                                                    fileId: Int,
+                                                    startRecordId: Long,
+                                                    startingFileOffset: Long,
+                                                    handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
