@@ -40,10 +40,10 @@ abstract class VarLenReader extends Reader with Serializable {
     * @return An iterator of Spark Row objects
     *
     */
-  @throws(classOf[Exception]) def getRecordIterator(binaryData: SimpleStream,
-                                                 startingFileOffset: Long,
-                                                 fileNumber: Int,
-                                                 startingRecordIndex: Long): Iterator[Seq[Any]]
+  def getRecordIterator(binaryData: SimpleStream,
+                        startingFileOffset: Long,
+                        fileNumber: Int,
+                        startingRecordIndex: Long): Iterator[Seq[Any]]
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.
@@ -54,7 +54,7 @@ abstract class VarLenReader extends Reader with Serializable {
     * @return An index of the file
     *
     */
-  @throws(classOf[Exception]) def generateIndex(binaryData: SimpleStream,
-                                                fileNumber: Int,
-                                                isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry]
+  def generateIndex(binaryData: SimpleStream,
+                    fileNumber: Int,
+                    isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry]
 }

@@ -40,17 +40,16 @@ import scala.reflect.ClassTag
   * @param startingFileOffset An offset of the file where parsing should be started
   * @param segmentIdPrefix    A prefix to be used for all segment ID generated fields
   */
-@throws(classOf[IllegalStateException])
 final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
-                                 dataStream: SimpleStream,
-                                 readerProperties: ReaderParameters,
-                                 recordHeaderParser: RecordHeaderParser,
-                                 recordExtractor: Option[RawRecordExtractor],
-                                 fileId: Int,
-                                 startRecordId: Long,
-                                 startingFileOffset: Long,
-                                 segmentIdPrefix: String,
-                                 handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
+                                              dataStream: SimpleStream,
+                                              readerProperties: ReaderParameters,
+                                              recordHeaderParser: RecordHeaderParser,
+                                              recordExtractor: Option[RawRecordExtractor],
+                                              fileId: Int,
+                                              startRecordId: Long,
+                                              startingFileOffset: Long,
+                                              segmentIdPrefix: String,
+                                              handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
   private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, recordExtractor, startRecordId, startingFileOffset)
 

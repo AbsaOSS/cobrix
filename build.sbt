@@ -96,6 +96,10 @@ lazy val assemblySettings = Seq(
       xs map {_.toLowerCase} match {
         case "manifest.mf" :: Nil =>
           MergeStrategy.discard
+        case ps @ (x :: xs) if ps.last.endsWith(".sf") || ps.last.endsWith(".dsa") =>
+          MergeStrategy.discard
+        case "maven" :: x =>
+          MergeStrategy.discard
         case "services" :: x =>
           MergeStrategy.filterDistinctLines
         case _ => MergeStrategy.deduplicate
@@ -103,5 +107,12 @@ lazy val assemblySettings = Seq(
     case _ => MergeStrategy.deduplicate
   },
   assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
+  assemblyShadeRules in assembly := Seq(
+    // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
+    ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.shaded.org.antlr.@1").inAll,
+    // The SLF4j API and implementation are provided by Spark
+    ShadeRule.zap("org.slf4j.**").inAll
+  ),
+  logLevel in assembly := Level.Info,
   test in assembly := {}
 )

@@ -32,7 +32,6 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   * @param copybookContents      The contents of a copybook.
   * @param readerProperties      Additional properties for customizing the reader.
   */
-@throws(classOf[IllegalArgumentException])
 final class VarLenNestedReader(copybookContents: Seq[String],
                          readerProperties: ReaderParameters
 ) extends ReaderVarLenNestedReader[GenericRow](copybookContents, readerProperties, new RowHandler())
@@ -41,7 +40,6 @@ final class VarLenNestedReader(copybookContents: Seq[String],
   class RowIterator(private val iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
     override def hasNext: Boolean = iterator.hasNext
 
-    @throws(classOf[IllegalStateException])
     override def next(): Row = Row.fromSeq(iterator.next())
   }
 
