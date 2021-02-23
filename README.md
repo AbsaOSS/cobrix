@@ -1099,6 +1099,7 @@ Again, the full example is available at
 | .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 | .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
 | .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")   | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping. |
+| .option("improved_null_detection", "false") | If `true`, values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings. |
 
 ##### Modifier options
 
@@ -1246,6 +1247,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.2.1 (to be released soon).
+  - [#372](https://github.com/AbsaOSS/cobrix/issues/372) Added support for improved null detection.
+    To turn it on use `.option("improved_null_detection", "true")`
+    
 - #### 2.2.0 released 30 December 2020.
   - [#146](https://github.com/AbsaOSS/cobrix/issues/146) Added support for S3 storage. 
     The S3 support could be considered experimental since only S3A connector has been tested. However, since Cobrix is built on
