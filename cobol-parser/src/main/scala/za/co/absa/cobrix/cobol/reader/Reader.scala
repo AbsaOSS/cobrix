@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.reader
 
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema

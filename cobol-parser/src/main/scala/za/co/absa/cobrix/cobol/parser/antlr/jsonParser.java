@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.parser.antlr;
 
 // Generated from json.g4 by ANTLR 4.7.2
