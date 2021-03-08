@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.reader
 
 /** The abstract class for Cobol block (fixed length records) data readers from various sources */

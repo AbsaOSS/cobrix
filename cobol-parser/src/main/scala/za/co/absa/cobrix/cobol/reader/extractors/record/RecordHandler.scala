@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 package za.co.absa.cobrix.cobol.reader.extractors.record
 
 import za.co.absa.cobrix.cobol.parser.ast.Group
