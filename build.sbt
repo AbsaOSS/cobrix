@@ -52,7 +52,7 @@ lazy val cobolParser = (project in file("cobol-parser"))
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings
-  )
+  ).enablePlugins(AutomateHeaderPlugin)
 
 lazy val cobolConverters = (project in file("cobol-converters"))
   .disablePlugins(sbtassembly.AssemblyPlugin)
@@ -61,6 +61,7 @@ lazy val cobolConverters = (project in file("cobol-converters"))
       libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
       releasePublishArtifactsAction := PgpKeys.publishSigned.value
   ).dependsOn(cobolParser)
+  .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
@@ -79,6 +80,7 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     assemblySettings
   )
   .dependsOn(cobolParser)
+  .enablePlugins(AutomateHeaderPlugin)
 
 // scoverage settings
 ThisBuild / coverageExcludedPackages := ".*examples.*;.*replication.*"
