@@ -1,6 +1,7 @@
 # Cobrix - COBOL Data Source for Apache Spark
 
 [![Build Scala 2.12 Spark 3.0](https://github.com/AbsaOSS/cobrix/workflows/Build/badge.svg)](https://github.com/AbsaOSS/cobrix/actions)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix?ref=badge_shield)
 
 Pain free Spark/Cobol files integration.
 
@@ -1504,3 +1505,7 @@ were generated randomly. Any resemblance to actual persons, companies or actual 
 ## See also
 Take a look at other COBOL-related open source projects. If you think a project belongs in the list, please let us know, we will add it.
 * [RCOBOLDI](https://github.com/thospfuller/rcoboldi) - R COBOL DI (Data Integration) Package: An R package that facilitates the importation of COBOL CopyBook data directly into the R Project for Statistical Computing as properly structured data frames. 
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix?ref=badge_large)
