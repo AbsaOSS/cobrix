@@ -5,7 +5,7 @@ version: 2
 cli:
   server: https://app.fossa.com
   fetcher: custom
-  project: git@github.com:AbsaOSS/cobrix.git
+  project: Cobrix
 analyze:
   modules:
   - name: cobol-parser_2.11
@@ -13,16 +13,10 @@ analyze:
     target: cobol-parser/pom.xml
     path: .
     options:
-      cmd: "mvn dependency:tree -Dscope=compile"
-  - name: cobol-converters_2.11
-    type: mvn
-    target: cobol-converters/pom.xml
-    path: .
-    options:
-      cmd: "mvn dependency:tree -Dscope=compile"
+      cmd: "mvn dependency:tree -Dscope=compile | grep -v provided"
   - name: spark-cobol_2.11
     type: mvn
     target: spark-cobol/pom.xml
     path: .
     options:
-      cmd: "mvn dependency:tree -Dscope=compile"
+      cmd: "mvn dependency:tree -Dscope=compile | grep -v provided"
