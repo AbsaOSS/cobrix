@@ -90,12 +90,10 @@ object SparkCobolS3App {
   def buildLocalSparkSession(): SparkSession = {
     val conf = ConfigFactory.load()
 
+    // See 'spark.conf.option' in 'reference.conf' for Spark configuration
     val sparkSessionBuilder = SparkSession
       .builder()
       .appName("Spark Cobol S3 example app")
-//      .config("spark.ui.enabled", "false")
-//      .config("spark.driver.bindAddress", "127.0.0.1")
-//      .config("spark.driver.host", "127.0.0.1")
 
     // Apply extra Spark configuration from 'reference.conf' and 'application.conf'
     val extraOptions = ConfigUtils.getExtraOptions(conf, "spark.conf.option")
