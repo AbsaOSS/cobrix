@@ -279,11 +279,13 @@ If you want to extract a Spark SQL schema from a copybook:
 
 ```scala
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.spark.cobol.schema.{CobolSchema, SchemaRetentionPolicy}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 val parsedSchema = CopybookParser.parseTree(copyBookContents)
-val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot)
+val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, inputFileNameField = "", generateRecordId = false)
 val sparkSchema = cobolSchema.getSparkSchema.toString()
+
 println(sparkSchema)
 ```
 
