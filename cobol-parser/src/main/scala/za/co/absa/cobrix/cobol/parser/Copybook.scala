@@ -191,6 +191,8 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
   def generateRecordLayoutPositions(): String = {
+    validate()
+
     var fieldCounter: Int = 0
 
     def alignLeft(str: String, width: Int): String = {
@@ -298,6 +300,14 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       }
     }
     visitGroup(ast)
+  }
+
+  private def validate(): Unit = {
+    for (grp <- ast.children) {
+      if (!grp.isInstanceOf[Group]) {
+        throw new IllegalArgumentException(s"Found a non-GROUP field at the root level (${grp.name}). Please, add the record-level root field, for example '01   RECORD.' at the top of the copybook")
+      }
+    }
   }
 }
 
