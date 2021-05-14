@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 class SyntaxErrorsSpec extends FunSuite {
@@ -257,6 +257,29 @@ class SyntaxErrorsSpec extends FunSuite {
 
     assert(syntaxErrorException.getMessage.contains("BINARY-encoded integers with precision bigger than 38 are not supported."))
   }
+
+  test("Test proper error on parsing a copybook") {
+    val copyBookContents =
+      """      01 RECORD.
+        |          10 FIELD-1 COMP-2.
+        |          10 FIELD-2 USAGE COMP-2.
+        |          10 FIELD-3 USAGE IS COMP-2.
+        |          """
+        .stripMargin
+
+    val cb = CopybookParser.parseTree(copyBookContents)
+
+    val record = cb.ast.children(0).asInstanceOf[Group]
+
+    assert(record.children(0).name == "FIELD_1")
+    assert(record.children(1).name == "FIELD_2")
+    assert(record.children(2).name == "FIELD_3")
+
+    assert(record.children(0).asInstanceOf[Primitive].dataType.pic == "9(16)V9(16)")
+    assert(record.children(1).asInstanceOf[Primitive].dataType.pic == "9(16)V9(16)")
+    assert(record.children(2).asInstanceOf[Primitive].dataType.pic == "9(16)V9(16)")
+  }
+
 
 
 }
