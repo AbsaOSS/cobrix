@@ -162,7 +162,7 @@
                 <configuration>
                     <transformers>
                         <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>com.example.spark.cobol.app.com.example.spark.cobol.app</mainClass>
+                            <mainClass>com.example.spark.cobol.app.SparkCobolS3App</mainClass>
                         </transformer>
                         <!-- This allows to support several library data sources for Spark by referring to them by short name. -->
                         <transformer

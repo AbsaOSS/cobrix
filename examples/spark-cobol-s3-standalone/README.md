@@ -31,4 +31,9 @@ Use the following command to run it:
 java -cp java -cp spark-cobol-s3-sa-0.0.1-SNAPSHOT.jar com.example.spark.cobol.app.SparkCobolS3App
 ```
 
+or, since the main class is registered in the manifest, you can run the job even simpler:
+```sh
+java -jar spark-cobol-s3-sa-0.0.1-SNAPSHOT.jar
+```
+
 Alternatively, you can run the application from an IDE.
