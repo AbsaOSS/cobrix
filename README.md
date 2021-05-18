@@ -1248,6 +1248,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.2.2 (to be released soon).
+    - [#387](https://github.com/AbsaOSS/cobrix/issues/387) Fixed parsing of COMP-1 and COMP-2 fields that use 'USAGE' or 'USAGE IS' keywords.
+
 - #### 2.2.1 released 12 March 2021.
     - [#372](https://github.com/AbsaOSS/cobrix/issues/372) Added an option to better handle null values in DISPLAY formatted data: `.option("improved_null_detection", "false")`
     - [#373](https://github.com/AbsaOSS/cobrix/issues/373) Added the ability to create Uber jar directly from the source code of the project (https://github.com/AbsaOSS/cobrix#creating-an-uber-jar).
