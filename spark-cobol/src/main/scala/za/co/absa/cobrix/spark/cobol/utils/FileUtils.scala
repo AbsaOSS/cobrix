@@ -203,7 +203,7 @@ object FileUtils {
       .find(isNonDivisible(_, divisor))
 
     if (firstNonDivisibleFile.isDefined) {
-      logger.error(s"File ${firstNonDivisibleFile.get.getPath} IS NOT divisible by $divisor.")
+      logger.error(s"File ${firstNonDivisibleFile.get.getPath} size (${firstNonDivisibleFile.get.getLen}) IS NOT divisible by $divisor.")
     }
 
     firstNonDivisibleFile.isDefined
@@ -219,7 +219,7 @@ object FileUtils {
     val allNonDivisibleFiles = allFiles.filter(isNonDivisible(_, divisor))
 
     if (allNonDivisibleFiles.nonEmpty) {
-      allNonDivisibleFiles.foreach(file => logger.error(s"File ${file.getPath} IS NOT divisible by $divisor."))
+      allNonDivisibleFiles.foreach(file => logger.error(s"File ${file.getPath} size (${file.getLen}) IS NOT divisible by $divisor."))
     }
 
     allNonDivisibleFiles.length
