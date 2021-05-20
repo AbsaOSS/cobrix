@@ -1250,6 +1250,7 @@ For multisegment variable lengths tests:
 ## Changelog
 - #### 2.2.2 (to be released soon).
     - [#387](https://github.com/AbsaOSS/cobrix/issues/387) Fixed parsing of COMP-1 and COMP-2 fields that use 'USAGE' or 'USAGE IS' keywords.
+    - Improved several common error messages to provide more relevant information.
 
 - #### 2.2.1 released 12 March 2021.
     - [#372](https://github.com/AbsaOSS/cobrix/issues/372) Added an option to better handle null values in DISPLAY formatted data: `.option("improved_null_detection", "false")`
