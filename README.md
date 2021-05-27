@@ -1248,8 +1248,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 2.2.2 (to be released soon).
+- #### 2.2.2 released 26 May 2021.
     - [#387](https://github.com/AbsaOSS/cobrix/issues/387) Fixed parsing of COMP-1 and COMP-2 fields that use 'USAGE' or 'USAGE IS' keywords.
+    - Added an example project that allows running Spark + Cobrix locally while writing to S3. The project is located [here](http://github.com/AbsaOSS/cobrix/blob/c344ab1fa36f895d4c7928f40a2c5ebe8035e27b/examples/spark-cobol-s3-standalone#L1253-L1253).
     - Improved several common error messages to provide more relevant information.
 
 - #### 2.2.1 released 12 March 2021.
