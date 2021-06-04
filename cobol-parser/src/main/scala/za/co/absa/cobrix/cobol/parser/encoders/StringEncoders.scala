@@ -26,10 +26,12 @@ object StringEncoders {
     * @return A string representation of the binary data
     */
   def encodeEbcdicString(string: String, conversionTable: Array[Byte], length: Int): Array[Byte] = {
+    require(length >= 0, s"Field length cannot be negative, got $length")
+
     var i = 0
     val buf = new Array[Byte](length)
 
-    while (i < string.length) {
+    while (i < string.length && i < length) {
       val asciiByte = string(i).toByte
       buf(i) = conversionTable((asciiByte + 256) % 256)
       i = i + 1
