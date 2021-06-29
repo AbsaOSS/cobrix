@@ -55,7 +55,7 @@ class DefaultSource
     val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
     CobolParametersValidator.checkSanity(cobolParameters)
 
-    new CobolRelation(parameters(PARAM_SOURCE_PATH),
+    new CobolRelation(cobolParameters.sourcePaths,
       buildEitherReader(sqlContext.sparkSession, cobolParameters),
       LocalityParameters.extract(cobolParameters),
       cobolParameters.debugIgnoreFileSize)(sqlContext)

@@ -37,19 +37,19 @@ import scala.util.control.NonFatal
 
 
 class SerializableConfiguration(@transient var value: Configuration) extends Serializable {
-  private def writeObject(out: ObjectOutputStream): Unit = 
+  private def writeObject(out: ObjectOutputStream): Unit =
     try {
-       out.defaultWriteObject()
-       value.write(out)
+      out.defaultWriteObject()
+      value.write(out)
     } catch {
       case NonFatal(e) =>
         throw new IOException(e)
     }
 
-  private def readObject(in: ObjectInputStream): Unit = 
+  private def readObject(in: ObjectInputStream): Unit =
     try {
-    value = new Configuration(false)
-    value.readFields(in)
+      value = new Configuration(false)
+      value.readFields(in)
     } catch {
       case NonFatal(e) =>
         throw new IOException(e)
@@ -63,18 +63,18 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
   *
   * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
-class CobolRelation(sourceDir: String,
+class CobolRelation(sourceDirs: Seq[String],
                     cobolReader: Reader,
                     localityParams: LocalityParameters,
                     debugIgnoreFileSize: Boolean
                    )(@transient val sqlContext: SQLContext)
   extends BaseRelation
-  with Serializable
-  with TableScan {
+    with Serializable
+    with TableScan {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  private val filesList = getListFilesWithOrder(sourceDir)
+  private val filesList = getListFilesWithOrder(sourceDirs)
 
   private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
 
@@ -83,12 +83,11 @@ class CobolRelation(sourceDir: String,
   }
 
   override def buildScan(): RDD[Row] = {
-
     cobolReader match {
       case blockReader: FixedLenTextReader =>
-        CobolScanners.buildScanForTextFiles(blockReader, sourceDir, parseRecords, sqlContext)
+        CobolScanners.buildScanForTextFiles(blockReader, sourceDirs, parseRecords, sqlContext)
       case blockReader: FixedLenReader =>
-        CobolScanners.buildScanForFixedLength(blockReader, sourceDir, parseRecords, debugIgnoreFileSize, sqlContext)
+        CobolScanners.buildScanForFixedLength(blockReader, sourceDirs, parseRecords, debugIgnoreFileSize, sqlContext)
       case streamReader: VarLenReader if streamReader.isIndexGenerationNeeded =>
         CobolScanners.buildScanForVarLenIndex(streamReader, indexes, filesList, sqlContext)
       case streamReader: VarLenReader =>
@@ -104,13 +103,15 @@ class CobolRelation(sourceDir: String,
     *
     * The List contains [[za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder]] instances.
     */
-  private def getListFilesWithOrder(sourceDir: String): Array[FileWithOrder] = {
+  private def getListFilesWithOrder(sourceDirs: Seq[String]): Array[FileWithOrder] = {
+    val allFiles = sourceDirs.flatMap(sourceDir => {
+      FileUtils
+        .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
+    }).toArray
 
-    FileUtils
-      .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
+    allFiles
       .zipWithIndex
       .map(file => FileWithOrder(file._1, file._2))
-      .toArray
   }
 
   /**

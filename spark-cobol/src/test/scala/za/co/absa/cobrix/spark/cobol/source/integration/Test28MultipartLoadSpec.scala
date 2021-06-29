@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.functions.col
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -29,27 +30,26 @@ class Test28MultipartLoadSpec extends WordSpec with SparkTestBase with BinaryFil
   private val copybook =
     """      01  R.
                 03 A        PIC X(2).
-                03 B        PIC X(1).
       """
-  private val data1 = "AABBBCCDDDEEFFFZYY"
-  private val data2 = "BAABBBCCDDDEEFFFZY"
+  private val data1 = "010203040506070809"
+  private val data2 = "101112131415161718"
 
   "Multipart path spec" should {
     "load avv available copybooks" in {
-      val expected = """"""
+      val expected = """[{"A":"01"},{"A":"02"},{"A":"03"},{"A":"04"},{"A":"05"},{"A":"06"},{"A":"07"},{"A":"08"},{"A":"09"},{"A":"10"},{"A":"11"},{"A":"12"},{"A":"13"},{"A":"14"},{"A":"15"},{"A":"16"},{"A":"17"},{"A":"18"}]"""
 
       withTempBinFile("rec_len1", ".dat", data1.getBytes) { tmpFileName1 =>
         withTempBinFile("rec_len2", ".dat", data2.getBytes) { tmpFileName2 =>
+          val df = getDataFrame(Seq(tmpFileName1, tmpFileName2))
 
+          val actual = df
+            .orderBy(col("A"))
+            .toJSON
+            .collect()
+            .mkString("[", ",", "]")
 
-          intercept[IllegalStateException] {
-            val df = getDataFrame(Seq(tmpFileName1, tmpFileName1))
-
-            val actual = df.toJSON.collect().mkString("[", ",", "]")
-          }
-
-          //assert(df.count() == 12)
-          //assert(actual == expected)
+          assert(df.count() == 18)
+          assert(actual == expected)
         }
       }
     }
@@ -61,10 +61,10 @@ class Test28MultipartLoadSpec extends WordSpec with SparkTestBase with BinaryFil
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("encoding", "ascii")
-      .option("record_length", "2")
       .option("schema_retention_policy", "collapse_root")
+      .option("paths", inputPaths.mkString(","))
       .options(extraOptions)
-      .load(inputPaths: _*)
+      .load()
   }
 
 
