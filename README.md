@@ -272,6 +272,17 @@ $ spark-shell --jars spark-cobol-assembly-2.2.2-SNAPSHOT.jar
 
 ## Other Features
 
+### Loading several paths
+Currently, specifying multiple paths in `load()` is not supported. Use the following syntax: 
+```scala
+    spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("paths", inputPaths.mkString(","))
+      .load()
+```
+
 ### Spark SQL schema extraction
 This library also provides convenient methods to extract Spark SQL schemas and Cobol layouts from copybooks.  
 
@@ -1075,6 +1086,7 @@ Again, the full example is available at
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("paths", "/path1,/path2")          | Allows loading data from multiple unrelated paths on the same filesystem. |
 | .option("record_length", "100")            | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files. |
 | .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
 | .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
