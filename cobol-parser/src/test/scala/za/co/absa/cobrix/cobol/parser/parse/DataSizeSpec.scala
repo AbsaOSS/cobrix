@@ -37,7 +37,8 @@ class DataSizeSpec extends FunSuite {
       CodePage.getCodePageByName("common"),
       StandardCharsets.US_ASCII,
       isUtf16BigEndian = true,
-      floatingPointFormat = FloatingPointFormat.IBM)
+      floatingPointFormat = FloatingPointFormat.IBM,
+      improvedNullDetection = false)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)

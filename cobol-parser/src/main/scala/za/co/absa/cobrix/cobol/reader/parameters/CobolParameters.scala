@@ -43,6 +43,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
+  * @param improvedNullDetection  If true, string values that contain only zero bytes (0x0) will be considered null.
   * @param commentPolicy          A comment truncation policy
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param dropValueFillers       If true the parser will drop all value FILLER fields
@@ -70,6 +71,7 @@ case class CobolParameters(
                             stringTrimmingPolicy:  StringTrimmingPolicy,
                             multisegmentParams:    Option[MultisegmentParameters],
                             commentPolicy:         CommentPolicy,
+                            improvedNullDetection: Boolean,
                             dropGroupFillers:      Boolean,
                             dropValueFillers:      Boolean,
                             nonTerminals:          Seq[String],

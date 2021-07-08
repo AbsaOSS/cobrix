@@ -56,11 +56,12 @@ object DecoderSelector {
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
                  isUtf16BigEndian: Boolean = true,
-                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Decoder = {
+                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
+                 improvedNullDetection: Boolean = false): Decoder = {
     val decoder = dataType match {
-      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian)
-      case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat)
-      case integralType: Integral => getIntegralDecoder(integralType)
+      case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, improvedNullDetection)
+      case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, improvedNullDetection)
+      case integralType: Integral => getIntegralDecoder(integralType, improvedNullDetection)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     decoder
@@ -71,19 +72,20 @@ object DecoderSelector {
                                stringTrimmingPolicy: StringTrimmingPolicy,
                                ebcdicCodePage: CodePage,
                                asciiCharset: Charset,
-                               isUtf16BigEndian: Boolean): Decoder = {
+                               isUtf16BigEndian: Boolean,
+                               improvedNullDetection: Boolean): Decoder = {
     encoding match {
       case EBCDIC =>
-        StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping)
+        StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping, improvedNullDetection)
       case ASCII =>
         if (asciiCharset.name() == "US-ASCII") {
-          StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy))
+          StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy), improvedNullDetection)
         } else {
           // A workaround for non serializable class: Charset
-          new AsciiStringDecoderWrapper(getStringStrimmingType(stringTrimmingPolicy), asciiCharset.name())
+          new AsciiStringDecoderWrapper(getStringStrimmingType(stringTrimmingPolicy), asciiCharset.name(), improvedNullDetection)
         }
       case UTF16 =>
-        StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian)
+        StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian, improvedNullDetection)
       case HEX =>
         StringDecoders.decodeHex
       case RAW =>
@@ -101,7 +103,9 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a decimal data type. The input array of bytes is always converted to string and then to BigDecimal */
-  private def getDecimalDecoder(decimalType: Decimal, floatingPointFormat: FloatingPointFormat): Decoder = {
+  private def getDecimalDecoder(decimalType: Decimal,
+                                floatingPointFormat: FloatingPointFormat,
+                                improvedNullDetection: Boolean): Decoder = {
     val encoding = decimalType.enc.getOrElse(EBCDIC)
 
     val isEbcidic = encoding match {
@@ -115,14 +119,14 @@ object DecoderSelector {
       case None =>
         if (decimalType.explicitDecimal) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned)
+            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigDecimal(_, !isSigned)
+            StringDecoders.decodeAsciiBigDecimal(_, !isSigned, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, decimalType.scale, decimalType.scaleFactor)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, decimalType.scale, decimalType.scaleFactor)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
         }
 //      case Some(COMP()) =>
 //        // COMP aka BINARY encoded number
@@ -174,7 +178,8 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getIntegralDecoder(integralType: Integral): Decoder = {
+  private def getIntegralDecoder(integralType: Integral,
+                                 improvedNullDetection: Boolean): Decoder = {
     val encoding = integralType.enc.getOrElse(EBCDIC)
 
     val isEbcidic = encoding match {
@@ -188,19 +193,19 @@ object DecoderSelector {
       case None =>
         if (integralType.precision <= Constants.maxIntegerPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicInt(_, !isSigned)
+            StringDecoders.decodeEbcdicInt(_, !isSigned, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiInt(_, !isSigned)
+            StringDecoders.decodeAsciiInt(_, !isSigned, improvedNullDetection)
         } else if (integralType.precision <= Constants.maxLongPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicLong(_, !isSigned)
+            StringDecoders.decodeEbcdicLong(_, !isSigned, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiLong(_, !isSigned)
+            StringDecoders.decodeAsciiLong(_, !isSigned, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, improvedNullDetection)
         }
 //      case Some(Constants.compBinary1) =>
 //        // COMP aka BINARY encoded number

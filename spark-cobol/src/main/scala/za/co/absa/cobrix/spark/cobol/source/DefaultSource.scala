@@ -195,6 +195,7 @@ class DefaultSource
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       parameters.multisegmentParams,
       parameters.commentPolicy,
+      parameters.improvedNullDetection,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
       parameters.nonTerminals,

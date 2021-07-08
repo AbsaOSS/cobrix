@@ -1113,6 +1113,7 @@ Again, the full example is available at
 | .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
 | .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
 | .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")   | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping. |
+| .option("improved_null_detection", "false") | If `true`, values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings. |
 
 ##### Modifier options
 

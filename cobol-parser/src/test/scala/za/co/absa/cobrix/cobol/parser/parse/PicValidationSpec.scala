@@ -37,7 +37,8 @@ class PicValidationSpec extends FunSuite {
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
       isUtf16BigEndian = true,
-      FloatingPointFormat.IBM)
+      FloatingPointFormat.IBM,
+      improvedNullDetection = false)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)

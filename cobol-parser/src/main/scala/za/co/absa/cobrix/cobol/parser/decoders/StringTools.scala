@@ -59,4 +59,16 @@ object StringTools {
       s.substring(st, len)
     else s
   }
+
+  def isArrayNull(bytes: Array[Byte]): Boolean = {
+    var i = 0
+    val size = bytes.length
+    while (i < size) {
+      if (bytes(i) != 0) {
+        return false
+      }
+      i += 1
+    }
+    true
+  }
 }

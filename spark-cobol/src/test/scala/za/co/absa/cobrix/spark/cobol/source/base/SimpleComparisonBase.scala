@@ -28,7 +28,7 @@ trait SimpleComparisonBase extends TestSuite {
   }
 
   def assertEqualsMultiline(actualResults: String, expectedResults: String)(implicit logger: Logger): Unit = {
-    if (actualResults != expectedResults) {
+    if (actualResults.replaceAll("[\r\n]", "") != expectedResults.replaceAll("[\r\n]", "")) {
       logger.error(s"EXPECTED:\n$expectedResults")
       logger.error(s"ACTUAL:\n$actualResults")
       fail("Actual data does not match the expected data (see above).")

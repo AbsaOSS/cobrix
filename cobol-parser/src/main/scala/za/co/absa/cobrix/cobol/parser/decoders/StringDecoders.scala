@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import scala.util.control.NonFatal
 
 object StringDecoders {
+  import StringTools._
 
   // Simple constants are used instead of enumeration for better performance
   val TrimNone  = 1
@@ -39,9 +40,13 @@ object StringDecoders {
     * @param bytes        A byte array that represents the binary data
     * @param trimmingType Specifies if and how the soutput string should be trimmed
     * @param conversionTable A conversion table to use to convert from EBCDIC to ASCII
+    * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, conversionTable: Array[Char]): String = {
+  def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, conversionTable: Array[Char], improvedNullDetection: Boolean): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
@@ -65,9 +70,13 @@ object StringDecoders {
     *
     * @param bytes        A byte array that represents the binary data
     * @param trimmingType Specifies if and how the soutput string should be trimmed
+    * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int): String = {
+  def decodeAsciiString(bytes: Array[Byte], trimmingType: Int, improvedNullDetection: Boolean): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
@@ -93,9 +102,13 @@ object StringDecoders {
    *
    * @param bytes        A byte array that represents the binary data
    * @param trimmingType Specifies if and how the soutput string should be trimmed
+   * @param improvedNullDetection if true, return null if all bytes are zero
    * @return A string representation of the binary data
    */
-  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int, isUtf16BigEndian: Boolean): String = {
+  def decodeUtf16String(bytes: Array[Byte], trimmingType: Int, isUtf16BigEndian: Boolean, improvedNullDetection: Boolean): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     val utf16Str = if (isUtf16BigEndian) {
       new String(bytes, StandardCharsets.UTF_16BE)
     } else {
@@ -149,9 +162,13 @@ object StringDecoders {
     *
     * @param bytes      A byte array that represents the binary data
     * @param isUnsigned Is the number expected to be unsigned
+    * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
+  def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     import Constants._
     val buf = new StringBuffer(bytes.length + 1)
     var sign = ' '
@@ -216,9 +233,13 @@ object StringDecoders {
     *
     * @param bytes      A byte array that represents the binary data
     * @param isUnsigned Is the number expected to be unsigned
+    * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean): String = {
+  def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): String = {
+    if (improvedNullDetection && isArrayNull(bytes))
+      return null
+
     val buf = new StringBuffer(bytes.length)
     var sign = ' '
     var i = 0
@@ -248,9 +269,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed integer
     */
-  def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean): Integer = {
+  def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned).toInt
+      decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -262,9 +283,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed integer
     */
-  def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean): Integer = {
+  def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned).toInt
+      decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -276,9 +297,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed long
     */
-  def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean): java.lang.Long = {
+  def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned).toLong
+      decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -290,9 +311,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A boxed long
     */
-  def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean): java.lang.Long = {
+  def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned).toLong
+      decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -306,9 +327,9 @@ object StringDecoders {
     * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -322,9 +343,9 @@ object StringDecoders {
     * @param scaleFactor Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -337,9 +358,9 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A big decimal containing a big integral number
     */
-  def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean): BigDecimal = {
+  def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned))
+      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }
@@ -352,12 +373,11 @@ object StringDecoders {
     * @param bytes A byte array that represents the binary data
     * @return A big decimal containing a big integral number
     */
-  def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean): BigDecimal = {
+  def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeAsciiNumber(bytes, isUnsigned))
+      BigDecimal(decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }
   }
-
 }
