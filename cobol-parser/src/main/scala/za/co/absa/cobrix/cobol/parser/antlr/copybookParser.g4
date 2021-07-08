@@ -203,8 +203,8 @@ pic:
       | usage? signPrecision9
       )
     )
-    | COMP_1
-    | COMP_2
+    | (USAGE IS?)? COMP_1
+    | (USAGE IS?)? COMP_2
     ;
 
 section:

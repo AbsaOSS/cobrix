@@ -32,8 +32,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
 object CobolParametersValidator {
 
   def checkSanity(params: CobolParameters) = {
-
-    if (params.sourcePath.isEmpty) {
+    if (params.sourcePaths.isEmpty) {
       throw new IllegalArgumentException("Data source path must be specified.")
     }
 
@@ -53,8 +52,14 @@ object CobolParametersValidator {
     val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
     val copyBookMultiPathFileNames = parameters.get(PARAM_MULTI_COPYBOOK_PATH)
 
-    parameters.getOrElse(PARAM_SOURCE_PATH, throw new IllegalStateException(s"Cannot define path to source files: missing " +
-      s"parameter: '$PARAM_SOURCE_PATH'"))
+    if (!parameters.isDefinedAt(PARAM_SOURCE_PATH) && !parameters.isDefinedAt(PARAM_SOURCE_PATHS)) {
+      throw new IllegalStateException(s"Cannot define path to data files: missing " +
+        s"parameter: '$PARAM_SOURCE_PATH' or '$PARAM_SOURCE_PATHS'. It is automatically set when you invoke .load()")
+    }
+
+    if (parameters.isDefinedAt(PARAM_SOURCE_PATH) && parameters.isDefinedAt(PARAM_SOURCE_PATHS)) {
+      throw new IllegalStateException(s"Only one of '$PARAM_SOURCE_PATH' or '$PARAM_SOURCE_PATHS' should be defined.")
+    }
 
     def validatePath(fileName: String): Unit = {
       val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)

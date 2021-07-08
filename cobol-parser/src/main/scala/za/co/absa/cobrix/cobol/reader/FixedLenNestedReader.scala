@@ -33,30 +33,27 @@ import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
 
 /**
-  *  The Cobol data reader that produces nested structure schema
+  * The Cobol data reader that produces nested structure schema
   *
-  * @param copyBookContents    A copybook contents.
-  * @param startOffset         Specifies the number of bytes at the beginning of each record that can be ignored.
-  * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
-  * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param copyBookContents      A copybook contents.
+  * @param startOffset           Specifies the number of bytes at the beginning of each record that can be ignored.
+  * @param endOffset             Specifies the number of bytes at the end of each record that can be ignored.
+  * @param schemaRetentionPolicy Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
-class FixedLenNestedReader[T: ClassTag](
-                                 copyBookContents: Seq[String],
-                                 isEbcdic: Boolean = true,
-                                 ebcdicCodePage: CodePage,
-                                 floatingPointFormat: FloatingPointFormat,
-                                 startOffset: Int = 0,
-                                 endOffset: Int = 0,
-                                 schemaRetentionPolicy: SchemaRetentionPolicy,
-                                 stringTrimmingPolicy: StringTrimmingPolicy,
-                                 dropGroupFillers: Boolean,
-                                 dropValueFillers: Boolean,
-                                 nonTerminals: Seq[String],
-                                 occursMappings: Map[String, Map[String, Int]],
-                                 readerProperties: ReaderParameters,
-                                 handler: RecordHandler[T]
-                                 )
-  extends FixedLenReader with Serializable {
+class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
+                                        isEbcdic: Boolean = true,
+                                        ebcdicCodePage: CodePage,
+                                        floatingPointFormat: FloatingPointFormat,
+                                        startOffset: Int = 0,
+                                        endOffset: Int = 0,
+                                        schemaRetentionPolicy: SchemaRetentionPolicy,
+                                        stringTrimmingPolicy: StringTrimmingPolicy,
+                                        dropGroupFillers: Boolean,
+                                        dropValueFillers: Boolean,
+                                        nonTerminals: Seq[String],
+                                        occursMappings: Map[String, Map[String, Int]],
+                                        readerProperties: ReaderParameters,
+                                        handler: RecordHandler[T]) extends FixedLenReader with Serializable {
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copyBookContents)
 
@@ -103,7 +100,7 @@ class FixedLenNestedReader[T: ClassTag](
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
     val encoding = if (isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String,String]())
+    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
     val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
 
     val schema = if (copyBookContents.size == 1)
@@ -144,6 +141,6 @@ class FixedLenNestedReader[T: ClassTag](
             readerProperties.debugFieldsPolicy)
         )
       )
-    new CobolSchema(schema, schemaRetentionPolicy, "",false)
+    new CobolSchema(schema, schemaRetentionPolicy, "", false)
   }
 }

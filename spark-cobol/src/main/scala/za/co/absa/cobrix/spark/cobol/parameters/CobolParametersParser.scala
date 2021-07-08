@@ -42,6 +42,7 @@ object CobolParametersParser {
   val PARAM_MULTI_COPYBOOK_PATH       = "copybooks"
   val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
   val PARAM_SOURCE_PATH               = "path"
+  val PARAM_SOURCE_PATHS              = "paths"
   val PARAM_ENCODING                  = "encoding"
   val PARAM_PEDANTIC                  = "pedantic"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
@@ -209,11 +210,13 @@ object CobolParametersParser {
       }
     }
 
+    val paths = getParameter(PARAM_SOURCE_PATHS, params).map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
+
     val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
-      getParameter(PARAM_SOURCE_PATH, params),
+      paths,
       params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,

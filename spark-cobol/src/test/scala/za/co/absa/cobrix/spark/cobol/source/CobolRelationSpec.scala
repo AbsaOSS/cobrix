@@ -61,7 +61,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
 
   it should "return an RDD[Row] if data are correct" in {
     val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => Unit)
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath,
+    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)
@@ -85,7 +85,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   it should "manage exceptions from Reader" in {
     val exceptionMessage = "exception expected message"
     val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => throw new Exception(exceptionMessage))
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath,
+    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)
@@ -100,7 +100,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
     val absentField = "absentField"
     val modifiedSparkSchema = sparkSchema.add(StructField(absentField, StringType, false))
     val testReader: FixedLenReader = new DummyFixedLenReader(modifiedSparkSchema, cobolSchema, testData)(() => Unit)
-    val relation = new CobolRelation(copybookFile.getParentFile.getAbsolutePath,
+    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)

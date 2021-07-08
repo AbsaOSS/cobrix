@@ -55,7 +55,7 @@ case class CobolParameters(
                             copybookPath:          Option[String],
                             multiCopybookPath:     Seq[String],
                             copybookContent:       Option[String],
-                            sourcePath:            Option[String],
+                            sourcePaths:           Seq[String],
                             isText:                Boolean,
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,

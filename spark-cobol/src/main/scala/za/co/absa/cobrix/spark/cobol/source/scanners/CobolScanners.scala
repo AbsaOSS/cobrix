@@ -74,7 +74,7 @@ private[source] object CobolScanners {
       })
   }
 
-  private[source] def buildScanForFixedLength(reader: FixedLenReader, sourceDir: String,
+  private[source] def buildScanForFixedLength(reader: FixedLenReader, sourceDirs: Seq[String],
                                               recordParser: (FixedLenReader, RDD[Array[Byte]]) => RDD[Row],
                                               debugIgnoreFileSize: Boolean,
                                               sqlContext: SQLContext): RDD[Row] = {
@@ -85,21 +85,24 @@ private[source] object CobolScanners {
 
     val recordSize = reader.getRecordSize
 
-    if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
-      throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
-    }
+    sourceDirs.foreach(sourceDir => {
+      if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
+        throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
+      }
+    })
 
-    val records = sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration)
+    val records = sourceDirs.map(sourceDir => sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration))
+      .reduce((a ,b) => a.union(b))
     recordParser(reader, records)
   }
 
-  private[source] def buildScanForTextFiles(reader: FixedLenReader, sourceDir: String,
+  private[source] def buildScanForTextFiles(reader: FixedLenReader, sourceDirs: Seq[String],
                                             recordParser: (FixedLenReader, RDD[Array[Byte]]) => RDD[Row],
                                             sqlContext: SQLContext): RDD[Row] = {
     sqlContext.read.text()
 
-    val rddText = sqlContext.sparkContext
-      .textFile(sourceDir)
+    val rddText = sourceDirs.map(sourceDir => sqlContext.sparkContext.textFile(sourceDir))
+      .reduce((a,b) => a.union(b))
 
     val records = rddText
       .filter(str => str.length > 0)
