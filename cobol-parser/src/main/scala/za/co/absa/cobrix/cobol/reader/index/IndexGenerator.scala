@@ -80,10 +80,10 @@ object IndexGenerator {
             record = dataStream.next(recordMetadata.recordLength)
           }
           val recordSize = dataStream.offset - byteIndex
-          val hasMoreRecords = recordSize > 0
+          val hasMoreRecords = recordSize > 0 && !dataStream.isEndOfStream
           (recordSize, recordMetadata.isValid, hasMoreRecords)
       }
-      if (dataStream.isEndOfStream || !hasMoreRecords) {
+      if (!hasMoreRecords) {
         endOfFileReached = true
       } else {
         if (isValid) {

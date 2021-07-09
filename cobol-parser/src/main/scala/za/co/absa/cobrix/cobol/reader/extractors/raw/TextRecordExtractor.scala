@@ -26,78 +26,111 @@ import java.util
   */
 class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   private val maxRecordSize = ctx.copybook.getRecordSize + 2
-  private val bytes = new Array[Byte](maxRecordSize)
-  private var bytesSize = 0
+  private val pendingBytes = new Array[Byte](maxRecordSize)
+  private var pendingBytesSize = 0
+  private var recordBytes: Option[Array[Byte]] = None
+  private var curRecordSize = 0
   private var lastFooterSize = 1
 
-  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream || bytesSize > 0
+  override def hasNext: Boolean = {
+    if (recordBytes.isEmpty) {
+      ensureBytesRead(maxRecordSize)
+      fetchNextRecord()
+    }
+
+    recordBytes.get.length > 0
+  }
 
   override def next(): Array[Byte] = {
     if (!hasNext) {
       throw new NoSuchElementException
     }
-    ensureBytesRead(maxRecordSize)
-    findEol()
+    val bytesToReturn = recordBytes.get
+    curRecordSize = 0
+    recordBytes = None
+    bytesToReturn
   }
 
-  override def offset: Long = ctx.inputStream.offset - bytesSize
+  override def offset: Long = ctx.inputStream.offset - pendingBytesSize - curRecordSize
 
-  private def findEol(): Array[Byte] = {
+  private def ensureBytesRead(numOfBytes: Int): Unit = {
+    val bytesToRead = numOfBytes - pendingBytesSize
+    if (bytesToRead > 0) {
+      val newBytes = ctx.inputStream.next(bytesToRead)
+      if (newBytes.length > 0) {
+        System.arraycopy(newBytes, 0, pendingBytes, pendingBytesSize, newBytes.length)
+        pendingBytesSize = pendingBytesSize + newBytes.length
+      }
+    }
+  }
+
+  private def skipEmptyLines(): Unit = {
+    var i = 0
+    while (i < pendingBytesSize && (pendingBytes(i) == 0x0D || pendingBytes(i) == 0x0A)) {
+      i += 1
+    }
+    if (i > 0) {
+      advanceArray(i)
+      ensureBytesRead(maxRecordSize)
+    }
+  }
+
+  private def findNextNonEmptyRecord(): (Int, Int) = {
     var recordLength = 0
     var recordPayload = 0
-
     var i = 0
-    while (recordLength == 0 && i < bytesSize) {
-      if (bytes(i) == 0x0D) {
-        if (i + 1 < maxRecordSize && bytes(i + 1) == 0x0A) {
+
+    while (recordLength == 0 && i < pendingBytesSize) {
+      if (pendingBytes(i) == 0x0D) {
+        if (i + 1 < maxRecordSize && pendingBytes(i + 1) == 0x0A) {
           recordLength = i + 2
           recordPayload = i
         }
-      } else if (bytes(i) == 0x0A) {
+      } else if (pendingBytes(i) == 0x0A) {
         recordLength = i + 1
         recordPayload = i
       }
       i += 1
     }
+    (recordLength, recordPayload)
+  }
 
-    val record = if (recordLength > 0) {
-      bytes.take(recordPayload)
+  private def fetchNextRecord(): Unit = {
+    skipEmptyLines()
+
+    var (recordLength, recordPayload) = findNextNonEmptyRecord()
+
+    recordBytes = if (recordLength > 0) {
+      curRecordSize = recordLength
+      Some(pendingBytes.take(recordPayload))
     } else {
       // Last record or a record is too large?
       // In the latter case
       if (ctx.inputStream.isEndOfStream) {
         // Last record
-        recordLength = bytesSize
-        recordPayload = bytesSize
+        recordLength = pendingBytesSize
+        recordPayload = pendingBytesSize
       } else {
         // This is an errors situation - no line breaks between records
         // Return a record worth of data minus line break.
-        recordLength = bytesSize - lastFooterSize
-        recordPayload = bytesSize - lastFooterSize
+        recordLength = pendingBytesSize - lastFooterSize
+        recordPayload = pendingBytesSize - lastFooterSize
       }
-      bytes.take(recordLength)
+      curRecordSize = recordLength
+      Some(pendingBytes.take(recordLength))
     }
 
-    if (bytesSize > recordLength) {
-      System.arraycopy(bytes, recordLength, bytes, 0, bytesSize - recordLength)
-    }
-    bytesSize -= recordLength
-
-    util.Arrays.fill(bytes, bytesSize, maxRecordSize, 0.toByte)
+    advanceArray(recordLength)
 
     lastFooterSize = recordLength - recordPayload
-
-    record
   }
 
-  private def ensureBytesRead(numOfBytes: Int): Unit = {
-    val bytesToRead = numOfBytes - bytesSize
-    if (bytesToRead > 0) {
-      val newBytes = ctx.inputStream.next(bytesToRead)
-      if (newBytes.length > 0) {
-        System.arraycopy(newBytes, 0, bytes, bytesSize, newBytes.length)
-        bytesSize = numOfBytes
-      }
+  private def advanceArray(recordLength: Int): Unit = {
+    if (pendingBytesSize > recordLength) {
+      System.arraycopy(pendingBytes, recordLength, pendingBytes, 0, pendingBytesSize - recordLength)
     }
+    pendingBytesSize -= recordLength
+
+    util.Arrays.fill(pendingBytes, pendingBytesSize, maxRecordSize, 0.toByte)
   }
 }
