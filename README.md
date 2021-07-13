@@ -1261,13 +1261,18 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.2.3 to be released soon.
+    - [#397](https://github.com/AbsaOSS/cobrix/issues/397) Fix skipping of empty lines when reading ASCII files with `is_record_sequence = true`
+    - [#394](https://github.com/AbsaOSS/cobrix/issues/394) Added an ability to specify multiple paths to read data from (Use `.option("paths", inputPaths.mkString(","))`).
+      This is a workaround implementation since adding support for multiple paths in `load()` would require a big rewrite for `spark-cobol` from data source to data format.
+    - [#372](https://github.com/AbsaOSS/cobrix/issues/372) Added an option to better handle null values in DISPLAY formatted data: `.option("improved_null_detection", "false")`
+    
 - #### 2.2.2 released 27 May 2021.
     - [#387](https://github.com/AbsaOSS/cobrix/issues/387) Fixed parsing of COMP-1 and COMP-2 fields that use 'USAGE' or 'USAGE IS' keywords.
     - Added an example project that allows running Spark + Cobrix locally while writing to S3. The project is located [here](http://github.com/AbsaOSS/cobrix/blob/c344ab1fa36f895d4c7928f40a2c5ebe8035e27b/examples/spark-cobol-s3-standalone#L1253-L1253).
     - Improved several common error messages to provide more relevant information.
 
 - #### 2.2.1 released 12 March 2021.
-    - [#372](https://github.com/AbsaOSS/cobrix/issues/372) Added an option to better handle null values in DISPLAY formatted data: `.option("improved_null_detection", "false")`
     - [#373](https://github.com/AbsaOSS/cobrix/issues/373) Added the ability to create Uber jar directly from the source code of the project (https://github.com/AbsaOSS/cobrix#creating-an-uber-jar).
 
 - #### 2.2.0 released 30 December 2020.
