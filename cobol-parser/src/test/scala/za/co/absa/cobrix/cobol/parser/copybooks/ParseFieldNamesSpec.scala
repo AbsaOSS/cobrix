@@ -44,18 +44,18 @@ class ParseFieldNamesSpec extends FunSuite {
     val expectedLayout =
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |GRP_01_02                                                    1     11     11
-        |  3 FIELD_1                                           1      1      1      1
-        |  3 FIELD_2                                           2      2     11     10
-        |GRP_01_02                                                   12     22     11
-        |  3 FIELD_1                                           3     12     12      1
-        |  3 FIELD_2                                           4     13     22     10
-        |GRP0102                                                     23     33     11
-        |  3 FIELD1                                            5     23     23      1
-        |  3 FIELD2                                            6     24     33     10
-        |SOMETHING_SOMETHING_DATE_NUM                                34     44     11
-        |  3 FIELD1                                            7     34     34      1
-        |  3 FIELD2                                            8     35     44     10"""
+        |  1 GRP_01_02                                         3      1     11     11
+        |    3 FIELD_1                                         2      1      1      1
+        |    3 FIELD_2                                         3      2     11     10
+        |  1 GRP_01_02                                         6     12     22     11
+        |    3 FIELD_1                                         5     12     12      1
+        |    3 FIELD_2                                         6     13     22     10
+        |  1 GRP0102                                           9     23     33     11
+        |    3 FIELD1                                          8     23     23      1
+        |    3 FIELD2                                          9     24     33     10
+        |  1 SOMETHING_SOMETHING_DATE_NUM                     12     34     44     11
+        |    3 FIELD1                                         11     34     34      1
+        |    3 FIELD2                                         12     35     44     10"""
         .stripMargin.replace("\r\n", "\n")
 
     val copybook = CopybookParser.parseTree(copybookWithCommentLines)

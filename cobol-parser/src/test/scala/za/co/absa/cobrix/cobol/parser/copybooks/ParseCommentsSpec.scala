@@ -27,9 +27,9 @@ class ParseCommentsSpec extends FunSuite {
   private val expectedLayout =
     """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
       |
-      |GRP_01                                                       1     11     11
-      |  3 FIELD1                                            1      1      1      1
-      |  3 FIELD2                                            2      2     11     10"""
+      |  1 GRP_01                                            3      1     11     11
+      |    3 FIELD1                                          2      1      1      1
+      |    3 FIELD2                                          3      2     11     10"""
       .stripMargin.replace("\r\n", "\n")
 
   test("Test copybook parser handles comment lines") {

@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 
 import org.scalatest.WordSpec
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
@@ -38,10 +39,27 @@ class Test14AsciiMergedCopybooks extends WordSpec with SparkTestBase with Binary
            05  B    PIC X.
     """
 
+  private val copybookMerged =
+    """      01 ROOT.
+                05  ENTITY1.
+                  10  A    PIC X.
+                05  ENTITY2 REDEFINES ENTITY1.
+                  10  B    PIC X.
+    """
+
   val textFileContents: String = "1\n2\n3\n4"
 
-  "Test ASCII CRLF text file with merged copybooks" should {
-    "correctly identify empty lines when read as a text file" in {
+  "Test ASCII CRLF text file " should {
+    "with merged copybooks" in {
+      val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |ENTITY1                                                      1      1      1
+        |  5 A                                                 1      1      1      1
+        |ENTITY2                                                      1      1      1
+        |  5 B                                                 2      1      1      1
+        |""".stripMargin
+
       withTempDirectory("merged_copybook") { tempDir =>
         val copybook1Path = Paths.get(tempDir, "copybook1.cpy")
         val copybook2Path = Paths.get(tempDir, "copybook2.cpy")
@@ -73,5 +91,37 @@ class Test14AsciiMergedCopybooks extends WordSpec with SparkTestBase with Binary
         }
       }
     }
+
+    "with a single copybook" in {
+      val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |ROOT                                                         1      1      1
+        |  5 ENTITY1                            r              2      1      1      1
+        |    10 A                                              2      1      1      1
+        |  5 ENTITY2                            R              4      1      1      1
+        |    10 B                                              4      1      1      1
+        |""".stripMargin
+      withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybookMerged)
+          .option("pedantic", "true")
+          .option("is_text", "true")
+          .option("encoding", "ascii")
+          .option("schema_retention_policy", "collapse_root")
+          .load(tmpFileName)
+
+        val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":"1"}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":"2"}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":"3"}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":"4"}}]"""
+
+        val count = df.count()
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 4)
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
   }
 }
