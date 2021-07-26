@@ -251,19 +251,9 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       fieldStrings.mkString("\n")
     }
 
-    val strings = for (grp <- ast.children) yield {
-      val start = grp.binaryProperties.offset + 1
-      val length = grp.binaryProperties.actualSize
-      val end = start + length - 1
-      val groupStr = generateGroupLayoutPositions(grp.asInstanceOf[Group])
-      val namePart = alignLeft(s"${grp.name}", 55)
-      val fieldStartPart = alignRight(s"$start", 7)
-      val fieldEndPart = alignRight(s"$end", 7)
-      val fieldLengthPart = alignRight(s"$length", 7)
-      s"$namePart$fieldStartPart$fieldEndPart$fieldLengthPart\n$groupStr"
-    }
+    val layout = generateGroupLayoutPositions(ast)
     val header = "-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH\n\n"
-    header + strings.mkString("\n")
+    header + layout
   }
 
   def dropRoot(): Copybook = {
@@ -313,9 +303,13 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
 
 object Copybook {
-  def merge(copybooks: Iterable[Copybook]): Copybook = {
+  def merge(copybooks: Seq[Copybook]): Copybook = {
     if (copybooks.isEmpty)
       throw new RuntimeException("Cannot merge an empty iterable of copybooks.")
+
+    if (copybooks.size == 1) {
+      return copybooks.head
+    }
 
     // make sure all segments are the same level
     val rootLevels: Set[Int] = copybooks.flatMap(cb => cb.ast.children.map({
@@ -354,6 +348,7 @@ object Copybook {
       case x: Group => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
       case x: Primitive => x.copy(redefines = None, isRedefined = true)(Some(newRoot))
     })
+
     newRoot.children ++= copybooks.head.ast.children.tail.map({
       case x: Group => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))
       case x: Primitive => x.copy(redefines = Option(targetName), isRedefined = false)(Some(newRoot))

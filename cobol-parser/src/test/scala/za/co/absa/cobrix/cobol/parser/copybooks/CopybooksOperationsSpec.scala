@@ -42,23 +42,23 @@ class CopybooksOperationsSpec extends FunSuite {
     assert(copybook1.generateRecordLayoutPositions ==
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |RECORD_COPYBOOK_1                                            1     30     30
+        |  1 RECORD_COPYBOOK_1                                 7      1     30     30
+        |    5 GROUP_1                                         7      1     30     30
+        |      6 FIELD_1                                       3      1     10     10
+        |      6 FILLER                                        4     11     15      5
+        |      6 GROUP_2                                       7     16     30     15
+        |        10 NESTED_FIELD_1                             6     16     25     10
+        |        10 FILLER                                     7     26     30      5"""
+        .stripMargin.replace("\r\n", "\n"))
+    assert(copybookDR1.generateRecordLayoutPositions ==
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
         |  5 GROUP_1                                           6      1     30     30
         |    6 FIELD_1                                         2      1     10     10
         |    6 FILLER                                          3     11     15      5
         |    6 GROUP_2                                         6     16     30     15
         |      10 NESTED_FIELD_1                               5     16     25     10
         |      10 FILLER                                       6     26     30      5"""
-        .stripMargin.replace("\r\n", "\n"))
-    assert(copybookDR1.generateRecordLayoutPositions ==
-      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
-        |
-        |GROUP_1                                                      1     30     30
-        |  6 FIELD_1                                           1      1     10     10
-        |  6 FILLER                                            2     11     15      5
-        |  6 GROUP_2                                           5     16     30     15
-        |    10 NESTED_FIELD_1                                 4     16     25     10
-        |    10 FILLER                                         5     26     30      5"""
         .stripMargin.replace("\r\n", "\n"))
 
     val exception = intercept[RuntimeException] {
@@ -126,22 +126,22 @@ class CopybooksOperationsSpec extends FunSuite {
     assert(copybookR1.generateRecordLayoutPositions ==
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |GROUP_1A                                                     1     30     30
-        |  6 FIELD_1                                           1      1     10     10
-        |  6 FILLER                                            2     11     15      5
-        |  6 GROUP_2A                                          5     16     30     15
-        |    10 NESTED_FIELD_1                                 4     16     25     10
-        |    10 FILLER                                         5     26     30      5"""
+        |  5 GROUP_1A                                          6      1     30     30
+        |    6 FIELD_1                                         2      1     10     10
+        |    6 FILLER                                          3     11     15      5
+        |    6 GROUP_2A                                        6     16     30     15
+        |      10 NESTED_FIELD_1                               5     16     25     10
+        |      10 FILLER                                       6     26     30      5"""
         .stripMargin.replace("\r\n", "\n"))
     assert(copybookR2.generateRecordLayoutPositions ==
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |GROUP_1B                                                     1     60     60
-        |  6 FIELD_1                                           1      1     20     20
-        |  6 FILLER                                            2     21     30     10
-        |  6 GROUP_2B                                          5     31     60     30
-        |    10 NESTED_FIELD_1                                 4     31     50     20
-        |    10 FILLER                                         5     51     60     10"""
+        |  5 GROUP_1B                                          6      1     60     60
+        |    6 FIELD_1                                         2      1     20     20
+        |    6 FILLER                                          3     21     30     10
+        |    6 GROUP_2B                                        6     31     60     30
+        |      10 NESTED_FIELD_1                               5     31     50     20
+        |      10 FILLER                                       6     51     60     10"""
         .stripMargin.replace("\r\n", "\n"))
 
     val exception1 = intercept[RuntimeException] {
