@@ -25,8 +25,10 @@ import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-class Test14AsciiMergedCopybooks extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
-
+/**
+  * This suite validates issues observed when root level fields are redefined, including the case of several copybooks merging.
+  */
+class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val copybook1 =
@@ -42,6 +44,13 @@ class Test14AsciiMergedCopybooks extends WordSpec with SparkTestBase with Binary
   private val copybookMerged =
     """      01 ROOT.
                 05  ENTITY1.
+                  10  A    PIC X.
+                05  ENTITY2 REDEFINES ENTITY1.
+                  10  B    PIC X.
+    """
+
+  private val copybook2Roots =
+    """         05  ENTITY1.
                   10  A    PIC X.
                 05  ENTITY2 REDEFINES ENTITY1.
                   10  B    PIC X.
@@ -120,6 +129,75 @@ class Test14AsciiMergedCopybooks extends WordSpec with SparkTestBase with Binary
 
         assert(count == 4)
         assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "with a single multi-root copybook with redefines & collapse root" in {
+      val expectedLayout =
+        """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+          |
+          |  5 ENTITY1                            r              2      1      1      1
+          |    10 A                                              2      1      1      1
+          |  5 ENTITY2                            R              4      1      1      1
+          |    10 B                                              4      1      1      1
+          |""".stripMargin
+      withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook2Roots)
+          .option("pedantic", "true")
+          .option("is_text", "true")
+          .option("encoding", "ascii")
+          .option("schema_retention_policy", "collapse_root")
+          .load(tmpFileName)
+
+        val actualLayout = CopybookParser.parseTree(copybook2Roots).generateRecordLayoutPositions()
+        // This is an error. Should be:
+        //val expected = """[{"A":"1","B":"1"},{"A":"2","B":"2"},{"A":"3","B":"3"},{"A":"4","B":"4"}]"""
+        val expected = """[{"A":"1","B":""},{"A":"2","B":""},{"A":"3","B":""},{"A":"4","B":""}]"""
+
+        val count = df.count()
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 4)
+        assertEqualsMultiline(actual, expected)
+        assertEqualsMultiline(actualLayout, expectedLayout)
+      }
+    }
+
+    "with a single multi-root copybook with redefines & keep_original" in {
+      val expectedLayout =
+        """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+          |
+          |  5 ENTITY1                            r              2      1      1      1
+          |    10 A                                              2      1      1      1
+          |  5 ENTITY2                            R              4      1      1      1
+          |    10 B                                              4      1      1      1
+          |""".stripMargin
+      withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook2Roots)
+          .option("pedantic", "true")
+          .option("is_text", "true")
+          .option("encoding", "ascii")
+          .option("schema_retention_policy", "keep_original")
+          .load(tmpFileName)
+
+        val actualLayout = CopybookParser.parseTree(copybook2Roots).generateRecordLayoutPositions()
+
+        // This is an error. Should be:
+        //val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":"1"}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":"2"}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":"3"}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":"4"}}]"""
+        val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":""}}]"""
+
+        val count = df.count()
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 4)
+        assertEqualsMultiline(actual, expected)
+        assertEqualsMultiline(actualLayout, expectedLayout)
       }
     }
 
