@@ -175,7 +175,9 @@ object RecordExtractors {
 
     val records = for (record <- ast.children) yield {
       val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
-      nextOffset += size
+      if (!record.isRedefined) {
+        nextOffset += size
+      }
       values
     }
 
