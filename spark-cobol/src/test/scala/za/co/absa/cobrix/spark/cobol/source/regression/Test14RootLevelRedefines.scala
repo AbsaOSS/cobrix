@@ -89,8 +89,7 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
             .load(tmpFileName)
 
           // This is an error. Should be:
-          //val expected = """[{"A":"1","B":"1"},{"A":"2","B":"2"},{"A":"3","B":"3"},{"A":"4","B":"4"}]"""
-          val expected = """[{"A":"1","B":""},{"A":"2","B":""},{"A":"3","B":""},{"A":"4","B":""}]"""
+          val expected = """[{"A":"1","B":"1"},{"A":"2","B":"2"},{"A":"3","B":"3"},{"A":"4","B":"4"}]"""
 
           val count = df.count()
           val actual = df.toJSON.collect().mkString("[", ",", "]")
@@ -154,8 +153,7 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
 
         val actualLayout = CopybookParser.parseTree(copybook2Roots).generateRecordLayoutPositions()
         // This is an error. Should be:
-        //val expected = """[{"A":"1","B":"1"},{"A":"2","B":"2"},{"A":"3","B":"3"},{"A":"4","B":"4"}]"""
-        val expected = """[{"A":"1","B":""},{"A":"2","B":""},{"A":"3","B":""},{"A":"4","B":""}]"""
+        val expected = """[{"A":"1","B":"1"},{"A":"2","B":"2"},{"A":"3","B":"3"},{"A":"4","B":"4"}]"""
 
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
@@ -188,9 +186,7 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
 
         val actualLayout = CopybookParser.parseTree(copybook2Roots).generateRecordLayoutPositions()
 
-        // This is an error. Should be:
-        //val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":"1"}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":"2"}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":"3"}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":"4"}}]"""
-        val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":""}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":""}}]"""
+        val expected = """[{"ENTITY1":{"A":"1"},"ENTITY2":{"B":"1"}},{"ENTITY1":{"A":"2"},"ENTITY2":{"B":"2"}},{"ENTITY1":{"A":"3"},"ENTITY2":{"B":"3"}},{"ENTITY1":{"A":"4"},"ENTITY2":{"B":"4"}}]"""
 
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
