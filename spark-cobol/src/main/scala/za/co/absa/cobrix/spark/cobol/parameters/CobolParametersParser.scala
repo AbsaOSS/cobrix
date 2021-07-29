@@ -106,7 +106,7 @@ object CobolParametersParser {
   val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
 
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
-    val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "keep_original")
+    val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "collapse_root")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
 
     schemaRetentionPolicy match {

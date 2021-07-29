@@ -60,7 +60,6 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .option("pedantic", "true")
           .option("is_text", "true")
           .option("encoding", "ascii")
-          .option("schema_retention_policy", "collapse_root")
           .load(tmpFileName)
 
         val expected = """[{"A":"fd"},{"A":"hd"},{"A":"sd"}]"""
@@ -83,7 +82,6 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .option("is_record_sequence", "true")
           .option("is_text", "true")
           .option("encoding", "ascii")
-          .option("schema_retention_policy", "collapse_root")
           .load(tmpFileName)
 
         val expected = """[{"A":"fd"},{"A":"hd"},{"A":"sd"}]"""
@@ -107,7 +105,6 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .option("pedantic", "true")
           .option("is_text", "true")
           .option("encoding", "ascii")
-          .option("schema_retention_policy", "collapse_root")
           .load(tmpFileName)
 
         val count = df.count()
@@ -126,7 +123,6 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .option("is_record_sequence", "true")
           .option("is_text", "true")
           .option("encoding", "ascii")
-          .option("schema_retention_policy", "collapse_root")
           .load(tmpFileName)
 
         val count = df.count()

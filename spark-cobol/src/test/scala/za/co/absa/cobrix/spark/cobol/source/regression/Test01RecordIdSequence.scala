@@ -119,6 +119,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
       .option("generate_record_id", true)
       .option("input_split_records", 5)
       .option("is_xcom", true)
+      .option("schema_retention_policy", "keep_original")
       .load(fileName)
     logger.debug("Rows Count (No Segment Filter): " + dfRecordAll.count())
     val dfRecordFilterAll = dfRecordAll
@@ -131,6 +132,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
+      .option("schema_retention_policy", "keep_original")
       .option("input_split_records", 5)
       .option("is_xcom", true)
       .option("segment_field", "I")
@@ -148,6 +150,7 @@ class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTest
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
+      .option("schema_retention_policy", "keep_original")
       .option("input_split_records", 5)
       .option("is_xcom", true)
       .option("segment_field", "I")

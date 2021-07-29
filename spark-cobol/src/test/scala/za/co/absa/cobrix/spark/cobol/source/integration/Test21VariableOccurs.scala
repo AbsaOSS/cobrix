@@ -69,6 +69,7 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("encoding", "ascii")
       .option("variable_size_occurs", "true")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")

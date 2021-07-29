@@ -326,10 +326,12 @@ The space used by the headers should not be mentioned in the copybook if this op
 ### Schema collapsing
 
 Mainframe data often contain only one root GROUP. In such cases such a GROUP can be considered something similar to XML rowtag.
-Cobrix allows to collapse the GROUP and expand it's records. To turn this on use the following option:
+Cobrix allows either to collapse or to retain the GROUP. To turn this on use the following option:
 
 ```
 .option("schema_retention_policy", "collapse_root")
+or
+.option("schema_retention_policy", "keep_original")
 ```
 
 Let's look at an example. Let's say we have a copybook that looks like this:
@@ -341,7 +343,17 @@ Let's look at an example. Let's say we have a copybook that looks like this:
                10  COMPANY-ID-NUM        PIC 9(5) COMP-3.
 ```
 
-Normally Spark schema for such a copybook will look like this:
+When "schema_retention_policy" is set to "collapse_root" (default), the root group will be collapsed and the schema will look
+like this (note the RECORD field is not part of the schema):
+```
+root
+ |-- ID: integer (nullable = true)
+ |-- COMPANY: struct (nullable = true)
+ |    |-- SHORT_NAME: string (nullable = true)
+ |    |-- COMPANY_ID_NUM: integer (nullable = true)
+```
+
+But when "schema_retention_policy" is set to "keep_original", the schema will look like this (note the RECORD field is part of the schema):
 
 ```
 root
@@ -350,16 +362,6 @@ root
  |    |-- COMPANY: struct (nullable = true)
  |    |    |-- SHORT_NAME: string (nullable = true)
  |    |    |-- COMPANY_ID_NUM: integer (nullable = true)
-```
-
-But when "schema_retention_policy" is set to "collapse_root" the root group will be collapsed and the schema will look
-like this (note the RECORD field is no longer present):
-```
-root
- |-- ID: integer (nullable = true)
- |-- COMPANY: struct (nullable = true)
- |    |-- SHORT_NAME: string (nullable = true)
- |    |-- COMPANY_ID_NUM: integer (nullable = true)
 ```
 
 You can experiment with this feature using built-in example in `za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample`
@@ -541,7 +543,6 @@ Working example 1:
       .option("copybook_contents", copybook)
       .option("is_text", "true")
       .option("encoding", "ascii")
-      .option("schema_retention_policy", "collapse_root")
       .load(tmpFileName)
 ````
 
@@ -631,7 +632,6 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook_contents", copybook)
-  .option("schema_retention_policy", "collapse_root")
   .option("is_record_sequence", "true")
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "C")
@@ -740,7 +740,6 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook", "/path/to/thecopybook")
-  .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
   .option("is_record_sequence", "true")
   .load("examples/multisegment_data")
 ```
@@ -806,7 +805,6 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook", "/path/to/thecopybook")
-  .option("schema_retention_policy", "collapse_root")
   .option("is_record_sequence", "true")
 
   // Specifies a field containing a segment id
@@ -960,7 +958,6 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook_contents", copybook)
-  .option("schema_retention_policy", "collapse_root")
   .option("is_record_sequence", "true")
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "C")
@@ -1119,6 +1116,7 @@ Again, the full example is available at
 
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
+| .option("schema_retention_policy", "collapse_root") | When `collapse_root` (default) the root level record will be removed from the Spark schema. When `keep_original`, the root level GROUP will be present in the Spark schema |
 | .option("drop_group_fillers", "false")     | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained. |
 | .option("drop_value_fillers", "false")     | If `true` (default), all non-GROUP FILLERs will be dropped from the output schema. If `false`, such fields will be retained. |
 | .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
@@ -1196,7 +1194,6 @@ For fixed record length tests:
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
-      .option("schema_retention_policy", "collapse_root")
       .load(args(0))
     
       df.write.mode(SaveMode.Overwrite).parquet(args(1))
@@ -1214,7 +1211,6 @@ For multisegment variable lengths tests:
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
-      .option("schema_retention_policy", "collapse_root")
       .option("is_record_sequence", "true")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
@@ -1263,8 +1259,11 @@ For multisegment variable lengths tests:
 ## Changelog
 - #### 2.3.0 to be released soon.
     - [#405](https://github.com/AbsaOSS/cobrix/issues/405) Fix extracting records that contain redefines of the top level GROUPs.
-    - The layout positions summary generated by the parser now contains level numbers for root level GROUPs. THis is a breaking
-      change if you have unit tests that depend on the formatting of the layout positions output. 
+    - [#406](https://github.com/AbsaOSS/cobrix/issues/406) Use 'collapse_root' retention policy by default. This is the breaking,
+      change, to restore the original behavior add `.option("schema_retention_policy", "keep_original")`.
+    - [#407](https://github.com/AbsaOSS/cobrix/issues/407) The layout positions summary generated by the parser now contains level
+      numbers for root level GROUPs. This is a breaking change if you have unit tests that depend on the formatting of the layout
+      positions output.
     
 - #### 2.2.3 released 14 July 2021.
     - [#397](https://github.com/AbsaOSS/cobrix/issues/397) Fix skipping of empty lines when reading ASCII files with `is_record_sequence = true`

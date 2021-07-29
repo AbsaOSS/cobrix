@@ -44,6 +44,7 @@ class Test12MergeCopybooksSpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybooks", inputCopybookPath)
       .option("encoding", "ascii")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath)
 
     val dfM = spark
@@ -51,6 +52,7 @@ class Test12MergeCopybooksSpec extends FunSuite with SparkTestBase {
       .format("cobol")
       .option("copybooks", s"$inputCopybookPathA,$inputCopybookPathB")
       .option("encoding", "ascii")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath)
 
     // This is to print the actual output

@@ -19,7 +19,8 @@ package za.co.absa.cobrix.cobol.reader
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
+import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 
 
 class RowExtractorSpec extends FunSuite {

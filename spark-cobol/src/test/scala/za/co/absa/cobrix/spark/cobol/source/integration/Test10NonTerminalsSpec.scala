@@ -41,6 +41,7 @@ class Test10NonTerminalsSpec extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("non_terminals", "NAME,ACCOUNT-NO")
       .option("encoding", "ascii")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath)
 
     // This is to print the actual output
