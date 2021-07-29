@@ -261,7 +261,7 @@ class Test17HierarchicalSpec extends WordSpec with SparkTestBase with CobolTestB
         testData(actualDf, actualResultsPath, expectedResultsPath)
       }
 
-      "return a hierarchically structured dataframe without id generation and default schema retention policy" in {
+      "return a hierarchically structured dataframe without id generation and keep original schema retention policy" in {
         val expectedSchemaPath = "../data/test17_expected/test17e_schema.json"
         val actualSchemaPath = "../data/test17_expected/test17e_schema_actual.json"
         val expectedResultsPath = "../data/test17_expected/test17e.txt"
@@ -273,6 +273,7 @@ class Test17HierarchicalSpec extends WordSpec with SparkTestBase with CobolTestB
           .option("copybook", inputCopybookPath)
           .option("encoding", "ascii")
           .option("is_record_sequence", "true")
+          .option("schema_retention_policy", "keep_original")
           .option("segment_field", "SEGMENT_ID")
           .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
           .option("redefine-segment-id-map:2", "CONTACTS => P")

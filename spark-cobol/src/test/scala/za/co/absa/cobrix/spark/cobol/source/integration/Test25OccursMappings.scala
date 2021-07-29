@@ -93,6 +93,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
         .option("encoding", "ascii")
         .option("occurs_mappings", "{\"DETAIL1\":{\"A\":0,\"B\":1.5},\"DETAIL2\":{\"A\":1,\"B\":\"Z\"}}")
         .option("variable_size_occurs", "true")
+        .option("schema_retention_policy", "keep_original")
         .load(inputDataPath + "/data.dat")
     }
     assert(exc.getMessage.contains("java.lang.Double cannot be cast to java.lang.Integer"))
@@ -106,6 +107,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
       .option("encoding", "ascii")
       .option("occurs_mappings", "{\"DETAIL1\":{\"A\":0,\"B\":1},\"DETAIL2\":{\"A\":1,\"B\":2}}")
       .option("variable_size_occurs", "true")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath + "/data.dat")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
@@ -133,6 +135,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
       .option("copybook", inputCopybookPath)
       .option("encoding", "ascii")
       .option("occurs_mappings", "{\"DETAIL1\":{\"A\":0,\"B\":1},\"DETAIL2\":{\"A\":1,\"B\":2}}")
+      .option("schema_retention_policy", "keep_original")
       .load(inputDataPath + "/data2.dat")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")

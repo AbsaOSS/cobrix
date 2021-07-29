@@ -19,8 +19,7 @@ package za.co.absa.cobrix.cobol.reader
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
-
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 
 class JSONExtractorSpec extends FunSuite {
   val copyBookContents: String =
@@ -113,7 +112,6 @@ class JSONExtractorSpec extends FunSuite {
   val copybook: Copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
-
   class MapType(val value: String)
 
   class JSONHandler extends RecordHandler[Any] {
@@ -136,7 +134,6 @@ class JSONExtractorSpec extends FunSuite {
 
     override def toSeq(record: Any): Seq[Any] = Seq[Any]()
   }
-
 
   test("Test simple JSON generation") {
     // this is a very simple example serializer, no string escaping happens here, post processing will fail
