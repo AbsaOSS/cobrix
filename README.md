@@ -328,9 +328,11 @@ The space used by the headers should not be mentioned in the copybook if this op
 Mainframe data often contain only one root GROUP. In such cases such a GROUP can be considered something similar to XML rowtag.
 Cobrix allows either to collapse or to retain the GROUP. To turn this on use the following option:
 
-```
+```scala
 .option("schema_retention_policy", "collapse_root")
+```
 or
+```scala
 .option("schema_retention_policy", "keep_original")
 ```
 
