@@ -17,10 +17,13 @@
 package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.FunSuite
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
 
-class MergeCopybooksSpec extends FunSuite {
+class MergeCopybooksSpec extends FunSuite with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test merge copybooks") {
     val copyBookContents1: String =
@@ -73,37 +76,37 @@ class MergeCopybooksSpec extends FunSuite {
     assert(copybook123.getRecordSize == 90)
     assert(copybook321.getRecordSize == 90)
 
-    assert(copybook123.generateRecordLayoutPositions ==
+    assertEqualsMultiline(copybook123.generateRecordLayoutPositions(),
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |  1 RECORD_COPYBOOK_1                  r              7      1     90     90
-        |    5 GROUP_1                                         7      1     30     30
-        |      6 FIELD_1                                       3      1     10     10
-        |      6 FILLER                                        4     11     15      5
-        |      6 GROUP_2                                       7     16     30     15
-        |        10 NESTED_FIELD_1                             6     16     25     10
-        |        10 FILLER                                     7     26     30      5
-        |  1 RECORD_COPYBOOK_2A                 rR            14      1     90     90
-        |    5 GROUP_1                                        14      1     60     60
-        |      6 FIELD_1                                      10      1     20     20
-        |      6 FILLER                                       11     21     30     10
-        |      6 GROUP_2                                      14     31     60     30
-        |        10 NESTED_FIELD_1                            13     31     50     20
-        |        10 FILLER                                    14     51     60     10
-        |  1 RECORD_COPYBOOK_2B                 rR            21      1     90     90
-        |    5 GROUP_1                                        21      1     60     60
-        |      6 FIELD_1                                      17      1     20     20
-        |      6 FILLER                                       18     21     30     10
-        |      6 GROUP_2                                      21     31     60     30
-        |        10 NESTED_FIELD_1                            20     31     50     20
-        |        10 FILLER                                    21     51     60     10
-        |  1 RECORD_COPYBOOK_3                  R             28      1     90     90
-        |    5 GROUP_1                                        28      1     90     90
-        |      6 FIELD_1                                      24      1     30     30
-        |      6 FILLER                                       25     31     45     15
-        |      6 GROUP_2                                      28     46     90     45
-        |        10 NESTED_FIELD_1                            27     46     75     30
-        |        10 FILLER                                    28     76     90     15"""
+        |1 RECORD_COPYBOOK_1                    r              1      1     90     90
+        |  5 GROUP_1                                           2      1     30     30
+        |    6 FIELD_1                                         3      1     10     10
+        |    6 FILLER                                          4     11     15      5
+        |    6 GROUP_2                                         5     16     30     15
+        |      10 NESTED_FIELD_1                               6     16     25     10
+        |      10 FILLER                                       7     26     30      5
+        |1 RECORD_COPYBOOK_2A                   rR             8      1     90     90
+        |  5 GROUP_1                                           9      1     60     60
+        |    6 FIELD_1                                        10      1     20     20
+        |    6 FILLER                                         11     21     30     10
+        |    6 GROUP_2                                        12     31     60     30
+        |      10 NESTED_FIELD_1                              13     31     50     20
+        |      10 FILLER                                      14     51     60     10
+        |1 RECORD_COPYBOOK_2B                   rR            15      1     90     90
+        |  5 GROUP_1                                          16      1     60     60
+        |    6 FIELD_1                                        17      1     20     20
+        |    6 FILLER                                         18     21     30     10
+        |    6 GROUP_2                                        19     31     60     30
+        |      10 NESTED_FIELD_1                              20     31     50     20
+        |      10 FILLER                                      21     51     60     10
+        |1 RECORD_COPYBOOK_3                    R             22      1     90     90
+        |  5 GROUP_1                                          23      1     90     90
+        |    6 FIELD_1                                        24      1     30     30
+        |    6 FILLER                                         25     31     45     15
+        |    6 GROUP_2                                        26     46     90     45
+        |      10 NESTED_FIELD_1                              27     46     75     30
+        |      10 FILLER                                      28     76     90     15"""
         .stripMargin.replace("\r\n", "\n"))
   }
 
@@ -127,16 +130,16 @@ class MergeCopybooksSpec extends FunSuite {
 
     assert(copybook1M.generateRecordLayoutPositions == copybook1.generateRecordLayoutPositions)
 
-    assert(copybook1M.generateRecordLayoutPositions ==
+    assertEqualsMultiline(copybook1M.generateRecordLayoutPositions(),
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |  1 RECORD_COPYBOOK_1                                 7      1     30     30
-        |    5 GROUP_1                                         7      1     30     30
-        |      6 FIELD_1                                       3      1     10     10
-        |      6 FILLER                                        4     11     15      5
-        |      6 GROUP_2                                       7     16     30     15
-        |        10 NESTED_FIELD_1                             6     16     25     10
-        |        10 FILLER                                     7     26     30      5"""
+        |1 RECORD_COPYBOOK_1                                   1      1     30     30
+        |  5 GROUP_1                                           2      1     30     30
+        |    6 FIELD_1                                         3      1     10     10
+        |    6 FILLER                                          4     11     15      5
+        |    6 GROUP_2                                         5     16     30     15
+        |      10 NESTED_FIELD_1                               6     16     25     10
+        |      10 FILLER                                       7     26     30      5"""
         .stripMargin.replace("\r\n", "\n"))
   }
 

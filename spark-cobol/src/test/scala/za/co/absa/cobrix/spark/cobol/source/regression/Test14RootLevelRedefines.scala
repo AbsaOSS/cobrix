@@ -60,15 +60,6 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
 
   "Test ASCII CRLF text file " should {
     "with merged copybooks" in {
-      val expectedLayout =
-      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
-        |
-        |ENTITY1                                                      1      1      1
-        |  5 A                                                 1      1      1      1
-        |ENTITY2                                                      1      1      1
-        |  5 B                                                 2      1      1      1
-        |""".stripMargin
-
       withTempDirectory("merged_copybook") { tempDir =>
         val copybook1Path = Paths.get(tempDir, "copybook1.cpy")
         val copybook2Path = Paths.get(tempDir, "copybook2.cpy")
@@ -104,11 +95,10 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
       val expectedLayout =
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |ROOT                                                         1      1      1
-        |  5 ENTITY1                            r              2      1      1      1
-        |    10 A                                              2      1      1      1
-        |  5 ENTITY2                            R              4      1      1      1
-        |    10 B                                              4      1      1      1
+        |5 ENTITY1                              r              1      1      1      1
+        |  10 A                                                2      1      1      1
+        |5 ENTITY2                              R              3      1      1      1
+        |  10 B                                                4      1      1      1
         |""".stripMargin
       withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
         val df = spark
@@ -125,9 +115,11 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
 
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
+        val actualLayout = CopybookParser.parseTree(copybook2Roots).generateRecordLayoutPositions()
 
         assert(count == 4)
         assertEqualsMultiline(actual, expected)
+        assertEqualsMultiline(actualLayout, expectedLayout)
       }
     }
 
@@ -135,10 +127,10 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
       val expectedLayout =
         """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
           |
-          |  5 ENTITY1                            r              2      1      1      1
-          |    10 A                                              2      1      1      1
-          |  5 ENTITY2                            R              4      1      1      1
-          |    10 B                                              4      1      1      1
+          |5 ENTITY1                              r              1      1      1      1
+          |  10 A                                                2      1      1      1
+          |5 ENTITY2                              R              3      1      1      1
+          |  10 B                                                4      1      1      1
           |""".stripMargin
       withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
         val df = spark
@@ -168,10 +160,10 @@ class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFi
       val expectedLayout =
         """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
           |
-          |  5 ENTITY1                            r              2      1      1      1
-          |    10 A                                              2      1      1      1
-          |  5 ENTITY2                            R              4      1      1      1
-          |    10 B                                              4      1      1      1
+          |5 ENTITY1                              r              1      1      1      1
+          |  10 A                                                2      1      1      1
+          |5 ENTITY2                              R              3      1      1      1
+          |  10 B                                                4      1      1      1
           |""".stripMargin
       withTempTextFile("merged_crlf", ".dat", StandardCharsets.UTF_8, textFileContents) { tmpFileName =>
         val df = spark

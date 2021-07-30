@@ -211,7 +211,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       }
     }
 
-    def generateGroupLayoutPositions(group: Group, path: String = "  "): String = {
+    def generateGroupLayoutPositions(group: Group, path: String = ""): String = {
       val fieldStrings = for (field <- group.children) yield {
         fieldCounter += 1
         val isRedefines = if (field.redefines.nonEmpty) "R" else ""
@@ -220,6 +220,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
 
         field match {
           case grp: Group =>
+            val fieldCounterPart = alignRight(s"$fieldCounter", 5)
             val modifiers = s"$isRedefinedByStr$isRedefines$isArray"
             val groupStr = generateGroupLayoutPositions(grp, path + "  ")
             val start = grp.binaryProperties.offset + 1
@@ -227,13 +228,13 @@ class Copybook(val ast: CopybookAST) extends Serializable {
             val end = start + length - 1
             val namePart = alignLeft(s"$path${grp.level} ${grp.name}", 39)
             val picturePart = alignLeft(modifiers, 11)
-            val fieldCounterPart = alignRight(s"$fieldCounter", 5)
             val startPart = alignRight(s"$start", 7)
             val fieldEndPart = alignRight(s"$end", 7)
             val fieldLengthPart = alignRight(s"$length", 7)
             val groupDescription = s"$namePart$picturePart$fieldCounterPart$startPart$fieldEndPart$fieldLengthPart\n"
             groupDescription + groupStr
           case s: Primitive =>
+            val fieldCounterPart = alignRight(s"$fieldCounter", 5)
             val isDependeeStr = if (s.isDependee) "D" else ""
             val modifiers = s"$isDependeeStr$isRedefinedByStr$isRedefines$isArray"
             val start = s.binaryProperties.offset + 1
@@ -241,7 +242,6 @@ class Copybook(val ast: CopybookAST) extends Serializable {
             val end = start + length - 1
             val namePart = alignLeft(s"$path${s.level} ${s.name}", 39)
             val picturePart = alignLeft(modifiers, 11)
-            val fieldCounterPart = alignRight(s"$fieldCounter", 5)
             val startPart = alignRight(s"$start", 7)
             val fieldEndPart = alignRight(s"$end", 7)
             val fieldLengthPart = alignRight(s"$length", 7)

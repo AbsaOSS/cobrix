@@ -17,15 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.source
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFileFixture {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val binFileContents: Array[Byte] = Array[Byte](
     // Record 0 (full)
@@ -86,9 +85,9 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
   private val expectedLayout =
     """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
       |
-      |  1 GRP_01                                            3      1     11     11
-      |    3 FIELD1                                          2      1      1      1
-      |    3 FIELD2                                          3      2     11     10"""
+      |1 GRP_01                                              1      1     11     11
+      |  3 FIELD1                                            2      1      1      1
+      |  3 FIELD2                                            3      2     11     10"""
       .stripMargin.replace("\r\n", "\n")
 
   private val expectedSchema =
@@ -101,7 +100,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
     val copybook = CopybookParser.parseTree(copybookWithComments)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook comments are parsed with an adjusted comment positions") {
@@ -109,7 +108,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
       commentPolicy = CommentPolicy(truncateComments = true, 3, 50))
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook comments are parsed with no comment truncation") {
@@ -117,7 +116,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
       commentPolicy = CommentPolicy(truncateComments = false))
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook are processed by spark-cobol properly with the default comment positions") {
@@ -132,7 +131,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
 
       val actualSchema = df.schema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 
@@ -150,7 +149,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
 
       val actualSchema = df.schema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 
@@ -167,7 +166,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
 
       val actualSchema = df.schema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 

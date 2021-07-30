@@ -17,13 +17,13 @@
 package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseFieldsNestingSpec extends FunSuite {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class ParseFieldsNestingSpec extends FunSuite with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test copybook parser handling of levels nesting") {
     val copybookWithCommentLines =
@@ -40,19 +40,19 @@ class ParseFieldsNestingSpec extends FunSuite {
     val expectedLayout =
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |  1 ROOT_GROUP                                        7      1     20     20
-        |    3 NESTED_PRIMITIVE_01                             2      1      4      4
-        |    3 NESTED_GRP_01                                   4      5     11      7
-        |      5 NESTED_NESTED_02                              4      5     11      7
-        |    3 FILL                                            5     12     18      7
-        |    2 FILLER_1                                        7     19     20      2
-        |      3 NUMERIC_FIELD_01                              7     19     20      2"""
+        |1 ROOT_GROUP                                          1      1     20     20
+        |  3 NESTED_PRIMITIVE_01                               2      1      4      4
+        |  3 NESTED_GRP_01                                     3      5     11      7
+        |    5 NESTED_NESTED_02                                4      5     11      7
+        |  3 FILL                                              5     12     18      7
+        |  2 FILLER_1                                          6     19     20      2
+        |    3 NUMERIC_FIELD_01                                7     19     20      2"""
         .stripMargin.replace("\r\n", "\n")
 
     val copybook = CopybookParser.parseTree(copybookWithCommentLines)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook parser doesn't allow nesting leaf statements") {

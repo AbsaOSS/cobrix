@@ -1,34 +1,34 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-  1 ENTITY                                           32      1    108    108
-    5 SEGMENT_ID                                      2      1      1      1
-    5 COMPANY                          r              6      2    108    107
-      10 COMPANY_NAME                                 4      2     21     20
-      10 ADDRESS                                      5     22     51     30
-      10 TAXPAYER                                     6     52     55      4
-    5 DEPT                             rR             9      2    108    107
-      10 DEPT_NAME                                    8      2     23     22
-      10 EXTENSION                                    9     24     29      6
-    5 EMPLOYEE                         rR            15      2    108    107
-      10 FIRST_NAME                                  11      2     17     16
-      10 LAST_NAME                                   12     18     33     16
-      10 ROLE                                        13     34     51     18
-      10 HOME_ADDRESS                                14     52     91     40
-      10 PHONE_NUM                                   15     92    108     17
-    5 OFFICE                           rR            19      2    108    107
-      10 ADDRESS                                     17      2     31     30
-      10 FLOOR                                       18     32     34      3
-      10 ROOM_NUMBER                                 19     35     38      4
-    5 CUSTOMER                         rR            23      2    108    107
-      10 CUSTOMER_NAME                               21      2     21     20
-      10 POSTAL_ADDRESS                              22     22     51     30
-      10 ZIP                                         23     52     61     10
-    5 CONTACT                          rR            27      2    108    107
-      10 FIRST_NAME                                  25      2     17     16
-      10 LAST_NAME                                   26     18     33     16
-      10 PHONE_NUM                                   27     34     50     17
-    5 CONTRACT                         R             32      2    108    107
-      10 CONTRACT_NUMBER                             29      2     16     15
-      10 STATE                                       30     17     24      8
-      10 DUE_DATE                                    31     25     34     10
-      10 AMOUNT                                      32     35     41      7
+1 ENTITY                                              1      1    108    108
+  5 SEGMENT_ID                                        2      1      1      1
+  5 COMPANY                            r              3      2    108    107
+    10 COMPANY_NAME                                   4      2     21     20
+    10 ADDRESS                                        5     22     51     30
+    10 TAXPAYER                                       6     52     55      4
+  5 DEPT                               rR             7      2    108    107
+    10 DEPT_NAME                                      8      2     23     22
+    10 EXTENSION                                      9     24     29      6
+  5 EMPLOYEE                           rR            10      2    108    107
+    10 FIRST_NAME                                    11      2     17     16
+    10 LAST_NAME                                     12     18     33     16
+    10 ROLE                                          13     34     51     18
+    10 HOME_ADDRESS                                  14     52     91     40
+    10 PHONE_NUM                                     15     92    108     17
+  5 OFFICE                             rR            16      2    108    107
+    10 ADDRESS                                       17      2     31     30
+    10 FLOOR                                         18     32     34      3
+    10 ROOM_NUMBER                                   19     35     38      4
+  5 CUSTOMER                           rR            20      2    108    107
+    10 CUSTOMER_NAME                                 21      2     21     20
+    10 POSTAL_ADDRESS                                22     22     51     30
+    10 ZIP                                           23     52     61     10
+  5 CONTACT                            rR            24      2    108    107
+    10 FIRST_NAME                                    25      2     17     16
+    10 LAST_NAME                                     26     18     33     16
+    10 PHONE_NUM                                     27     34     50     17
+  5 CONTRACT                           R             28      2    108    107
+    10 CONTRACT_NUMBER                               29      2     16     15
+    10 STATE                                         30     17     24      8
+    10 DUE_DATE                                      31     25     34     10
+    10 AMOUNT                                        32     35     41      7

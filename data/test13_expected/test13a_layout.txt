@@ -1,9 +1,9 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-  1 TRANSDATA                                         7      1     45     45
-    5 CURRENCY                                        2      1      3      3
-    5 SIGNATURE                                       3      4     11      8
-    5 COMPANY_NAME                                    4     12     26     15
-    5 COMPANY_ID                                      5     27     36     10
-    5 WEALTH_QFY                                      6     37     37      1
-    5 AMOUNT                                          7     38     45      8
+1 TRANSDATA                                           1      1     45     45
+  5 CURRENCY                                          2      1      3      3
+  5 SIGNATURE                                         3      4     11      8
+  5 COMPANY_NAME                                      4     12     26     15
+  5 COMPANY_ID                                        5     27     36     10
+  5 WEALTH_QFY                                        6     37     37      1
+  5 AMOUNT                                            7     38     45      8
