@@ -30,7 +30,7 @@ import scala.collection.JavaConverters._
 //noinspection NameBooleanParameters
 class Test11CustomRDWParser extends FunSuite with SparkTestBase {
 
-  private val exampleName = "Test10(custom record header parser)"
+  private val exampleName = "Test11(custom record header parser)"
   private val inputCopybookPath = "file://../data/test11_copybook.cob"
   private val inputCopybookFSPath = "../data/test11_copybook.cob"
   private val inputDataPath = "../data/test11_data"

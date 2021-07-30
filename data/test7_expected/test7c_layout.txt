@@ -1,22 +1,22 @@
 -------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
 
-  1 RECORD                                           20      1     60     60
-    5 FILLER_P1                                       2      1      1      1
-    5 COMPANY_PREFIX                                  3      2      4      3
-    5 FILLER_P2                                       4      5      5      1
-    5 FILLER_P3                                       5      6      6      1
-    5 COMPANY_NAME                     r              6      7     15      9
-    5 FILLER_1                         R             10      7     15      9
-      10 STR1                                         8      7     11      5
-      10 STR2                                         9     12     13      2
-      10 FILLER_P4                                   10     14     14      1
-    5 ADDRESS                          r             11     16     45     30
-    5 FILLER_2                         R             14     16     45     30
-      10 STR4                                        13     16     25     10
-      10 FILLER_P5                                   14     26     45     20
-    5 FILL_FIELD                       r             17     46     52      7
-      10 FILLER_P6                                   16     46     50      5
-      10 FILLER_P7                                   17     51     52      2
-    5 CONTACT_PERSON                   R             19     46     52      7
-      10 FIRST_NAME                                  19     46     51      6
-    5 AMOUNT                                         20     53     60      8
+1 RECORD                                              1      1     60     60
+  5 FILLER_P1                                         2      1      1      1
+  5 COMPANY_PREFIX                                    3      2      4      3
+  5 FILLER_P2                                         4      5      5      1
+  5 FILLER_P3                                         5      6      6      1
+  5 COMPANY_NAME                       r              6      7     15      9
+  5 FILLER_1                           R              7      7     15      9
+    10 STR1                                           8      7     11      5
+    10 STR2                                           9     12     13      2
+    10 FILLER_P4                                     10     14     14      1
+  5 ADDRESS                            r             11     16     45     30
+  5 FILLER_2                           R             12     16     45     30
+    10 STR4                                          13     16     25     10
+    10 FILLER_P5                                     14     26     45     20
+  5 FILL_FIELD                         r             15     46     52      7
+    10 FILLER_P6                                     16     46     50      5
+    10 FILLER_P7                                     17     51     52      2
+  5 CONTACT_PERSON                     R             18     46     52      7
+    10 FIRST_NAME                                    19     46     51      6
+  5 AMOUNT                                           20     53     60      8

@@ -17,19 +17,19 @@
 package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseCommentsSpec extends FunSuite {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class ParseCommentsSpec extends FunSuite with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val expectedLayout =
     """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
       |
-      |  1 GRP_01                                            3      1     11     11
-      |    3 FIELD1                                          2      1      1      1
-      |    3 FIELD2                                          3      2     11     10"""
+      |1 GRP_01                                              1      1     11     11
+      |  3 FIELD1                                            2      1      1      1
+      |  3 FIELD2                                            3      2     11     10"""
       .stripMargin.replace("\r\n", "\n")
 
   test("Test copybook parser handles comment lines") {
@@ -44,7 +44,7 @@ class ParseCommentsSpec extends FunSuite {
     val copybook = CopybookParser.parseTree(copybookWithCommentLines)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook parser handles comments at the beginning of the lines") {
@@ -58,7 +58,7 @@ class ParseCommentsSpec extends FunSuite {
     val copybook = CopybookParser.parseTree(copybookWithStartComments)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook parser handles comments at the end of the lines") {
@@ -72,7 +72,7 @@ class ParseCommentsSpec extends FunSuite {
     val copybook = CopybookParser.parseTree(copybookWithEndComments)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
   test("Test copybook parser handles comments everywhere when appropriate") {
@@ -89,7 +89,7 @@ class ParseCommentsSpec extends FunSuite {
     val copybook = CopybookParser.parseTree(copybookWithMoreComments)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 
 }

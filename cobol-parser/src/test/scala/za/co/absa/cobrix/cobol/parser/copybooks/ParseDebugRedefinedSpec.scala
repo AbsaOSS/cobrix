@@ -17,14 +17,15 @@
 package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Statement}
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.HexValue
+import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseDebugRedefinedSpec extends FunSuite {
+class ParseDebugRedefinedSpec extends FunSuite with SimpleComparisonBase {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test copybook parser generates debug columns for redefined fields") {
     val copybookWithRedefined: String =
@@ -64,23 +65,23 @@ class ParseDebugRedefinedSpec extends FunSuite {
     val expectedLayout =
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |  1 TRANSDATA                                        11      1      7      7
-        |    10 CURRENCY                        r              2      1      3      3
-        |    10 CURRENCY_debug                  R              3      1      3      3
-        |    10 FIELD1                          r              4      4      7      4
-        |    10 FIELD1_debug                    rR             5      4      7      4
-        |    10 FIELD2                          rR             6      4      7      4
-        |    10 FIELD2_debug                    rR             7      4      7      4
-        |    10 FIELD3                          rR             8      4      7      4
-        |    10 FIELD3_debug                    rR             9      4      7      4
-        |    10 FIELD4                          rR            10      4      7      4
-        |    10 FIELD4_debug                    R             11      4      7      4"""
+        |1 TRANSDATA                                           1      1      7      7
+        |  10 CURRENCY                          r              2      1      3      3
+        |  10 CURRENCY_debug                    R              3      1      3      3
+        |  10 FIELD1                            r              4      4      7      4
+        |  10 FIELD1_debug                      rR             5      4      7      4
+        |  10 FIELD2                            rR             6      4      7      4
+        |  10 FIELD2_debug                      rR             7      4      7      4
+        |  10 FIELD3                            rR             8      4      7      4
+        |  10 FIELD3_debug                      rR             9      4      7      4
+        |  10 FIELD4                            rR            10      4      7      4
+        |  10 FIELD4_debug                      R             11      4      7      4"""
         .stripMargin.replace("\r\n", "\n")
 
     val copybook = CopybookParser.parseTree(copybookWithRedefined, debugFieldsPolicy = HexValue)
 
     val actualLayout = copybook.generateRecordLayoutPositions()
 
-    assert(actualLayout == expectedLayout)
+    assertEqualsMultiline(actualLayout, expectedLayout)
   }
 }

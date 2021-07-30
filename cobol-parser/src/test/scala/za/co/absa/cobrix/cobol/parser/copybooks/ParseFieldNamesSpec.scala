@@ -17,12 +17,12 @@
 package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.FunSuite
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseFieldNamesSpec extends FunSuite {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
+class ParseFieldNamesSpec extends FunSuite with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test copybook parser handles comment lines") {
     val copybookWithCommentLines =
@@ -44,23 +44,23 @@ class ParseFieldNamesSpec extends FunSuite {
     val expectedLayout =
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
-        |  1 GRP_01_02                                         3      1     11     11
-        |    3 FIELD_1                                         2      1      1      1
-        |    3 FIELD_2                                         3      2     11     10
-        |  1 GRP_01_02                                         6     12     22     11
-        |    3 FIELD_1                                         5     12     12      1
-        |    3 FIELD_2                                         6     13     22     10
-        |  1 GRP0102                                           9     23     33     11
-        |    3 FIELD1                                          8     23     23      1
-        |    3 FIELD2                                          9     24     33     10
-        |  1 SOMETHING_SOMETHING_DATE_NUM                     12     34     44     11
-        |    3 FIELD1                                         11     34     34      1
-        |    3 FIELD2                                         12     35     44     10"""
+        |1 GRP_01_02                                           1      1     11     11
+        |  3 FIELD_1                                           2      1      1      1
+        |  3 FIELD_2                                           3      2     11     10
+        |1 GRP_01_02                                           4     12     22     11
+        |  3 FIELD_1                                           5     12     12      1
+        |  3 FIELD_2                                           6     13     22     10
+        |1 GRP0102                                             7     23     33     11
+        |  3 FIELD1                                            8     23     23      1
+        |  3 FIELD2                                            9     24     33     10
+        |1 SOMETHING_SOMETHING_DATE_NUM                       10     34     44     11
+        |  3 FIELD1                                           11     34     34      1
+        |  3 FIELD2                                           12     35     44     10"""
         .stripMargin.replace("\r\n", "\n")
 
     val copybook = CopybookParser.parseTree(copybookWithCommentLines)
     val layout = copybook.generateRecordLayoutPositions()
 
-    assert(layout == expectedLayout)
+    assertEqualsMultiline(layout, expectedLayout)
   }
 }
