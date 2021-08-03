@@ -22,7 +22,7 @@ lazy val scala212 = "2.12.12"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 
-ThisBuild / scalaVersion := scala211
+ThisBuild / scalaVersion := scala212
 ThisBuild / crossScalaVersions := Seq(scala211, scala212)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
