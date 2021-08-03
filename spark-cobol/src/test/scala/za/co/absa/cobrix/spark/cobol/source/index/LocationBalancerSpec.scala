@@ -99,6 +99,6 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
       (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2"))
     )
 
-    assert(actual == expected)
+    assert(actual.sortBy(_._2.head) == expected)
   }
 }
