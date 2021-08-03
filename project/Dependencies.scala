@@ -27,7 +27,7 @@ object Dependencies {
 
   private val scalatestVersion = "3.0.1"
 
-  def sparkVersion: String = sys.props.getOrElse("SPARK_VERSION", "2.4.8")
+  def sparkVersion: String = sys.props.getOrElse("SPARK_VERSION", "3.1.2")
 
   def getScalaDependency(scalaVersion: String): ModuleID = "org.scala-lang" % "scala-library" % scalaVersion % Provided
 
