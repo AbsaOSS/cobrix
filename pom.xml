@@ -109,7 +109,7 @@
         <!-- Frameworks and libraries -->
         <scala.version>2.11.12</scala.version>
         <scala.compat.version>2.11</scala.compat.version>
-        <spark.version>2.4.7</spark.version>
+        <spark.version>2.4.8</spark.version>
         <scalatest.version>3.0.1</scalatest.version>
         <specs.version>2.4.16</specs.version>
         <guava.version>15.0</guava.version>

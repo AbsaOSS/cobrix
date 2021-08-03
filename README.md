@@ -257,9 +257,9 @@ all required dependencies (an uber jar aka fat jar).
 
 Creating an uber jar for Cobrix is very easy. Just clone the repository and run one of the following commands:
 ```sh
-sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.7
-sbt ++2.12.12 assembly -DSPARK_VERSION=2.4.7
-sbt ++2.12.12 assembly -DSPARK_VERSION=3.0.1
+sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
+sbt ++2.12.14 assembly -DSPARK_VERSION=2.4.8
+sbt ++2.12.14 assembly -DSPARK_VERSION=3.1.2
 ```
 
 You can collect the uber jar of `spark-cobol` either at
