@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.reader.MemoryStream
+package za.co.absa.cobrix.cobol.reader.memorystream
 
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 

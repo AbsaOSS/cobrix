@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.reader.MemoryStream.TestStringStream
+import za.co.absa.cobrix.cobol.reader.memorystream.TestStringStream
 
 class RawRecordExtractorFactorySpec extends WordSpec {
   "createRecordHeaderParser()" should {
