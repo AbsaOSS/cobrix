@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.reader.recordheader.RecordHeaderDecoder
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 /**
@@ -29,5 +30,7 @@ case class RawRecordContext(
                              startingRecordNumber: Long,
                              inputStream: SimpleStream,
                              copybook: Copybook,
+                             rdwDecoder: RecordHeaderDecoder,
+                             bdwDecoder: RecordHeaderDecoder,
                              additionalInfo: String
                            )

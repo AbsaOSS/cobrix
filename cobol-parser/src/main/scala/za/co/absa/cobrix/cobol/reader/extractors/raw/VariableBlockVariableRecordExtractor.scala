@@ -23,6 +23,7 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
   private var recordQueue = new mutable.Queue[Array[Byte]]
   private var initialRead = true
   private var recordNumber = ctx.startingRecordNumber
+
   override def offset: Long = ctx.inputStream.offset
 
   override def hasNext: Boolean = {
@@ -44,18 +45,25 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
 
   private def readNextBlock(): Unit = {
     if (!ctx.inputStream.isEndOfStream) {
-      val bdwFirstPart = BigInt(ctx.inputStream.next(2)).toInt
-      val bdwSecondPart = BigInt(ctx.inputStream.next(2)).toInt
-      var blockBuffer  = ctx.inputStream.next(bdwFirstPart-4)
+      val bdwOffset = ctx.inputStream.offset
+      val bdw = ctx.inputStream.next(4)
+
+      val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
+
+      val blockBuffer = ctx.inputStream.next(blockLength)
+
       var blockPointer: Int = 0
-      var recordCounter: Int =0
+      var recordCounter: Int = 0
       while (blockPointer < blockBuffer.length) {
         recordCounter += 1
-        var rdwFirstPart = BigInt(blockBuffer.slice(blockPointer, blockPointer+2)).toInt
-        var rdwSecondPart = BigInt(blockBuffer.slice(blockPointer+2, blockPointer+4)).toInt
-        val payload = blockBuffer.slice(blockPointer+4, blockPointer + rdwFirstPart)
+
+        val rdwOffset = bdwOffset + blockPointer
+        val rdw = blockBuffer.slice(blockPointer, blockPointer + 4)
+        val recordLength = ctx.rdwDecoder.getRecordLength(rdw, rdwOffset)
+
+        val payload = blockBuffer.slice(blockPointer + 4, blockPointer + recordLength + 4)
         recordQueue.enqueue(payload)
-        blockPointer += rdwFirstPart
+        blockPointer += recordLength + 4
       }
     }
   }
