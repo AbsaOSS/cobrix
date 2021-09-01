@@ -18,8 +18,8 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import scala.collection.mutable
 
-class VariableBlockRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
-  VariableBlockRecordExtractor.additionalInfo = ctx.additionalInfo
+class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  VariableBlockVariableRecordExtractor.additionalInfo = ctx.additionalInfo
   private var recordQueue = new mutable.Queue[Array[Byte]]
   private var initialRead = true
   private var recordNumber = ctx.startingRecordNumber
@@ -73,6 +73,6 @@ class VariableBlockRecordExtractor(ctx: RawRecordContext) extends Serializable w
   }
 }
 
-object VariableBlockRecordExtractor {
+object VariableBlockVariableRecordExtractor {
   var additionalInfo: String = ""
 }
