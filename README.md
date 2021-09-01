@@ -201,17 +201,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.11-2.3.0.jar
-* cobol-parser_2.11-2.3.0.jar
-* scodec-core_2.11-1.10.3.jar
-* scodec-bits_2.11-1.1.4.jar
+* spark-cobol_2.12-2.3.0.jar
+* cobol-parser_2.12-2.3.0.jar
+* scodec-core_2.12-1.10.3.jar
+* scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.3.0
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.3.0
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.11-2.3.0.jar,cobol-parser_2.11-2.3.0.jar,scodec-core_2.11-1.10.3.jar,scodec-bits_2.11-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.3.0.jar,cobol-parser_2.12-2.3.0.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
