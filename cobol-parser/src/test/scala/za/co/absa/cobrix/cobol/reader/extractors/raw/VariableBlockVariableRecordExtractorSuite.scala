@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.memorystream.TestByteStream
+import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParametersFactory}
 
 class VariableBlockVariableRecordExtractorSuite extends WordSpec {
   private val copybookContent =
@@ -29,7 +30,7 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
 
   "little-endian block-included record-included case" should {
     "be able to read a VBVR file that has one record per block" in {
-      val rc = getRawRecordContext(1, true, true)
+      val rc = getRawRecordContext(1, includeBdwInHeaderSize = true, includeRdwInHeaderSize = true, bdwBigEndian = true, rdwBigEndian = true)
 
       val extractor = new VariableBlockVariableRecordExtractor(rc)
 
@@ -45,7 +46,7 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
     }
 
     "be able to read a VBVR file that has multiple records per block" in {
-      val rc = getRawRecordContext(3, true, true)
+      val rc = getRawRecordContext(3, includeBdwInHeaderSize = true, includeRdwInHeaderSize = true, bdwBigEndian = true, rdwBigEndian = true)
 
       val extractor = new VariableBlockVariableRecordExtractor(rc)
 
@@ -69,33 +70,35 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
 
   "failures" should {
     "throw an exception if a block header is too small" in {
-      val rc = getRawRecordContext(Array[Byte](0, 22))
+      val rc = getRawRecordContext(Array[Byte](0, 22), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
 
       val extractor = new VariableBlockVariableRecordExtractor(rc)
 
-      val ex = intercept[NumberFormatException] {
+      val ex = intercept[IllegalStateException] {
         extractor.hasNext
       }
 
-      assert(ex.getMessage.contains("Zero length BigInteger"))
+      assert(ex.getMessage.contains("The length of BDW headers is unexpected. Expected: 4, got 2"))
     }
 
     "throw an exception if a record header is too small" in {
-      val rc = getRawRecordContext(Array[Byte](0, 3, 0, 0, 0, 1, 0, 0))
+      val rc = getRawRecordContext(Array[Byte](0, 3, 0, 0, 0, 1, 0, 0), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
 
       val extractor = new VariableBlockVariableRecordExtractor(rc)
 
-      val ex = intercept[NoSuchElementException] {
+      val ex = intercept[IllegalStateException] {
         extractor.next()
       }
 
-      assert(ex.getMessage.contains("queue empty"))
+      assert(ex.getMessage.contains("The length of RDW headers is unexpected. Expected: 4, got 3"))
     }
   }
 
   private def getRawRecordContext(recordsPerBlock: Int,
                                   includeBdwInHeaderSize: Boolean,
-                                  includeRdwInHeaderSize: Boolean): RawRecordContext = {
+                                  includeRdwInHeaderSize: Boolean,
+                                  bdwBigEndian: Boolean,
+                                  rdwBigEndian: Boolean): RawRecordContext = {
     val numOfBlocks = 3
 
     val bdwHeaderAdjust = if (includeBdwInHeaderSize) 4 else 0
@@ -109,13 +112,21 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
         })
       }).toArray[Byte]
 
-    getRawRecordContext(bytes)
+    getRawRecordContext(bytes, bdwBigEndian, rdwBigEndian, -bdwHeaderAdjust, -rdwHeaderAdjust)
   }
 
-  private def getRawRecordContext(bytes: Array[Byte]): RawRecordContext = {
+  private def getRawRecordContext(bytes: Array[Byte],
+                                  bdwBigEndian: Boolean,
+                                  rdwBigEndian: Boolean,
+                                  bdwAdjustment: Int,
+                                  rdwAdjustment: Int,
+                                 ): RawRecordContext = {
     val ibs = new TestByteStream(bytes)
 
-    RawRecordContext(0, ibs, copybook, "")
+    val bdwDecoder = new RecordHeaderDecoderBdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(bdwBigEndian, bdwAdjustment))
+    val rdwDecoder = new RecordHeaderDecoderRdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(rdwBigEndian, rdwAdjustment))
+
+    RawRecordContext(0, ibs, copybook, rdwDecoder, bdwDecoder, "")
   }
 
 }

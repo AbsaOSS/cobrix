@@ -29,6 +29,7 @@ import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
@@ -61,7 +62,13 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                 binaryData: SimpleStream,
                                 copybook: Copybook
                                ): Option[RawRecordExtractor] = {
-    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, readerProperties.reAdditionalInfo)
+    val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
+    val bdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
+
+    val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
+    val bdwDecoder = new RecordHeaderDecoderBdw(bdwParams)
+
+    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, rdwDecoder, bdwDecoder, readerProperties.reAdditionalInfo)
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>

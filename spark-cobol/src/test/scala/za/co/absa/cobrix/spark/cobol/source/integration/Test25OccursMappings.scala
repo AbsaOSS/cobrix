@@ -67,7 +67,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
     )
     val copybook = CopybookParser.parse(copybookContents, ASCII, occursHandlers = occursMapping)
 
-    val recordExtractor = new VarOccursRecordExtractor(RawRecordContext(0L, inputStream, copybook, ""))
+    val recordExtractor = new VarOccursRecordExtractor(RawRecordContext(0L, inputStream, copybook, null, null, ""))
 
     val expectedRecords = ListBuffer(
       "1AX".getBytes,
