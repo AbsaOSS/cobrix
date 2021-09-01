@@ -43,7 +43,6 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
   }
 
   private def readNextBlock(): Unit = {
-
     if (!ctx.inputStream.isEndOfStream) {
       val bdwFirstPart = BigInt(ctx.inputStream.next(2)).toInt
       val bdwSecondPart = BigInt(ctx.inputStream.next(2)).toInt

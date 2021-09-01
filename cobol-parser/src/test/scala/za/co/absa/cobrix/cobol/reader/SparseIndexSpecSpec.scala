@@ -22,7 +22,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
-import za.co.absa.cobrix.cobol.reader.MemoryStream.TestStringStream
+import za.co.absa.cobrix.cobol.reader.memorystream.TestStringStream
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, TextRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 
