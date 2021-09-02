@@ -20,6 +20,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 /**
@@ -28,8 +29,9 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param copybookPath           String containing the path to the copybook in a given file system.
   * @param multiCopybookPath      Sequence containing the paths to the copybooks.
   * @param copybookContent        String containing the actual content of the copybook. Either this, the copybookPath, or multiCopybookPath parameter must be specified.
-  * @param sourcePath             String containing the path to the Cobol file to be parsed.
-  * @param isText                 If true the input data consists of text files where records are separated by a line ending character
+  * @param sourcePaths            The list of source file paths.
+  * @param recordFormat           The record format (F, V, VB, D)
+  * @param isText                 [deprecated by recordFormat] If true the input data consists of text files where records are separated by a line ending character
   * @param isEbcdic               If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
@@ -56,6 +58,7 @@ case class CobolParameters(
                             multiCopybookPath:     Seq[String],
                             copybookContent:       Option[String],
                             sourcePaths:           Seq[String],
+                            recordFormat:          RecordFormat,
                             isText:                Boolean,
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,
