@@ -316,15 +316,11 @@ object CobolParametersParser {
       val q = "\""
 
       if (params.contains(PARAM_IS_XCOM)) {
-        logger.warn(s"Option '$PARAM_IS_XCOM' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q")
+        logger.warn(s"Option '$PARAM_IS_XCOM' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q)")
       }
 
       if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
-        logger.warn(s"Option '$PARAM_IS_RECORD_SEQUENCE' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q")
-      }
-
-      if (params.contains(PARAM_IS_TEXT)) {
-        logger.warn(s"Option '$PARAM_IS_TEXT' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}D$q")
+        logger.warn(s"Option '$PARAM_IS_RECORD_SEQUENCE' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q)")
       }
 
       if (hasRdw) {

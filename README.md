@@ -1130,14 +1130,16 @@ Again, the full example is available at
 
 |            Option (usage example)             |                           Description |
 | --------------------------------------------- |:----------------------------------------------------------------------------- |
-| .option("is_record_sequence", "true")         | If 'true' the parser will look for 4 byte RDW headers to read variable record length files.  |
+| .option("record_format", "F")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
+| .option("is_record_sequence", "true")         | _[deprecated]_ If 'true' the parser will look for 4 byte RDW headers to read variable record length files. Use `.option("record_format", "V")` instead. |
 | .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
-| .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. |
+| .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. For BDW use `.option("bdw_adjustment", -4)` |
 | .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
+| .option("bdw_adjustment", 0)                  | If there is a mismatch between BDW and record length this option can be used to adjust the difference. |
 | .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
 | .option("record_extractor", "com.example.record.extractor")  | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.  |
-| .option("re_additional_info", "")            | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.  |
-| .option("is_text", "true")                    | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `is_record_sequence`, multisegment and hierarchical text record files can be loaded. |
+| .option("re_additional_info", "")             | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.  |
+| .option("is_text", "true")                    | _[deprecated]_ If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `is_record_sequence`, multisegment and hierarchical text record files can be loaded. Use `.option("record_format", "D")` instead. |
 
 
 ##### Multisegment files options
@@ -1259,6 +1261,12 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.4.0 to be released soon.
+    - [#412](https://github.com/AbsaOSS/cobrix/issues/412) Add support for [variable block (VB aka VBVR)](https://www.ibm.com/docs/en/zos/2.3.0?topic=formats-format-v-records) record format.
+      Options to adjust BDW settings are added:
+      - `is_bdw_big_endian` - specifies if BDW is big-endian (false by default)
+      - `bdw_adjustment` - Specifies how the value of a BDW is different from the block payload. For example, if the side in BDW headers includes BDW record itself, use `.option("bdw_adjustment", "-4")`.  
+    - Options `is_record_sequence` and `is_xcom` are deprecated. Use `.option("record_format", "V")` instead. 
 - #### 2.3.0 released 2 August 2021.
     - [#405](https://github.com/AbsaOSS/cobrix/issues/405) Fix extracting records that contain redefines of the top level GROUPs.
     - [#406](https://github.com/AbsaOSS/cobrix/issues/406) Use 'collapse_root' retention policy by default. This is the breaking,
