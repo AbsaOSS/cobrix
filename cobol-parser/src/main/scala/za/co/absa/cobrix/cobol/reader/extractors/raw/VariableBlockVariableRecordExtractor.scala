@@ -49,7 +49,6 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
       val bdw = ctx.inputStream.next(4)
 
       val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
-
       val blockBuffer = ctx.inputStream.next(blockLength)
 
       var blockPointer: Int = 0
