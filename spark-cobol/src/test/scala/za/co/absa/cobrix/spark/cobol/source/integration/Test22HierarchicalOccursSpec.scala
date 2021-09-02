@@ -92,7 +92,7 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
-        .option("is_record_sequence", "true")
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .option("generate_record_id", "true")
         .option("variable_size_occurs", "true")

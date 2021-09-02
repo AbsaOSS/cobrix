@@ -52,7 +52,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
       .option("segment_id_level1", "P")
@@ -106,7 +106,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("input_split_records", "100")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_root", "C")
@@ -158,7 +158,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("input_split_records", "100")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_root", "C")
@@ -228,7 +228,7 @@ class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("is_rdw_big_endian", "true")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")

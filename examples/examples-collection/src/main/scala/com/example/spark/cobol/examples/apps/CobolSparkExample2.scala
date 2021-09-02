@@ -59,7 +59,7 @@ object CobolSparkExample2 {
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-      .option("is_record_sequence", "true")                   // Specifies that the input file is a sequence of records having RDW headers
+      .option("record_format", "V")                           // Specifies that the input file is a sequence of records having RDW headers
       .load("../../examples/example_data/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 
     import spark.implicits._

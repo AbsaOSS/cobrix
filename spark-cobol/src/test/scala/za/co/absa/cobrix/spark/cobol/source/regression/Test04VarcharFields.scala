@@ -79,7 +79,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("generate_record_id", true)
-        .option("is_xcom", true)
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
@@ -111,7 +111,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("generate_record_id", true)
-        .option("is_xcom", true)
+        .option("record_format", "V")
         .option("string_trimming_policy", "none")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)

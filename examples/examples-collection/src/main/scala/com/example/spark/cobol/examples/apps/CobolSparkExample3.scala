@@ -61,7 +61,7 @@ object CobolSparkExample3 {
       .option("copybook_contents", copybook)
       //.option("generate_record_id", true)                   // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")     // Collapses the root group returning it's field on the top level of the schema
-      .option("is_record_sequence", "true")                   // Specifies that the input file is a sequence of records having RDW headers
+      .option("record_format", "V")                           // Specifies that the input file is a sequence of records having RDW headers
       .option("segment_field", "SEGMENT_ID")                  // Specified that segment id field is 'SEGMENT_ID'
       .option("segment_id_level0", "C")                       // If SEGMENT_ID='C' then the segment contains company's info
       .option("segment_id_level1", "P")                       // If SEGMENT_ID='P' then the segment contains contact person's info

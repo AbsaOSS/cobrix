@@ -317,10 +317,17 @@ file is copied from a mainframe.
 
 To load variable length record file the following option should be specified:
 ```
-.option("is_record_sequence", "true")
+.option("record_format", "V")
 ```
 
-The space used by the headers should not be mentioned in the copybook if this option is used. Please refer to the
+To load variable blocked length record file the following option should be specified:
+```
+.option("record_format", "VB")
+```
+
+More on record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
+
+The space used by the headers (both BDW and RDW) should not be mentioned in the copybook if this option is used. Please refer to the
 'Record headers support' section below. 
 
 ### Schema collapsing
@@ -458,7 +465,7 @@ about record length.
 You can instruct the reader to use 4 byte record headers to extract records from a mainframe file.
 
 ```
-.option("is_record_sequence", "true")
+.option("record_format", "V")
 ```
 
 This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
@@ -634,7 +641,7 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook_contents", copybook)
-  .option("is_record_sequence", "true")
+  .option("record_format", "V")
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "C")
   .option("segment_id_level1", "P")
@@ -742,7 +749,7 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook", "/path/to/thecopybook")
-  .option("is_record_sequence", "true")
+  .option("record_format", "V")
   .load("examples/multisegment_data")
 ```
 
@@ -807,7 +814,7 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook", "/path/to/thecopybook")
-  .option("is_record_sequence", "true")
+  .option("record_format", "V")
 
   // Specifies a field containing a segment id
   .option("segment_field", "SEGMENT_ID")
@@ -960,7 +967,7 @@ val df = spark
   .read
   .format("cobol")
   .option("copybook_contents", copybook)
-  .option("is_record_sequence", "true")
+  .option("record_format", "V")
   .option("segment_field", "SEGMENT_ID")
   .option("segment_id_level0", "C")
   .option("segment_id_level1", "P")
@@ -1215,7 +1222,7 @@ For multisegment variable lengths tests:
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("generate_record_id", true)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
       .load(args(0))

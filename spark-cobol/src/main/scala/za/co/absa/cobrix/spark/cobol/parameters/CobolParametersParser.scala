@@ -248,7 +248,7 @@ object CobolParametersParser {
       getDebuggingFieldsPolicy(params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
-    validateSparkCobolOptions(params)
+    validateSparkCobolOptions(params, recordFormat)
     cobolParameters
   }
 
@@ -516,13 +516,15 @@ object CobolParametersParser {
     *
     * @param params Parameters provided by spark.read.option(...)
     */
-  private def validateSparkCobolOptions(params: Parameters): Unit = {
+  private def validateSparkCobolOptions(params: Parameters, recordFormat: RecordFormat): Unit = {
     val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, "false").toBoolean ||
       params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean ||
       params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean ||
       params.contains(PARAM_FILE_START_OFFSET) ||
       params.contains(PARAM_FILE_END_OFFSET) ||
-      params.contains(PARAM_RECORD_LENGTH_FIELD)
+      params.contains(PARAM_RECORD_LENGTH_FIELD) ||
+      recordFormat == VariableLength ||
+      recordFormat == VariableBlock
 
     if (params.contains(PARAM_RECORD_FORMAT)) {
       if (params.contains(PARAM_IS_XCOM)) {
@@ -634,7 +636,7 @@ object CobolParametersParser {
       }
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
-      val recordSequenceCondition = s"one of this holds: '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
+      val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
         s" or one of these options is set: '$PARAM_RECORD_LENGTH_FIELD', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET' or " +
         "a custom record extractor is specified"
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")

@@ -105,7 +105,7 @@ object SparkCobolApp {
       .read
       .format("cobol")                              // Alternatively can use "za.co.absa.cobrix.spark.cobol.source"
       .option("copybook_contents", copybook)               // A copybook can be provided inline
-      .option("is_record_sequence", "true")                // This file is a sequence of records with 4 byte record headers
+      .option("record_format", "V")                        // This file is a sequence of records with 4 byte record headers
       //.option("copybook", "data/companies_copybook.cpy") // Or as a path name in Hadoop(HDFS/S3, etc). For local filesystem use file:// prefix
       //.option("generate_record_id", true)                // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")  // Collapses the root group returning it's field on the top level of the schema

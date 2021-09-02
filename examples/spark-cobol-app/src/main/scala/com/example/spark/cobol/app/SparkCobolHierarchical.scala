@@ -83,7 +83,7 @@ object SparkCobolHierarchical {
       .format("cobol")                             // Alternatively can use "za.co.absa.cobrix.spark.cobol.source"
       .option("copybook_contents", copybook)               // A copybook can be provided inline
       //.option("copybook", "../example_data/companies_copybook.cpy") // Or as a path name in HDFS. For local filesystem use file:// prefix
-      .option("is_record_sequence", "true")                // This file is a sequence of records with 4 byte record headers
+      .option("record_format", "V")                        // This file is a sequence of records with 4 byte record headers
       //.option("generate_record_id", true)                // Generates File_Id and Record_Id fields for line order dependent data
       .option("schema_retention_policy", "collapse_root")  // Collapses the root group returning it's field on the top level of the schema
       .option("segment_field", "SEGMENT_ID")               // The SEGMENT_ID field contains IDs of segments
