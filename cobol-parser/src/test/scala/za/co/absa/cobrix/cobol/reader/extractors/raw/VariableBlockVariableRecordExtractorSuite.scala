@@ -29,6 +29,30 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
   private val copybook = CopybookParser.parseTree(copybookContent)
 
   "little-endian block-included record-included case" should {
+    "be able to read a VBVR file that has no data" in {
+      val rc = getRawRecordContext(Array[Byte](), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
+
+      val extractor = new VariableBlockVariableRecordExtractor(rc)
+
+      assert(!extractor.hasNext)
+
+      intercept[NoSuchElementException] {
+        extractor.next()
+      }
+    }
+
+    "be able to read a VBVR file that has no records" in {
+      val rc = getRawRecordContext(Array[Byte](0, 4, 0, 0, 0, 1, 0, 0), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
+
+      val extractor = new VariableBlockVariableRecordExtractor(rc)
+
+      assert(!extractor.hasNext)
+
+      intercept[NoSuchElementException] {
+        extractor.next()
+      }
+    }
+
     "be able to read a VBVR file that has one record per block" in {
       val rc = getRawRecordContext(1, includeBdwInHeaderSize = true, includeRdwInHeaderSize = true, bdwBigEndian = true, rdwBigEndian = true)
 
