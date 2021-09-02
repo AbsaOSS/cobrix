@@ -19,50 +19,40 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import scala.collection.mutable
 
 class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
-  VariableBlockVariableRecordExtractor.additionalInfo = ctx.additionalInfo
-  private var recordQueue = new mutable.Queue[Array[Byte]]
-  private var initialRead = true
-  private var recordNumber = ctx.startingRecordNumber
+  private val recordQueue = new mutable.Queue[Array[Byte]]
 
   override def offset: Long = ctx.inputStream.offset
 
   override def hasNext: Boolean = {
-    var output: Boolean = true
-    if (initialRead == true) {
+    if (recordQueue.isEmpty) {
       readNextBlock()
-      initialRead = false
-    } else {
-      if (recordQueue.isEmpty && !ctx.inputStream.isEndOfStream) {
-        readNextBlock()
-      } else {
-        if (recordQueue.isEmpty && ctx.inputStream.isEndOfStream) {
-          output = false
-        }
-      }
     }
-    output
+    recordQueue.nonEmpty
   }
 
   private def readNextBlock(): Unit = {
+    val bdwSize = ctx.bdwDecoder.headerSize
+    val rdwSize = ctx.rdwDecoder.headerSize
+
     if (!ctx.inputStream.isEndOfStream) {
       val bdwOffset = ctx.inputStream.offset
-      val bdw = ctx.inputStream.next(4)
+      val bdw = ctx.inputStream.next(bdwSize)
 
       val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
       val blockBuffer = ctx.inputStream.next(blockLength)
 
-      var blockPointer: Int = 0
-      var recordCounter: Int = 0
-      while (blockPointer < blockBuffer.length) {
-        recordCounter += 1
+      var blockIndex = 0
 
-        val rdwOffset = bdwOffset + blockPointer
-        val rdw = blockBuffer.slice(blockPointer, blockPointer + 4)
+      while (blockIndex < blockBuffer.length) {
+        val rdwOffset = bdwOffset + blockIndex
+        val rdw = blockBuffer.slice(blockIndex, blockIndex + rdwSize)
         val recordLength = ctx.rdwDecoder.getRecordLength(rdw, rdwOffset)
 
-        val payload = blockBuffer.slice(blockPointer + 4, blockPointer + recordLength + 4)
-        recordQueue.enqueue(payload)
-        blockPointer += recordLength + 4
+        val payload = blockBuffer.slice(blockIndex + rdwSize, blockIndex + recordLength + rdwSize)
+        if (payload.length > 0) {
+          recordQueue.enqueue(payload)
+        }
+        blockIndex += recordLength + rdwSize
       }
     }
   }
@@ -70,15 +60,9 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
 
   @throws[NoSuchElementException]
   override def next(): Array[Byte] = {
-    var rawRecord: Array[Byte] = new Array[Byte](0)
     if (!hasNext) {
       throw new NoSuchElementException
     }
-    rawRecord = recordQueue.dequeue()
-    rawRecord
+    recordQueue.dequeue()
   }
-}
-
-object VariableBlockVariableRecordExtractor {
-  var additionalInfo: String = ""
 }
