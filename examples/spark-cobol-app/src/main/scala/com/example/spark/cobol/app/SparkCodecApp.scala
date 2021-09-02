@@ -41,7 +41,7 @@ object SparkCodecApp {
       .read
       .format("cobol")
       .option("copybook", "../example_data/copybook_codec.cob")
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("generate_record_id", true)
       .option("schema_retention_policy", "collapse_root")
       .option("record_header_parser", "com.example.spark.cobol.app.CustomRecordHeadersParser") // Custom record header parser class

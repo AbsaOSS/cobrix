@@ -58,7 +58,7 @@ class Test10DeepSegmentRedefines extends FunSuite with SparkTestBase with Binary
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
-        .option("is_record_sequence", "true")
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .option("segment_field", "ID")
         .option("redefine_segment_id_map:1", "SEG1 => A")

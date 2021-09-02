@@ -41,7 +41,7 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
       .option("segment_id_level1", "P")
@@ -84,7 +84,7 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
       .option("segment_id_level1", "P")

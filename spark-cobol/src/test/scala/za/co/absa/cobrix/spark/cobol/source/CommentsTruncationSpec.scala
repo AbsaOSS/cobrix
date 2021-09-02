@@ -125,7 +125,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
         .read
         .format("cobol")
         .option("copybook_contents", copybookWithComments)
-        .option("is_record_sequence", "true")
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
@@ -141,7 +141,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
         .read
         .format("cobol")
         .option("copybook_contents", copybookWithTruncatedComments)
-        .option("is_record_sequence", "true")
+        .option("record_format", "V")
         .option("comments_lbound", 3)
         .option("comments_ubound", 50)
         .option("schema_retention_policy", "collapse_root")
@@ -159,7 +159,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
         .read
         .format("cobol")
         .option("copybook_contents", copybookWithNoCommentTruncation)
-        .option("is_record_sequence", "true")
+        .option("record_format", "V")
         .option("truncate_comments", "false")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
@@ -177,7 +177,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
           .read
           .format("cobol")
           .option("copybook_contents", copybookWithTruncatedComments)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("comments_lbound", 3)
           .option("truncate_comments", "false")
           .option("schema_retention_policy", "collapse_root")
@@ -194,7 +194,7 @@ class CommentsTruncationSpec extends FunSuite with SparkTestBase with BinaryFile
           .read
           .format("cobol")
           .option("copybook_contents", copybookWithTruncatedComments)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("comments_ubound", 50)
           .option("truncate_comments", "false")
           .option("schema_retention_policy", "collapse_root")

@@ -98,7 +98,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .read
           .format("cobol")
           .option("copybook", inputCopybookPath)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("encoding", "ascii")
           .option("with_input_file_name_col", "F")
           .load(inputDataPath + "/COMP.DETAILS.SEP30.DATA.dat")
@@ -115,7 +115,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .read
           .format("cobol")
           .option("copybook", inputCopybookPath)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("schema_retention_policy", "collapse_root")
           .option("encoding", "ascii")
           .option("with_input_file_name_col", "F")
@@ -133,7 +133,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .read
           .format("cobol")
           .option("copybook", inputCopybookPath)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("encoding", "ascii")
           .option("with_input_file_name_col", "F")
           .option("generate_record_id", "true")
@@ -151,7 +151,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .read
           .format("cobol")
           .option("copybook", inputCopybookPath)
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("schema_retention_policy", "collapse_root")
           .option("encoding", "ascii")
           .option("with_input_file_name_col", "F")
@@ -176,7 +176,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .format("cobol")
           .option("copybook", inputCopybookPath)
           .option("pedantic", "true")
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("segment_field", "SEGMENT_ID")
           .option("redefine_segment_id_map:1", "COMPANY => 1")
           .option("redefine-segment-id-map:2", "DEPT => 2")

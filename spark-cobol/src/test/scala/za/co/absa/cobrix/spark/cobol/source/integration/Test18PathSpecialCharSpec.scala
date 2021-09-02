@@ -49,7 +49,7 @@ class Test18PathSpecialCharSpec extends WordSpec with SparkTestBase with CobolTe
           .format("cobol")
           .option("copybook", inputCopybookPath)
           .option("pedantic", "true")
-          .option("is_record_sequence", "true")
+          .option("record_format", "V")
           .option("generate_record_id", "true")
           .option("schema_retention_policy", "collapse_root")
           .option("segment_field", "SEGMENT_ID")

@@ -113,7 +113,7 @@ class VarSizeArraysSpec extends FunSuite with SparkTestBase with BinaryFileFixtu
         .read
         .format("cobol")
         .option("copybook_contents", copybook)
-        .option("is_xcom", true)
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .option("variable_size_occurs", "false")
         .load(tmpFileName)
@@ -130,7 +130,7 @@ class VarSizeArraysSpec extends FunSuite with SparkTestBase with BinaryFileFixtu
         .read
         .format("cobol")
         .option("copybook_contents", copybook)
-        .option("is_xcom", true)
+        .option("record_format", "V")
         .option("schema_retention_policy", "collapse_root")
         .option("variable_size_occurs", "true")
         .load(tmpFileName)

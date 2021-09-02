@@ -60,7 +60,7 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
-      .option("is_record_sequence", "true")
+      .option("record_format", "V")
       .option("generate_record_id", "true")
       .option("schema_retention_policy", "collapse_root")
       .option("record_header_parser", "za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser")
