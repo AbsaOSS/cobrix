@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -75,6 +75,8 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         Some(RawRecordExtractorFactory.createRecordHeaderParser(recordExtractorClass, reParams))
       case None if readerProperties.isText =>
         Some(new TextRecordExtractor(reParams))
+      case None if readerProperties.hasBdw =>
+        Some(new VariableBlockVariableRecordExtractor(reParams))
       case None if readerProperties.variableSizeOccurs &&
         readerProperties.recordHeaderParser.isEmpty &&
         !readerProperties.isRecordSequence &&

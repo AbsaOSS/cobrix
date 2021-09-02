@@ -24,6 +24,8 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, MultisegmentParameters, VariableLengthParameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -77,13 +79,16 @@ object CobolParametersParser {
   val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
 
   // Parameters for multisegment variable length files
+  val PARAM_RECORD_FORMAT             = "record_format"
   val PARAM_RECORD_LENGTH             = "record_length"
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_IS_TEXT                   = "is_text"
   val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
+  val PARAM_IS_BDW_BIG_ENDIAN         = "is_bdw_big_endian"
   val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
   val PARAM_RDW_ADJUSTMENT            = "rdw_adjustment"
+  val PARAM_BDW_ADJUSTMENT            = "bdw_adjustment"
   val PARAM_SEGMENT_FIELD             = "segment_field"
   val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
@@ -212,11 +217,14 @@ object CobolParametersParser {
 
     val paths = getParameter(PARAM_SOURCE_PATHS, params).map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
 
+    val recordFormat = getRecordFormat(params)
+
     val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,
+      recordFormat,
       params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,
@@ -227,7 +235,7 @@ object CobolParametersParser {
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       params.get(PARAM_RECORD_LENGTH).map(_.toInt),
-      parseVariableLengthParameters(params),
+      parseVariableLengthParameters(params, recordFormat),
       schemaRetentionPolicy,
       stringTrimmingPolicy,
       parseMultisegmentParameters(params),
@@ -244,9 +252,9 @@ object CobolParametersParser {
     cobolParameters
   }
 
-  private def parseVariableLengthParameters(params: Parameters): Option[VariableLengthParameters] = {
+  private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
-    val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean
+    val isRecordSequence = recordFormat == VariableLength || recordFormat == VariableBlock
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
@@ -269,9 +277,12 @@ object CobolParametersParser {
       Some(VariableLengthParameters
       (
         isRecordSequence,
+        recordFormat == VariableBlock,
         params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
+        params.getOrElse(PARAM_IS_BDW_BIG_ENDIAN, "false").toBoolean,
         params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
         params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
+        params.getOrElse(PARAM_BDW_ADJUSTMENT, "0").toInt,
         params.get(PARAM_RECORD_HEADER_PARSER),
         params.get(PARAM_RECORD_EXTRACTOR),
         params.get(PARAM_RHP_ADDITIONAL_INFO),
@@ -291,6 +302,40 @@ object CobolParametersParser {
       ))
     } else {
       None
+    }
+  }
+
+  private def getRecordFormat(params: Parameters): RecordFormat = {
+    if (params.contains(PARAM_RECORD_FORMAT)) {
+      val recordFormatStr = params(PARAM_RECORD_FORMAT)
+
+      RecordFormat.withNameOpt(recordFormatStr).getOrElse(throw new IllegalArgumentException(s"Unknown record format: $recordFormatStr"))
+    } else {
+      val hasRdw = params.getOrElse(PARAM_IS_XCOM, params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false")).toBoolean
+
+      val q = "\""
+
+      if (params.contains(PARAM_IS_XCOM)) {
+        logger.warn(s"Option '$PARAM_IS_XCOM' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q")
+      }
+
+      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
+        logger.warn(s"Option '$PARAM_IS_RECORD_SEQUENCE' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}V$q")
+      }
+
+      if (params.contains(PARAM_IS_TEXT)) {
+        logger.warn(s"Option '$PARAM_IS_TEXT' is deprecated. Use .option($q$PARAM_RECORD_FORMAT$q, ${q}D$q")
+      }
+
+      if (hasRdw) {
+        VariableLength
+      } else {
+        if (params.getOrElse(PARAM_IS_TEXT, "false").toBoolean) {
+          AsciiText
+        } else {
+          FixedLength
+        }
+      }
     }
   }
 
@@ -482,6 +527,20 @@ object CobolParametersParser {
       params.contains(PARAM_FILE_START_OFFSET) ||
       params.contains(PARAM_FILE_END_OFFSET) ||
       params.contains(PARAM_RECORD_LENGTH_FIELD)
+
+    if (params.contains(PARAM_RECORD_FORMAT)) {
+      if (params.contains(PARAM_IS_XCOM)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_XCOM cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+      }
+
+      if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_RECORD_SEQUENCE cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+      }
+
+      if (params.contains(PARAM_IS_TEXT)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_TEXT cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+      }
+    }
 
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
