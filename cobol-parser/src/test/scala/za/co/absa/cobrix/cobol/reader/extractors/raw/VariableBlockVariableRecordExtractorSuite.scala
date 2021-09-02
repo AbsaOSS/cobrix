@@ -82,7 +82,7 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
     }
 
     "throw an exception if a record header is too small" in {
-      val rc = getRawRecordContext(Array[Byte](0, 3, 0, 0, 0, 1, 0, 0), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
+      val rc = getRawRecordContext(Array[Byte](0, 4, 0, 0, 0, 1, 0), bdwBigEndian = true, rdwBigEndian = true, 0, 0)
 
       val extractor = new VariableBlockVariableRecordExtractor(rc)
 

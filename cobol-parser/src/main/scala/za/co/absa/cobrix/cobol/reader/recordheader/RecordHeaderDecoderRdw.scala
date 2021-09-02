@@ -21,25 +21,34 @@ package za.co.absa.cobrix.cobol.reader.recordheader
   * according to: https://www.ibm.com/docs/en/zos/2.3.0?topic=records-record-descriptor-word-rdw
   */
 class RecordHeaderDecoderRdw(rdwParameters: RecordHeaderParameters) extends RecordHeaderDecoderCommon {
+  final val RDW_HEADER_LENGTH = 4
+
+  override def headerSize: Int = RDW_HEADER_LENGTH
+
   def headerName = "RDW"
 
   override def getRecordLength(header: Array[Byte], offset: Long): Int = {
     validateHeader(header, offset)
 
     val recordLength = if (rdwParameters.isBigEndian) {
-      if (header(2) != 0 || header(3) != 0) reportInvalidHeader(header, offset)
+      if (header(2) != 0 || header(3) != 0) reportInvalidHeaderZeros(header, offset)
       (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwParameters.adjustment
     } else {
-      if (header(0) != 0 || header(1) != 0) reportInvalidHeader(header, offset)
+      if (header(0) != 0 || header(1) != 0) reportInvalidHeaderZeros(header, offset)
       (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwParameters.adjustment
     }
 
-    validateBlockLength(header, offset, recordLength)
+    validateRecordLength(header, offset, recordLength)
     recordLength
   }
 
-  protected def reportInvalidHeader(header: Array[Byte], offset: Long): Unit = {
-    val rdwHeaders = renderHeader(header)
-    throw new IllegalStateException(s"$headerName headers contain non-zero values where zeros are expected (check 'rdw_big_endian' flag. Header: $rdwHeaders, offset: $offset.")
+  protected def validateRecordLength(header: Array[Byte], offset: Long, recordLength: Int): Unit = {
+    if (recordLength < 0) {
+      reportInvalidValue(header, offset, recordLength)
+    }
+    if (recordLength == 0) {
+      reportZeroLength(header, offset)
+    }
   }
+
 }
