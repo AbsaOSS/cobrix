@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.reader.recordheader
   * This class represent a header decoder for standard RDW headers
   * according to: https://www.ibm.com/docs/en/zos/2.3.0?topic=records-record-descriptor-word-rdw
   */
-class RecordHeaderDecoderBdw(rdwParameters: RecordHeaderParameters) extends RecordHeaderDecoderCommon {
+class RecordHeaderDecoderBdw(bdwParameters: RecordHeaderParameters) extends RecordHeaderDecoderCommon {
   final val MAX_BDW_BLOCK_SIZE = 256*1024*1024
   final val BDW_HEADER_LENGTH = 4
 
@@ -31,23 +31,23 @@ class RecordHeaderDecoderBdw(rdwParameters: RecordHeaderParameters) extends Reco
   override def getRecordLength(header: Array[Byte], offset: Long): Int = {
     validateHeader(header, offset)
 
-    val recordLength = if (rdwParameters.isBigEndian) {
+    val recordLength = if (bdwParameters.isBigEndian) {
       if ((header(0) & 0x80) > 0) {
         // Extended BDW
-        (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + 65536 * (header(1) & 0xFF) + 16777216 * (header(0) & 0x7F) + rdwParameters.adjustment
+        (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + 65536 * (header(1) & 0xFF) + 16777216 * (header(0) & 0x7F) + bdwParameters.adjustment
       } else {
         // Nonextended BDW
         if (header(2) != 0 || header(3) != 0) reportInvalidHeaderZeros(header, offset)
-        (header(1) & 0xFF) + 256 * (header(0) & 0x7F) + rdwParameters.adjustment
+        (header(1) & 0xFF) + 256 * (header(0) & 0x7F) + bdwParameters.adjustment
       }
     } else {
       if ((header(3) & 0x80) > 0) {
         // Extended BDW
-        (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + 65536 * (header(2) & 0xFF) + 16777216 * (header(3) & 0x7F) + rdwParameters.adjustment
+        (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + 65536 * (header(2) & 0xFF) + 16777216 * (header(3) & 0x7F) + bdwParameters.adjustment
       } else {
         // Nonextended BDW
         if (header(0) != 0 || header(1) != 0) reportInvalidHeaderZeros(header, offset)
-        (header(2) & 0xFF) + 256 * (header(3) & 0x7F) + rdwParameters.adjustment
+        (header(2) & 0xFF) + 256 * (header(3) & 0x7F) + bdwParameters.adjustment
       }
     }
 

@@ -25,7 +25,7 @@ import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 //noinspection NameBooleanParameters
 class Test28MultipartLoadSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
 
-  private val exampleName = "Test26 (custom record extractor)"
+  private val exampleName = "Test28 (multipart load)"
 
   private val copybook =
     """      01  R.

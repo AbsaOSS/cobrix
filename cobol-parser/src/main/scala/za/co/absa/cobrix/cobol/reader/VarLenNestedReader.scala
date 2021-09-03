@@ -63,7 +63,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                 copybook: Copybook
                                ): Option[RawRecordExtractor] = {
     val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
-    val bdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
+    val bdwParams = RecordHeaderParameters(readerProperties.isBdwBigEndian, readerProperties.bdwAdjustment)
 
     val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
     val bdwDecoder = new RecordHeaderDecoderBdw(bdwParams)
