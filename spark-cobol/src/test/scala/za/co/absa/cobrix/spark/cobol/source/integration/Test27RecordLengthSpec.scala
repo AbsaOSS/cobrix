@@ -24,7 +24,7 @@ import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 //noinspection NameBooleanParameters
 class Test27RecordLengthSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
 
-  private val exampleName = "Test26 (custom record extractor)"
+  private val exampleName = "Test27 (record length option)"
 
   private val copybook =
     """      01  R.
