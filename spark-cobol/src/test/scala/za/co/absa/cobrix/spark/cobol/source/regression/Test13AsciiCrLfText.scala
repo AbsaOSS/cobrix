@@ -79,9 +79,7 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("pedantic", "true")
-          .option("is_record_sequence", "true")
-          .option("is_text", "true")
-          .option("encoding", "ascii")
+          .option("record_format", "D")
           .load(tmpFileName)
 
         val expected = """[{"A":"fd"},{"A":"hd"},{"A":"sd"}]"""
@@ -120,9 +118,7 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("pedantic", "true")
-          .option("is_record_sequence", "true")
-          .option("is_text", "true")
-          .option("encoding", "ascii")
+          .option("record_format", "D")
           .load(tmpFileName)
 
         val count = df.count()

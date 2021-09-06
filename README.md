@@ -150,6 +150,14 @@ In some scenarios Spark is unable to find "cobol" data source by it's short name
 Cobrix assumes input data is encoded in EBCDIC. You can load ASCII files as well by specifying the following option:
 `.option("encoding", "ascii")`.
 
+If the input file is a text file (CRLF / LF are used to split records), use
+`.option("is_text", "true")`.
+
+Multisegment ASCII text files are supported using this option:
+`.option("record_format", "D)`.
+
+Read more on data formats at https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
+
 ### Streaming Cobol binary files from a directory
 
 1. Create a Spark ```StreamContext```
@@ -469,7 +477,7 @@ You can instruct the reader to use 4 byte record headers to extract records from
 ```
 
 This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
-copybook it is very convenient to extract segments one by one by combining 'is_record_sequence' option with segment
+copybook it is very convenient to extract segments one by one by combining `record_format = V` option with segment
 filter option.
 
 ```
@@ -556,6 +564,17 @@ Working example 1:
 ````
 
 Working example 2:
+```scala
+    // A new experimental way
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents", copybook)
+      .option("record_format", "D")
+      .load(tmpFileName)
+````
+
+Working example 3:
 ```scala
     val spark = SparkSession
       .builder()
@@ -739,7 +758,7 @@ in redefined groups. Here is the copybook for our example:
 The 'SEGMENT-ID' and 'COMPANY-ID' fields are present in all of the segments. The 'STATIC-DETAILS' group is present only in
 the root record. The 'CONTACTS' group is present only in child record. Notice that 'CONTACTS' redefine 'STATIC-DETAILS'.
 
-Because the records have different lengths the 'is_record_sequence' option should be set to 'true'.
+Because the records have different lengths use `record_format = V` or `record_format = VB` depending of the record format.
 
 If you load this file as is you will get the schema and the data similar to this.
 
@@ -1143,10 +1162,10 @@ Again, the full example is available at
 | .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. For BDW use `.option("bdw_adjustment", -4)` |
 | .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
 | .option("bdw_adjustment", 0)                  | If there is a mismatch between BDW and record length this option can be used to adjust the difference. |
-| .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. This option is incompatible with `is_record_sequence`. |
+| .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. The `record_format` should be set to `F`. This option is incompatible with `is_record_sequence`. |
 | .option("record_extractor", "com.example.record.extractor")  | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.  |
 | .option("re_additional_info", "")             | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.  |
-| .option("is_text", "true")                    | _[deprecated]_ If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `is_record_sequence`, multisegment and hierarchical text record files can be loaded. Use `.option("record_format", "D")` instead. |
+| .option("is_text", "true")                    | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
 
 
 ##### Multisegment files options
