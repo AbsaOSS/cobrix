@@ -1292,7 +1292,8 @@ For multisegment variable lengths tests:
       Options to adjust BDW settings are added:
       - `is_bdw_big_endian` - specifies if BDW is big-endian (false by default)
       - `bdw_adjustment` - Specifies how the value of a BDW is different from the block payload. For example, if the side in BDW headers includes BDW record itself, use `.option("bdw_adjustment", "-4")`.  
-    - Options `is_record_sequence` and `is_xcom` are deprecated. Use `.option("record_format", "V")` instead. 
+    - Options `is_record_sequence` and `is_xcom` are deprecated. Use `.option("record_format", "V")` instead.
+    - [#417](https://github.com/AbsaOSS/cobrix/issues/417) Multisegment ASCII text files have now direct support using `record_format = D`.
 - #### 2.3.0 released 2 August 2021.
     - [#405](https://github.com/AbsaOSS/cobrix/issues/405) Fix extracting records that contain redefines of the top level GROUPs.
     - [#406](https://github.com/AbsaOSS/cobrix/issues/406) Use 'collapse_root' retention policy by default. This is the breaking,
