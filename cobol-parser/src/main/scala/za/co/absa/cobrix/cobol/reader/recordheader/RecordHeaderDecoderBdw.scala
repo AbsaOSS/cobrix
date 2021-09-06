@@ -32,27 +32,47 @@ class RecordHeaderDecoderBdw(bdwParameters: RecordHeaderParameters) extends Reco
     validateHeader(header, offset)
 
     val recordLength = if (bdwParameters.isBigEndian) {
-      if ((header(0) & 0x80) > 0) {
-        // Extended BDW
-        (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + 65536 * (header(1) & 0xFF) + 16777216 * (header(0) & 0x7F) + bdwParameters.adjustment
+      if (isExtendedBigEndianBdw(header)) {
+        parseExtendedBigEndianBdw(header)
       } else {
-        // Nonextended BDW
-        if (header(2) != 0 || header(3) != 0) reportInvalidHeaderZeros(header, offset)
-        (header(1) & 0xFF) + 256 * (header(0) & 0x7F) + bdwParameters.adjustment
+        parseNormalBigEndianBdw(header, offset)
       }
     } else {
-      if ((header(3) & 0x80) > 0) {
-        // Extended BDW
-        (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + 65536 * (header(2) & 0xFF) + 16777216 * (header(3) & 0x7F) + bdwParameters.adjustment
+      if (isExtendedLittleEndianBdw(header)) {
+        parseExtendedLittleEndianBdw(header)
       } else {
-        // Nonextended BDW
-        if (header(0) != 0 || header(1) != 0) reportInvalidHeaderZeros(header, offset)
-        (header(2) & 0xFF) + 256 * (header(3) & 0x7F) + bdwParameters.adjustment
+        parseNormalLittleEndianBdw(header, offset)
       }
     }
 
     validateBlockLength(header, offset, recordLength)
     recordLength
+  }
+
+  protected final def isExtendedBigEndianBdw(header: Array[Byte]): Boolean = {
+    (header(0) & 0x80) > 0
+  }
+
+  protected final def isExtendedLittleEndianBdw(header: Array[Byte]): Boolean = {
+    (header(3) & 0x80) > 0
+  }
+
+  protected final def parseNormalBigEndianBdw(header: Array[Byte], offset: Long): Int = {
+    if (header(2) != 0 || header(3) != 0) reportInvalidHeaderZeros(header, offset)
+    (header(1) & 0xFF) + 256 * (header(0) & 0x7F) + bdwParameters.adjustment
+  }
+
+  protected final def parseExtendedBigEndianBdw(header: Array[Byte]): Int = {
+    (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + 65536 * (header(1) & 0xFF) + 16777216 * (header(0) & 0x7F) + bdwParameters.adjustment
+  }
+
+  protected final def parseNormalLittleEndianBdw(header: Array[Byte], offset: Long): Int = {
+    if (header(0) != 0 || header(1) != 0) reportInvalidHeaderZeros(header, offset)
+    (header(2) & 0xFF) + 256 * (header(3) & 0x7F) + bdwParameters.adjustment
+  }
+
+  protected final def parseExtendedLittleEndianBdw(header: Array[Byte]): Int = {
+    (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + 65536 * (header(2) & 0xFF) + 16777216 * (header(3) & 0x7F) + bdwParameters.adjustment
   }
 
   protected def validateBlockLength(header: Array[Byte], offset: Long, blockLength: Int): Unit = {
