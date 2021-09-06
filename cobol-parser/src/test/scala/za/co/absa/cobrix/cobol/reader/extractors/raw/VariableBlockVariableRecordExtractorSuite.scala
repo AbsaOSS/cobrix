@@ -143,7 +143,7 @@ class VariableBlockVariableRecordExtractorSuite extends WordSpec {
                                   bdwBigEndian: Boolean,
                                   rdwBigEndian: Boolean,
                                   bdwAdjustment: Int,
-                                  rdwAdjustment: Int,
+                                  rdwAdjustment: Int
                                  ): RawRecordContext = {
     val ibs = new TestByteStream(bytes)
 
