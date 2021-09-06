@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import org.scalatest.WordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordContextFactory.getDummyRawRecordContext
 import za.co.absa.cobrix.cobol.reader.memorystream.TestStringStream
 
 class RawRecordExtractorFactorySpec extends WordSpec {
@@ -32,7 +33,7 @@ class RawRecordExtractorFactorySpec extends WordSpec {
 
     "be able to create a record extractor" in {
       val recordExtractor = RawRecordExtractorFactory.createRecordHeaderParser("za.co.absa.cobrix.cobol.reader.extractors.raw.TextRecordExtractor",
-        RawRecordContext(0L, new TestStringStream("AAA111\nBBB222\n"), copybook, null, null, ""))
+        getDummyRawRecordContext(inputStream = new TestStringStream("AAA111\nBBB222\n"), copybook = copybook))
 
       assert(recordExtractor.isInstanceOf[TextRecordExtractor])
       assert(recordExtractor.next().length == 6)
@@ -42,7 +43,7 @@ class RawRecordExtractorFactorySpec extends WordSpec {
     "throw an exception if class not fount" in {
       val ex = intercept[ClassNotFoundException] {
         RawRecordExtractorFactory.createRecordHeaderParser("com.example.DoesNotExist",
-          RawRecordContext(0L, new TestStringStream("A"), copybook, null, null, ""))
+          getDummyRawRecordContext(inputStream = new TestStringStream("A"), copybook = copybook))
       }
 
       assert(ex.getMessage.contains("com.example.DoesNotExist"))
@@ -51,7 +52,7 @@ class RawRecordExtractorFactorySpec extends WordSpec {
     "throw an exception when the extractor type is wrong" in {
       val ex = intercept[IllegalArgumentException] {
         RawRecordExtractorFactory.createRecordHeaderParser("za.co.absa.cobrix.cobol.reader.extractors.raw.DummyTestClass",
-          RawRecordContext(0L, new TestStringStream("A"), copybook, null, null, ""))
+          getDummyRawRecordContext(inputStream = new TestStringStream("A"), copybook = copybook))
       }
 
       assert(ex.getMessage.contains("does not extend RawRecordExtractor"))
@@ -60,7 +61,7 @@ class RawRecordExtractorFactorySpec extends WordSpec {
     "throw an exception when constructor parameters are wrong" in {
       val ex = intercept[IllegalArgumentException] {
         RawRecordExtractorFactory.createRecordHeaderParser("za.co.absa.cobrix.cobol.reader.extractors.raw.DummyWrongRecordExtractor",
-          RawRecordContext(0L, new TestStringStream("A"), copybook, null, null, ""))
+          getDummyRawRecordContext(inputStream = new TestStringStream("A"), copybook = copybook))
       }
 
       assert(ex.getMessage.contains("does not conform to the required signature"))
