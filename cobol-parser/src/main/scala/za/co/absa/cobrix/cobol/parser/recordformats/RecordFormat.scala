@@ -30,6 +30,7 @@ object RecordFormat {
       case "V" => Some(VariableLength)
       case "VB" => Some(VariableBlock)
       case "D" => Some(AsciiText)
+      case "T" => Some(AsciiText) // Same as 'D' - Cobrix extension
       case _ => None
     }
   }

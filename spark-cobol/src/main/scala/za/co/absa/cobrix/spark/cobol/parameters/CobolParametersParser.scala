@@ -202,9 +202,20 @@ object CobolParametersParser {
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
     val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
 
+    val recordFormat = getRecordFormat(params)
+
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
-      if (encoding.isEmpty || encoding.compareToIgnoreCase("ebcdic") == 0) {
+      if (encoding.isEmpty) {
+        if (recordFormat == AsciiText) {
+          false
+        } else {
+          true
+        }
+      } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
+        if (recordFormat == AsciiText) {
+          logger.warn(s"$PARAM_RECORD_FORMAT = D and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
+        }
         true
       } else {
         if (encoding.compareToIgnoreCase("ascii") == 0) {
@@ -217,15 +228,13 @@ object CobolParametersParser {
 
     val paths = getParameter(PARAM_SOURCE_PATHS, params).map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
 
-    val recordFormat = getRecordFormat(params)
-
     val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
       params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,
       recordFormat,
-      params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
+      recordFormat == AsciiText || params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
@@ -254,7 +263,7 @@ object CobolParametersParser {
 
   private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
-    val isRecordSequence = recordFormat == VariableLength || recordFormat == VariableBlock
+    val isRecordSequence = Seq(VariableLength, VariableBlock, AsciiText).contains(recordFormat)
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
