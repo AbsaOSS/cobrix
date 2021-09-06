@@ -156,7 +156,7 @@ If the input file is a text file (CRLF / LF are used to split records), use
 Multisegment ASCII text files are supported using this option:
 `.option("record_format", "D)`.
 
-Read more on data formats at https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
+Read more on record formats at https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
 
 ### Streaming Cobol binary files from a directory
 
