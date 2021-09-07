@@ -61,7 +61,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.3.0
+version: 2.4.0
 ```
 
 ### Scala 2.12
@@ -70,7 +70,7 @@ version: 2.3.0
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.3.0
+version: 2.4.0
 ```
 
 ## Using with Spark shell
@@ -79,12 +79,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.3.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.0
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.3.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.0
 ```
 
 ## Usage
@@ -156,7 +156,7 @@ If the input file is a text file (CRLF / LF are used to split records), use
 Multisegment ASCII text files are supported using this option:
 `.option("record_format", "D)`.
 
-Read more on record formats at https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
+Read more on record formats at https://www.ibm.com/docs/en/zos/2.4.0?topic=files-selecting-record-formats-non-vsam-data-sets
 
 ### Streaming Cobol binary files from a directory
 
@@ -209,17 +209,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.3.0.jar
-* cobol-parser_2.12-2.3.0.jar
+* spark-cobol_2.12-2.4.0.jar
+* cobol-parser_2.12-2.4.0.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.3.0
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.0
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.3.0.jar,cobol-parser_2.12-2.3.0.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.0.jar,cobol-parser_2.12-2.4.0.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -275,7 +275,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.4.0-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.4.1-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -1287,7 +1287,7 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
-- #### 2.4.0 to be released soon.
+- #### 2.4.0 released 7 September 2021.
     - [#412](https://github.com/AbsaOSS/cobrix/issues/412) Add support for [variable block (VB aka VBVR)](https://www.ibm.com/docs/en/zos/2.3.0?topic=formats-format-v-records) record format.
       Options to adjust BDW settings are added:
       - `is_bdw_big_endian` - specifies if BDW is big-endian (false by default)
