@@ -21,12 +21,14 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.FixedLength
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 /**
   * These are properties for customizing mainframe binary data reader.
-  *
+  * @param recordFormat            Record format
   * @param isEbcdic                If true the input data file encoding is EBCDIC, otherwise it is ASCII
   * @param isText                  If true line ending characters will be used (LF / CRLF) as the record separator
   * @param ebcdicCodePage          Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
@@ -38,7 +40,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param recordLength            Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
   * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence        Does input files have 4 byte record length headers
-  * @param isRdwBigEndian          Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
+  * @param bdw                     Block descriptor word (if specified), for FB and VB record formats
   * @param isRdwPartRecLength      Does RDW count itself as part of record length itself
   * @param rdwAdjustment           Controls a mismatch between RDW and record length
   * @param isIndexGenerationNeeded Is indexing input file before processing is requested
@@ -64,6 +66,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   */
 case class ReaderParameters(
+                             recordFormat:            RecordFormat = FixedLength,
                              isEbcdic:                Boolean = true,
                              isText:                  Boolean = false,
                              ebcdicCodePage:          String = "common",
@@ -72,15 +75,13 @@ case class ReaderParameters(
                              isUtf16BigEndian:        Boolean = true,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              variableSizeOccurs:      Boolean = false,
-                             recordLength:            Option[Int] = None ,
+                             recordLength:            Option[Int] = None,
                              lengthFieldName:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
-                             hasBdw:                  Boolean = false,
+                             bdw:                     Option[Bdw] = None,
                              isRdwBigEndian:          Boolean = false,
-                             isBdwBigEndian:          Boolean = false,
                              isRdwPartRecLength:      Boolean = false,
                              rdwAdjustment:           Int = 0,
-                             bdwAdjustment:           Int = 0,
                              isIndexGenerationNeeded: Boolean = false,
                              inputSplitRecords:       Option[Int] = None,
                              inputSplitSizeMB:        Option[Int] = None,

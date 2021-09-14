@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, MultisegmentParameters, VariableLengthParameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{Bdw, CobolParameters, MultisegmentParameters, VariableLengthParameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -39,78 +39,78 @@ import scala.collection.mutable.ListBuffer
 object CobolParametersParser {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  val SHORT_NAME                      = "cobol"
-  val PARAM_COPYBOOK_PATH             = "copybook"
-  val PARAM_MULTI_COPYBOOK_PATH       = "copybooks"
-  val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
-  val PARAM_SOURCE_PATH               = "path"
-  val PARAM_SOURCE_PATHS              = "paths"
-  val PARAM_ENCODING                  = "encoding"
-  val PARAM_PEDANTIC                  = "pedantic"
-  val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
-  val PARAM_RECORD_START_OFFSET       = "record_start_offset"
-  val PARAM_RECORD_END_OFFSET         = "record_end_offset"
-  val PARAM_FILE_START_OFFSET         = "file_start_offset"
-  val PARAM_FILE_END_OFFSET           = "file_end_offset"
+  val SHORT_NAME = "cobol"
+  val PARAM_COPYBOOK_PATH = "copybook"
+  val PARAM_MULTI_COPYBOOK_PATH = "copybooks"
+  val PARAM_COPYBOOK_CONTENTS = "copybook_contents"
+  val PARAM_SOURCE_PATH = "path"
+  val PARAM_SOURCE_PATHS = "paths"
+  val PARAM_ENCODING = "encoding"
+  val PARAM_PEDANTIC = "pedantic"
+  val PARAM_RECORD_LENGTH_FIELD = "record_length_field"
+  val PARAM_RECORD_START_OFFSET = "record_start_offset"
+  val PARAM_RECORD_END_OFFSET = "record_end_offset"
+  val PARAM_FILE_START_OFFSET = "file_start_offset"
+  val PARAM_FILE_END_OFFSET = "file_end_offset"
 
   // Schema transformation parameters
-  val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
-  val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
-  val PARAM_GROUP_FILLERS             = "drop_group_fillers"
-  val PARAM_VALUE_FILLERS             = "drop_value_fillers"
+  val PARAM_GENERATE_RECORD_ID = "generate_record_id"
+  val PARAM_SCHEMA_RETENTION_POLICY = "schema_retention_policy"
+  val PARAM_GROUP_FILLERS = "drop_group_fillers"
+  val PARAM_VALUE_FILLERS = "drop_value_fillers"
 
-  val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
-  val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
-  val PARAM_DEBUG                     = "debug"
+  val PARAM_GROUP_NOT_TERMINALS = "non_terminals"
+  val PARAM_OCCURS_MAPPINGS = "occurs_mappings"
+  val PARAM_DEBUG = "debug"
 
   // General parsing parameters
-  val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
-  val PARAM_COMMENTS_LBOUND           = "comments_lbound"
-  val PARAM_COMMENTS_UBOUND           = "comments_ubound"
+  val PARAM_TRUNCATE_COMMENTS = "truncate_comments"
+  val PARAM_COMMENTS_LBOUND = "comments_lbound"
+  val PARAM_COMMENTS_UBOUND = "comments_ubound"
 
   // Data parsing parameters
-  val PARAM_STRING_TRIMMING_POLICY    = "string_trimming_policy"
-  val PARAM_EBCDIC_CODE_PAGE          = "ebcdic_code_page"
-  val PARAM_EBCDIC_CODE_PAGE_CLASS    = "ebcdic_code_page_class"
-  val PARAM_ASCII_CHARSET             = "ascii_charset"
-  val PARAM_IS_UTF16_BIG_ENDIAN       = "is_utf16_big_endian"
-  val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
-  val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
-  val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
+  val PARAM_STRING_TRIMMING_POLICY = "string_trimming_policy"
+  val PARAM_EBCDIC_CODE_PAGE = "ebcdic_code_page"
+  val PARAM_EBCDIC_CODE_PAGE_CLASS = "ebcdic_code_page_class"
+  val PARAM_ASCII_CHARSET = "ascii_charset"
+  val PARAM_IS_UTF16_BIG_ENDIAN = "is_utf16_big_endian"
+  val PARAM_FLOATING_POINT_FORMAT = "floating_point_format"
+  val PARAM_VARIABLE_SIZE_OCCURS = "variable_size_occurs"
+  val PARAM_IMPROVED_NULL_DETECTION = "improved_null_detection"
 
   // Parameters for multisegment variable length files
-  val PARAM_RECORD_FORMAT             = "record_format"
-  val PARAM_RECORD_LENGTH             = "record_length"
-  val PARAM_IS_XCOM                   = "is_xcom"
-  val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
-  val PARAM_IS_TEXT                   = "is_text"
-  val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
-  val PARAM_IS_BDW_BIG_ENDIAN         = "is_bdw_big_endian"
-  val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
-  val PARAM_RDW_ADJUSTMENT            = "rdw_adjustment"
-  val PARAM_BDW_ADJUSTMENT            = "bdw_adjustment"
-  val PARAM_BLOCK_LENGTH              = "block_length"
-  val PARAM_RECORDS_PER_BLOCK         = "records_per_block"
-  val PARAM_SEGMENT_FIELD             = "segment_field"
-  val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
-  val PARAM_SEGMENT_FILTER            = "segment_filter"
-  val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
-  val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
-  val PARAM_RECORD_EXTRACTOR          = "record_extractor"
-  val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
-  val PARAM_RE_ADDITIONAL_INFO        = "re_additional_info"
-  val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
+  val PARAM_RECORD_FORMAT = "record_format"
+  val PARAM_RECORD_LENGTH = "record_length"
+  val PARAM_IS_XCOM = "is_xcom"
+  val PARAM_IS_RECORD_SEQUENCE = "is_record_sequence"
+  val PARAM_IS_TEXT = "is_text"
+  val PARAM_IS_RDW_BIG_ENDIAN = "is_rdw_big_endian"
+  val PARAM_IS_BDW_BIG_ENDIAN = "is_bdw_big_endian"
+  val PARAM_IS_RDW_PART_REC_LENGTH = "is_rdw_part_of_record_length"
+  val PARAM_RDW_ADJUSTMENT = "rdw_adjustment"
+  val PARAM_BDW_ADJUSTMENT = "bdw_adjustment"
+  val PARAM_BLOCK_LENGTH = "block_length"
+  val PARAM_RECORDS_PER_BLOCK = "records_per_block"
+  val PARAM_SEGMENT_FIELD = "segment_field"
+  val PARAM_SEGMENT_ID_ROOT = "segment_id_root"
+  val PARAM_SEGMENT_FILTER = "segment_filter"
+  val PARAM_SEGMENT_ID_LEVEL_PREFIX = "segment_id_level"
+  val PARAM_RECORD_HEADER_PARSER = "record_header_parser"
+  val PARAM_RECORD_EXTRACTOR = "record_extractor"
+  val PARAM_RHP_ADDITIONAL_INFO = "rhp_additional_info"
+  val PARAM_RE_ADDITIONAL_INFO = "re_additional_info"
+  val PARAM_INPUT_FILE_COLUMN = "with_input_file_name_col"
 
   // Indexed multisegment file processing
-  val PARAM_ENABLE_INDEXES            = "enable_indexes"
-  val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
-  val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
-  val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
-  val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
-  val PARAM_IMPROVE_LOCALITY          = "improve_locality"
+  val PARAM_ENABLE_INDEXES = "enable_indexes"
+  val PARAM_INPUT_SPLIT_RECORDS = "input_split_records"
+  val PARAM_INPUT_SPLIT_SIZE_MB = "input_split_size_mb"
+  val PARAM_SEGMENT_ID_PREFIX = "segment_id_prefix"
+  val PARAM_OPTIMIZE_ALLOCATION = "optimize_allocation"
+  val PARAM_IMPROVE_LOCALITY = "improve_locality"
 
   // Parameters for debugging
-  val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
+  val PARAM_DEBUG_IGNORE_FILE_SIZE = "debug_ignore_file_size"
 
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "collapse_root")
@@ -273,7 +273,7 @@ object CobolParametersParser {
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
-      (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM) )) {
+      (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM))) {
       throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH_FIELD' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
     }
 
@@ -288,12 +288,10 @@ object CobolParametersParser {
       Some(VariableLengthParameters
       (
         isRecordSequence,
-        recordFormat == VariableBlock,
+        parseBdw(params, recordFormat),
         params.getOrElse(PARAM_IS_RDW_BIG_ENDIAN, "false").toBoolean,
-        params.getOrElse(PARAM_IS_BDW_BIG_ENDIAN, "false").toBoolean,
         params.getOrElse(PARAM_IS_RDW_PART_REC_LENGTH, "false").toBoolean,
         params.getOrElse(PARAM_RDW_ADJUSTMENT, "0").toInt,
-        params.getOrElse(PARAM_BDW_ADJUSTMENT, "0").toInt,
         params.get(PARAM_RECORD_HEADER_PARSER),
         params.get(PARAM_RECORD_EXTRACTOR),
         params.get(PARAM_RHP_ADDITIONAL_INFO),
@@ -311,6 +309,32 @@ object CobolParametersParser {
         params.getOrElse(PARAM_INPUT_FILE_COLUMN, ""),
         getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}"))
       ))
+    } else {
+      None
+    }
+  }
+
+  private def parseBdw(params: Parameters, recordFormat: RecordFormat): Option[Bdw] = {
+    if (recordFormat == FixedBlock || recordFormat == VariableBlock) {
+      val bdw = Bdw(
+        params.getOrElse(PARAM_IS_BDW_BIG_ENDIAN, "false").toBoolean,
+        params.getOrElse(PARAM_BDW_ADJUSTMENT, "0").toInt,
+        params.get(PARAM_BLOCK_LENGTH).map(_.toInt),
+        params.get(PARAM_RECORDS_PER_BLOCK).map(_.toInt),
+      )
+      if (bdw.blockLength.nonEmpty && bdw.recordsPerBlock.nonEmpty) {
+        throw new IllegalArgumentException(s"Options '$PARAM_BLOCK_LENGTH' and $PARAM_RECORDS_PER_BLOCK cannot be used together.")
+      }
+      if (recordFormat == FixedBlock && bdw.blockLength.isEmpty && bdw.recordsPerBlock.isEmpty ) {
+        throw new IllegalArgumentException(s"For FB file format either '$PARAM_BLOCK_LENGTH' or $PARAM_RECORDS_PER_BLOCK must be specified.")
+      }
+      if (recordFormat == VariableBlock && bdw.blockLength.nonEmpty) {
+        logger.warn(s"Option '$PARAM_BLOCK_LENGTH' is ignored for record format: VB")
+      }
+      if (recordFormat == FixedBlock && bdw.recordsPerBlock.nonEmpty) {
+        logger.warn(s"Option '$PARAM_RECORDS_PER_BLOCK' is ignored for record format: VB")
+      }
+      Some(bdw)
     } else {
       None
     }
@@ -400,7 +424,7 @@ object CobolParametersParser {
       val name = s"$PARAM_SEGMENT_ID_LEVEL_PREFIX$i"
       if (params.contains(name)) {
         levels += params(name)
-      } else if (i==0 && params.contains(PARAM_SEGMENT_ID_ROOT)){
+      } else if (i == 0 && params.contains(PARAM_SEGMENT_ID_ROOT)) {
         levels += params(PARAM_SEGMENT_ID_ROOT)
       } else {
         return levels
@@ -420,6 +444,7 @@ object CobolParametersParser {
   }
 
   // key - segment id, value - redefine field name
+
   /**
     * Parses the list of redefines and their corresponding segment ids.
     *
@@ -451,7 +476,7 @@ object CobolParametersParser {
           keyNoCase.startsWith("redefine_segment_id_map")) {
           params.markUsed(k)
           val splitVal = v.split("\\=\\>")
-          if (splitVal.lengthCompare(2) !=0) {
+          if (splitVal.lengthCompare(2) != 0) {
             throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id-map' option: '$v'.")
           }
           val redefine = splitVal(0).trim
@@ -693,15 +718,15 @@ object CobolParametersParser {
   }
 
   /**
-   * Parses the options for the occurs mappings.
-   *
-   * @param params Parameters provided by spark.read.option(...)
-   * @return Returns a mapping for OCCURS fields
-   */
+    * Parses the options for the occurs mappings.
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a mapping for OCCURS fields
+    */
   @throws(classOf[IllegalArgumentException])
   def getOccursMappings(params: String): Map[String, Map[String, Int]] = {
     val parser = new ParserJson()
     val parsedParams = parser.parseMap(params)
-    parsedParams.map( kv => kv._1 -> kv._2.asInstanceOf[Map[String, Any]].map(x => x._1 -> x._2.asInstanceOf[Int]))
+    parsedParams.map(kv => kv._1 -> kv._2.asInstanceOf[Map[String, Any]].map(x => x._1 -> x._2.asInstanceOf[Int]))
   }
 }

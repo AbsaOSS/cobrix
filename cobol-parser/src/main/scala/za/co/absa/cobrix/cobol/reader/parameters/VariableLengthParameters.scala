@@ -20,12 +20,10 @@ package za.co.absa.cobrix.cobol.reader.parameters
   * This class holds the parameters currently used for parsing variable-length records.
   *
   * @param isRecordSequence       Does input files have 4 byte record length headers
-  * @param hasBdw                 Does the file have BDW headers
+  * @param bdw                    Block descriptor word (if specified), for FB and VB record formats
   * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
-  * @param isBdwBigEndian         Is BDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
   * @param isRdwPartRecLength     Does RDW count itself as part of record length itself
   * @param rdwAdjustment          Controls a mismatch between RDW and record length
-  * @param bdwAdjustment          Controls a mismatch between BDW and record length
   * @param recordHeaderParser     An optional custom record header parser for non-standard RDWs
   * @param recordExtractor        An optional custom raw record parser class non-standard record types
   * @param rhpAdditionalInfo      An optional additional option string passed to a custom record header parser
@@ -44,12 +42,10 @@ package za.co.absa.cobrix.cobol.reader.parameters
   */
 case class VariableLengthParameters(
                                      isRecordSequence:      Boolean, // [deprecated by recordFormat]
-                                     hasBdw:                Boolean, // [deprecated by recordFormat]
+                                     bdw:                   Option[Bdw],
                                      isRdwBigEndian:        Boolean,
-                                     isBdwBigEndian:        Boolean,
                                      isRdwPartRecLength:    Boolean,
                                      rdwAdjustment:         Int,
-                                     bdwAdjustment:         Int,
                                      recordHeaderParser:    Option[String],
                                      recordExtractor:       Option[String],
                                      rhpAdditionalInfo:     Option[String],
