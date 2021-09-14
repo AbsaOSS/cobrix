@@ -20,6 +20,7 @@ sealed trait RecordFormat
 
 object RecordFormat {
   case object FixedLength extends RecordFormat
+  case object FixedBlock extends RecordFormat
   case object VariableLength extends RecordFormat
   case object VariableBlock extends RecordFormat
   case object AsciiText extends RecordFormat
@@ -27,6 +28,7 @@ object RecordFormat {
   def withNameOpt(s: String): Option[RecordFormat] = {
     s match {
       case "F" => Some(FixedLength)
+      case "FB" => Some(FixedBlock)
       case "V" => Some(VariableLength)
       case "VB" => Some(VariableBlock)
       case "D" => Some(AsciiText)

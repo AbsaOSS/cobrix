@@ -142,12 +142,10 @@ class DefaultSource
     val varLenParams: VariableLengthParameters = parameters.variableLengthParams
       .getOrElse(
         VariableLengthParameters(isRecordSequence = false,
-          hasBdw = false,
+          None,
           isRdwBigEndian = false,
-          isBdwBigEndian = false,
           isRdwPartRecLength = false,
           rdwAdjustment = 0,
-          bdwAdjustment = 0,
           recordHeaderParser = None,
           recordExtractor = None,
           rhpAdditionalInfo = None,
@@ -171,7 +169,9 @@ class DefaultSource
     else
       None
 
-    ReaderParameters(isEbcdic = parameters.isEbcdic,
+    ReaderParameters(
+      recordFormat = parameters.recordFormat,
+      isEbcdic = parameters.isEbcdic,
       isText = parameters.isText,
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
@@ -182,12 +182,10 @@ class DefaultSource
       recordLength = parameters.recordLength,
       lengthFieldName = recordLengthField,
       isRecordSequence = varLenParams.isRecordSequence,
-      hasBdw = varLenParams.hasBdw,
+      bdw = varLenParams.bdw,
       isRdwBigEndian = varLenParams.isRdwBigEndian,
-      isBdwBigEndian = varLenParams.isBdwBigEndian,
       isRdwPartRecLength = varLenParams.isRdwPartRecLength,
       rdwAdjustment = varLenParams.rdwAdjustment,
-      bdwAdjustment = varLenParams.bdwAdjustment,
       isIndexGenerationNeeded = varLenParams.isUsingIndex,
       inputSplitRecords = varLenParams.inputSplitRecords,
       inputSplitSizeMB = varLenParams.inputSplitSizeMB,

@@ -22,6 +22,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
@@ -63,19 +64,23 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                 copybook: Copybook
                                ): Option[RawRecordExtractor] = {
     val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
-    val bdwParams = RecordHeaderParameters(readerProperties.isBdwBigEndian, readerProperties.bdwAdjustment)
 
     val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
-    val bdwDecoder = new RecordHeaderDecoderBdw(bdwParams)
 
-    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, rdwDecoder, bdwDecoder, readerProperties.reAdditionalInfo)
+    val bdwOpt = readerProperties.bdw
+    val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
+    val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
+
+    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
         Some(RawRecordExtractorFactory.createRecordHeaderParser(recordExtractorClass, reParams))
       case None if readerProperties.isText =>
         Some(new TextRecordExtractor(reParams))
-      case None if readerProperties.hasBdw =>
+      case None if readerProperties.recordFormat == FixedBlock =>
+        Some(new VariableBlockVariableRecordExtractor(reParams)) // ToDo FB record format
+      case None if readerProperties.recordFormat == VariableBlock =>
         Some(new VariableBlockVariableRecordExtractor(reParams))
       case None if readerProperties.variableSizeOccurs &&
         readerProperties.recordHeaderParser.isEmpty &&
