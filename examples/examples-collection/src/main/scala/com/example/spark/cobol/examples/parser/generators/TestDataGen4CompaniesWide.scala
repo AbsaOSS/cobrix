@@ -17,8 +17,8 @@
 package com.example.spark.cobol.examples.parser.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
-import za.co.absa.cobrix.cobol.parser.examples.generators.model.{CommonLists, Company}
-import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
+import com.example.spark.cobol.examples.parser.generators.model.{CommonLists, Company}
+import com.example.spark.cobol.examples.parser.generators.utils.GeneratorTools._
 
 import scala.util.Random
 

@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.examples.generators
+package com.example.spark.cobol.examples.parser.generators
 
 import java.io.{BufferedOutputStream, FileOutputStream}
-import za.co.absa.cobrix.cobol.parser.examples.generators.model.{CommonLists, Company}
-import za.co.absa.cobrix.cobol.parser.examples.generators.utils.GeneratorTools._
+import com.example.spark.cobol.examples.parser.generators.utils.GeneratorTools._
 
 import scala.util.Random
 
@@ -27,7 +26,7 @@ import scala.util.Random
   */
 object TestDataGen6TypeVariety {
 
-  val numberOfRecordsToGenerate = 100
+  val numberOfRecordsToGenerate = 1000000
 
   // seed=100 is used for the integration test
   val rand: Random = new Random(/*100*/)

@@ -89,6 +89,8 @@ object CobolParametersParser {
   val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
   val PARAM_RDW_ADJUSTMENT            = "rdw_adjustment"
   val PARAM_BDW_ADJUSTMENT            = "bdw_adjustment"
+  val PARAM_BLOCK_LENGTH              = "block_length"
+  val PARAM_RECORDS_PER_BLOCK         = "records_per_block"
   val PARAM_SEGMENT_FIELD             = "segment_field"
   val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
   val PARAM_SEGMENT_FILTER            = "segment_filter"
