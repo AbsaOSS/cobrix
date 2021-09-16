@@ -265,7 +265,7 @@ object CobolParametersParser {
 
   private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
-    val isRecordSequence = Seq(VariableLength, VariableBlock, AsciiText).contains(recordFormat)
+    val isRecordSequence = Seq(FixedBlock, VariableLength, VariableBlock, AsciiText).contains(recordFormat)
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
@@ -323,10 +323,10 @@ object CobolParametersParser {
         params.get(PARAM_RECORDS_PER_BLOCK).map(_.toInt),
       )
       if (bdw.blockLength.nonEmpty && bdw.recordsPerBlock.nonEmpty) {
-        throw new IllegalArgumentException(s"Options '$PARAM_BLOCK_LENGTH' and $PARAM_RECORDS_PER_BLOCK cannot be used together.")
+        throw new IllegalArgumentException(s"Options '$PARAM_BLOCK_LENGTH' and '$PARAM_RECORDS_PER_BLOCK' cannot be used together.")
       }
       if (recordFormat == FixedBlock && bdw.blockLength.isEmpty && bdw.recordsPerBlock.isEmpty ) {
-        throw new IllegalArgumentException(s"For FB file format either '$PARAM_BLOCK_LENGTH' or $PARAM_RECORDS_PER_BLOCK must be specified.")
+        throw new IllegalArgumentException(s"For FB file format either '$PARAM_BLOCK_LENGTH' or '$PARAM_RECORDS_PER_BLOCK' must be specified.")
       }
       if (recordFormat == VariableBlock && bdw.blockLength.nonEmpty) {
         logger.warn(s"Option '$PARAM_BLOCK_LENGTH' is ignored for record format: VB")
