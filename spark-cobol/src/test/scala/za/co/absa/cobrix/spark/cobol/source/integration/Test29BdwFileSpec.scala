@@ -26,7 +26,7 @@ import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 //noinspection NameBooleanParameters
 class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
 
-  private val exampleName = "Test29 (VB record format RDW+BDW"
+  private val exampleName = "Test29 (VB record format RDW+BDW)"
 
   private val copybook =
     """      01  R.
