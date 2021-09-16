@@ -320,7 +320,7 @@ object CobolParametersParser {
         params.getOrElse(PARAM_IS_BDW_BIG_ENDIAN, "false").toBoolean,
         params.getOrElse(PARAM_BDW_ADJUSTMENT, "0").toInt,
         params.get(PARAM_BLOCK_LENGTH).map(_.toInt),
-        params.get(PARAM_RECORDS_PER_BLOCK).map(_.toInt),
+        params.get(PARAM_RECORDS_PER_BLOCK).map(_.toInt)
       )
       if (bdw.blockLength.nonEmpty && bdw.recordsPerBlock.nonEmpty) {
         throw new IllegalArgumentException(s"Options '$PARAM_BLOCK_LENGTH' and '$PARAM_RECORDS_PER_BLOCK' cannot be used together.")
