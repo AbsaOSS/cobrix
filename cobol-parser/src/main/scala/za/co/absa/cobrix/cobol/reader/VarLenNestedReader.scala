@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -79,7 +79,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       case None if readerProperties.isText =>
         Some(new TextRecordExtractor(reParams))
       case None if readerProperties.recordFormat == FixedBlock =>
-        Some(new VariableBlockVariableRecordExtractor(reParams)) // ToDo FB record format
+        val fbParams = FixedBlockParameters(readerProperties.recordLength, bdwOpt.get.blockLength, bdwOpt.get.recordsPerBlock)
+        FixedBlockParameters.validate(fbParams)
+        Some(new FixedBlockRawRecordExtractor(reParams, fbParams))
       case None if readerProperties.recordFormat == VariableBlock =>
         Some(new VariableBlockVariableRecordExtractor(reParams))
       case None if readerProperties.variableSizeOccurs &&
