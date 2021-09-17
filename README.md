@@ -317,6 +317,31 @@ val copyBook = CopybookParser.parseTree(copyBookContents)
 println(copyBook.generateRecordLayoutPositions())
 ```
 
+### Fixed record length files
+Cobrix assumes files has fixed length (`F`) record format by default. The record length is determined by the length of
+the record defined by the copybook. But you can specify the record length explicitly:
+```
+.option("record_format", "F")
+.option("record_length", "250")
+```
+
+Fixed block record formats (`FB`) are also supported. The support is _experimental_, if you find any issues, please
+let us know. When the record format is 'FB' you need to specify either block length or number of records per
+block. As with 'F' if `record_length` is not specified, it will be determined from the copybook.
+```
+.option("record_format", "FB")
+.option("record_length", "250")
+.option("block_length", "500")
+```
+or
+```
+.option("record_format", "FB")
+.option("record_length", "250")
+.option("records_per_block", "2")
+```
+
+More on fixed-length record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic=sets-fixed-length-record-formats
+
 ### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
@@ -1112,7 +1137,6 @@ Again, the full example is available at
 |            Option (usage example)          |                           Description |
 | ------------------------------------------ |:----------------------------------------------------------------------------- |
 | .option("paths", "/path1,/path2")          | Allows loading data from multiple unrelated paths on the same filesystem. |
-| .option("record_length", "100")            | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files. |
 | .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
 | .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
 | .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
@@ -1152,11 +1176,17 @@ Again, the full example is available at
 | .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
 | .option("debug", "hex")                    | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`. The legacy value `true` is supported and will generate debug fields in HEX.  |
 
-##### Variable record length files options
+##### Fixed length record format options (for record_format = F or FB)
+| .option("record_format", "F")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
+| .option("record_length", "100")               | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files. |
+| .option("block_length", "500")                | Specifies the block length for FB records. It should be a multiple of 'record_length'. Cannot be used together with `records_per_block` |
+| .option("records_per_block", "5")             | Specifies the number of records ber block for FB records. Cannot be used together with `block_length` |
+
+##### Variable record length files options (for record_format = V or VB)
 
 |            Option (usage example)             |                           Description |
 | --------------------------------------------- |:----------------------------------------------------------------------------- |
-| .option("record_format", "F")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
+| .option("record_format", "V")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
 | .option("is_record_sequence", "true")         | _[deprecated]_ If 'true' the parser will look for 4 byte RDW headers to read variable record length files. Use `.option("record_format", "V")` instead. |
 | .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
 | .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. For BDW use `.option("bdw_adjustment", -4)` |
@@ -1287,6 +1317,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.4.1 to be released soon.
+    - [#420](https://github.com/AbsaOSS/cobrix/issues/420) Add _experimental_ support for [fixed blocked (FB)](https://www.ibm.com/docs/en/zos/2.3.0?topic=sets-fixed-length-record-formats) record format.
+
 - #### 2.4.0 released 7 September 2021.
     - [#412](https://github.com/AbsaOSS/cobrix/issues/412) Add support for [variable block (VB aka VBVR)](https://www.ibm.com/docs/en/zos/2.3.0?topic=formats-format-v-records) record format.
       Options to adjust BDW settings are added:
@@ -1294,6 +1327,7 @@ For multisegment variable lengths tests:
       - `bdw_adjustment` - Specifies how the value of a BDW is different from the block payload. For example, if the side in BDW headers includes BDW record itself, use `.option("bdw_adjustment", "-4")`.  
     - Options `is_record_sequence` and `is_xcom` are deprecated. Use `.option("record_format", "V")` instead.
     - [#417](https://github.com/AbsaOSS/cobrix/issues/417) Multisegment ASCII text files have now direct support using `record_format = D`.
+
 - #### 2.3.0 released 2 August 2021.
     - [#405](https://github.com/AbsaOSS/cobrix/issues/405) Fix extracting records that contain redefines of the top level GROUPs.
     - [#406](https://github.com/AbsaOSS/cobrix/issues/406) Use 'collapse_root' retention policy by default. This is the breaking,
