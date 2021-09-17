@@ -68,11 +68,11 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     name := "spark-cobol",
     printSparkVersion := {
       val log = streams.value.log
-      log.info(s"Building with Spark $sparkVersion")
-      sparkVersion
+      log.info(s"Building with Spark ${sparkVersion(scalaVersion.value)}, Scala ${scalaVersion.value}")
+      sparkVersion(scalaVersion.value)
     },
     (Compile / compile) := ((Compile / compile) dependsOn printSparkVersion).value,
-    libraryDependencies ++= SparkCobolDependencies :+ getScalaDependency(scalaVersion.value),
+    libraryDependencies ++= SparkCobolDependencies(scalaVersion.value) :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
     populateBuildInfoTemplate,
