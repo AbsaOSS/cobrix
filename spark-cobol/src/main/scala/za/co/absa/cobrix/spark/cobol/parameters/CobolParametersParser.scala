@@ -325,9 +325,6 @@ object CobolParametersParser {
       if (bdw.blockLength.nonEmpty && bdw.recordsPerBlock.nonEmpty) {
         throw new IllegalArgumentException(s"Options '$PARAM_BLOCK_LENGTH' and '$PARAM_RECORDS_PER_BLOCK' cannot be used together.")
       }
-      if (recordFormat == FixedBlock && bdw.blockLength.isEmpty && bdw.recordsPerBlock.isEmpty ) {
-        throw new IllegalArgumentException(s"For FB file format either '$PARAM_BLOCK_LENGTH' or '$PARAM_RECORDS_PER_BLOCK' must be specified.")
-      }
       if (recordFormat == VariableBlock && bdw.blockLength.nonEmpty) {
         logger.warn(s"Option '$PARAM_BLOCK_LENGTH' is ignored for record format: VB")
       }

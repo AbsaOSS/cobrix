@@ -326,8 +326,21 @@ the record defined by the copybook. But you can specify the record length explic
 ```
 
 Fixed block record formats (`FB`) are also supported. The support is _experimental_, if you find any issues, please
-let us know. When the record format is 'FB' you need to specify either block length or number of records per
+let us know. When the record format is 'FB' you can specify block length or number of records per
 block. As with 'F' if `record_length` is not specified, it will be determined from the copybook.
+
+Records that have BDWs, but not rdws can be read like this:
+```
+.option("record_format", "FB")
+.option("record_length", "250")
+```
+or simply
+```
+.option("record_format", "FB")
+```
+
+Records that have neither BDWs nor RDWs can be read like this:
+
 ```
 .option("record_format", "FB")
 .option("record_length", "250")

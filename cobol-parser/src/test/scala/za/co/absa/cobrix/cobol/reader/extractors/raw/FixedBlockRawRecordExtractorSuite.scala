@@ -99,19 +99,16 @@ class FixedBlockRawRecordExtractorSuite extends WordSpec {
       assert(extractor.next().head == 0xF8.toByte)
       assert(!extractor.hasNext)
     }
+
+    "allow neither block length nor records per block to be specified" in {
+      val fb = FixedBlockParameters(Some(1), None, None)
+
+      assert(fb.blockLength.isEmpty)
+      assert(fb.recordsPerBlock.isEmpty)
+    }
   }
 
   "failures" should {
-    "throw an exception when neither block length nor records per block is specified" in {
-      val fb = FixedBlockParameters(Some(1), None, None)
-
-      val ex = intercept[IllegalArgumentException] {
-        FixedBlockParameters.validate(fb)
-      }
-
-      assert(ex.getMessage.contains("FB record format requires block length or number records per block to be specified."))
-    }
-
     "throw an exception when both block length and records per block are specified" in {
       val fb = FixedBlockParameters(Some(1), Some(1), Some(1))
 
