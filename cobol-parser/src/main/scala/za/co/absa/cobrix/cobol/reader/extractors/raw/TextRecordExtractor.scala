@@ -30,8 +30,10 @@ import java.util
   * Hopefully, comments will help anyone reading this.
   */
 class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  private val recordSize = ctx.copybook.getRecordSize
+
   // Maximum possible record size is the size of the copybook record + maximum size of the delimiter (2 characters for CRLF).
-  private val maxRecordSize = ctx.copybook.getRecordSize + 2
+  private val maxRecordSize = recordSize + 2
 
   // This is the buffer to keep the part of the stream that will be split by records.
   // The size of the array is always the maximum record size. The number of bytes that contain useful payload is specified
@@ -45,8 +47,6 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
   private var curRecordSize = 0
   // The number of bytes from pendingBytes that correspond to a record, without line break character(s)
   private var curPayloadSize = 0
-  // The number of bytes the line breaking character has taken for the last record. Can only be 1 (LF) or 2 (CR LF).
-  private var lastLineBreakSize = 1
 
   override def hasNext: Boolean = {
     if (!isRawRecordFound) {
@@ -126,21 +126,19 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
     } else {
       // Last record or a record is too large?
       // In the latter case
-      if (ctx.inputStream.isEndOfStream) {
+      if (pendingBytesSize <= recordSize && ctx.inputStream.isEndOfStream) {
         // Last record
         curRecordSize = pendingBytesSize
         curPayloadSize = pendingBytesSize
       } else {
         // This is an errors situation - no line breaks between records
-        // Return a record worth of data minus line break.
-        curRecordSize = pendingBytesSize - lastLineBreakSize
-        curPayloadSize = pendingBytesSize - lastLineBreakSize
+        // Return a record worth of data.
+        curRecordSize = recordSize
+        curPayloadSize = recordSize
       }
     }
 
     isRawRecordFound = true
-
-    lastLineBreakSize = recordLength - recordPayload
   }
 
   // This method extracts the current record from the buffer array.

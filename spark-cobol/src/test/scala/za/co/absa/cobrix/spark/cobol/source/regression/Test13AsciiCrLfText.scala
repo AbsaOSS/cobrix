@@ -126,5 +126,68 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
         assert(count == 0)
       }
     }
+
+    "correctly read text files without EOL characters" in {
+      val text = "AABBCC"
+      withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .load(tmpFileName)
+
+        val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+
+        val count = df.count()
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 3)
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+  }
+
+  "correctly read text files with a single EOL characters" in {
+    val text = "AA\nBBCC"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+
+      val count = df.count()
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 3)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read text files with a double EOL characters" in {
+    val text = "AA\r\nBBCC"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+
+      val count = df.count()
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 3)
+      assertEqualsMultiline(actual, expected)
+    }
   }
 }
