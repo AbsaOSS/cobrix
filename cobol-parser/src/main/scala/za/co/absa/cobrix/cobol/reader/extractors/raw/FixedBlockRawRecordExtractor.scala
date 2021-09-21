@@ -22,7 +22,7 @@ class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockPa
   private val recordQueue = new mutable.Queue[Array[Byte]]
 
   private val recordSize = fbParams.recordLength.getOrElse(ctx.copybook.getRecordSize)
-  private val bdwSize = fbParams.blockLength.getOrElse(fbParams.recordsPerBlock.get * recordSize)
+  private val bdwSize = fbParams.blockLength.orElse(fbParams.recordsPerBlock.map(_ * recordSize))
 
   override def offset: Long = ctx.inputStream.offset
 
@@ -35,14 +35,20 @@ class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockPa
 
   private def readNextBlock(): Unit = {
     if (!ctx.inputStream.isEndOfStream) {
-      val bdwOffset = ctx.inputStream.offset
-      val blockBuffer = ctx.inputStream.next(bdwSize)
+      var bdwOffset = ctx.inputStream.offset
+
+      val nextBlockSize = bdwSize.getOrElse({
+        val bdw = ctx.inputStream.next(ctx.bdwDecoder.headerSize)
+        val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
+        bdwOffset += ctx.bdwDecoder.headerSize
+        blockLength
+      })
+
+      val blockBuffer = ctx.inputStream.next(nextBlockSize)
 
       var blockIndex = 0
 
       while (blockIndex < blockBuffer.length) {
-        val rdwOffset = bdwOffset + blockIndex
-
         val payload = blockBuffer.slice(blockIndex, blockIndex + recordSize)
         if (payload.length > 0) {
           recordQueue.enqueue(payload)

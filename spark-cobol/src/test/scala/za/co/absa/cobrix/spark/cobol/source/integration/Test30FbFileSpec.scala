@@ -54,6 +54,20 @@ class Test30FbFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtur
         """[{"A":"0"},{"A":"0"},{"A":"1"},{"A":"1"}]""",
         ignoreCount = true)
     }
+
+    "load data with BDWs" in {
+      testVbRecordLoad(2, 2,
+        Map[String, String](),
+        expected4Records,
+        hasBDW = true)
+    }
+
+    "load empty data with BDWs" in {
+      testVbRecordLoad(0, 0,
+        Map[String, String](),
+        "[]",
+        hasBDW = true)
+    }
   }
 
   "FB record failures should happen" when {
@@ -80,23 +94,23 @@ class Test30FbFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtur
 
       assert(ex.getMessage.contains("Options 'block_length' and 'records_per_block' cannot be used together."))
     }
-
-    "Mandatory options are missing" in {
-      val ex = intercept[IllegalArgumentException] {
-        testVbRecordLoad(1, 2, Map[String, String](), "")
-      }
-
-      assert(ex.getMessage.contains("For FB file format either 'block_length' or 'records_per_block' must be specified."))
-    }
   }
 
   private def testVbRecordLoad(blocks: Int,
                                records: Int,
                                options: Map[String, String],
                                expected: String,
-                               ignoreCount: Boolean = false): Unit = {
+                               ignoreCount: Boolean = false,
+                               hasBDW: Boolean = false): Unit = {
     val record: Seq[Byte] = Range(0, blocks).flatMap(blockNum => {
-      Range(0, records).flatMap(recordNum => {
+      val bdw: Seq[Byte] = if (hasBDW) {
+        val byte0 = ((records * 2) % 256).toByte
+        val byte1 = ((records * 2) / 256).toByte
+        Seq(0, 0, byte0, byte1)
+      } else {
+        Nil
+      }
+      bdw ++ Range(0, records).flatMap(recordNum => {
         val idx = (blockNum * records + recordNum) % 10
         val v = (0xF0 + idx).toByte
         Seq(v, v)
@@ -104,7 +118,7 @@ class Test30FbFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtur
     })
 
     withTempBinFile("rec", ".dat", record.toArray) { tmpFileName1 =>
-      val df =     spark
+      val df = spark
         .read
         .format("cobol")
         .option("copybook_contents", copybook)

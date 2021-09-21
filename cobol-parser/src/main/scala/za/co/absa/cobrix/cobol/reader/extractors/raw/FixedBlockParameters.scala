@@ -24,9 +24,6 @@ case class FixedBlockParameters(
 
 object FixedBlockParameters {
   def validate(params: FixedBlockParameters): Unit = {
-    if (params.blockLength.isEmpty && params.recordsPerBlock.isEmpty) {
-      throw new IllegalArgumentException("FB record format requires block length or number records per block to be specified.")
-    }
     if (params.blockLength.nonEmpty && params.recordsPerBlock.nonEmpty) {
       throw new IllegalArgumentException("FB record format requires either block length or number records per block to be specified, but not both.")
     }
