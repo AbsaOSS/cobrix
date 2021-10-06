@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.copybooks
 
-import org.scalatest.{FunSuite, Ignore}
+import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
@@ -55,6 +55,7 @@ class CopybookCharsSpec extends FunSuite {
       s"""        01  RECORD.
          |            05  F1  PIC X(10).
          |            05  F2- PIC 9(10).
+         |            05  F3_ PIC A(10).
          |""".stripMargin
 
     val parsed = CopybookParser.parseTree(copyBookContents)
@@ -63,9 +64,11 @@ class CopybookCharsSpec extends FunSuite {
 
     val field1 = root.children.head.name
     val field2 = root.children(1).name
+    val field3 = root.children(2).name
 
     assert(field1 == "F1")
     assert(field2 == "F2_")
+    assert(field3 == "F3_")
   }
 
 }
