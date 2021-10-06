@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.copybooks
 
-import org.scalatest.FunSuite
+import org.scalatest.{FunSuite, Ignore}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
@@ -48,6 +48,24 @@ class CopybookCharsSpec extends FunSuite {
     assert(field3 == "F3")
     assert(field4 == "F4")
     assert(field5 == "F5")
+  }
+
+  ignore("Test a copybook that have '-' characters at the end of a field") {
+    val copyBookContents: String =
+      s"""        01  RECORD.
+         |            05  F1 PIC X(10).
+         |            05  F2- PIC 9(10).
+         |""".stripMargin
+
+    val parsed = CopybookParser.parseTree(copyBookContents)
+
+    val root = parsed.ast.children.head.asInstanceOf[Group]
+
+    val field1 = root.children.head.name
+    val field2 = root.children(1).name
+
+    assert(field1 == "F1")
+    assert(field2 == "F2_")
   }
 
 }
