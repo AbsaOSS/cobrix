@@ -1330,6 +1330,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.4.2 to be released soon.
+    - [#427](https://github.com/AbsaOSS/cobrix/issues/427) Fixed parsing of identifiers that end with '-' or '_'.
+- 
 - #### 2.4.1 released 22 September 2021.
     - [#420](https://github.com/AbsaOSS/cobrix/issues/420) Add _experimental_ support for [fixed blocked (FB)](https://www.ibm.com/docs/en/zos/2.3.0?topic=sets-fixed-length-record-formats) record format.
     - [#422](https://github.com/AbsaOSS/cobrix/issues/422) Fixed decoding of 'broken pipe' (`¦`) character from EBCDIC.
