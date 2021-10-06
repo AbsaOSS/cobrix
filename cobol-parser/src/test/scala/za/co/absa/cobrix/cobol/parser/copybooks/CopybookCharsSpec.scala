@@ -50,10 +50,10 @@ class CopybookCharsSpec extends FunSuite {
     assert(field5 == "F5")
   }
 
-  ignore("Test a copybook that have '-' characters at the end of a field") {
+  test("Test a copybook that have '-' characters at the end of a field") {
     val copyBookContents: String =
       s"""        01  RECORD.
-         |            05  F1 PIC X(10).
+         |            05  F1  PIC X(10).
          |            05  F2- PIC 9(10).
          |""".stripMargin
 
