@@ -1332,7 +1332,7 @@ For multisegment variable lengths tests:
 ## Changelog
 - #### 2.4.2 released 7 October 2021.
     - [#427](https://github.com/AbsaOSS/cobrix/issues/427) Fixed parsing of identifiers that end with '-' or '_'.
-- 
+
 - #### 2.4.1 released 22 September 2021.
     - [#420](https://github.com/AbsaOSS/cobrix/issues/420) Add _experimental_ support for [fixed blocked (FB)](https://www.ibm.com/docs/en/zos/2.3.0?topic=sets-fixed-length-record-formats) record format.
     - [#422](https://github.com/AbsaOSS/cobrix/issues/422) Fixed decoding of 'broken pipe' (`¦`) character from EBCDIC.
