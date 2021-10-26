@@ -65,10 +65,17 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
       RecordMetadata(-1, isValid = false)
     }
     else {
+      val useSecondHalf = header(0) == 0 && header(1) == 0 && (header(2) != 0 || header(3) != 0)
       val recordLength = if (isBigEndian) {
-        (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwAdjustment
+        if (useSecondHalf)
+          (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + rdwAdjustment
+        else
+          (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwAdjustment
       } else {
-        (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwAdjustment
+        if (useSecondHalf)
+          (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwAdjustment
+        else
+          (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + rdwAdjustment
       }
 
       if (recordLength > 0) {
