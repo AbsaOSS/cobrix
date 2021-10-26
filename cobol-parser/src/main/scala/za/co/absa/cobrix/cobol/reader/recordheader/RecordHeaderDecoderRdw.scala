@@ -30,12 +30,17 @@ class RecordHeaderDecoderRdw(rdwParameters: RecordHeaderParameters) extends Reco
   override def getRecordLength(header: Array[Byte], offset: Long): Int = {
     validateHeader(header, offset)
 
+    val useSecondHalf = header(0) == 0 && header(0) == 0 && (header(2) != 0 || header(3) != 0)
     val recordLength = if (rdwParameters.isBigEndian) {
-      if (header(2) != 0 || header(3) != 0) reportInvalidHeaderZeros(header, offset)
-      (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwParameters.adjustment
+      if (useSecondHalf)
+        (header(3) & 0xFF) + 256 * (header(2) & 0xFF) + rdwParameters.adjustment
+      else
+        (header(1) & 0xFF) + 256 * (header(0) & 0xFF) + rdwParameters.adjustment
     } else {
-      if (header(0) != 0 || header(1) != 0) reportInvalidHeaderZeros(header, offset)
-      (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwParameters.adjustment
+      if (useSecondHalf)
+        (header(2) & 0xFF) + 256 * (header(3) & 0xFF) + rdwParameters.adjustment
+      else
+        (header(0) & 0xFF) + 256 * (header(1) & 0xFF) + rdwParameters.adjustment
     }
 
     validateRecordLength(header, offset, recordLength)

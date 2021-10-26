@@ -84,31 +84,24 @@ class RecordHeaderDecoderRdwSuite extends WordSpec {
       assert(ex.getMessage.contains("The length of RDW headers is unexpected. Expected: 4, got 5. Header: 0,0,2,0,0, offset: 123."))
     }
 
-    "fail when big-endian header is used for little-endian headers" in {
+    "read big-endian headers even when a little-endian mode is used" in {
       val rhd = new RecordHeaderDecoderRdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(false, 0))
 
+      val len = rhd.getRecordLength(Array[Byte](0, 1, 0, 0), 0)
 
-      val ex = intercept[IllegalStateException] {
-        rhd.getRecordLength(Array[Byte](0, 1, 0, 0), 234)
-      }
-
-      assert(ex.getMessage.contains("RDW headers contain non-zero values where zeros are expected (check 'rdw_big_endian' flag"))
+      assert(len == 256)
     }
 
-    "fail when little-endian header is used for big-endian headers" in {
+    "read little-endian headers even when a big-endian mode is used" in {
       val rhd = new RecordHeaderDecoderRdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(true, 0))
 
+      val len = rhd.getRecordLength(Array[Byte](0, 0, 0, 1), 0)
 
-      val ex = intercept[IllegalStateException] {
-        rhd.getRecordLength(Array[Byte](0, 0, 0, 1), 234)
-      }
-
-      assert(ex.getMessage.contains("RDW headers contain non-zero values where zeros are expected (check 'rdw_big_endian' flag"))
+      assert(len == 1)
     }
 
     "fail when record size is incorrect" in {
       val rhd = new RecordHeaderDecoderRdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(true, -10))
-
 
       val ex = intercept[IllegalStateException] {
         rhd.getRecordLength(Array[Byte](0, 1, 0, 0), 234)
