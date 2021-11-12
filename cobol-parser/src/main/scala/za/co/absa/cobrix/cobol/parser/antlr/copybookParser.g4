@@ -90,7 +90,7 @@ dependingOn:
     ;
 
 indexedBy:
-    INDEXED BY? identifier
+    INDEXED BY? identifier (','? IDENTIFIER)*
     ;
 
 occurs:
