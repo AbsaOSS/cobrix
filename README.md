@@ -1330,6 +1330,9 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.4.4 will be released soon.
+   - [#435](https://github.com/AbsaOSS/cobrix/issues/435) Fixed 'INDEXED BY' clause followed by multiple identifiers.
+
 - #### 2.4.3 released 26 October 2021.
    - [#430](https://github.com/AbsaOSS/cobrix/issues/430) Added support for 'twisted' RDW headers when big-endian or little-endian RDWs use unexpected RDW bytes.
 
