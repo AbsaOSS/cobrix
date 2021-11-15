@@ -25,7 +25,7 @@ object StringTools {
     * @param s A string
     * @return The trimmed string
     */
-  def trimLeft(s: String): String = {
+  final def trimLeft(s: String): String = {
     val len = s.length
     var st = 0
     val v = s.toCharArray
@@ -46,7 +46,7 @@ object StringTools {
     * @param s A string
     * @return The trimmed string
     */
-  def trimRight(s: String): String = {
+  final def trimRight(s: String): String = {
     var len = s.length
     val st = 0
     val v = s.toCharArray
@@ -60,7 +60,7 @@ object StringTools {
     else s
   }
 
-  def isArrayNull(bytes: Array[Byte]): Boolean = {
+  final def isArrayNull(bytes: Array[Byte]): Boolean = {
     var i = 0
     val size = bytes.length
     while (i < size) {

@@ -273,8 +273,8 @@ class StringDecodersSpec extends WordSpec {
       assert(decodeAsciiNumber("100,00-".getBytes, isUnsigned = false, improvedNullDetection = false) == "-100.00")
     }
 
-    "return trimmed string if non-digit characters are encountered" in {
-      assert(decodeAsciiNumber("AAABBBCCC".getBytes, isUnsigned = false, improvedNullDetection = false) == "AAABBBCCC")
+    "return null if non-digit characters are encountered" in {
+      assert(decodeAsciiNumber("AAABBBCCC".getBytes, isUnsigned = false, improvedNullDetection = false) == null)
     }
   }
 
@@ -458,8 +458,8 @@ class StringDecodersSpec extends WordSpec {
       assert(decodeAsciiBigDecimal("12345678901234567890123456.12345678901234567890123456".getBytes, isUnsigned = true, improvedNullDetection = false) == BigDecimal("12345678901234567890123456.12345678901234567890123456"))
     }
 
-    "decode numbers in scientific format" in {
-      assert(decodeAsciiBigDecimal("200E+10".getBytes, isUnsigned = false, improvedNullDetection = false) == 2.00E+12)
+    "not decode numbers in scientific format" in {
+      assert(decodeAsciiBigDecimal("200E+10".getBytes, isUnsigned = false, improvedNullDetection = false) == null)
     }
 
     "return null for malformed numbers" in {
