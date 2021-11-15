@@ -21,7 +21,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseCopybooksFeauresSpec extends FunSuite with SimpleComparisonBase {
+class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test copybooks with indexed by clauses with multiple indexes separated by comma") {
@@ -64,6 +64,26 @@ class ParseCopybooksFeauresSpec extends FunSuite with SimpleComparisonBase {
         |1 ROOT_GROUP                                          1      1      7      7
         |  5 FLD                                []             2      1      7      7
         |    10 B1                                             3      1      1      1"""
+        .stripMargin.replace("\r\n", "\n")
+
+    val copybook = CopybookParser.parseTree(copybookContents)
+    val layout = copybook.generateRecordLayoutPositions()
+
+    assertEqualsMultiline(layout, expectedLayout)
+  }
+
+  test("Test copybooks containing identifiers with '@'") {
+    val copybookContents =
+      """
+      01  ROOT-GROUP.
+          05  F@TEST PIC X(1).
+      """
+
+    val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |1 ROOT_GROUP                                          1      1      1      1
+        |  5 F@TEST                                            2      1      1      1"""
         .stripMargin.replace("\r\n", "\n")
 
     val copybook = CopybookParser.parseTree(copybookContents)
