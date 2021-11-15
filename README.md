@@ -1332,6 +1332,7 @@ For multisegment variable lengths tests:
 ## Changelog
 - #### 2.4.4 will be released soon.
    - [#435](https://github.com/AbsaOSS/cobrix/issues/435) Fixed 'INDEXED BY' clause followed by multiple identifiers.
+   - [#437](https://github.com/AbsaOSS/cobrix/issues/437) Added support for '@' characters inside identifier names.
 
 - #### 2.4.3 released 26 October 2021.
    - [#430](https://github.com/AbsaOSS/cobrix/issues/430) Added support for 'twisted' RDW headers when big-endian or little-endian RDWs use unexpected RDW bytes.
