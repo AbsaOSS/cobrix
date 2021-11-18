@@ -358,8 +358,10 @@ More on fixed-length record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic
 ### Variable length records support
 
 Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
-record header known as Record Descriptor Word (RDW). Such headers are created automatically when a variable record length
-file is copied from a mainframe.
+record header known as _Record Descriptor Word_ (RDW). Such headers are created automatically when a variable record length
+file is copied from a mainframe. Another type of files are _variable blocked length_. Such files contain _Block Descriptor
+Word_ (BDW), as well as Record Descriptor Word (RDW) headers. Any such header can be either big-endian or little-endian.
+Also, quite often BDW headers need to be adjusted in order to be read properly. See the use cases section below.
 
 To load variable length record file the following option should be specified:
 ```
@@ -375,6 +377,35 @@ More on record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic=files-select
 
 The space used by the headers (both BDW and RDW) should not be mentioned in the copybook if this option is used. Please refer to the
 'Record headers support' section below. 
+
+### Use cases for various variable length formats
+
+In order to understand the file format it is often sufficient to look at the first 4 bytes of the file (un case of RDW only files),
+or the first 8 bytes of a file + lookup the offset of the block (in case of BDW + RDW)  
+
+#### V header examples (have only RDW headers)
+
+In order to determine if an RDW is a big- or little-endian, take a look at the first 4 bytes. If the first 2 bytes are zeros,
+it's a little-endian RDW header, otherwise it is a big-endian RDW header.
+
+| Header example |                           Description                                  |       Options  |
+| -------------- |:---------------------------------------------------------------------- | :----------------
+| `00 10 00 00`  |  Big-endian RDW, no adjustments,<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "V")`<br/>`.option("is_rdw_big_endian", "true")`  |
+| `01 10 00 00`  |  Big-endian RDW, adjustment `-2`,<br/>the record size: `0x01*256 + 0x10 - 2 = 256 + 16 + 2 = 270 bytes`    | `.option("record_format", "V")`<br/>`.option("is_rdw_big_endian", "true")`<br/>`.option("rdw_adjustment", -2)`  |
+| `00 00 10 00`  |  Little-endian RDW, no adjustments,<br/>the record size: `0x10 = 16 bytes` | `.option("record_format", "V")`<br/>`.option("is_rdw_big_endian", "false")` |
+| `00 00 10 01`  |  Little-endian RDW, adjustment `-2`,<br/>the record size: `0x01*256 + 0x10 - 2 = 256 + 16 + 2 = 270 bytes` | `.option("record_format", "V")`<br/>`.option("is_rdw_big_endian", "false")`<br/>`.option("rdw_adjustment", -2)` |
+
+#### VB header examples (have both BDW and RDW headers)
+
+It is harder to determine if a BDW header is big- or little-endian since BDW header bytes can be all non-zero.
+But for VB format RDWs follow BDWs and endiness. You can determine the endiness from an RDW, and use the same option for BDW.
+
+|               Header example             |                           Description                           |       Options  |
+| ---------------------------------------- |:--------------------------------------------------------------- | :----------------
+| `00 28 00 00`  `00 10 00 00` (BDW, RDW)  |  Big-endian BDW+RDW, no adjustments,<br/>BDW = `0x28 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "true")`<br/>`.option("is_rdw_big_endian", "true")`  |
+| `00 2C 00 00`  `00 10 00 00` (BDW, RDW)  |  Big-endian BDW+RDW, need -4 byte adjustment since BDW includes its own length,<br/>BDW = `0x2C - 4 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "true")`<br/>`.option("is_rdw_big_endian", "true")`<br/>`.option("rdw_adjustment", -4)`  |
+| `00 00 28 00`  `00 00 10 00` (BDW, RDW)  |  Little-endian BDW+RDW, no adjustments,<br/>BDW = `0x28 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "false")`<br/>`.option("is_rdw_big_endian", "false")`  |
+| `00 00 2C 00`  `00 00 10 00` (BDW, RDW)  |  Little-endian BDW+RDW, need -4 byte adjustment since BDW includes its own length,<br/>BDW = `0x2C - 4 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "false")`<br/>`.option("is_rdw_big_endian", "false")`<br/>`.option("rdw_adjustment", -4)`  |
 
 ### Schema collapsing
 
