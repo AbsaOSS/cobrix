@@ -209,13 +209,13 @@ object CobolParametersParser {
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
       if (encoding.isEmpty) {
-        if (recordFormat == AsciiText) {
+        if (recordFormat == AsciiText || recordFormat == BasicAsciiText) {
           false
         } else {
           true
         }
       } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
-        if (recordFormat == AsciiText) {
+        if (recordFormat == AsciiText || recordFormat == BasicAsciiText) {
           logger.warn(s"$PARAM_RECORD_FORMAT = D and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
         }
         true
@@ -236,7 +236,7 @@ object CobolParametersParser {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,
       recordFormat,
-      recordFormat == AsciiText || params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
+      recordFormat == BasicAsciiText || recordFormat == AsciiText || params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,

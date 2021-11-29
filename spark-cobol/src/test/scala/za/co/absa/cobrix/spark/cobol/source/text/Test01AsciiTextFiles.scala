@@ -59,4 +59,42 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
     }
   }
 
+  test("Test basic ASCII record format can be read") {
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D2")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  test("Test  ASCII record format can be read") {
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
 }
