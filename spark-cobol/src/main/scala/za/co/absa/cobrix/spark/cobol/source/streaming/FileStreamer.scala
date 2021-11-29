@@ -96,7 +96,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   }
 
   override def close(): Unit = {
-    if (!buferredStream.isClosed) {
+    if (buferredStream != null && !buferredStream.isClosed) {
       buferredStream.close()
       buferredStream = null
     }
