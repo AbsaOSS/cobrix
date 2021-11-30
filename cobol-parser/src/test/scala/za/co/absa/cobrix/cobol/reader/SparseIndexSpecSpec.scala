@@ -67,6 +67,14 @@ class SparseIndexSpecSpec extends WordSpec  {
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
         copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValue)
       assert(indexes.length == 4)
+      assert(indexes.head.offsetFrom == 0)
+      assert(indexes.head.offsetTo == 30)
+      assert(indexes(1).offsetFrom == 30)
+      assert(indexes(1).offsetTo == 60)
+      assert(indexes(2).offsetFrom == 60)
+      assert(indexes(2).offsetTo == 90)
+      assert(indexes(3).offsetFrom == 90)
+      assert(indexes(3).offsetTo == -1)
     }
   }
 

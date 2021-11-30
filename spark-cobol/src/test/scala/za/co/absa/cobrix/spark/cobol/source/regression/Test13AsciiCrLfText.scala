@@ -192,17 +192,22 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
   }
 
   "correctly read text files with a double EOL characters and the last record is too short" in {
-    val text = "AA\r\nBBC"
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(4).
+    """
+
+    val text = "AAAA\r\nBBBBCCC"
     withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
-        .option("copybook_contents", copybook)
+        .option("copybook_contents", copybook2)
         .option("pedantic", "true")
         .option("record_format", "D")
         .load(tmpFileName)
 
-      val expected = """[{"A":"AA"},{"A":"BB"},{"A":"C"}]"""
+      val expected = """[{"A":"AAAA"},{"A":"BBBB"},{"A":"CCC"}]"""
 
       val count = df.count()
       val actual = df.toJSON.collect().mkString("[", ",", "]")
