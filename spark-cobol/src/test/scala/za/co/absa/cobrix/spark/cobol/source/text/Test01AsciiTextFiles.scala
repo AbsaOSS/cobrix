@@ -48,6 +48,7 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
         .option("pedantic", "true")
         .option("is_text", "true")
         .option("encoding", "ascii")
+        .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
@@ -86,6 +87,7 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
         .option("record_format", "D")
+        .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
