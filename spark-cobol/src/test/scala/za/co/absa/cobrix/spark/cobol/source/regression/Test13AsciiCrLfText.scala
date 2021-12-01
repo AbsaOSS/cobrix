@@ -271,4 +271,30 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
     }
   }
 
+  "correctly read basic ASCII text files with a copybook that has a slightly greater record size" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(7).
+    """
+
+    val text = "AAAAA\nBBBBB\nCCCCC\nDDDDD\nEEEEE\nFFFFF\nGGGGG\nHHHHH"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook2)
+        .option("pedantic", "true")
+        .option("record_format", "D2")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AAAAA"},{"A":"BBBBB"},{"A":"CCCCC"},{"A":"DDDDD"},{"A":"EEEEE"},{"A":"FFFFF"},{"A":"GGGGG"},{"A":"HHHHH"}]"""
+
+      val count = df.count()
+      val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 8)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
 }
