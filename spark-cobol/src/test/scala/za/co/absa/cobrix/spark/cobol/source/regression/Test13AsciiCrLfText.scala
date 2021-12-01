@@ -191,6 +191,33 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
     }
   }
 
+  "correctly read text files with a double EOL characters and 1 byte record and index" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(1).
+    """
+
+    val text = "A\r\nB\r\nC\nD\nE\nF"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook2)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("input_split_records", 2)
+        .load(tmpFileName)
+
+      val expected = """[{"A":"A"},{"A":"B"},{"A":"C"},{"A":"D"},{"A":"E"},{"A":"F"}]"""
+
+      val count = df.count()
+      val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 6)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
   "correctly read text files with a double EOL characters and the last record is too short" in {
     val copybook2 =
       """         01  ENTITY.
@@ -216,4 +243,32 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
       assertEqualsMultiline(actual, expected)
     }
   }
+
+  "correctly read text files with indexing and a copybook that has a slightly greater record size" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(7).
+    """
+
+    val text = "AAAAA\r\nBBBBB\nCCCCC\nDDDDD\nEEEEE\nFFFFF\nGGGGG\nHHHHH"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook2)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("input_split_records", 2)
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AAAAA"},{"A":"BBBBB"},{"A":"CCCCC"},{"A":"DDDDD"},{"A":"EEEEE"},{"A":"FFFFF"},{"A":"GGGGG"},{"A":"HHHHH"}]"""
+
+      val count = df.count()
+      val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 8)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
 }

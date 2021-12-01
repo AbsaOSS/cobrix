@@ -128,18 +128,8 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
       // In the latter case
       if (pendingBytesSize <= recordSize && ctx.inputStream.isEndOfStream) {
         // Last record
-        if (pendingBytesSize < recordSize && pendingBytesSize < 3) {
-          // Broken record. This occurs on indexing boundaries since index upper boundary can include line break character,
-          // but the record might not contain that line ending character. This results in 1 or 2 characters (depending on
-          // LT or CRLF) from the next record to be propagated to the current index, resulting in 1 additional record being
-          // generated.
-          curRecordSize = 0
-          curPayloadSize = 0
-        } else {
-          // There is some in fo the record
-          curRecordSize = pendingBytesSize
-          curPayloadSize = pendingBytesSize
-        }
+        curRecordSize = pendingBytesSize
+        curPayloadSize = pendingBytesSize
       } else {
         // This is an errors situation - no line breaks between records
         // Return a record worth of data.

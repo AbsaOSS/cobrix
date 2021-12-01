@@ -41,20 +41,6 @@ class FileStreamerSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   behavior of classOf[FileStreamer].getName
 
-  it should "throw if file path is null" in {
-    val caught = intercept[IllegalArgumentException] {
-      new FileStreamer(null, FileSystem.get(new Configuration()))
-    }
-    assert(caught.getMessage.toLowerCase.contains("null"))
-  }
-
-  it should "throw if FileSystem is null" in {
-    val caught = intercept[IllegalArgumentException] {
-      new FileStreamer(createTempFile(2).getAbsolutePath, null)
-    }
-    assert(caught.getMessage.toLowerCase.contains("null"))
-  }
-
   it should "throw if file does not exist" in {
     val caught = intercept[IllegalArgumentException] {
       new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
