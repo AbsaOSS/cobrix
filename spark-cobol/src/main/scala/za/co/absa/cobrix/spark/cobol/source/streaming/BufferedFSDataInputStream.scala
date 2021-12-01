@@ -17,11 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
-import org.slf4j.LoggerFactory
 
 class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOffset: Long, bufferSizeInMegabytes: Int, maximumBytes: Long ) {
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
   val bytesInMegabyte: Int = 1048576
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
@@ -30,8 +27,6 @@ class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOff
 
   var in: FSDataInputStream = fileSystem.open(filePath)
   if (startOffset > 0) {
-    val size = fileSystem.getContentSummary(filePath).getLength
-    logger.info(s"Offset: $startOffset, file size: $size")
     in.seek(startOffset)
   }
 
