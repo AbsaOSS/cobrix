@@ -33,13 +33,14 @@ import scala.reflect.ClassTag
   * @param cobolSchema A Cobol schema obtained by parsing a copybook
   */
 class FixedLenNestedRowIterator[T: ClassTag](
-    val binaryData: Array[Byte],
-    val cobolSchema: CobolSchema,
-    readerProperties: ReaderParameters,
-    policy: SchemaRetentionPolicy,
-    startOffset: Int,
-    endOffset: Int,
-    handler: RecordHandler[T]
+                                              val binaryData: Array[Byte],
+                                              val cobolSchema: CobolSchema,
+                                              readerProperties: ReaderParameters,
+                                              policy: SchemaRetentionPolicy,
+                                              startOffset: Int,
+                                              endOffset: Int,
+                                              singleRecordOnly: Boolean,
+                                              handler: RecordHandler[T]
 ) extends Iterator[Seq[Any]] {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -51,7 +52,11 @@ class FixedLenNestedRowIterator[T: ClassTag](
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
-  override def hasNext: Boolean = byteIndex + recordSize <= binaryData.length
+  override def hasNext: Boolean = if (singleRecordOnly) {
+    byteIndex == 0 && byteIndex < binaryData.length
+  } else {
+    byteIndex + recordSize <= binaryData.length
+  }
 
   @throws(classOf[IllegalStateException])
   override def next(): Seq[Any] = {

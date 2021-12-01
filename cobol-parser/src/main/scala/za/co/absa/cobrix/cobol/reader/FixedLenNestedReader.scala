@@ -17,11 +17,11 @@
 package za.co.absa.cobrix.cobol.reader
 
 import java.nio.charset.{Charset, StandardCharsets}
-
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.BasicAsciiText
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.iterator.FixedLenNestedRowIterator
@@ -67,7 +67,8 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
   @throws(classOf[Exception])
   protected def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
-    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, handler = handler)
+    val singleRecordIterator = readerProperties.recordFormat == BasicAsciiText
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, singleRecordIterator, handler)
   }
 
   @throws(classOf[IllegalArgumentException])
