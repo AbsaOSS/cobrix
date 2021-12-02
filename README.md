@@ -61,7 +61,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.4.4
+version: 2.4.5
 ```
 
 ### Scala 2.12
@@ -70,7 +70,7 @@ version: 2.4.4
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.4.4
+version: 2.4.5
 ```
 
 ## Using with Spark shell
@@ -79,12 +79,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.5
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.5
 ```
 
 ## Usage
@@ -209,17 +209,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.4.4.jar
-* cobol-parser_2.12-2.4.4.jar
+* spark-cobol_2.12-2.4.5.jar
+* cobol-parser_2.12-2.4.5.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.4
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.5
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.4.jar,cobol-parser_2.12-2.4.4.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.5.jar,cobol-parser_2.12-2.4.5.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -275,7 +275,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.4.5-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.4.6-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -1361,6 +1361,10 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
 ## Changelog
+- #### 2.4.4 released 02 December 2021.
+   - [#442](https://github.com/AbsaOSS/cobrix/issues/442) Fixed EOFException when reading large ASCII files.
+   - [#444](https://github.com/AbsaOSS/cobrix/issues/444) Add 'basic ASCII format' (`record_format = D2`) which uses Spark's `textFile()` to split records.
+
 - #### 2.4.4 released 16 November 2021.
    - [#435](https://github.com/AbsaOSS/cobrix/issues/435) Fixed 'INDEXED BY' clause followed by multiple identifiers.
    - [#437](https://github.com/AbsaOSS/cobrix/issues/437) Added support for '@' characters inside identifier names.
