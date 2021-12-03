@@ -154,7 +154,10 @@ If the input file is a text file (CRLF / LF are used to split records), use
 `.option("is_text", "true")`.
 
 Multisegment ASCII text files are supported using this option:
-`.option("record_format", "D)`.
+`.option("record_format", "D)"`.
+
+Basic ASCII text files, have better scalability, especially for large files, but you can't choose the charset:
+`.option("record_format", "D2")`.
 
 Read more on record formats at https://www.ibm.com/docs/en/zos/2.4.0?topic=files-selecting-record-formats-non-vsam-data-sets
 
@@ -622,29 +625,31 @@ Cobrix is primarily designed to read binary files, but you can directly use some
 
 Working example 1:
 ```scala
-    // A new experimental way
+    // The recommended way
     val df = spark
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
-      .option("is_text", "true")
-      .option("encoding", "ascii")
+      .option("ascii_charset", "ISO-8859-1") // You can choose a charset, UTF-8 is used by default
+      .option("record_format", "D")
       .load(tmpFileName)
 ````
 
 Working example 2:
 ```scala
-    // A new experimental way
+    // This is the way to get better performance, but the charset will always be UTF-8
     val df = spark
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
-      .option("record_format", "D")
+      .option("record_format", "D2")
       .load(tmpFileName)
 ````
 
 Working example 3:
 ```scala
+    // This is the most verbose way - creating dataframes from RDDs. But it gives full control on how text files are
+    // processed before parsing actual records
     val spark = SparkSession
       .builder()
       .appName("Spark-Cobol ASCII text file")
