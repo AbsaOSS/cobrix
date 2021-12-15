@@ -22,7 +22,7 @@ object Dependencies {
   private val scodecCoreVersion = "1.10.3"
   private val antlrValue = "4.7.2"
   private val slf4jVersion = "1.7.25"
-  private val jacksonVersion = "2.10.3"
+  private val jacksonVersion = "2.13.0"
 
   private val scalatestVersion = "3.0.1"
 
