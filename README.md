@@ -1365,6 +1365,15 @@ For multisegment variable lengths tests:
 ![](performance/images/exp3_multiseg_wide_time.svg) ![](performance/images/exp3_multiseg_wide_efficiency.svg)    
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
 
+## FAQ
+
+This is a new section where we are going to post common questions and workarounds from GitHub issues raised by our users.  
+
+**Q: Numeric COMP or COMP-5 data is decoded incorrectly. Specifically, small values look like very big values**
+
+A: This is often a sign that the binary data is little-endian. Cobrix expects all binary data to be big-endian.
+The workaround is to use `COMP-9` (Cobrix extension) instead of `COMP` and `COMP-5` for the affected fields. 
+
 ## Changelog
 - #### 2.4.4 released 02 December 2021.
    - [#442](https://github.com/AbsaOSS/cobrix/issues/442) Fixed EOFException when reading large ASCII files.
