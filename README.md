@@ -1374,6 +1374,17 @@ This is a new section where we are going to post common questions and workaround
 A: This is often a sign that the binary data is little-endian. Cobrix expects all binary data to be big-endian.
 The workaround is to use `COMP-9` (Cobrix extension) instead of `COMP` and `COMP-5` for the affected fields. 
 
+**Q: Getting the following error when using Spark < 2.4.3:**
+```
+ANTLR Tool version 4.7.2 used for code generation does not match the current runtime version 4.5.3ANTLR 
+Runtime version 4.7.2 used for parser compilation does not match the current runtime version 4.5.321/12/20 11:42:54
+ERROR ApplicationMaster: User class threw exception: java.lang.ExceptionInInitializerError
+```
+
+A: Option 1: Use Spark 2.4.3 or higher. Option 2: Use 'sbt assembly' as stated above in README to generate your
+`spark-cobol` artifact tailored for your Spark version. The artifact shades ANTLR so the incompatibility should
+be resolved.
+
 ## Changelog
 - #### 2.4.4 released 02 December 2021.
    - [#442](https://github.com/AbsaOSS/cobrix/issues/442) Fixed EOFException when reading large ASCII files.
