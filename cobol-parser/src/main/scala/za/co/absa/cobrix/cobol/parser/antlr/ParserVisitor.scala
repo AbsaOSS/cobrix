@@ -21,7 +21,7 @@ import java.nio.charset.Charset
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, CobolType, Decimal, Integral, Usage}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
@@ -124,6 +124,7 @@ class ParserVisitor(enc: Encoding,
       case "COMP-3" | "COMPUTATIONAL-3" | "PACKED-DECIMAL" => Some(COMP3())
       case "COMP-4" | "COMPUTATIONAL-4" => Some(COMP4())
       case "COMP-5" | "COMPUTATIONAL-5" => Some(COMP5())
+      case "COMP-9" | "COMPUTATIONAL-9" => Some(COMP9())
       case "DISPLAY" => None
       case "BINARY" => Some(COMP4())
       case _ => throw new RuntimeException("Unknown Usage literal " + text)
