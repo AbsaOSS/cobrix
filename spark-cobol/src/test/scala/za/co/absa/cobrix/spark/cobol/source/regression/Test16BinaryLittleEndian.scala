@@ -33,15 +33,15 @@ class Test16BinaryLittleEndian extends WordSpec with SparkTestBase with BinaryFi
     16, 0, 0, 0,
     32, 0,
     // Record 1
-    0, 1, 0, 0,
+    0, 0, 1, 0,
     0, 2
   )
 
   "COMP-9" should {
     val copybook1 =
       """         01  R.
-           05  N1    PIC 9(8)  COMP-5.
-           05  N2    PIC 9(3)  COMP-5.
+           05  N1    PIC 9(8)  COMP-9.
+           05  N2    PIC 9(3)  COMP-9.
     """
 
     "be interpreted as little-endian binary" when {
@@ -66,14 +66,14 @@ class Test16BinaryLittleEndian extends WordSpec with SparkTestBase with BinaryFi
           assertEqualsMultiline(actualSchema, expectedSchema)
         }
 
-        "data should match" ignore {
+        "data should match" in {
           val expectedData =
             """[ {
               |  "N1" : 16,
               |  "N2" : 32
               |}, {
-              |  "N1" : 32768,
-              |  "N2" : 65536
+              |  "N1" : 65536,
+              |  "N2" : 512
               |} ]""".stripMargin
 
           assertEqualsMultiline(actualData, expectedData)
