@@ -271,6 +271,7 @@ Creating an uber jar for Cobrix is very easy. Just clone the repository and run 
 sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
 sbt ++2.12.15 assembly -DSPARK_VERSION=2.4.8
 sbt ++2.12.15 assembly -DSPARK_VERSION=3.1.2
+sbt ++2.12.15 assembly -DSPARK_VERSION=3.2.0
 ```
 
 You can collect the uber jar of `spark-cobol` either at
