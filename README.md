@@ -1,7 +1,7 @@
 # Cobrix - COBOL Data Source for Apache Spark
 
 [![Build Scala 2.12 Spark 3.0](https://github.com/AbsaOSS/cobrix/workflows/Build/badge.svg)](https://github.com/AbsaOSS/cobrix/actions)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FAbsaOSS%2Fcobrix?ref=badge_shield)
+[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix.svg?type=shield)](https://app.fossa.com/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix)
 
 Pain free Spark/Cobol files integration.
 
