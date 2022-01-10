@@ -18,10 +18,11 @@ package za.co.absa.cobrix.spark.cobol.source.utils
 
 import scala.util.Random
 import java.io.File
-
 import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.SparkSession
 import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
+
+import java.nio.charset.StandardCharsets
 
 /**
  * Provides utilities methods and data for testing the 'source' package.
@@ -61,7 +62,7 @@ object SourceTestUtils {
     }    
   
     def write(file: File, content: String) = {
-      try {FileUtils.write(file, content)} catch {case ex: Exception => ex.printStackTrace()}
+      try {FileUtils.write(file, content, StandardCharsets.UTF_8)} catch {case ex: Exception => ex.printStackTrace()}
     }
     
     /**
