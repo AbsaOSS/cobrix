@@ -80,6 +80,51 @@ class Test17NumericConversions extends WordSpec with SparkTestBase with BinaryFi
         }
       }
     }
+
+    "numbers should be parsed correctly" when {
+      val asciiContents = "123D\n023M\n003D\n003}\n000M\n000{\n"
+
+      withTempTextFile("num_conversion", ".dat", StandardCharsets.UTF_8, asciiContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook1)
+          .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N: integer (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "N" : 1234
+              |}, {
+              |  "N" : -234
+              |}, {
+              |  "N" : 34
+              |}, {
+              |  "N" : -30
+              |}, {
+              |  "N" : -4
+              |}, {
+              |  "N" : 0
+              |} ]""".stripMargin
+
+          assertEqualsMultiline(actualData, expectedData)
+        }
+      }
+    }
   }
 
 }
