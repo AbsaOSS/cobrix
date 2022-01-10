@@ -43,6 +43,44 @@ class BinaryDecoderSpec extends FunSuite {
     assert(StringDecoders.decodeEbcdicBigNumber(ebcdicNum, isUnsigned = false, improvedNullDetection = false, 2).toString().contains("10025.51"))
   }
 
+  test("Test positive sign overpunching") {
+    assert(StringDecoders.decodeAsciiNumber("{".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+0")
+    assert(StringDecoders.decodeAsciiNumber("10020{".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100200")
+    assert(StringDecoders.decodeAsciiNumber("10020A".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100201")
+    assert(StringDecoders.decodeAsciiNumber("10020B".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100202")
+    assert(StringDecoders.decodeAsciiNumber("10020C".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100203")
+    assert(StringDecoders.decodeAsciiNumber("10020D".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100204")
+    assert(StringDecoders.decodeAsciiNumber("10020E".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100205")
+    assert(StringDecoders.decodeAsciiNumber("10020F".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100206")
+    assert(StringDecoders.decodeAsciiNumber("10020G".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100207")
+    assert(StringDecoders.decodeAsciiNumber("10020H".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100208")
+    assert(StringDecoders.decodeAsciiNumber("10020I".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+100209")
+  }
+
+  test("Test negative sign overpunching") {
+    assert(StringDecoders.decodeAsciiNumber("}".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-0")
+    assert(StringDecoders.decodeAsciiNumber("10020}".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100200")
+    assert(StringDecoders.decodeAsciiNumber("10020J".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100201")
+    assert(StringDecoders.decodeAsciiNumber("10020K".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100202")
+    assert(StringDecoders.decodeAsciiNumber("10020L".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100203")
+    assert(StringDecoders.decodeAsciiNumber("10020M".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100204")
+    assert(StringDecoders.decodeAsciiNumber("10020N".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100205")
+    assert(StringDecoders.decodeAsciiNumber("10020O".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100206")
+    assert(StringDecoders.decodeAsciiNumber("10020P".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100207")
+    assert(StringDecoders.decodeAsciiNumber("10020Q".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100208")
+    assert(StringDecoders.decodeAsciiNumber("10020R".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-100209")
+  }
+
+  test("Test incorrect sign overpunching") {
+    assert(StringDecoders.decodeAsciiNumber("1002}0".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == null)
+    assert(StringDecoders.decodeAsciiNumber("100K00".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == null)
+    assert(StringDecoders.decodeAsciiNumber("1A0200".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == null)
+
+    assert(StringDecoders.decodeAsciiNumber("10020}".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == null)
+    assert(StringDecoders.decodeAsciiNumber("}".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == null)
+    assert(StringDecoders.decodeAsciiNumber("{".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == "+0")
+  }
+
   test("Test positive COMP-3 format decoding") {
     val comp3BytesPositive = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4F.toByte)
     val comp3ValuePositive = "101144750000004"
