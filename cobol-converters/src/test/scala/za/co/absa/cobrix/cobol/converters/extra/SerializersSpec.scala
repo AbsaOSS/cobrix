@@ -148,7 +148,7 @@ class SerializersSpec extends FunSuite {
   test("Test JSON generation") {
     import com.fasterxml.jackson.databind.ObjectMapper
     import com.fasterxml.jackson.module.scala.DefaultScalaModule
-    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+    import com.fasterxml.jackson.module.scala.ScalaObjectMapper
 
     val mapper = new ObjectMapper() with ScalaObjectMapper
     mapper.registerModule(DefaultScalaModule)
@@ -164,7 +164,7 @@ class SerializersSpec extends FunSuite {
 
   test("Test XML generation") {
     import com.fasterxml.jackson.module.scala.DefaultScalaModule
-    import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
+    import com.fasterxml.jackson.module.scala.ScalaObjectMapper
     import com.fasterxml.jackson.databind.SerializationFeature
     import com.fasterxml.jackson.dataformat.xml.XmlMapper
 

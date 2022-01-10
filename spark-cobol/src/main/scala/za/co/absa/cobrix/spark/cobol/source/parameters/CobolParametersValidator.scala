@@ -78,7 +78,7 @@ object CobolParametersValidator {
         if (!fs.exists(new Path(copyBookFileName))) {
           throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
-        if (!fs.isFile(new Path(copyBookFileName))) {
+        if (!fs.getFileStatus(new Path(copyBookFileName)).isFile) {
           throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not a file.")
         }
       }

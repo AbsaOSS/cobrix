@@ -23,6 +23,8 @@ import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTes
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
+import java.nio.charset.StandardCharsets
+
 class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -37,7 +39,7 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
     """
 
   test("Test input data file having a numeric field with a comma as the decimal separator") {
-    withTempTextFile("text", ".dat", Charsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
+    withTempTextFile("text", ".dat", StandardCharsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
@@ -93,7 +95,7 @@ class Test05FixedLengthVarOccurs extends FunSuite with SparkTestBase with Binary
   }
 
   test("Test debug mode for fixed length variable occurs") {
-    withTempTextFile("text_debug", ".dat", Charsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
+    withTempTextFile("text_debug", ".dat", StandardCharsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
       val df = spark
         .read
         .format("cobol")

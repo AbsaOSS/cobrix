@@ -16,16 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.copybook
 
+import org.apache.hadoop.conf.Configuration
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
+import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, HDFSUtils}
+
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.Path
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
-
-import scala.collection.JavaConverters._
 
 object CopybookContentLoader {
 
@@ -42,7 +38,7 @@ object CopybookContentLoader {
           if (isLocalFS) {
             loadCopybookFromLocalFS(copyBookFileName)
           } else {
-            loadCopybookFromHDFS(hadoopConf, copyBookFileName)
+            HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
           }
         )
       case (None, None) => parameters.multiCopybookPath.map(
@@ -51,7 +47,7 @@ object CopybookContentLoader {
           if (isLocalFS) {
             loadCopybookFromLocalFS(copyBookFileName)
           } else {
-            loadCopybookFromHDFS(hadoopConf, copyBookFileName)
+            HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
           }
         }
       )
@@ -60,12 +56,5 @@ object CopybookContentLoader {
 
   private def loadCopybookFromLocalFS(copyBookLocalPath: String): String = {
     Files.readAllLines(Paths.get(copyBookLocalPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-  }
-
-  private def loadCopybookFromHDFS(hadoopConfiguration: Configuration, copyBookHDFSPath: String): String = {
-    val copybookPath = new Path(copyBookHDFSPath)
-    val hdfs = copybookPath.getFileSystem(hadoopConfiguration)
-    val stream = hdfs.open(copybookPath)
-    try IOUtils.readLines(stream).asScala.mkString("\n") finally stream.close()
   }
 }

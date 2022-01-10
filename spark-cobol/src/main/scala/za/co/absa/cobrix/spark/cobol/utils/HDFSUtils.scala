@@ -16,8 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
-import org.slf4j.LoggerFactory
+import org.apache.commons.io.IOUtils
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+
+import java.nio.charset.StandardCharsets
+import scala.collection.JavaConverters._
 
 /**
   * This object provides utility methods for interacting with HDFS internals.
@@ -47,7 +51,7 @@ object HDFSUtils {
       throw new IllegalArgumentException(s"Invalid offset or length: offset = $start, length = $length")
     }
 
-    if (fileSystem.isDirectory(path)) {
+    if (fileSystem.getFileStatus(path).isDirectory) {
       throw new IllegalArgumentException(s"Should be a file, not a directory: ${path.getName}")
     }
 
@@ -79,5 +83,13 @@ object HDFSUtils {
     } else {
       None
     }
+  }
+
+  /** Reads a text File from Hafoop (HDFS, S3, etc) */
+  def loadTextFileFromHadoop(hadoopConfiguration: Configuration, copyBookHadoopPath: String): String = {
+    val copybookPath = new Path(copyBookHadoopPath)
+    val hdfs = copybookPath.getFileSystem(hadoopConfiguration)
+    val stream = hdfs.open(copybookPath)
+    try IOUtils.readLines(stream, StandardCharsets.UTF_8).asScala.mkString("\n") finally stream.close()
   }
 }

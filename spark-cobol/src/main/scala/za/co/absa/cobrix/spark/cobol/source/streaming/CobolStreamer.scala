@@ -16,9 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import org.apache.commons.io.IOUtils
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.streaming.StreamingContext
@@ -31,8 +28,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
-
-import scala.collection.JavaConverters.asScalaBufferConverter
+import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
 
 /**
  * Provides an integration point for adding streaming support to the Spark-Cobol library.
@@ -42,7 +38,7 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 object CobolStreamer {
   
   def getReader(implicit ssc: StreamingContext): FixedLenReader = {
-    val copybooks = Seq(loadCopybookFromHDFS(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
+    val copybooks = Seq(HDFSUtils.loadTextFileFromHadoop(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
     new FixedLenNestedReader(copybooks,
       isEbcdic = true,
       CodePage.getCodePageByName("common"),
@@ -72,12 +68,6 @@ object CobolStreamer {
           }
         })
     }
-  }
-
-  private def loadCopybookFromHDFS(hadoopConfiguration: Configuration, copyBookHDFSPath: String): String = {
-    val hdfs = FileSystem.get(hadoopConfiguration)
-    val stream = hdfs.open(new Path(copyBookHDFSPath))
-    try IOUtils.readLines(stream).asScala.mkString("\n") finally stream.close()
   }
 
 }

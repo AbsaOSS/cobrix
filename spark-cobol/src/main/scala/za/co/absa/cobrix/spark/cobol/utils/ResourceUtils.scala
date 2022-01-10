@@ -18,7 +18,9 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.commons.io.IOUtils
 
+import java.nio.charset.StandardCharsets
+
 object ResourceUtils {
   /** Get resource file as a string. */
-  def readResourceAsString(path: String): String = IOUtils.toString(getClass.getResourceAsStream(path))
+  def readResourceAsString(path: String): String = IOUtils.toString(getClass.getResourceAsStream(path), StandardCharsets.UTF_8)
 }
