@@ -1388,6 +1388,9 @@ A: Option 1: Use Spark 2.4.3 or higher. Option 2: Use 'sbt assembly' as stated a
 be resolved.
 
 ## Changelog
+- #### 2.4.7 to be released soon.
+   - [#459](https://github.com/AbsaOSS/cobrix/issues/459) Fixed [signed overpunch](https://en.wikipedia.org/wiki/Signed_overpunch) for ASCII files.
+
 - #### 2.4.6 released 21 December 2021.
    - [#451](https://github.com/AbsaOSS/cobrix/issues/451) Fixed COMP-9 (Cobrix extension for little-endian binary fields).
 
