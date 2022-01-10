@@ -93,7 +93,7 @@ addCommandAlias("releaseNow", ";set releaseVersionBump := sbtrelease.Version.Bum
 lazy val assemblySettings = Seq(
   // This merge strategy retains service entries for all services in manifest.
   // It allows custom Spark data sources to be used together, e.g. 'spark-xml' and 'spark-cobol'.
-  assemblyMergeStrategy in assembly := {
+  assembly / assemblyMergeStrategy := {
     case PathList("META-INF", xs @ _*) =>
       xs map {_.toLowerCase} match {
         case "manifest.mf" :: Nil =>
@@ -108,13 +108,13 @@ lazy val assemblySettings = Seq(
       }
     case _ => MergeStrategy.deduplicate
   },
-  assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false),
-  assemblyShadeRules in assembly := Seq(
+  assembly / assemblyOption:= (assembly / assemblyOption).value.copy(includeScala = false),
+  assembly / assemblyShadeRules:= Seq(
     // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
     ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.shaded.org.antlr.@1").inAll,
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),
-  logLevel in assembly := Level.Info,
-  test in assembly := {}
+  assembly / logLevel := Level.Info,
+  assembly / test := {}
 )
