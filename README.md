@@ -1387,6 +1387,16 @@ A: Option 1: Use Spark 2.4.3 or higher. Option 2: Use 'sbt assembly' as stated a
 `spark-cobol` artifact tailored for your Spark version. The artifact shades ANTLR so the incompatibility should
 be resolved.
 
+**Q: Getting exceptions from Hadoop classes when running Cobrix test suite on Windows:**
+```
+exception or error caused a run to abort: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat(Ljava/lang/String;)Lorg/apache/hadoop/io/nativeio/NativeIO$POSIX$Stat;
+java.lang.UnsatisfiedLinkError: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat(Ljava/lang/String;)Lorg/apache/hadoop/io/nativeio/NativeIO$POSIX$Stat;
+at org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat(Native Method)
+at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
+```
+
+A: Update hadoop dll to version 3.2.2 or newer.
+
 ## Changelog
 - #### 2.4.7 released 11 January 2022.
    - [#459](https://github.com/AbsaOSS/cobrix/issues/459) Fixed [signed overpunch](https://en.wikipedia.org/wiki/Signed_overpunch) for ASCII files.
