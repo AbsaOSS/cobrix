@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol
 
+import org.apache.spark.sql.types.StructType
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -161,5 +162,35 @@ class CobolSchemaSpec extends FunSuite {
     assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)
   }
 
+  test("Metadata generation for OCCURS") {
+    val copyBook: String =
+      """       01  RECORD.
+        |         05  FIELD1                  PIC X(10).
+        |         05  ARRAY1        PIC X(3) OCCURS 2 TO 5 TIMES.
+        |         05  ARRAY2                 OCCURS 10.
+        |           10  STRUCT1.
+        |             20  IntValue        PIC 9(6)  COMP.
+        |""".stripMargin
+
+    val parsedSchema = CopybookParser.parseTree(copyBook)
+
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false)
+    val actualSparkSchema = cobolSchema1.getSparkSchema
+
+    val rootField = actualSparkSchema.fields.head.dataType.asInstanceOf[StructType]
+
+    val metadataPrimitive = rootField.fields(1).metadata
+    val metadataStruct = rootField.fields(2).metadata
+
+    assert(metadataPrimitive.contains("minElements"))
+    assert(metadataStruct.contains("minElements"))
+    assert(metadataPrimitive.contains("maxElements"))
+    assert(metadataStruct.contains("maxElements"))
+
+    assert(metadataPrimitive.getLong("minElements") == 2)
+    assert(metadataStruct.getLong("minElements") == 0)
+    assert(metadataPrimitive.getLong("maxElements") == 5)
+    assert(metadataStruct.getLong("maxElements") == 10)
+  }
 
 }

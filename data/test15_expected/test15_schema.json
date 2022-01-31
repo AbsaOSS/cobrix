@@ -77,7 +77,10 @@
               "containsNull" : true
             },
             "nullable" : true,
-            "metadata" : { }
+            "metadata" : {
+              "minElements" : 0,
+              "maxElements" : 80
+            }
           } ]
         },
         "nullable" : true,

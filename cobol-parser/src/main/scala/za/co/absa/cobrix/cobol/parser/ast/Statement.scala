@@ -51,7 +51,7 @@ trait Statement {
   def arrayMinSize: Int = {
     (occurs, to) match {
       case (None, None) => 1
-      case (Some(n), None) => 1
+      case (Some(_), None) => 0
       case (None, Some(_)) => throw new IllegalThreadStateException(s"Field properties 'OCCURS' and 'TO' are incorrectly specified for '$name'")
       case (Some(n), Some(_)) => n
     }
