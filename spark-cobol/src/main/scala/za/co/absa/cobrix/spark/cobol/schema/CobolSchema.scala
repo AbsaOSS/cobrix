@@ -134,7 +134,8 @@ class CobolSchema(copybook: Copybook,
     })
     val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
     if (group.isArray) {
-      StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true)
+      val metadata = getArrayMetadata(group)
+      StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true, metadata)
     } else {
       StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true)
     }
@@ -166,10 +167,18 @@ class CobolSchema(copybook: Copybook,
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     if (p.isArray) {
-      StructField(p.name, ArrayType(dataType), nullable = true)
+      val metadata = getArrayMetadata(p)
+      StructField(p.name, ArrayType(dataType), nullable = true, metadata)
     } else {
       StructField(p.name, dataType, nullable = true)
     }
+  }
+
+  private def getArrayMetadata(st: Statement): Metadata = {
+    val metadata = new MetadataBuilder()
+    metadata.putLong("minElements", st.arrayMinSize)
+    metadata.putLong("maxElements", st.arrayMaxSize)
+    metadata.build()
   }
 
   private def getChildSegments(group: Group, segmentRedefines: List[Group]): ArrayBuffer[StructField] = {
