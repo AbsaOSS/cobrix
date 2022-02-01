@@ -1398,6 +1398,10 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.4.8 (to be released soon).
+   - [#466](https://github.com/AbsaOSS/cobrix/issues/466) Added `maxElements` and `minElements` to Spark schema metadata for
+     array fields created from fields with `OCCURS`. This allows knowing the maximum number of elements in arrays when flattening the schema.
+
 - #### 2.4.7 released 11 January 2022.
    - [#459](https://github.com/AbsaOSS/cobrix/issues/459) Fixed [signed overpunch](https://en.wikipedia.org/wiki/Signed_overpunch) for ASCII files.
 
