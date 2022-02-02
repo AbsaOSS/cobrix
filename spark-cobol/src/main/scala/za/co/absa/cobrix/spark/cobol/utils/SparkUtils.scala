@@ -290,19 +290,28 @@ object SparkUtils {
 
       state match {
         case 0 =>
+          // The character might be part of the path
           if (c == '.') {
             fields.append(currentField.toString())
             currentField = new StringBuilder()
           } else if (c == '`') {
             state = 1
+          } else if (c == '[') {
+            state = 2
           } else {
             currentField.append(c)
           }
         case 1 =>
+          // The character is part of the backquoted field name
           if (c == '`') {
             state = 0
           } else {
             currentField.append(c)
+          }
+        case 2 =>
+          // The character is an index (that should be ignored)
+          if (c == ']') {
+            state = 0
           }
       }
       i += 1
