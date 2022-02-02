@@ -116,7 +116,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
       } )
     }
 
-    def getFielByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
+    def getFieldByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
       val origPath = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
       val path = if (!pathBeginsWithRoot(ast, origPath)) {
         ast.children.head.name +: origPath
@@ -134,7 +134,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     val schema = getCobolSchema
 
     val foundFields = if (fieldName.contains('.')) {
-      getFielByPathName(schema, fieldName)
+      getFieldByPathName(schema, fieldName)
     } else {
       getFieldByUniqueName(schema, fieldName)
     }
