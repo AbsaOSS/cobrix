@@ -59,20 +59,32 @@ object CopybookParser {
     *
     * This method accepts arguments that affect only structure of the output AST.
     *
-    * @param copyBookContents A string containing all lines of a copybook
-    * @param dropGroupFillers Drop groups marked as fillers from the output AST
-    * @param dropValueFillers Drop primitive fields marked as fillers from the output AST
-    * @param commentPolicy    Specifies a policy for comments truncation inside a copybook
+    * FILLER fields renaming/removal scenarios can be seen in `ParseCopybookFeaturesSpec.scala`
+    *
+    * @param copyBookContents             A string containing all lines of a copybook
+    * @param giveUniqueNameToGroupFillers If true each FILLER GROUP field will have a unique name that helps retaining it in
+    *                                     target schemas where column names must be unique. FILLERs become FILLER_1, FILLER_2, etc.
+    * @param giveUniqueNameToValueFillers If true each FILLER value field will have a unique name that helps retaining it in
+    *                                     target schemas where column names must be unique. FILLERs become FILLER_P1, FILLER_P2, etc.
+    * @param dropFillersFromAst           If true FILLER fields that are not renamed will be removed from the AST.
+    * @param commentPolicy                Specifies a policy for comments truncation inside a copybook
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseSimple(copyBookContents: String,
-                  dropGroupFillers: Boolean = false,
-                  dropValueFillers: Boolean = true,
+                  giveUniqueNameToGroupFillers: Boolean = true,
+                  giveUniqueNameToValueFillers: Boolean = false,
+                  dropFillersFromAst: Boolean = false,
                   commentPolicy: CommentPolicy = CommentPolicy()): Copybook = {
-    parse(copyBookContents = copyBookContents,
-      dropGroupFillers = dropGroupFillers,
-      dropValueFillers = dropValueFillers,
+    val copybook = parse(copyBookContents = copyBookContents,
+      dropGroupFillers = !giveUniqueNameToGroupFillers,
+      dropValueFillers = !giveUniqueNameToValueFillers,
       commentPolicy = commentPolicy)
+
+    if (dropFillersFromAst && (!giveUniqueNameToGroupFillers || !giveUniqueNameToValueFillers)) {
+      copybook.dropFillers(!giveUniqueNameToValueFillers, !giveUniqueNameToGroupFillers)
+    } else {
+      copybook
+    }
   }
 
   /**
