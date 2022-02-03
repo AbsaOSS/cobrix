@@ -116,7 +116,7 @@ class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
   }
 
   test("Test parseSimple() not dropping fillers") {
-    val copybook = CopybookParser.parseSimple(copybookFillers, giveUniqueNameToValueFillers = true, giveUniqueNameToGroupFillers = true)
+    val copybook = CopybookParser.parseSimple(copybookFillers, dropGroupFillers = false, dropValueFillers = false, dropFillersFromAst = false)
     val layout = copybook.generateRecordLayoutPositions()
 
     val expectedLayout =
@@ -148,7 +148,7 @@ class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
     assertEqualsMultiline(layout, expectedLayout)
   }
   test("Test parseSimple() drop value fillers") {
-    val copybook = CopybookParser.parseSimple(copybookFillers, giveUniqueNameToValueFillers = false, giveUniqueNameToGroupFillers = true, dropFillersFromAst = true)
+    val copybook = CopybookParser.parseSimple(copybookFillers, dropGroupFillers = false, dropValueFillers = true, dropFillersFromAst = true)
     val layout = copybook.generateRecordLayoutPositions()
 
     val expectedLayout =
@@ -173,7 +173,7 @@ class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
   }
 
   test("Test parseSimple() drop group fillers") {
-    val copybook = CopybookParser.parseSimple(copybookFillers, giveUniqueNameToValueFillers = true, giveUniqueNameToGroupFillers = false, dropFillersFromAst = true)
+    val copybook = CopybookParser.parseSimple(copybookFillers, dropGroupFillers = true, dropValueFillers = false, dropFillersFromAst = true)
     val layout = copybook.generateRecordLayoutPositions()
 
     val expectedLayout =
@@ -199,7 +199,7 @@ class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
   }
 
   test("Test parseSimple() drop all fillers") {
-    val copybook = CopybookParser.parseSimple(copybookFillers, giveUniqueNameToValueFillers = false, giveUniqueNameToGroupFillers = false, dropFillersFromAst = true)
+    val copybook = CopybookParser.parseSimple(copybookFillers, dropGroupFillers = true, dropValueFillers = true, dropFillersFromAst = true)
     val layout = copybook.generateRecordLayoutPositions()
 
     val expectedLayout =
