@@ -306,7 +306,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-val parsedSchema = CopybookParser.parseTree(copyBookContents)
+val parsedSchema = CopybookParser.parseSimple(copyBookContents)
 val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, inputFileNameField = "", generateRecordId = false)
 val sparkSchema = cobolSchema.getSparkSchema.toString()
 
@@ -318,7 +318,7 @@ If you want to check the layout of the copybook:
 ```scala
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 
-val copyBook = CopybookParser.parseTree(copyBookContents)
+val copyBook = CopybookParser.parseSimple(copyBookContents)
 println(copyBook.generateRecordLayoutPositions())
 ```
 

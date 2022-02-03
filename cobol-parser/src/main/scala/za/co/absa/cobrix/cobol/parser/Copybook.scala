@@ -268,6 +268,34 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     new Copybook(CopybookParser.calculateBinaryProperties(newRoot))
   }
 
+  def dropFillers(dropValueFillers: Boolean, dropGroupFillers: Boolean): Copybook = {
+    def dropFillersAst(group: Group): Option[Group] = {
+      if (dropGroupFillers && group.isFiller) {
+        None
+      } else {
+        val newChildren: ArrayBuffer[Statement] = group.children.flatMap {
+          case g: Group => dropFillersAst(g)
+          case p: Primitive =>
+            if (dropValueFillers && p.isFiller) {
+              None
+            } else {
+              Some(p)
+            }
+        }
+        if (newChildren.isEmpty) {
+          None
+        } else {
+          Some(group.withUpdatedChildren(newChildren))
+        }
+      }
+    }
+
+    dropFillersAst(ast) match {
+      case Some(newAst) => new Copybook(newAst)
+      case None => throw new IllegalArgumentException("Removing of fillers made the copybook empty.")
+    }
+  }
+
   def restrictTo(fieldName: String): Copybook = {
     val stmt = getFieldByName(fieldName)
     if (stmt.isInstanceOf[Primitive])
