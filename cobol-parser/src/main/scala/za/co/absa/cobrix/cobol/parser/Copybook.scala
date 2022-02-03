@@ -268,7 +268,7 @@ class Copybook(val ast: CopybookAST) extends Serializable {
     new Copybook(CopybookParser.calculateBinaryProperties(newRoot))
   }
 
-  def dropFillers(dropValueFillers: Boolean, dropGroupFillers: Boolean): Copybook = {
+  def dropFillers(dropGroupFillers: Boolean, dropValueFillers: Boolean): Copybook = {
     def dropFillersAst(group: Group): Option[Group] = {
       if (dropGroupFillers && group.isFiller) {
         None

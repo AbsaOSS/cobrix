@@ -54,34 +54,51 @@ object CopybookParser {
 
   case class RecordBoundary(name: String, begin: Int, end: Int)
 
+
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
     * This method accepts arguments that affect only structure of the output AST.
     *
-    * FILLER fields renaming/removal scenarios can be seen in `ParseCopybookFeaturesSpec.scala`
+    * @param copyBookContents   A string containing all lines of a copybook
+    * @param dropGroupFillers   Drop GROUPs marked as fillers from the output AST
+    *                           (the name of this parameter is retained for compatibility, fields won't be actually removed from
+    *                           the AST unless dropFillersFromAst is set to true).
     *
-    * @param copyBookContents             A string containing all lines of a copybook
-    * @param giveUniqueNameToGroupFillers If true each FILLER GROUP field will have a unique name that helps retaining it in
-    *                                     target schemas where column names must be unique. FILLERs become FILLER_1, FILLER_2, etc.
-    * @param giveUniqueNameToValueFillers If true each FILLER value field will have a unique name that helps retaining it in
-    *                                     target schemas where column names must be unique. FILLERs become FILLER_P1, FILLER_P2, etc.
-    * @param dropFillersFromAst           If true FILLER fields that are not renamed will be removed from the AST.
-    * @param commentPolicy                Specifies a policy for comments truncation inside a copybook
+    *                           When dropGroupFillers is set to true, FILLER fields will retain their names,
+    *                                and 'isFiller() = true' for FILLER GROUPs.
+    *
+    *                           When dropGroupFillers is set to false, FILLER fields will be renamed to 'FILLER_1, FILLER_2, ...'
+    *                                to retain uniqueness of names in the output schema.
+    *
+    * @param dropValueFillers   Drop primitive fields marked as fillers from the output AST
+    *                           (the name of this parameter is retained for compatibility, fields won't be actually removed from
+    *                           the AST unless dropFillersFromAst is set to true).
+    *
+    *                           When dropValueFillers is set to true, FILLER fields will retain their names,
+    *                                and 'isFiller() = true' for FILLER primitive fields.
+    *
+    *                           When dropValueFillers is set to false, FILLER fields will be renamed to 'FILLER_P1, FILLER_P2, ...'
+    *                                to retain uniqueness of names in the output schema.
+    *
+    * @param commentPolicy      Specifies a policy for comments truncation inside a copybook
+    * @param dropFillersFromAst If true, fillers are going to be dropped from AST according to dropGroupFillers and dropValueFillers.
+    *                           If false, fillers will remain in the AST, but still can be recognizable by 'isFiller()' method.
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseSimple(copyBookContents: String,
-                  giveUniqueNameToGroupFillers: Boolean = true,
-                  giveUniqueNameToValueFillers: Boolean = false,
-                  dropFillersFromAst: Boolean = false,
-                  commentPolicy: CommentPolicy = CommentPolicy()): Copybook = {
+                  dropGroupFillers: Boolean = false,
+                  dropValueFillers: Boolean = true,
+                  commentPolicy: CommentPolicy = CommentPolicy(),
+                  dropFillersFromAst: Boolean = false
+                 ): Copybook = {
     val copybook = parse(copyBookContents = copyBookContents,
-      dropGroupFillers = !giveUniqueNameToGroupFillers,
-      dropValueFillers = !giveUniqueNameToValueFillers,
+      dropGroupFillers = dropGroupFillers,
+      dropValueFillers = dropValueFillers,
       commentPolicy = commentPolicy)
 
-    if (dropFillersFromAst && (!giveUniqueNameToGroupFillers || !giveUniqueNameToValueFillers)) {
-      copybook.dropFillers(!giveUniqueNameToValueFillers, !giveUniqueNameToGroupFillers)
+    if (dropFillersFromAst && (dropGroupFillers || dropValueFillers)) {
+      copybook.dropFillers(dropGroupFillers, dropValueFillers)
     } else {
       copybook
     }
