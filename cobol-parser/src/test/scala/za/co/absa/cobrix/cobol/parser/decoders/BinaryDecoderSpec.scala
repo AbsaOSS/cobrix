@@ -77,8 +77,10 @@ class BinaryDecoderSpec extends FunSuite {
     assert(StringDecoders.decodeAsciiNumber("1A0200".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == null)
 
     assert(StringDecoders.decodeAsciiNumber("10020}".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == null)
+    assert(StringDecoders.decodeAsciiNumber("}".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "-0")
+    assert(StringDecoders.decodeAsciiNumber("{".toCharArray.map(_.toByte), isUnsigned = false, improvedNullDetection = false) == "+0")
     assert(StringDecoders.decodeAsciiNumber("}".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == null)
-    assert(StringDecoders.decodeAsciiNumber("{".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == "+0")
+    assert(StringDecoders.decodeAsciiNumber("{".toCharArray.map(_.toByte), isUnsigned = true, improvedNullDetection = false) == null)
   }
 
   test("Test positive COMP-3 format decoding") {
