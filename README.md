@@ -1398,6 +1398,10 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.4.9 (will be released soon).
+   - [#474](https://github.com/AbsaOSS/cobrix/issues/474) Fix numeric decoder of unsigned DISPLAY format. The decoder made more strict and does not allow sign
+     overpunching for unsigned numbers.
+
 - #### 2.4.8 released 4 February 2022.
    - [#324](https://github.com/AbsaOSS/cobrix/issues/324) Allow removing of FILLERs from AST when parsing using 'parseSimple()'. The signature of the method has
      changed. The boolean arguments now reflect more clearly what they do.
