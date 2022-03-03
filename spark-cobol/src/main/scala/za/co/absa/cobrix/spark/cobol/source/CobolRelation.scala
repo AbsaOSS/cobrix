@@ -24,7 +24,6 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
-import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, FixedLenTextReader, Reader, VarLenReader}
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
@@ -71,8 +70,6 @@ class CobolRelation(sourceDirs: Seq[String],
   extends BaseRelation
     with Serializable
     with TableScan {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val filesList = getListFilesWithOrder(sourceDirs)
 

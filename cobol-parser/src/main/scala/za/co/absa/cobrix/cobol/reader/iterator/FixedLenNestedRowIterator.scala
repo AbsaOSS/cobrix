@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.iterator
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -41,9 +41,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
                                               endOffset: Int,
                                               singleRecordOnly: Boolean,
                                               handler: RecordHandler[T]
-) extends Iterator[Seq[Any]] {
-
-  private val logger = LoggerFactory.getLogger(this.getClass)
+) extends Iterator[Seq[Any]] with Logging {
 
   private val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
   private var byteIndex = startOffset

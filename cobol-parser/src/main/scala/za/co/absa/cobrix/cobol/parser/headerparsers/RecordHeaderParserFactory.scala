@@ -16,11 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.headerparsers
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
-object RecordHeaderParserFactory {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+object RecordHeaderParserFactory extends Logging {
 
   def createRecordHeaderParser(parserTypeOrClass: String,
                                recordLength: Int,

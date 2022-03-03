@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.slf4j.LoggerFactory
 import scodec.Codec
 import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
@@ -28,7 +27,6 @@ import scala.util.control.NonFatal
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
 object BinaryUtils {
-  private val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val floatB: Codec[Float] = scodec.codecs.float
   lazy val floatL: Codec[Float] = scodec.codecs.floatL

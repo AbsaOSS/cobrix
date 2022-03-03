@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.index
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
@@ -27,8 +27,7 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 import scala.collection.mutable.ArrayBuffer
 
-object IndexGenerator {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+object IndexGenerator extends Logging {
 
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
