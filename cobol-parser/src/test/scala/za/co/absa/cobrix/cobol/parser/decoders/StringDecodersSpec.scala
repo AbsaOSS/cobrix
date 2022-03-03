@@ -243,6 +243,10 @@ class StringDecodersSpec extends WordSpec {
 
     "return null if a number is malformed" in {
       assert(decodeEbcdicNumber(toEbcdic("AAABBBCCC"), isUnsigned = false, improvedNullDetection = false) == null)
+      assert(decodeEbcdicNumber(toEbcdic("{"), isUnsigned = false, improvedNullDetection = false) == "+0")
+      assert(decodeEbcdicNumber(toEbcdic("}"), isUnsigned = false, improvedNullDetection = false) == "-0")
+      assert(decodeEbcdicNumber(toEbcdic("{"), isUnsigned = true, improvedNullDetection = false) == null)
+      assert(decodeEbcdicNumber(toEbcdic("}"), isUnsigned = true, improvedNullDetection = false) == null)
     }
   }
 

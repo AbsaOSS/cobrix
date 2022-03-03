@@ -1399,6 +1399,8 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.4.9 (will be released soon).
+   - [#474](https://github.com/AbsaOSS/cobrix/issues/474) Fix numeric decoder of unsigned DISPLAY format. The decoder made more strict and does not allow sign
+     overpunching for unsigned numbers.
    - [#477](https://github.com/AbsaOSS/cobrix/issues/477) Fixed NotSerializableException when using non-default logger implementations.
 
 - #### 2.4.8 released 4 February 2022.

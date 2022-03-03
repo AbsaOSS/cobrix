@@ -194,11 +194,11 @@ object StringDecoders {
       } else if (b >= 0xF0 && b <= 0xF9) {
         ch = (b - 0xF0 + 0x30).toChar // unsigned
       }
-      else if (b >= 0xC0 && b <= 0xC9) {
+      else if (!isUnsigned && b >= 0xC0 && b <= 0xC9) {
         ch = (b - 0xC0 + 0x30).toChar // positive sign punched
         sign = '+'
       }
-      else if (b >= 0xD0 && b <= 0xD9) {
+      else if (!isUnsigned && b >= 0xD0 && b <= 0xD9) {
         ch = (b - 0xD0 + 0x30).toChar // negative sign punched
         sign = '-'
       }
@@ -269,7 +269,7 @@ object StringDecoders {
         } else if (char == '.' || char == ',') {
           buf.append('.')
         } else {
-          if ((i == 0 || i == bytes.length - 1) && punchedSignChars.contains(char)) {
+          if (!isUnsigned && (i == 0 || i == bytes.length - 1) && punchedSignChars.contains(char)) {
             decodeOverpunchedSign(char)
           } else {
             return null
