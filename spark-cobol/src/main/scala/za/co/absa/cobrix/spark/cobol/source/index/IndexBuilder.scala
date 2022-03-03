@@ -44,7 +44,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 private[source] object IndexBuilder {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     val fs = new Path(filesList.head.filePath).getFileSystem(sqlContext.sparkSession.sparkContext.hadoopConfiguration)

@@ -43,7 +43,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
                                               handler: RecordHandler[T]
 ) extends Iterator[Seq[Any]] {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
   private var byteIndex = startOffset

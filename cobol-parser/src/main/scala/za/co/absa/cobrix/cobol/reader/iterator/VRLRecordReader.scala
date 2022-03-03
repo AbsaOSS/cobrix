@@ -46,7 +46,7 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   type RawRecord = (String, Array[Byte])
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   private var cachedValue: Option[RawRecord] = _
 

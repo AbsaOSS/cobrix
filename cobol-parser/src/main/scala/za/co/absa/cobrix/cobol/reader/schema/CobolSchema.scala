@@ -42,7 +42,7 @@ class CobolSchema(val copybook: Copybook,
                   val generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "") extends Serializable {
 
-  protected val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient protected val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 

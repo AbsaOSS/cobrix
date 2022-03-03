@@ -26,7 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 class Copybook(val ast: CopybookAST) extends Serializable {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   def getCobolSchema: CopybookAST = ast
 

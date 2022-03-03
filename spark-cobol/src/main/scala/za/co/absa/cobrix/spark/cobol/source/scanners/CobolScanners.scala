@@ -33,7 +33,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 private[source] object CobolScanners {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   private[source] def buildScanForVarLenIndex(reader: VarLenReader, indexes: RDD[SparseIndexEntry], filesList: Array[FileWithOrder], sqlContext: SQLContext): RDD[Row] = {
     val filesMap = filesList.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap

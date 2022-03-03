@@ -33,7 +33,7 @@ import scala.util.Try
   */
 object SparkUtils {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
     * Retrieves all executors available for the current job.

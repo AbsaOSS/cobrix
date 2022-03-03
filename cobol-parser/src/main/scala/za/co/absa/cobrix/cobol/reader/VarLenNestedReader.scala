@@ -49,7 +49,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                       readerProperties: ReaderParameters,
                                       handler: RecordHandler[T]) extends VarLenReader with Serializable {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 

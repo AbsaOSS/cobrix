@@ -72,7 +72,7 @@ class CobolRelation(sourceDirs: Seq[String],
     with Serializable
     with TableScan {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val filesList = getListFilesWithOrder(sourceDirs)
 

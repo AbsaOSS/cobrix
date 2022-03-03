@@ -22,7 +22,7 @@ import scala.collection.JavaConverters._
 
 
 class ParserJson {
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def parse(text: String): Any = {
     val visitor = new ParserJsonVisitor()

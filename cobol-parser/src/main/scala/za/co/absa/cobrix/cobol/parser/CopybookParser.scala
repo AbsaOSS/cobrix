@@ -42,7 +42,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
   * The object contains generic function for the Copybook parser
   */
 object CopybookParser {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   type CopybookAST = Group
 

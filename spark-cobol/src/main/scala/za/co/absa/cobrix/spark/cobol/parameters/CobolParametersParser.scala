@@ -37,7 +37,7 @@ import scala.collection.mutable.ListBuffer
   * This class provides methods for parsing the parameters set as Spark options.
   */
 object CobolParametersParser {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   val SHORT_NAME                      = "cobol"
   val PARAM_COPYBOOK_PATH             = "copybook"

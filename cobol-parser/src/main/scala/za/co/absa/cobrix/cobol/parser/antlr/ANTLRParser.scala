@@ -50,7 +50,7 @@ class ThrowErrorStrategy() extends DefaultErrorStrategy {
 
 
 object ANTLRParser {
-  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def parse(copyBookContents: String,
             enc: Encoding,

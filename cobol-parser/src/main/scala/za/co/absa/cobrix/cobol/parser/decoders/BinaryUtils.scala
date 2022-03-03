@@ -28,7 +28,7 @@ import scala.util.control.NonFatal
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
 object BinaryUtils {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   lazy val floatB: Codec[Float] = scodec.codecs.float
   lazy val floatL: Codec[Float] = scodec.codecs.floatL

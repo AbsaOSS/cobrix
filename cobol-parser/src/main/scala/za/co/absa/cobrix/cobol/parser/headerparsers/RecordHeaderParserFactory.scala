@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.common.Constants
 
 object RecordHeaderParserFactory {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   def createRecordHeaderParser(parserTypeOrClass: String,
                                recordLength: Int,

@@ -54,7 +54,7 @@ abstract class CodePage extends Serializable {
 }
 
 object CodePage {
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
+  @transient val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def getCodePageByName(codePageName: String): CodePage = {
     codePageName match {

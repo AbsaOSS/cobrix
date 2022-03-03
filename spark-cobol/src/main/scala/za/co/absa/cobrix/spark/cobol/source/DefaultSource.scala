@@ -39,7 +39,7 @@ class DefaultSource
     with DataSourceRegister
     with ReaderFactory {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   override def shortName(): String = SHORT_NAME
 

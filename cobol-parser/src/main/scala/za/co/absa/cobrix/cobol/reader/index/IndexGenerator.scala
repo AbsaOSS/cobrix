@@ -28,7 +28,7 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import scala.collection.mutable.ArrayBuffer
 
 object IndexGenerator {
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,

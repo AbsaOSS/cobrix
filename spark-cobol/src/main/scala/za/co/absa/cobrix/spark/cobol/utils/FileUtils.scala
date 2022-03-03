@@ -35,7 +35,7 @@ import scala.collection.JavaConverters._
   */
 object FileUtils {
 
-  private val logger = LoggerFactory.getLogger(this.getClass)
+  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
 
