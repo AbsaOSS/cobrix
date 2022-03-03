@@ -16,13 +16,12 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 import org.antlr.v4.runtime.{BailErrorStrategy, CharStreams, CommonTokenStream}
-import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.internal.Logging
 
 import scala.collection.JavaConverters._
 
 
-class ParserJson {
-  @transient private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+class ParserJson extends Logging {
 
   def parse(text: String): Any = {
     val visitor = new ParserJsonVisitor()

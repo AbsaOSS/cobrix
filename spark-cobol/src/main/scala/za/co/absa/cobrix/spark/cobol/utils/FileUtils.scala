@@ -19,10 +19,9 @@ package za.co.absa.cobrix.spark.cobol.utils
 import java.io.{FileOutputStream, OutputStreamWriter, PrintWriter}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 
 import scala.collection.JavaConverters._
 
@@ -33,9 +32,7 @@ import scala.collection.JavaConverters._
   *
   * Applies the same filter as Hadoop's FileInputFormat, which excludes files starting with '.' or '_'.
   */
-object FileUtils {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+object FileUtils extends Logging {
 
   val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
 

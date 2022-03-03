@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.schema
 
 import org.apache.spark.sql.types._
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
@@ -50,7 +51,7 @@ class CobolSchema(copybook: Copybook,
   extends CobolReaderSchema(
     copybook, policy, inputFileNameField, generateRecordId,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
-  ) with Serializable {
+  ) with Logging with Serializable {
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()

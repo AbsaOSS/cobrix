@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser
 
-import java.nio.charset.{Charset, StandardCharsets}
+import za.co.absa.cobrix.cobol.internal.Logging
 
-import org.slf4j.LoggerFactory
+import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
@@ -41,8 +41,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 /**
   * The object contains generic function for the Copybook parser
   */
-object CopybookParser {
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+object CopybookParser extends Logging {
 
   type CopybookAST = Group
 

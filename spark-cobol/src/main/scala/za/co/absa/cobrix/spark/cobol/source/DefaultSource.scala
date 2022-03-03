@@ -20,7 +20,7 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters, VariableLengthParameters}
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
@@ -37,9 +37,8 @@ class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
     with DataSourceRegister
-    with ReaderFactory {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+    with ReaderFactory
+    with Logging {
 
   override def shortName(): String = SHORT_NAME
 

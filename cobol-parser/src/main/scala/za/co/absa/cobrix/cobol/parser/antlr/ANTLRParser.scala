@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.antlr
 
 import org.antlr.v4.runtime._
-import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.Encoding
@@ -49,8 +49,7 @@ class ThrowErrorStrategy() extends DefaultErrorStrategy {
 }
 
 
-object ANTLRParser {
-  @transient private val logger: Logger = LoggerFactory.getLogger(this.getClass)
+object ANTLRParser extends Logging {
 
   def parse(copyBookContents: String,
             enc: Encoding,

@@ -16,17 +16,15 @@
 
 package za.co.absa.cobrix.cobol.parser
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.common.Constants
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 
-class Copybook(val ast: CopybookAST) extends Serializable {
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
   def getCobolSchema: CopybookAST = ast
 

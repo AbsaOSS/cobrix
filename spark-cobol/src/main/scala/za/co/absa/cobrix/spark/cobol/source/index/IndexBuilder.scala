@@ -22,7 +22,7 @@ import org.apache.hadoop.hdfs.DistributedFileSystem
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.{Reader, VarLenReader}
@@ -42,9 +42,7 @@ import scala.collection.mutable.ArrayBuffer
   *
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
-private[source] object IndexBuilder {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+private[source] object IndexBuilder extends Logging {
 
   def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     val fs = new Path(filesList.head.filePath).getFileSystem(sqlContext.sparkSession.sparkContext.hadoopConfiguration)

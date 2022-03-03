@@ -19,7 +19,6 @@ package za.co.absa.cobrix.cobol.reader.schema
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -41,8 +40,6 @@ class CobolSchema(val copybook: Copybook,
                   val generateRecordId: Boolean,
                   val generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "") extends Serializable {
-
-  @transient protected val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 

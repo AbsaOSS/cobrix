@@ -21,7 +21,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions.{concat_ws, expr, max}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame}
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -31,9 +31,7 @@ import scala.util.Try
 /**
   * This object contains common Spark tools used for easier processing of dataframes originated from mainframes.
   */
-object SparkUtils {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+object SparkUtils extends Logging {
 
   /**
     * Retrieves all executors available for the current job.

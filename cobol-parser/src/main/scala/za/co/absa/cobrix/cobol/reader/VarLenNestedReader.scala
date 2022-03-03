@@ -16,8 +16,9 @@
 
 package za.co.absa.cobrix.cobol.reader
 
+import za.co.absa.cobrix.cobol.internal.Logging
+
 import java.nio.charset.{Charset, StandardCharsets}
-import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
@@ -47,9 +48,7 @@ import scala.reflect.ClassTag
   */
 class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                       readerProperties: ReaderParameters,
-                                      handler: RecordHandler[T]) extends VarLenReader with Serializable {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+                                      handler: RecordHandler[T]) extends VarLenReader with Logging with Serializable {
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 

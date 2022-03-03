@@ -17,12 +17,11 @@
 package za.co.absa.cobrix.spark.cobol.source.scanners
 
 import java.nio.charset.StandardCharsets
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{Row, SQLContext}
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, VarLenReader}
@@ -31,9 +30,7 @@ import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-private[source] object CobolScanners {
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+private[source] object CobolScanners extends Logging {
 
   private[source] def buildScanForVarLenIndex(reader: VarLenReader, indexes: RDD[SparseIndexEntry], filesList: Array[FileWithOrder], sqlContext: SQLContext): RDD[Row] = {
     val filesMap = filesList.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap

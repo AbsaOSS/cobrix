@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
-import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.internal.Logging
 
 /**
   * A trait for generalizing EBCDIC to ASCII conversion tables for different EBCDIC code pages.
@@ -53,8 +53,7 @@ abstract class CodePage extends Serializable {
   }
 }
 
-object CodePage {
-  @transient val log: Logger = LoggerFactory.getLogger(this.getClass)
+object CodePage extends Logging{
 
   def getCodePageByName(codePageName: String): CodePage = {
     codePageName match {
@@ -68,7 +67,7 @@ object CodePage {
   }
 
   def getCodePageByClass(codePageClass: String): CodePage = {
-    log.info(s"Instantiating code page class: $codePageClass")
+    logger.info(s"Instantiating code page class: $codePageClass")
     Class.forName(codePageClass,
                   true,
                   Thread.currentThread().getContextClassLoader)

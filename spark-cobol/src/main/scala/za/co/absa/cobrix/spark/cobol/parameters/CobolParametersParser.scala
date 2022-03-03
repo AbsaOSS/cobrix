@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.parameters
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.antlr.ParserJson
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
@@ -36,8 +36,7 @@ import scala.collection.mutable.ListBuffer
 /**
   * This class provides methods for parsing the parameters set as Spark options.
   */
-object CobolParametersParser {
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
+object CobolParametersParser extends Logging {
 
   val SHORT_NAME                      = "cobol"
   val PARAM_COPYBOOK_PATH             = "copybook"

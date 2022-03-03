@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.iterator
 
-import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
@@ -42,11 +42,9 @@ class VRLRecordReader(cobolSchema: Copybook,
                       recordHeaderParser: RecordHeaderParser,
                       recordExtractor: Option[RawRecordExtractor],
                       startRecordId: Long,
-                      startingFileOffset: Long) extends Iterator[(String, Array[Byte])]{
+                      startingFileOffset: Long) extends Iterator[(String, Array[Byte])] with Logging {
 
   type RawRecord = (String, Array[Byte])
-
-  @transient private val logger = LoggerFactory.getLogger(this.getClass)
 
   private var cachedValue: Option[RawRecord] = _
 
