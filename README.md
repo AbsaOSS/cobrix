@@ -62,7 +62,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.4.8
+version: 2.4.9
 ```
 
 ### Scala 2.12
@@ -71,7 +71,7 @@ version: 2.4.8
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.4.8
+version: 2.4.9
 ```
 
 ## Using with Spark shell
@@ -80,12 +80,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.8
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.9
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.8
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.9
 ```
 
 ## Usage
@@ -213,17 +213,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.4.8.jar
-* cobol-parser_2.12-2.4.8.jar
+* spark-cobol_2.12-2.4.9.jar
+* cobol-parser_2.12-2.4.9.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.8
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.9
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.8.jar,cobol-parser_2.12-2.4.8.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.9.jar,cobol-parser_2.12-2.4.9.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -280,7 +280,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.4.9-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.4.10-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -1398,7 +1398,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.4.9 (will be released soon).
+- #### 2.4.9 released 4 March 2022.
    - [#474](https://github.com/AbsaOSS/cobrix/issues/474) Fix numeric decoder of unsigned DISPLAY format. The decoder made more strict and does not allow sign
      overpunching for unsigned numbers.
    - [#477](https://github.com/AbsaOSS/cobrix/issues/477) Fixed NotSerializableException when using non-default logger implementations
