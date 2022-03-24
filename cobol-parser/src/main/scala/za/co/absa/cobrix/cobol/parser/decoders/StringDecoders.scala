@@ -31,6 +31,7 @@ object StringDecoders {
   val TrimLeft  = 2
   val TrimRight = 3
   val TrimBoth  = 4
+  val KeepAll   = 5
 
   // Characters used for HEX conversion
   private val HEX_ARRAY = "0123456789ABCDEF".toCharArray
@@ -55,7 +56,7 @@ object StringDecoders {
       i = i + 1
     }
 
-    if (trimmingType == TrimNone) {
+    if (trimmingType == TrimNone || trimmingType == KeepAll ) {
       buf.toString
     } else if (trimmingType == TrimLeft) {
       StringTools.trimLeft(buf.toString)
@@ -81,13 +82,15 @@ object StringDecoders {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
-      if (bytes(i) < 32 /*Special and high order characters are masked*/ )
-        buf.append(' ')
-      else
+      if (trimmingType == KeepAll || bytes(i) >= 32) {
         buf.append(bytes(i).toChar)
+      } else if (bytes(i) < 0) {
+        buf.append(' ')
+      }
       i = i + 1
     }
-    if (trimmingType == TrimNone) {
+
+    if (trimmingType == TrimNone || trimmingType == KeepAll) {
       buf.toString
     } else if (trimmingType == TrimLeft) {
       StringTools.trimLeft(buf.toString)
@@ -116,7 +119,7 @@ object StringDecoders {
       new String(bytes, StandardCharsets.UTF_16LE)
     }
 
-    if (trimmingType == TrimNone) {
+    if (trimmingType == TrimNone || trimmingType == KeepAll) {
       utf16Str
     } else if (trimmingType == TrimLeft) {
       StringTools.trimLeft(utf16Str)

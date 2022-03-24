@@ -99,6 +99,7 @@ object DecoderSelector {
       case TrimLeft => StringDecoders.TrimLeft
       case TrimRight => StringDecoders.TrimRight
       case TrimBoth => StringDecoders.TrimBoth
+      case KeepAll => StringDecoders.KeepAll
     }
   }
 
