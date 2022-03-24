@@ -56,7 +56,7 @@ class AsciiStringDecoderWrapperSpec extends WordSpec {
       val str = "\u0001\u0005A\u0008\u0010B\u0015\u001F"
       val decoder = new AsciiStringDecoderWrapper(TrimNone, "ASCII", false)
 
-      assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "  A  B  ")
+      assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "AB")
     }
 
     "support left trimming" in {
@@ -81,7 +81,14 @@ class AsciiStringDecoderWrapperSpec extends WordSpec {
       val str = "\u0002\u0004A\u0007\u000FB\u0014\u001E"
       val decoder = new AsciiStringDecoderWrapper(TrimBoth, "ASCII", false)
 
-      assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "A  B")
+      assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == "AB")
+    }
+
+    "be able to decode strings when keep_all is the trimming policy" in {
+      val str = "\u0002\u0004A\u0007\u000FB\u0014\u001E"
+      val decoder = new AsciiStringDecoderWrapper(KeepAll, "ASCII", false)
+
+      assert(decoder(str.getBytes(StandardCharsets.UTF_8)) == str)
     }
 
     "be serializable and deserializable" in {

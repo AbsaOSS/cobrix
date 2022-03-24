@@ -50,16 +50,15 @@ class AsciiStringDecoderWrapper(trimmingType: Int, asciiCharsetName: String, imp
     // Filter out all special characters
     val buf = new ArrayBuffer[Byte](bytes.length)
     while (i < bytes.length) {
-      if (bytes(i) >= 0 && bytes(i) < 32 /* Special characters are masked */ )
-        buf.append(32)
-      else
+      if (trimmingType == KeepAll || bytes(i) >= 32 || bytes(i) < 0) {
         buf.append(bytes(i))
+      }
       i = i + 1
     }
 
     val str = new String(buf.toArray, charset)
 
-    if (trimmingType == TrimNone) {
+    if (trimmingType == TrimNone || trimmingType == KeepAll) {
       str
     } else if (trimmingType == TrimLeft) {
       StringTools.trimLeft(str)

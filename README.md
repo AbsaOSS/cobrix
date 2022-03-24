@@ -1203,17 +1203,17 @@ Again, the full example is available at
 
 ##### Data parsing options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`. |
-| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp875`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
-| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion. |
-| .option("ascii_charset", "US-ASCII")       | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc. |
-| .option("is_utf16_big_endian", "true")     | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default). |
-| .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`. |
+|            Option (usage example)          | Description                                                                                                                                                                                                                                                                       |
+| ------------------------------------------ |:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("string_trimming_policy", "both")  | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                              |
+| .option("ebcdic_code_page", "common")      | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp875`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32.                                |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                      |
+| .option("ascii_charset", "US-ASCII")       | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                                                                                                                  |
+| .option("is_utf16_big_endian", "true")     | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                       |
+| .option("floating_point_format", "IBM")    | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                   |
 | .option("variable_size_occurs", "false")   | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
-| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")   | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping. |
-| .option("improved_null_detection", "false") | If `true`, values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings. |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")   | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                 |
+| .option("improved_null_detection", "false") | If `true`, values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                     |
 
 ##### Modifier options
 
@@ -1398,6 +1398,10 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.4.10 will be released soon.
+   - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
+     A new string trimming policy (`keep_all`) allows keeping all control characters in strings (including `0x00`).
+
 - #### 2.4.9 released 4 March 2022.
    - [#474](https://github.com/AbsaOSS/cobrix/issues/474) Fix numeric decoder of unsigned DISPLAY format. The decoder made more strict and does not allow sign
      overpunching for unsigned numbers.

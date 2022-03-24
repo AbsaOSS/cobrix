@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.policies
 object StringTrimmingPolicy extends Enumeration {
   type StringTrimmingPolicy = Value
 
-  val TrimNone, TrimLeft, TrimRight, TrimBoth = Value
+  val TrimNone, TrimLeft, TrimRight, TrimBoth, KeepAll = Value
 
   def withNameOpt(s: String): Option[Value] = {
     val exactNames = values.find(_.toString == s)
@@ -33,6 +33,8 @@ object StringTrimmingPolicy extends Enumeration {
         Some(TrimRight)
       } else if (sLowerCase == "both") {
         Some(TrimBoth)
+      } else if (sLowerCase == "keep_all") {
+        Some(KeepAll)
       } else {
         None
       }
