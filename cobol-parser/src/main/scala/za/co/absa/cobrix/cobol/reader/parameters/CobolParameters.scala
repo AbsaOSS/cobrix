@@ -44,6 +44,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
+  * @param allowPartialRecords    If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
   * @param improvedNullDetection  If true, string values that contain only zero bytes (0x0) will be considered null.
   * @param commentPolicy          A comment truncation policy
@@ -72,6 +73,7 @@ case class CobolParameters(
                             variableLengthParams:  Option[VariableLengthParameters],
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             stringTrimmingPolicy:  StringTrimmingPolicy,
+                            allowPartialRecords:   Boolean,
                             multisegmentParams:    Option[MultisegmentParameters],
                             commentPolicy:         CommentPolicy,
                             improvedNullDetection: Boolean,

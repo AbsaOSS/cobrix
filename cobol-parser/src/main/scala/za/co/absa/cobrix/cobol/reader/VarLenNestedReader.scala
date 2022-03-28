@@ -25,7 +25,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextFullRecordExtractor, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -75,8 +75,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
         Some(RawRecordExtractorFactory.createRecordHeaderParser(recordExtractorClass, reParams))
-      case None if readerProperties.isText =>
+      case None if readerProperties.isText && readerProperties.allowPartialRecords =>
         Some(new TextRecordExtractor(reParams))
+      case None if readerProperties.isText =>
+        Some(new TextFullRecordExtractor(reParams))
       case None if readerProperties.recordFormat == FixedBlock =>
         val fbParams = FixedBlockParameters(readerProperties.recordLength, bdwOpt.get.blockLength, bdwOpt.get.recordsPerBlock)
         FixedBlockParameters.validate(fbParams)

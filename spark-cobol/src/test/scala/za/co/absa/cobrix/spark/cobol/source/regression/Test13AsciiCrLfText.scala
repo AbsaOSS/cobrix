@@ -140,6 +140,7 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
 
         val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
 
+        df.show
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
 
