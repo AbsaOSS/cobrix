@@ -76,6 +76,7 @@ object CobolParametersParser extends Logging {
   val PARAM_FLOATING_POINT_FORMAT     = "floating_point_format"
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
   val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
+  val PARAM_ALLOW_PARTIAL_RECORDS     = "allow_partial_records"
 
   // Parameters for multisegment variable length files
   val PARAM_RECORD_FORMAT             = "record_format"
@@ -248,6 +249,7 @@ object CobolParametersParser extends Logging {
       parseVariableLengthParameters(params, recordFormat),
       schemaRetentionPolicy,
       stringTrimmingPolicy,
+      params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean,
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "false").toBoolean,
@@ -257,6 +259,7 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
+
     )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters

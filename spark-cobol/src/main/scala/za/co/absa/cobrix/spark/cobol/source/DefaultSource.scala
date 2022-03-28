@@ -196,6 +196,7 @@ class DefaultSource
       generateRecordId = varLenParams.generateRecordId,
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
+      allowPartialRecords = parameters.allowPartialRecords,
       parameters.multisegmentParams,
       parameters.commentPolicy,
       parameters.improvedNullDetection,

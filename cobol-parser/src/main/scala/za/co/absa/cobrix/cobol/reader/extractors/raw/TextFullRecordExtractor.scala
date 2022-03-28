@@ -29,11 +29,11 @@ import java.util
   * The implementation is optimized for performance, so might be not obviously readable.
   * Hopefully, comments will help anyone reading this.
   */
-class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+class TextFullRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   private val recordSize = ctx.copybook.getRecordSize
 
   // Maximum possible record size is the size of the copybook record + maximum size of the delimiter (2 characters for CRLF).
-  private val maxRecordSize = recordSize + 2
+  private val maxRecordSize = recordSize * 2 + 2
 
   // This is the buffer to keep the part of the stream that will be split by records.
   // The size of the array is always the maximum record size. The number of bytes that contain useful payload is specified
@@ -113,6 +113,33 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
     (recordLength, recordPayload)
   }
 
+  private def findNextLineBreak(recordLength: Int): Unit = {
+    var found = false
+    var endOfStream = false
+
+    while (!found && !endOfStream) {
+      val start = recordLength
+      val size = pendingBytesSize - recordLength
+      var i = 0
+
+      while (!found && i < size) {
+        if (pendingBytes(start + i) == 0x0D || pendingBytes(start + i) == 0x0A) {
+          found = true
+        } else {
+          i += 1
+        }
+      }
+      if (i > 0) {
+        System.arraycopy(pendingBytes, recordLength + i, pendingBytes, recordLength, size - i)
+        pendingBytesSize -= i
+      }
+      endOfStream = ctx.inputStream.isEndOfStream
+      if (!found && !endOfStream) {
+        ensureBytesRead(maxRecordSize)
+      }
+    }
+  }
+
   // This method finds the location of the end of the next record and adjusts curRecordSize and curPayloadSize
   // so that the next record can be fetched. Skips empty lines.
   private def findNextRecord(): Unit = {
@@ -135,6 +162,8 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
         // Return a record worth of data.
         curRecordSize = recordSize
         curPayloadSize = recordSize
+
+        findNextLineBreak(recordSize)
       }
     }
 

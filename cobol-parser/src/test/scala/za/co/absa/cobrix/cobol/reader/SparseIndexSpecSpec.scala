@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParserFactory
 import za.co.absa.cobrix.cobol.reader.memorystream.TestStringStream
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, TextRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, TextFullRecordExtractor, TextRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 
 
@@ -41,27 +41,48 @@ class SparseIndexSpecSpec extends WordSpec  {
     """
 
   "sparseIndexGenerator()" should {
-    "Generate a sparse index for ASCII text data" in {
-      val copybook = CopybookParser.parse(copybookContents, ASCII)
+    val copybook = CopybookParser.parse(copybookContents, ASCII)
 
-      val textFileContent: String =
-        Seq("1Tes  0123456789",
-          "2Test 012345",
-          "1None Data¡3    ",
-          "2 on  Data 4",
-          "1Tes  0123456789",
-          "2Test 012345",
-          "1None Data¡3    ",
-          "2 on  Data 4").mkString("\n")
+    val textFileContent: String =
+      Seq("1Tes  0123456789",
+        "2Test 012345",
+        "1None Data¡3    ",
+        "2 on  Data 4",
+        "1Tes  0123456789",
+        "2Test 012345",
+        "1None Data¡3    ",
+        "2 on  Data 4").mkString("\n")
 
-      val segmentIdField = copybook.getFieldByName("T").asInstanceOf[Primitive]
-      val segmentIdRootValue = "1"
+    val segmentIdField = copybook.getFieldByName("T").asInstanceOf[Primitive]
+    val segmentIdRootValue = "1"
 
+    "Generate a sparse index for ASCII text data with partial records allowed" in {
       val stream = new TestStringStream(textFileContent)
 
       val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
 
       val recordExtractor = new TextRecordExtractor(RawRecordContext(0L, stream, copybook, null, null, ""))
+
+      val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+        recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
+        copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValue)
+      assert(indexes.length == 4)
+      assert(indexes.head.offsetFrom == 0)
+      assert(indexes.head.offsetTo == 30)
+      assert(indexes(1).offsetFrom == 30)
+      assert(indexes(1).offsetTo == 60)
+      assert(indexes(2).offsetFrom == 60)
+      assert(indexes(2).offsetTo == 90)
+      assert(indexes(3).offsetFrom == 90)
+      assert(indexes(3).offsetTo == -1)
+    }
+
+    "Generate a sparse index for ASCII text data with partial records not allowed" in {
+      val stream = new TestStringStream(textFileContent)
+
+      val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
+
+      val recordExtractor = new TextFullRecordExtractor(RawRecordContext(0L, stream, copybook, null, null, ""))
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,

@@ -20,6 +20,9 @@ import org.scalatest.WordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
+
+import java.nio.charset.StandardCharsets
 
 class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
 
@@ -85,6 +88,124 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
 
         assert(count == 4)
         assertEqualsMultiline(actual, expected)
+      }
+    }
+  }
+
+  "ASCII text file with uneven records" should {
+    val text =
+      """1
+        |12
+        |123
+        |1234
+        |12345
+        |123456
+        |1234567
+        |12345678
+        |123456789
+        |12345678901234567890123456789
+        |5678
+        |""".stripMargin
+
+    "not generate redundant records" in {
+      withTempTextFile("ascii_nul", ".dat", StandardCharsets.UTF_8, text) { tmpFileName =>
+
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D2")
+          .option("encoding", "ascii")
+          .option("string_trimming_policy", "keep_all")
+          .option("generate_record_id", "true")
+          .load(tmpFileName)
+
+        val expected =
+          """[ {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 0,
+            |  "A" : "1",
+            |  "B" : ""
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 1,
+            |  "A" : "1",
+            |  "B" : "2"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 2,
+            |  "A" : "1",
+            |  "B" : "23"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 3,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 4,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 5,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 6,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 7,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 8,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 9,
+            |  "A" : "1",
+            |  "B" : "234"
+            |}, {
+            |  "File_Id" : 0,
+            |  "Record_Id" : 10,
+            |  "A" : "5",
+            |  "B" : "678"
+            |} ]
+            |""".stripMargin
+
+        val count = df.count()
+        val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assert(count == 11)
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "allow partial records" in {
+      withTempTextFile("ascii_nul", ".dat", StandardCharsets.UTF_8, text) { tmpFileName =>
+
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D2")
+          .option("encoding", "ascii")
+          .option("string_trimming_policy", "keep_all")
+          .option("generate_record_id", "true")
+          .option("allow_partial_records", "true")
+          .load(tmpFileName)
+
+        val count = df.count()
+
+        assert(count == 21)
       }
     }
   }
