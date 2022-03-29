@@ -127,7 +127,29 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
       }
     }
 
-    "correctly read text files without EOL characters" in {
+    "correctly read text files without EOL characters partial" in {
+      val text = "AABBCC"
+      withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("allow_partial_records", "true")
+          .load(tmpFileName)
+
+        val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+
+        val count = df.count()
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 3)
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "correctly read text files without EOL characters non-partial" in {
       val text = "AABBCC"
       withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
         val df = spark
@@ -138,19 +160,18 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
           .option("record_format", "D")
           .load(tmpFileName)
 
-        val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+        val expected = """[{"A":"AA"}]"""
 
-        df.show
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
 
-        assert(count == 3)
+        assert(count == 1)
         assertEqualsMultiline(actual, expected)
       }
     }
   }
 
-  "correctly read text files with a single EOL characters" in {
+  "correctly read text files with a single EOL characters partial" in {
     val text = "AA\nBBCC"
     withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
       val df = spark
@@ -159,6 +180,7 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
         .option("record_format", "D")
+        .option("allow_partial_records", "true")
         .load(tmpFileName)
 
       val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
@@ -171,7 +193,50 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
     }
   }
 
-  "correctly read text files with a double EOL characters" in {
+  "correctly read text files with a single EOL characters non-partial" in {
+    val text = "AA\nBBCC"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AA"},{"A":"BB"}]"""
+
+      val count = df.count()
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 2)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read text files with a double EOL characters partial" in {
+    val text = "AA\r\nBBCC"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("allow_partial_records", "true")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+
+      val count = df.count()
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 3)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read text files with a double EOL characters non-partial" in {
     val text = "AA\r\nBBCC"
     withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
       val df = spark
@@ -182,12 +247,12 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
         .option("record_format", "D")
         .load(tmpFileName)
 
-      val expected = """[{"A":"AA"},{"A":"BB"},{"A":"CC"}]"""
+      val expected = """[{"A":"AA"},{"A":"BB"}]"""
 
       val count = df.count()
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
-      assert(count == 3)
+      assert(count == 2)
       assertEqualsMultiline(actual, expected)
     }
   }
@@ -219,7 +284,34 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
     }
   }
 
-  "correctly read text files with a double EOL characters and the last record is too short" in {
+  "correctly read text files with a double EOL characters and the last record is too short partial" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(4).
+    """
+
+    val text = "AAAA\r\nBBBBCCC"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook2)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("allow_partial_records", "true")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AAAA"},{"A":"BBBB"},{"A":"CCC"}]"""
+
+      val count = df.count()
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 3)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read text files with a double EOL characters and the last record is too short non-partial" in {
     val copybook2 =
       """         01  ENTITY.
            05  A    PIC X(4).
@@ -235,17 +327,45 @@ class Test13AsciiCrLfText extends WordSpec with SparkTestBase with BinaryFileFix
         .option("record_format", "D")
         .load(tmpFileName)
 
-      val expected = """[{"A":"AAAA"},{"A":"BBBB"},{"A":"CCC"}]"""
+      val expected = """[{"A":"AAAA"},{"A":"BBBB"}]"""
 
       val count = df.count()
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
-      assert(count == 3)
+      assert(count == 2)
       assertEqualsMultiline(actual, expected)
     }
   }
 
-  "correctly read text files with indexing and a copybook that has a slightly greater record size" in {
+  "correctly read text files with indexing and a copybook that has a slightly greater record size partial" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(7).
+    """
+
+    val text = "AAAAA\r\nBBBBB\nCCCCC\nDDDDD\nEEEEE\nFFFFF\nGGGGG\nHHHHH"
+    withTempBinFile("crlf_empty", ".dat", text.getBytes()) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook2)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("input_split_records", 2)
+        .option("allow_partial_records", "true")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"AAAAA"},{"A":"BBBBB"},{"A":"CCCCC"},{"A":"DDDDD"},{"A":"EEEEE"},{"A":"FFFFF"},{"A":"GGGGG"},{"A":"HHHHH"}]"""
+
+      val count = df.count()
+      val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
+
+      assert(count == 8)
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read text files with indexing and a copybook that has a slightly greater record size non-partial" in {
     val copybook2 =
       """         01  ENTITY.
            05  A    PIC X(7).

@@ -109,7 +109,6 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
 
     "not generate redundant records" in {
       withTempTextFile("ascii_nul", ".dat", StandardCharsets.UTF_8, text) { tmpFileName =>
-
         val df = spark
           .read
           .format("cobol")
