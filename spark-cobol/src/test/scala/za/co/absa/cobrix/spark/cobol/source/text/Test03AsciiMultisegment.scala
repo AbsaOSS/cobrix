@@ -107,7 +107,6 @@ class Test03AsciiMultisegment extends WordSpec with SparkTestBase with BinaryFil
             |  { "T": "2", "R2": { "B1": "Test", "B2": "01234" } },
             |  { "T": "1", "R1": { "A2": "None", "A3": "Data   3" } },
             |  { "T": "2", "R2": { "B1": "on", "B2": "Data" } },
-            |  { "T": "1", "R1": { "A2": "111" } },
             |  { "T": "2", "R2": { "B1": "22222", "B2": "2222" } }
             |]""".stripMargin)
 
