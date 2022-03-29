@@ -1401,6 +1401,8 @@ A: Update hadoop dll to version 3.2.2 or newer.
 - #### 2.4.10 will be released soon.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
      A new string trimming policy (`keep_all`) allows keeping all control characters in strings (including `0x00`).
+   - [#484](https://github.com/AbsaOSS/cobrix/issues/484) Fix parsing of ASCII files so that only full records are parsed. The old behavior
+     can be restored with `.option("allow_partial_records", "true")`.
 
 - #### 2.4.9 released 4 March 2022.
    - [#474](https://github.com/AbsaOSS/cobrix/issues/474) Fix numeric decoder of unsigned DISPLAY format. The decoder made more strict and does not allow sign
