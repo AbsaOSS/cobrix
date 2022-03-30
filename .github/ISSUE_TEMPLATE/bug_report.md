@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: 'bug'
+labels: bug
 assignees: ''
 
 ---
@@ -10,18 +10,21 @@ assignees: ''
 ## Describe the bug
 A clear and concise description of what the bug is.
 
-## To Reproduce
-Steps to reproduce the behaviour OR commands run:
-1. Go to '...'
-2. Click on '....'
-3. Enter value '...'
-4. See error
+## Code snippet that caused the issue
 
 ## Expected behaviour
 A clear and concise description of what you expected to happen.
 
-## Screenshots
-If applicable, add screenshots to help explain your problem.
+## Context
+- Cobrix version
+- Spark version
+- Scala version
+- Operating system
 
-## Additional context
-Add any other context about the problem here.
+## Copybook (if possible)
+```
+         01  RECORD.
+           05  FIELD1    PIC S9(4).
+```
+
+Attach a small data file that can help reproducing the issue, if possible.
