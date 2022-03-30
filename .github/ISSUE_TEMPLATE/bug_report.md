@@ -12,14 +12,19 @@ A clear and concise description of what the bug is.
 
 ## Code snippet that caused the issue
 
-## Expected behaviour
+```
+  spark.read
+   .format("cobol")
+```
+
+## Expected behavior
 A clear and concise description of what you expected to happen.
 
 ## Context
-- Cobrix version
-- Spark version
-- Scala version
-- Operating system
+- Cobrix version:
+- Spark version:
+- Scala version:
+- Operating system:
 
 ## Copybook (if possible)
 ```
@@ -27,4 +32,4 @@ A clear and concise description of what you expected to happen.
            05  FIELD1    PIC S9(4).
 ```
 
-Attach a small data file that can help reproducing the issue, if possible.
+Attach a small data file that can help reproduce the issue, if possible.
