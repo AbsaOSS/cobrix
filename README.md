@@ -62,7 +62,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.4.9
+version: 2.4.10
 ```
 
 ### Scala 2.12
@@ -71,7 +71,7 @@ version: 2.4.9
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.4.9
+version: 2.4.10
 ```
 
 ## Using with Spark shell
@@ -80,12 +80,12 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.9
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.4.10
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.9
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.10
 ```
 
 ## Usage
@@ -213,17 +213,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.4.9.jar
-* cobol-parser_2.12-2.4.9.jar
+* spark-cobol_2.12-2.4.10.jar
+* cobol-parser_2.12-2.4.10.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.7.2.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.9
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.4.10
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.9.jar,cobol-parser_2.12-2.4.9.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.4.10.jar,cobol-parser_2.12-2.4.10.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -271,8 +271,8 @@ Creating an uber jar for Cobrix is very easy. Just clone the repository and run 
 ```sh
 sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
 sbt ++2.12.15 assembly -DSPARK_VERSION=2.4.8
-sbt ++2.12.15 assembly -DSPARK_VERSION=3.1.2
-sbt ++2.12.15 assembly -DSPARK_VERSION=3.2.0
+sbt ++2.12.15 assembly -DSPARK_VERSION=3.1.3
+sbt ++2.12.15 assembly -DSPARK_VERSION=3.2.1
 ```
 
 You can collect the uber jar of `spark-cobol` either at
@@ -280,7 +280,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.4.10-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.4.11-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -1398,7 +1398,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.4.10 will be released soon.
+- #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
      A new string trimming policy (`keep_all`) allows keeping all control characters in strings (including `0x00`).
    - [#484](https://github.com/AbsaOSS/cobrix/issues/484) Fix parsing of ASCII files so that only full records are parsed. The old behavior
