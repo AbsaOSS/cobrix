@@ -114,6 +114,7 @@ object CopybookParser extends Logging {
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
+    * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers
     * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
     * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
     * @param ebcdicCodePage        A code page for EBCDIC encoded data
@@ -132,6 +133,7 @@ object CopybookParser extends Logging {
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
             commentPolicy: CommentPolicy = CommentPolicy(),
+            strictSignOverpunch: Boolean = false,
             improvedNullDetection: Boolean = false,
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
@@ -148,6 +150,7 @@ object CopybookParser extends Logging {
       fieldParentMap,
       stringTrimmingPolicy,
       commentPolicy,
+      strictSignOverpunch,
       improvedNullDetection,
       ebcdicCodePage,
       asciiCharset,
@@ -185,6 +188,7 @@ object CopybookParser extends Logging {
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 improvedNullDetection: Boolean = false,
+                strictSignOverpunch: Boolean = false,
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
@@ -201,6 +205,7 @@ object CopybookParser extends Logging {
       stringTrimmingPolicy,
       commentPolicy,
       improvedNullDetection,
+      strictSignOverpunch,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -240,6 +245,7 @@ object CopybookParser extends Logging {
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 commentPolicy: CommentPolicy,
+                strictSignOverpunch: Boolean,
                 improvedNullDetection: Boolean,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
@@ -249,7 +255,7 @@ object CopybookParser extends Logging {
                 occursHandlers: Map[String, Map[String, Int]],
                 debugFieldsPolicy: DebugFieldsPolicy): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
@@ -268,7 +274,7 @@ object CopybookParser extends Logging {
                   processGroupFillers(
                     markDependeeFields(
                       addNonTerminals(
-                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection),
+                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
                       occursHandlers
                     ), dropValueFillers
                   ), dropGroupFillers, dropValueFillers
@@ -285,7 +291,7 @@ object CopybookParser extends Logging {
                 renameGroupFillers(
                   markDependeeFields(
                     addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection),
+                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
                     occursHandlers
                   ),
                   dropGroupFillers, dropValueFillers
@@ -304,6 +310,7 @@ object CopybookParser extends Logging {
                               asciiCharset: Charset,
                               isUtf16BigEndian: Boolean,
                               floatingPointFormat: FloatingPointFormat,
+                              strictSignOverpunch: Boolean,
                               improvedNullDetection: Boolean
                              ): CopybookAST = {
 
@@ -329,11 +336,11 @@ object CopybookParser extends Logging {
         case g: Group =>
           if (nonTerminals contains g.name) {
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection).copy(isRedefined = true)(g.parent)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection).copy(isRedefined = true)(g.parent)
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
@@ -347,7 +354,7 @@ object CopybookParser extends Logging {
           }
           else
             newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, improvedNullDetection)
+              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
             )
       }
     }

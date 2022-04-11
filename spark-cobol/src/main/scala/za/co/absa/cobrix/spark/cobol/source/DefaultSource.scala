@@ -199,6 +199,7 @@ class DefaultSource
       allowPartialRecords = parameters.allowPartialRecords,
       parameters.multisegmentParams,
       parameters.commentPolicy,
+      parameters.strictSignOverpunch,
       parameters.improvedNullDetection,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,

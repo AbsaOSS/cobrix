@@ -76,6 +76,7 @@ case class CobolParameters(
                             allowPartialRecords:   Boolean,
                             multisegmentParams:    Option[MultisegmentParameters],
                             commentPolicy:         CommentPolicy,
+                            strictSignOverpunch:   Boolean,
                             improvedNullDetection: Boolean,
                             dropGroupFillers:      Boolean,
                             dropValueFillers:      Boolean,
