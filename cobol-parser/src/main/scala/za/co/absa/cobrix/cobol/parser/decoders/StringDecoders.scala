@@ -166,10 +166,11 @@ object StringDecoders {
     *
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            Is the number expected to be unsigned
+    * @param allowSignOverpunch    if true, sign overpunching is allowed.
     * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  final def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): String = {
+  final def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): String = {
     if (improvedNullDetection && isArrayNull(bytes))
       return null
 
@@ -197,11 +198,11 @@ object StringDecoders {
       } else if (b >= 0xF0 && b <= 0xF9) {
         ch = (b - 0xF0 + 0x30).toChar // unsigned
       }
-      else if (!isUnsigned && b >= 0xC0 && b <= 0xC9) {
+      else if (allowSignOverpunch && b >= 0xC0 && b <= 0xC9) {
         ch = (b - 0xC0 + 0x30).toChar // positive sign punched
         sign = '+'
       }
-      else if (!isUnsigned && b >= 0xD0 && b <= 0xD9) {
+      else if (allowSignOverpunch && b >= 0xD0 && b <= 0xD9) {
         ch = (b - 0xD0 + 0x30).toChar // negative sign punched
         sign = '-'
       }
@@ -237,10 +238,11 @@ object StringDecoders {
     *
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            Is the number expected to be unsigned
+    * @param allowSignOverpunch    if true, sign overpunching is allowed.
     * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  final def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): String = {
+  final def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): String = {
     val allowedDigitChars = " 0123456789"
     val punchedSignChars = "{ABCDEFGHI}JKLMNOPQR"
 
@@ -272,7 +274,7 @@ object StringDecoders {
         } else if (char == '.' || char == ',') {
           buf.append('.')
         } else {
-          if (!isUnsigned && (i == 0 || i == bytes.length - 1) && punchedSignChars.contains(char)) {
+          if (allowSignOverpunch && (i == 0 || i == bytes.length - 1) && punchedSignChars.contains(char)) {
             decodeOverpunchedSign(char)
           } else {
             return null
@@ -294,11 +296,12 @@ object StringDecoders {
     * Decode integral number from an EBCDIC string converting it to an integer
     *
     * @param bytes A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A boxed integer
     */
-  final def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): Integer = {
+  final def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection).toInt
+      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -308,11 +311,12 @@ object StringDecoders {
     * Decode integral number from an ASCII string converting it to an integer
     *
     * @param bytes A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A boxed integer
     */
-  final def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): Integer = {
+  final def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection).toInt
+      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -322,11 +326,12 @@ object StringDecoders {
     * Decode integral number from an EBCDIC string converting it to an long
     *
     * @param bytes A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A boxed long
     */
-  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
+  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection).toLong
+      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -336,11 +341,12 @@ object StringDecoders {
     * Decode integral number from an ASCII string converting it to an long
     *
     * @param bytes A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A boxed long
     */
-  final def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
+  final def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection).toLong
+      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -349,14 +355,15 @@ object StringDecoders {
   /**
     * Decode a number from an EBCDIC string converting it to a big decimal
     *
-    * @param bytes       A byte array that represents the binary data
-    * @param scale       A decimal scale in case decimal number with implicit decimal point is expected
-    * @param scaleFactor Additional zeros to be added before of after the decimal point
+    * @param bytes              A byte array that represents the binary data
+    * @param scale              A decimal scale in case decimal number with implicit decimal point is expected
+    * @param scaleFactor        Additional zeros to be added before of after the decimal point
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A big decimal containing a big integral number
     */
-  final def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  final def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -365,14 +372,15 @@ object StringDecoders {
   /**
     * Decode a number from an ASCII string converting it to a big decimal
     *
-    * @param bytes       A byte array that represents the binary data
-    * @param scale       A decimal scale in case decimal number with implicit decimal point is expected
-    * @param scaleFactor Additional zeros to be added before of after the decimal point
+    * @param bytes              A byte array that represents the binary data
+    * @param scale              A decimal scale in case decimal number with implicit decimal point is expected
+    * @param scaleFactor        Additional zeros to be added before of after the decimal point
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A big decimal containing a big integral number
     */
-  final def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  final def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -382,12 +390,13 @@ object StringDecoders {
     * Decode decimal number from an EBCDIC string converting it to a big decimal
     * This decoder is used to convert decimal numbers with explicit decimal point
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes              A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A big decimal containing a big integral number
     */
-  final def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): BigDecimal = {
+  final def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned, improvedNullDetection))
+      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }
@@ -397,12 +406,13 @@ object StringDecoders {
     * Decode decimal number from an ASCII string converting it to a big decimal
     * This decoder is used to convert decimal numbers with explicit decimal point
     *
-    * @param bytes A byte array that represents the binary data
+    * @param bytes              A byte array that represents the binary data
+    * @param allowSignOverpunch if true, sign overpunching is allowed.
     * @return A big decimal containing a big integral number
     */
-  final def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, improvedNullDetection: Boolean): BigDecimal = {
+  final def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeAsciiNumber(bytes, isUnsigned, improvedNullDetection))
+      BigDecimal(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }

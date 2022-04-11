@@ -49,6 +49,7 @@ object DecoderSelector {
     * @param asciiCharset         A charset for ASCII encoded data
     * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat  Specifies a floating point format (IBM or IEEE754)
+    * @param strictSignOverpunch  if true, sign overpunching is not allowed for positive numbers.
     * @return A function that converts an array of bytes to the target data type.
     */
   def getDecoder(dataType: CobolType,
@@ -57,11 +58,12 @@ object DecoderSelector {
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
                  isUtf16BigEndian: Boolean = true,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
+                 strictSignOverpunch: Boolean = false,
                  improvedNullDetection: Boolean = false): Decoder = {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, improvedNullDetection)
-      case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, improvedNullDetection)
-      case integralType: Integral => getIntegralDecoder(integralType, improvedNullDetection)
+      case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+      case integralType: Integral => getIntegralDecoder(integralType, strictSignOverpunch, improvedNullDetection)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     decoder
@@ -106,6 +108,7 @@ object DecoderSelector {
   /** Gets a decoder function for a decimal data type. The input array of bytes is always converted to string and then to BigDecimal */
   private def getDecimalDecoder(decimalType: Decimal,
                                 floatingPointFormat: FloatingPointFormat,
+                                strictSignOverpunch: Boolean,
                                 improvedNullDetection: Boolean): Decoder = {
     val encoding = decimalType.enc.getOrElse(EBCDIC)
 
@@ -120,14 +123,14 @@ object DecoderSelector {
       case None =>
         if (decimalType.explicitDecimal) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigDecimal(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeAsciiBigDecimal(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
         }
 //      case Some(COMP()) =>
 //        // COMP aka BINARY encoded number
@@ -180,6 +183,7 @@ object DecoderSelector {
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
   private def getIntegralDecoder(integralType: Integral,
+                                 strictSignOverpunch: Boolean,
                                  improvedNullDetection: Boolean): Decoder = {
     val encoding = integralType.enc.getOrElse(EBCDIC)
 
@@ -194,19 +198,19 @@ object DecoderSelector {
       case None =>
         if (integralType.precision <= Constants.maxIntegerPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicInt(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeEbcdicInt(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiInt(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeAsciiInt(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
         } else if (integralType.precision <= Constants.maxLongPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicLong(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeEbcdicLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiLong(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeAsciiLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, improvedNullDetection)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
         }
 //      case Some(Constants.compBinary1) =>
 //        // COMP aka BINARY encoded number

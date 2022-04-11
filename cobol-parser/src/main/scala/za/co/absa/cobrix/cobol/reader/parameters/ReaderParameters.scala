@@ -97,6 +97,7 @@ case class ReaderParameters(
                              allowPartialRecords:     Boolean = false,
                              multisegment:            Option[MultisegmentParameters] = None,
                              commentPolicy:           CommentPolicy = CommentPolicy(),
+                             strictSignOverpunch:     Boolean = false,
                              improvedNullDetection:   Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,

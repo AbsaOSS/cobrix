@@ -38,6 +38,7 @@ class DataSizeSpec extends FunSuite {
       StandardCharsets.US_ASCII,
       isUtf16BigEndian = true,
       floatingPointFormat = FloatingPointFormat.IBM,
+      strictSignOverpunch = false,
       improvedNullDetection = false)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
