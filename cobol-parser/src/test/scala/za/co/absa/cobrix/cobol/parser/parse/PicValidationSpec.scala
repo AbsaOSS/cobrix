@@ -38,7 +38,7 @@ class PicValidationSpec extends FunSuite {
       StandardCharsets.UTF_8,
       isUtf16BigEndian = true,
       FloatingPointFormat.IBM,
-      strictSignOverpunch = false,
+      strictSignOverpunch = true,
       improvedNullDetection = false)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
