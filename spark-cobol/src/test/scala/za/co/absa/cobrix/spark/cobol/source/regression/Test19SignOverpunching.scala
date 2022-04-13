@@ -48,6 +48,7 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
         |789J123A
         |65432101
         |""".stripMargin
+
     "correctly decode sign overpunched numbers with default sign overpunch settings" in {
       withTempTextFile("sign_overpunch", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
         val df = spark
@@ -55,6 +56,25 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val expected = """[{"B":-4560},{"B":1231},{"A":6543,"B":2101}]"""
+
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "correctly decode sign overpunched numbers with relaxed sign overpunch settings" in {
+      withTempTextFile("sign_overpunch", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("strict_sign_overpunching", "false")
           .option("pedantic", "true")
           .load(tmpFileName)
 
@@ -67,12 +87,12 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
     }
 
     "correctly decode sign overpunched numbers with strict sign overpunch settings" in {
-      withTempBinFile("sign_overpunch", ".dat", binFileContents) { tmpFileName =>
+      withTempTextFile("sign_overpunch", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
         val df = spark
           .read
           .format("cobol")
           .option("copybook_contents", copybook)
-          .option("record_format", "F")
+          .option("record_format", "D")
           .option("strict_sign_overpunching", "true")
           .option("pedantic", "true")
           .load(tmpFileName)
@@ -92,6 +112,7 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
         |789J123A
         |65432101
         |""".stripMargin
+
     "correctly decode sign overpunched numbers with default sign overpunch settings" in {
       withTempBinFile("sign_overpunch", ".dat", binFileContents) { tmpFileName =>
         val df = spark
@@ -99,6 +120,24 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "F")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val expected = """[{"B":-4560},{"B":1231},{"A":6543,"B":2101}]"""
+
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+    "correctly decode sign overpunched numbers with relaxed sign overpunch settings" in {
+      withTempBinFile("sign_overpunch", ".dat", binFileContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("strict_sign_overpunching", "false")
           .option("pedantic", "true")
           .load(tmpFileName)
 
@@ -111,12 +150,12 @@ class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFile
     }
 
     "correctly decode sign overpunched numbers with strict sign overpunch settings" in {
-      withTempTextFile("sign_overpunch", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
+      withTempBinFile("sign_overpunch", ".dat", binFileContents) { tmpFileName =>
         val df = spark
           .read
           .format("cobol")
           .option("copybook_contents", copybook)
-          .option("record_format", "D")
+          .option("record_format", "F")
           .option("strict_sign_overpunching", "true")
           .option("pedantic", "true")
           .load(tmpFileName)

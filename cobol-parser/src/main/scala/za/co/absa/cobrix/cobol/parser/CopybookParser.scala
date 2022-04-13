@@ -133,7 +133,7 @@ object CopybookParser extends Logging {
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
             commentPolicy: CommentPolicy = CommentPolicy(),
-            strictSignOverpunch: Boolean = false,
+            strictSignOverpunch: Boolean = true,
             improvedNullDetection: Boolean = false,
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
@@ -171,6 +171,7 @@ object CopybookParser extends Logging {
     * @param fieldParentMap        A segment fields parent mapping
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
     * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
+    * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers
     * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
     * @param ebcdicCodePage        A code page for EBCDIC encoded data
     * @param asciiCharset          A charset for ASCII encoded data
@@ -187,8 +188,8 @@ object CopybookParser extends Logging {
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 commentPolicy: CommentPolicy = CommentPolicy(),
+                strictSignOverpunch: Boolean = true,
                 improvedNullDetection: Boolean = false,
-                strictSignOverpunch: Boolean = false,
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
@@ -204,8 +205,8 @@ object CopybookParser extends Logging {
       fieldParentMap,
       stringTrimmingPolicy,
       commentPolicy,
-      improvedNullDetection,
       strictSignOverpunch,
+      improvedNullDetection,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
