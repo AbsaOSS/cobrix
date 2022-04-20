@@ -105,7 +105,8 @@ class CobolSchema(copybook: Copybook,
 
     val recordsWithRecordId = if (generateRecordId) {
       StructField(Constants.fileIdField, IntegerType, nullable = false) +:
-        StructField(Constants.recordIdField, LongType, nullable = false) +: recordsWithFileName
+        StructField(Constants.recordIdField, LongType, nullable = false) +:
+        StructField(Constants.recordByteLength, IntegerType, nullable = false) +: recordsWithFileName
     } else {
       recordsWithFileName
     }

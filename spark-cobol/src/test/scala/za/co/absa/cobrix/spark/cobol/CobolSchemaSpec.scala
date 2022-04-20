@@ -51,7 +51,7 @@ class CobolSchemaSpec extends FunSuite {
   }
 
   test("Test generation of record id field") {
-    val expectedSchema: String = "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(BIN_INT," +
+    val expectedSchema: String = "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(BIN_INT," +
       "IntegerType,true), StructField(STRUCT_FLD," +
       "StructType" +
       "(StructField(STR_FLD,StringType,true))," +
@@ -73,7 +73,7 @@ class CobolSchemaSpec extends FunSuite {
         |""".stripMargin
 
     val expectedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(STRUCT1,StructType(StructField(IntValue," +
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(STRUCT1,StructType(StructField(IntValue," +
         "IntegerType,true)),true), StructField" +
         "(STRUCT2,StructType(StructField(STR_FLD,StringType,true)),true))"
     val expectedSchemaWithoutRecordId: String =
@@ -81,7 +81,7 @@ class CobolSchemaSpec extends FunSuite {
         "StringType,true)),true))"
 
     val expectedCollapsedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(IntValue,IntegerType,true), StructField" +
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(IntValue,IntegerType,true), StructField" +
         "(STR_FLD,StringType,true))"
     val expectedCollapsedSchemaWithoutRecordId: String =
       "StructType(StructField(IntValue,IntegerType,true), StructField(STR_FLD,StringType,true))"
@@ -117,7 +117,7 @@ class CobolSchemaSpec extends FunSuite {
         |""".stripMargin
 
     val expectedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), " +
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), " +
         "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
         "StructField(STRUCT1,StructType(StructField(IntValue," +
         "IntegerType,true)),true), StructField" +
@@ -130,7 +130,7 @@ class CobolSchemaSpec extends FunSuite {
         "StringType,true)),true))"
 
     val expectedCollapsedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), " +
+      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), " +
         "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
         "StructField(IntValue,IntegerType,true), StructField" +
         "(STR_FLD,StringType,true))"
