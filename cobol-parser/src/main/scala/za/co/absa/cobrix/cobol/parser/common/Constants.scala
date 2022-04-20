@@ -62,6 +62,7 @@ object Constants {
   val segmentIdField = "Seg_Id"
   val fileIdField = "File_Id"
   val recordIdField = "Record_Id"
+  val recordByteLength = "Record_Byte_Length"
 
   // Non-terminals
   val nonTerminalsPostfix = "_NT"

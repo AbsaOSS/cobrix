@@ -181,7 +181,7 @@ object RecordExtractors {
       values
     }
 
-    applyRecordPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -383,7 +383,9 @@ object RecordExtractors {
       values
     }
 
-    applyRecordPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, generateInputFileField, inputFileName, handler)
+    val recordLength = segmentsData.map(_._2.length).sum
+
+    applyRecordPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -404,6 +406,7 @@ object RecordExtractors {
     * @param generateRecordId       If true a record id field will be added as the first field of the record.
     * @param fileId                 The file id to be saved to the file id field
     * @param recordId               The record id to be saved to the record id field
+    * @param recordByteLength       The length of the record
     * @param generateInputFileField if true, a field containing input file name will be generated
     * @param inputFileName          An input file name to put if its generation is needed
     * @return A [[T]] object corresponding to the record schema
@@ -416,6 +419,7 @@ object RecordExtractors {
     segmentLevelIds: Seq[String],
     fileId: Int,
     recordId: Long,
+    recordByteLength: Int,
     generateInputFileField: Boolean,
     inputFileName: String,
     handler: RecordHandler[T]
@@ -431,10 +435,10 @@ object RecordExtractors {
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId
         val expandedRows = records.flatMap(record => handler.toSeq(record))
-        fileId +: recordId +: (segmentLevelIds ++ expandedRows)
+        fileId +: recordId +: recordByteLength +: (segmentLevelIds ++ expandedRows)
       case (true, false) =>
         // Add recordId as the first field
-        fileId +: recordId +: (segmentLevelIds ++ records)
+        fileId +: recordId +: recordByteLength +: (segmentLevelIds ++ records)
       case (false, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields + adding the file name field
         (segmentLevelIds :+ inputFileName) ++ records.flatMap(record => handler.toSeq(record))
@@ -445,10 +449,10 @@ object RecordExtractors {
         // If the policy for schema retention is root collapsing, expand root fields
         // and add fileId and recordId  + adding the file name field
         val expandedRows = records.flatMap(record => handler.toSeq(record))
-        fileId +: recordId +: inputFileName +: (segmentLevelIds ++ expandedRows)
+        fileId +: recordId +: recordByteLength +: inputFileName +: (segmentLevelIds ++ expandedRows)
       case (true, true) =>
         // Add recordId as the first field + adding the file name field
-        fileId +: recordId +: inputFileName +: (segmentLevelIds ++ records)
+        fileId +: recordId +: recordByteLength +: inputFileName +: (segmentLevelIds ++ records)
     }
   }
 }
