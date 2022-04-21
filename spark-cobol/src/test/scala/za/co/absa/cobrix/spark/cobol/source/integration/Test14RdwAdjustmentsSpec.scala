@@ -30,7 +30,7 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
 
   private val exampleName = "Test4(multisegment,ascii)"
   private val inputCopybookPath = "file://../data/test14_copybook.cob"
-  private val inpudDataPath = "../data/test14_data"
+  private val inputDataPath = "../data/test14_data"
   private val expectedSchemaPath = "../data/test14_expected/test14_schema.json"
   private val actualSchemaPath = "../data/test14_expected/test14_schema_actual.json"
   private val expectedResultsPath = "../data/test14_expected/test14.txt"
@@ -51,7 +51,7 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
       .option("redefine_segment_id_map:0", "STATIC-DETAILS => C,D")
       .option("redefine-segment-id-map:1", "CONTACTS => P")
       .option("is_rdw_part_of_record_length", "true")
-      .load(inpudDataPath)
+      .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)
@@ -94,7 +94,7 @@ class Test14RdwAdjustmentsSpec extends FunSuite with SparkTestBase {
       .option("redefine_segment_id_map:0", "STATIC-DETAILS => C,D")
       .option("redefine-segment-id-map:1", "CONTACTS => P")
       .option("rdw_adjustment", "-4")
-      .load(inpudDataPath)
+      .load(inputDataPath)
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)

@@ -84,16 +84,16 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         .load(tmpFileName)
 
       val expected =
-        """+-------+---------+---+----------+
-          ||File_Id|Record_Id|N  |V         |
-          |+-------+---------+---+----------+
-          ||0      |0        |0  |1234567890|
-          ||0      |1        |1  |2345678   |
-          ||0      |2        |2  |2345678   |
-          ||0      |3        |3  |123       |
-          ||0      |4        |4  |1         |
-          ||0      |5        |5  |          |
-          |+-------+---------+---+----------+
+        """+-------+---------+------------------+---+----------+
+          ||File_Id|Record_Id|Record_Byte_Length|N  |V         |
+          |+-------+---------+------------------+---+----------+
+          ||0      |0        |11                |0  |1234567890|
+          ||0      |1        |11                |1  |2345678   |
+          ||0      |2        |10                |2  |2345678   |
+          ||0      |3        |4                 |3  |123       |
+          ||0      |4        |2                 |4  |1         |
+          ||0      |5        |1                 |5  |          |
+          |+-------+---------+------------------+---+----------+
           |
           |""".stripMargin.replace("\r\n", "\n")
 
@@ -117,13 +117,13 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         .load(tmpFileName)
 
       val expected =
-        """+-------+---------+---+---+
-          ||File_Id|Record_Id|N  |V  |
-          |+-------+---------+---+---+
-          ||0      |0        |3  |123|
-          ||0      |1        |4  |1  |
-          ||0      |2        |5  |   |
-          |+-------+---------+---+---+
+        """+-------+---------+------------------+---+---+
+          ||File_Id|Record_Id|Record_Byte_Length|N  |V  |
+          |+-------+---------+------------------+---+---+
+          ||0      |0        |4                 |3  |123|
+          ||0      |1        |2                 |4  |1  |
+          ||0      |2        |1                 |5  |   |
+          |+-------+---------+------------------+---+---+
           |
           |""".stripMargin.replace("\r\n", "\n")
 
@@ -131,7 +131,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         """{"File_Id":0,"Record_Id":0,"N":"3","V":"123"},{"File_Id":0,"Record_Id":1,"N":"4","V":"1"},{"File_Id":0,"Record_Id":2,"N":"5","V":""}"""
 
       val actual = TestUtils.showString(df, 10)
-      val actualJson = df.toJSON.collect().mkString(",")
+      val actualJson = df.drop("Record_Byte_Length").toJSON.collect().mkString(",")
 
       assertEqualsMultiline(actual, expected)
       assertEqualsMultiline(actualJson, expectedJson)

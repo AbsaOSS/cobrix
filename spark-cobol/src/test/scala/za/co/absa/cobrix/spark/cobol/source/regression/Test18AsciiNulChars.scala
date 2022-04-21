@@ -124,56 +124,67 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
           """[ {
             |  "File_Id" : 0,
             |  "Record_Id" : 0,
+            |  "Record_Byte_Length" : 1,
             |  "A" : "1",
             |  "B" : ""
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 1,
+            |  "Record_Byte_Length" : 2,
             |  "A" : "1",
             |  "B" : "2"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 2,
+            |  "Record_Byte_Length" : 3,
             |  "A" : "1",
             |  "B" : "23"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 3,
+            |  "Record_Byte_Length" : 4,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 4,
+            |  "Record_Byte_Length" : 5,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 5,
+            |  "Record_Byte_Length" : 6,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 6,
+            |  "Record_Byte_Length" : 7,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 7,
+            |  "Record_Byte_Length" : 8,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 8,
+            |  "Record_Byte_Length" : 9,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 9,
+            |  "Record_Byte_Length" : 4,
             |  "A" : "1",
             |  "B" : "234"
             |}, {
             |  "File_Id" : 0,
             |  "Record_Id" : 10,
+            |  "Record_Byte_Length" : 4,
             |  "A" : "5",
             |  "B" : "678"
             |} ]

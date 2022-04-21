@@ -101,6 +101,7 @@ class Test22HierarchicalOccursSpec extends FunSuite with SparkTestBase with Bina
         .option("redefine-segment-id-map:2", "SEG2 => 2")
         .option("segment-children:1", "SEG1 => SEG2")
         .load(tmpFileName)
+        .drop("Record_Byte_Length")
 
       val expected =
         """[ {

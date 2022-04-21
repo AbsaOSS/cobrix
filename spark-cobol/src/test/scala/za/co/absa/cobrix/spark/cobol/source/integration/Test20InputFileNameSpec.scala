@@ -139,7 +139,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .option("generate_record_id", "true")
           .load(inputDataPath)
 
-        assert(df.schema.fields(2).name == "F")
+        assert(df.schema.fields(3).name == "F")
 
         val fileName = getInputFileNameVarLen(df)
 
@@ -158,7 +158,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
           .option("generate_record_id", "true")
           .load(inputDataPath)
 
-        assert(df.schema.fields(2).name == "F")
+        assert(df.schema.fields(3).name == "F")
 
         val fileName = getInputFileNameVarLen(df)
 
@@ -218,7 +218,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
         val df = getDataFrameReader(getHierarchicalDf, true, false)
           .load(inputDataPath)
 
-        assert(df.schema.fields(2).name == "F")
+        assert(df.schema.fields(3).name == "F")
 
         val fileName = getInputFileNameVarLen(df)
 
@@ -229,7 +229,7 @@ class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
         val df = getDataFrameReader(getHierarchicalDf, true, true)
           .load(inputDataPath)
 
-        assert(df.schema.fields(2).name == "F")
+        assert(df.schema.fields(3).name == "F")
 
         val fileName = getInputFileNameVarLen(df)
 
