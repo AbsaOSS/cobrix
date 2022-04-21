@@ -52,6 +52,7 @@ class Test19DisplayNumParsingSpec extends WordSpec with SparkTestBase with Cobol
           .option("generate_record_id", "true")
           .option("schema_retention_policy", "collapse_root")
           .load(inputDataPath)
+          .drop("Record_Byte_Length")
 
         //testSchema(df, actualSchemaPath, expectedSchemaPath)
 

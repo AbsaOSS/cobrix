@@ -66,6 +66,7 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
       .option("record_header_parser", "za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser")
       .option("rhp_additional_info", "rhp info")
       .load(inputDataPath)
+      .drop("Record_Byte_Length")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = df.schema.json
