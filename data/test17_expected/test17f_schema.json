@@ -11,6 +11,11 @@
     "nullable" : false,
     "metadata" : { }
   }, {
+    "name" : "Record_Byte_Length",
+    "type" : "integer",
+    "nullable" : false,
+    "metadata" : { }
+  }, {
     "name" : "SEGMENT_ID",
     "type" : "string",
     "nullable" : true,
