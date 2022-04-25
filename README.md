@@ -460,9 +460,9 @@ You can experiment with this feature using built-in example in `za.co.absa.cobri
 
 ### Record Id fields generation
 
-For data that has record order dependency generation of "File_Id" and "Record_Id" fields is supported. The values of the File_Id column will
-be unique for each file when a directory is specified as the source for data. The values of the Record_Id column will be unique and sequential
-record identifiers within the file.
+For data that has record order dependency generation of "File_Id", "Record_Id", and "Record_Byte_Length" fields is
+supported. The values of the File_Id column will be unique for each file when a directory is specified as the source for
+data. The values of the Record_Id column will be unique and sequential record identifiers within the file.
 
 Turn this feature on use
 ```
@@ -1218,15 +1218,15 @@ Again, the full example is available at
 
 ##### Modifier options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("schema_retention_policy", "collapse_root") | When `collapse_root` (default) the root level record will be removed from the Spark schema. When `keep_original`, the root level GROUP will be present in the Spark schema |
-| .option("drop_group_fillers", "false")     | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained. |
-| .option("drop_value_fillers", "false")     | If `true` (default), all non-GROUP FILLERs will be dropped from the output schema. If `false`, such fields will be retained. |
-| .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group. |
-| .option("generate_record_id", false)       | Generate autoincremental 'File_Id' and 'Record_Id' fields. This is used for processing record order dependent data. |
+|            Option (usage example)          | Description                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------ |:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("schema_retention_policy", "collapse_root") | When `collapse_root` (default) the root level record will be removed from the Spark schema. When `keep_original`, the root level GROUP will be present in the Spark schema                                                                                                         |
+| .option("drop_group_fillers", "false")     | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained.                                                                                                                                                                    |
+| .option("drop_value_fillers", "false")     | If `true` (default), all non-GROUP FILLERs will be dropped from the output schema. If `false`, such fields will be retained.                                                                                                                                                                |
+| .option("non_terminals", "GROUP1,GROUP2")  | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group.                                                                               |
+| .option("generate_record_id", false)       | Generate autoincremental 'File_Id', 'Record_Id' and 'Record_Byte_Length' fields. This is used for processing record order dependent data.                                                                                                                                                   |
 | .option("with_input_file_name_col", "file_name") | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
-| .option("debug", "hex")                    | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`. The legacy value `true` is supported and will generate debug fields in HEX.  |
+| .option("debug", "hex")                    | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`. The legacy value `true` is supported and will generate debug fields in HEX.                                          |
 
 ##### Fixed length record format options (for record_format = F or FB)
 | .option("record_format", "F")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
@@ -1400,6 +1400,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.4.11 will be released soon.
+   - [#423](https://github.com/AbsaOSS/cobrix/issues/423) Added `Record_Byte_Length` field to be generated when `generate_record_id` is set to `true`. 
    - [#491](https://github.com/AbsaOSS/cobrix/issues/491) Strictness of sign overpunching is now controlled by `.option("strict_sign_overpunching", "true")`
      (false by default). When set to `true` sign overpunching is not allowed for unsigned fields. When `false`, positive sign overpunching is
      allowed for unsigned fields.
