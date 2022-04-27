@@ -63,6 +63,8 @@ object RecordExtractors {
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
+    val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
+
     def extractArray(field: Statement, useOffset: Int): (Int, Array[Any]) = {
       val from = 0
       val arraySize = field.arrayMaxSize
@@ -173,7 +175,13 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val records = for (record <- ast.children) yield {
+    val rootRecords = if (isAstFlat) {
+      Seq(ast)
+    } else {
+      ast.children
+    }
+
+    val records = for (record <- rootRecords) yield {
       val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
       if (!record.isRedefined) {
         nextOffset += size
@@ -181,7 +189,13 @@ object RecordExtractors {
       values
     }
 
-    applyRecordPostProcessing(ast, records, policy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
+    val effectiveSchemaRetentionPolicy = if (isAstFlat) {
+      SchemaRetentionPolicy.CollapseRoot
+    } else {
+      policy
+    }
+
+    applyRecordPostProcessing(ast, records, effectiveSchemaRetentionPolicy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -226,6 +240,8 @@ object RecordExtractors {
       inputFileName: String = "",
       handler: RecordHandler[T]
   ): Seq[Any] = {
+    val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
+
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
     def extractArray(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Array[Any]) = {
@@ -377,7 +393,13 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val records = ast.children.collect { case grp: Group if grp.parentSegment.isEmpty =>
+    val rootRecords = if (isAstFlat) {
+      Seq(ast)
+    } else {
+      ast.children
+    }
+
+    val records = rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
       val (size, values) = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
       nextOffset += size
       values
@@ -385,7 +407,13 @@ object RecordExtractors {
 
     val recordLength = segmentsData.map(_._2.length).sum
 
-    applyRecordPostProcessing(ast, records, policy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
+    val effectiveSchemaRetentionPolicy = if (isAstFlat) {
+      SchemaRetentionPolicy.CollapseRoot
+    } else {
+      policy
+    }
+
+    applyRecordPostProcessing(ast, records, effectiveSchemaRetentionPolicy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
   }
 
   /**

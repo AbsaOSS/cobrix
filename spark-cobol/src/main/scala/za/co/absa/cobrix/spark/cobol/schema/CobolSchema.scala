@@ -77,12 +77,13 @@ class CobolSchema(copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
     logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-    val records = for (record <- copybook.ast.children) yield {
+
+    val records = for (record <- copybook.getRootRecords) yield {
       val group = record.asInstanceOf[Group]
       val redefines = copybook.getAllSegmentRedefines
       parseGroup(group, redefines)
     }
-    val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot) {
+    val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot || copybook.isFlatCopybook) {
       // Expand root group fields
       records.toArray.flatMap(group => group.dataType.asInstanceOf[StructType].fields)
     } else {

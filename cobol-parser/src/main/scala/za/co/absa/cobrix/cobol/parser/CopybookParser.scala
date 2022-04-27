@@ -636,7 +636,12 @@ object CopybookParser extends Logging {
     if (segmentRedefines.isEmpty) {
       ast
     } else {
-      val newSchema = processRootLevelFields(ast)
+      val isFlatAst = ast.children.exists(_.isInstanceOf[Primitive])
+      val newSchema = if (isFlatAst) {
+        processGroupFields(ast)
+      } else {
+        processRootLevelFields(ast)
+      }
       validateAllSegmentsFound()
       ast.withUpdatedChildren(newSchema.children)
     }
@@ -985,10 +990,8 @@ object CopybookParser extends Logging {
     * @return The same AST with non-filler size set for each group
     */
   private def calculateNonFillerSizes(ast: CopybookAST): CopybookAST = {
-    var lastFillerIndex = 0
-
-    def calcSubGroupNonFillers(group: Group): Group = {
-      val newChildren = calcNonFillers(group)
+    def calcGroupNonFillers(group: Group): Group = {
+      val newChildren = calcNonFillerChildren(group)
       var i = 0
       var nonFillers = 0
       while (i < group.children.length) {
@@ -999,11 +1002,11 @@ object CopybookParser extends Logging {
       group.copy(nonFillerSize = nonFillers, children = newChildren.children)(group.parent)
     }
 
-    def calcNonFillers(group: CopybookAST): CopybookAST = {
+    def calcNonFillerChildren(group: CopybookAST): CopybookAST = {
       val newChildren = ArrayBuffer[Statement]()
       group.children.foreach {
         case grp: Group =>
-          val newGrp = calcSubGroupNonFillers(grp)
+          val newGrp = calcGroupNonFillers(grp)
           if (newGrp.children.nonEmpty) {
             newChildren += newGrp
           }
@@ -1012,7 +1015,7 @@ object CopybookParser extends Logging {
       group.withUpdatedChildren(newChildren)
     }
 
-    calcNonFillers(ast)
+    calcGroupNonFillers(ast)
   }
 
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
