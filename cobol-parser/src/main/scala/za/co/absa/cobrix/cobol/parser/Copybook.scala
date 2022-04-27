@@ -60,6 +60,16 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     */
   lazy val isHierarchical: Boolean = getAllSegmentRedefines.exists(_.parentSegment.nonEmpty)
 
+  val isFlatCopybook: Boolean = ast.children.exists(f => f.isInstanceOf[Primitive])
+
+  def getRootRecords: Seq[Statement] = {
+    if (isFlatCopybook) {
+      Seq(ast)
+    } else {
+      ast.children
+    }
+  }
+
   /**
     * Get the AST object of a field by name.
     *
@@ -85,7 +95,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
     def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
       val transformedFieldName = CopybookParser.transformIdentifier(fieldName)
-      schema.children.flatMap(grp => getFieldByNameInGroup(grp.asInstanceOf[Group], transformedFieldName))
+      getFieldByNameInGroup(schema, transformedFieldName)
     }
 
     def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
@@ -116,12 +126,13 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
     def getFieldByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
       val origPath = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
+      val rootRecords = getRootRecords
       val path = if (!pathBeginsWithRoot(ast, origPath)) {
-        ast.children.head.name +: origPath
+        rootRecords.head.name +: origPath
       } else {
         origPath
       }
-      ast.children.flatMap(grp =>
+      rootRecords.flatMap(grp =>
         if (grp.name.equalsIgnoreCase(path.head))
           getFieldByPathInGroup(grp.asInstanceOf[Group], path.drop(1))
         else
@@ -189,8 +200,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
   def generateRecordLayoutPositions(): String = {
-    validate()
-
     var fieldCounter: Int = 0
 
     def alignLeft(str: String, width: Int): String = {
@@ -316,14 +325,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       }
     }
     visitGroup(ast)
-  }
-
-  private def validate(): Unit = {
-    for (grp <- ast.children) {
-      if (!grp.isInstanceOf[Group]) {
-        throw new IllegalArgumentException(s"Found a non-GROUP field at the root level (${grp.name}). Please, add the record-level root field, for example '01   RECORD.' at the top of the copybook")
-      }
-    }
   }
 }
 
