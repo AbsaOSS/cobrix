@@ -280,7 +280,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.4.11-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.5.0-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -474,6 +474,7 @@ The following fields will be added to the top of the schema:
 root
  |-- File_Id: integer (nullable = false)
  |-- Record_Id: long (nullable = false)
+ |-- Record_Byte_Length: integer (nullable = false)
 ```
 
 ### Locality optimization for variable-length records parsing
@@ -1399,7 +1400,8 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.4.11 will be released soon.
+- #### 2.5.0 will be released soon.
+   - [#396](https://github.com/AbsaOSS/cobrix/issues/396) Added support for parsing copybooks that do not have root record GROUP.
    - [#423](https://github.com/AbsaOSS/cobrix/issues/423) Added `Record_Byte_Length` field to be generated when `generate_record_id` is set to `true`. 
    - [#491](https://github.com/AbsaOSS/cobrix/issues/491) Strictness of sign overpunching is now controlled by `.option("strict_sign_overpunching", "true")`
      (false by default). When set to `true` sign overpunching is not allowed for unsigned fields. When `false`, positive sign overpunching is
@@ -1483,6 +1485,9 @@ A: Update hadoop dll to version 3.2.2 or newer.
     The S3 support could be considered experimental since only S3A connector has been tested. However, since Cobrix is built on
     filesystem abstractions provided by Hadoop and Spark libraries, there shouldn't be any issues using other S3 connectors. 
 
+<details><summary>Older versions</summary>
+<p>
+
 - #### 2.1.5 released 11 December 2020.
   - [#349](https://github.com/AbsaOSS/cobrix/issues/349) Fixed regression bug introduced in 2.1.4 resulting in an infinite loop in the sparse index generation for fixed-record length multisegment files.
   
@@ -1510,9 +1515,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
   - [#295](https://github.com/AbsaOSS/cobrix/issues/295) Added `is_text` option for easier processing ASCII text files that uses EOL characters as record separators.
   - [#294](https://github.com/AbsaOSS/cobrix/issues/294) Updated Spark compile-time dependency to `2.4.5` to remove security alerts.
   - [#293](https://github.com/AbsaOSS/cobrix/issues/293) Copybook-related error messages are made more clear.  
-
-<details><summary>Older versions</summary>
-<p>
 
 - #### 2.0.8 released 14 May 2020.
   - [#184](https://github.com/AbsaOSS/cobrix/issues/184) Record extractors are made generic to be reusable for other targets in addition to Sspark Row. (Thanks [@tr11](https://github.com/tr11)). 
