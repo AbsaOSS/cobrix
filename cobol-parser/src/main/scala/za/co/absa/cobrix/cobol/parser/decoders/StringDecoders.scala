@@ -171,7 +171,7 @@ object StringDecoders {
     * @return A string representation of the binary data
     */
   final def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean): String = {
-    if (improvedNullDetection && isArrayNull(bytes))
+    if (improvedNullDetection && isNumberNull(bytes))
       return null
 
     import Constants._
@@ -246,7 +246,7 @@ object StringDecoders {
     val allowedDigitChars = " 0123456789"
     val punchedSignChars = "{ABCDEFGHI}JKLMNOPQR"
 
-    if (improvedNullDetection && isArrayNull(bytes))
+    if (improvedNullDetection && isNumberNull(bytes))
       return null
 
     val buf = new StringBuffer(bytes.length)

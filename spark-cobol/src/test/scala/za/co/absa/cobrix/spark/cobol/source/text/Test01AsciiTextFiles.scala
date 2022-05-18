@@ -99,4 +99,27 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
     }
   }
 
+  test("Test ASCII numerics empty values") {
+    val copybook = """       05  A       PIC 9(2)V9(2). """
+
+    val textFileContent = Seq("1234", "    ").mkString("\n")
+
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected = """[{"A":12.34},{}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
 }

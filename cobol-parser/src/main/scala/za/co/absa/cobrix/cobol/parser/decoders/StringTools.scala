@@ -71,4 +71,16 @@ object StringTools {
     }
     true
   }
+
+  final def isNumberNull(bytes: Array[Byte]): Boolean = {
+    var i = 0
+    val size = bytes.length
+    while (i < size) {
+      if (bytes(i) != 0 && bytes(i) != 32 && bytes(i) != 64) {
+        return false
+      }
+      i += 1
+    }
+    true
+  }
 }
