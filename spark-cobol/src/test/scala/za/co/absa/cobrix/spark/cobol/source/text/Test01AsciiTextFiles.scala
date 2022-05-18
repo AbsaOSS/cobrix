@@ -112,6 +112,7 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
         .option("pedantic", "true")
         .option("record_format", "D")
         .option("schema_retention_policy", "collapse_root")
+        .option("improved_null_detection", "true")
         .load(tmpFileName)
 
       val expected = """[{"A":12.34},{}]"""
