@@ -92,7 +92,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
           ||0      |2        |10                |2  |2345678   |
           ||0      |3        |4                 |3  |123       |
           ||0      |4        |2                 |4  |1         |
-          ||0      |5        |1                 |5  |          |
+          ||0      |5        |1                 |5  |null      |
           |+-------+---------+------------------+---+----------+
           |
           |""".stripMargin.replace("\r\n", "\n")
@@ -114,6 +114,7 @@ class Test04VarcharFields extends FunSuite with SparkTestBase with BinaryFileFix
         .option("record_format", "V")
         .option("string_trimming_policy", "none")
         .option("schema_retention_policy", "collapse_root")
+        .option("improved_null_detection", "false")
         .load(tmpFileName)
 
       val expected =

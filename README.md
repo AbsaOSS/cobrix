@@ -1215,7 +1215,7 @@ Again, the full example is available at
 | .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
 | .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                             |
 | .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                |
-| .option("improved_null_detection", "false")               | If `true`, values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                      |
+| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                             |
 
 ##### Modifier options
 
@@ -1402,10 +1402,12 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.5.0 will be released soon.
    - [#396](https://github.com/AbsaOSS/cobrix/issues/396) Added support for parsing copybooks that do not have root record GROUP.
-   - [#423](https://github.com/AbsaOSS/cobrix/issues/423) Added `Record_Byte_Length` field to be generated when `generate_record_id` is set to `true`. 
+   - [#423](https://github.com/AbsaOSS/cobrix/issues/423) Added `Record_Byte_Length` field to be generated when `generate_record_id` is set to `true`.
+   - [#500](https://github.com/AbsaOSS/cobrix/issues/500) Improved null detection by default (the old behavior can be restored using `.option("improved_null_detection", "false")`).
    - [#491](https://github.com/AbsaOSS/cobrix/issues/491) Strictness of sign overpunching is now controlled by `.option("strict_sign_overpunching", "true")`
      (false by default). When set to `true` sign overpunching is not allowed for unsigned fields. When `false`, positive sign overpunching is
      allowed for unsigned fields.
+   - [#501](https://github.com/AbsaOSS/cobrix/issues/501) Fixed decimal field null detection when 'improved_null_detection' is turned on.
 
 - #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.

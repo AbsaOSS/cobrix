@@ -93,6 +93,7 @@ class Test4MultisegmentSpec extends FunSuite with SparkTestBase {
       .option("encoding", "ascii")
       .option("ascii_charset", "ISO-8859-1")
       .option("record_format", "V")
+      .option("improved_null_detection", "false")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")
       .option("segment_id_level1", "P")

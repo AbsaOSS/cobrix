@@ -50,6 +50,7 @@ class ImprovedNullDetectionSpec extends FunSuite with SparkTestBase with BinaryF
         .option("copybook_contents", copybook)
         .option("schema_retention_policy", "collapse_root")
         .option("pedantic", "true")
+        .option("improved_null_detection", "false")
         .load(tmpFileName)
 
       val expected =

@@ -8,7 +8,6 @@
   "AMOUNT" : 0.01
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Jene"
@@ -72,7 +71,6 @@
   "AMOUNT" : 11.34
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Sulema"
@@ -272,7 +270,6 @@
   "AMOUNT" : 39.93
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -352,7 +349,6 @@
   "AMOUNT" : 59.26
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Doreth"
@@ -552,7 +548,6 @@
   "AMOUNT" : 86.27
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -616,7 +611,6 @@
   "AMOUNT" : 94.68
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cassey"
@@ -736,7 +730,6 @@
   "AMOUNT" : 122.19
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cliff"

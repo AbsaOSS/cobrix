@@ -134,6 +134,7 @@ class Test27RecordLengthSpec extends WordSpec with SparkTestBase with BinaryFile
       .option("encoding", "ascii")
       .option("record_length", "2")
       .option("schema_retention_policy", "collapse_root")
+      .option("improved_null_detection", "false")
       .options(extraOptions)
       .load(inputPath)
   }
