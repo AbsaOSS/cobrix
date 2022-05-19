@@ -254,7 +254,7 @@ object CobolParametersParser extends Logging {
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_STRICT_SIGN_OVERPUNCHING, "true").toBoolean,
-      params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "false").toBoolean,
+      params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),

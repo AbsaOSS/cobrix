@@ -2,8 +2,7 @@
   "COMPANY_PREFIX" : "oan",
   "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "& Z",
-    "STR2" : ""
+    "STR1" : "& Z"
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -15,11 +14,7 @@
   "AMOUNT" : 0.01
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -32,8 +27,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -92,8 +86,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -122,8 +115,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -135,11 +127,7 @@
   "AMOUNT" : 11.34
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -167,8 +155,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -197,8 +184,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -272,8 +258,7 @@
   "COMPANY_PREFIX" : "ing",
   "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "oug",
-    "STR2" : ""
+    "STR1" : "oug"
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -287,8 +272,7 @@
   "COMPANY_PREFIX" : "oan",
   "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "& Z",
-    "STR2" : ""
+    "STR1" : "& Z"
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -302,8 +286,7 @@
   "COMPANY_PREFIX" : "oan",
   "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "& Z",
-    "STR2" : ""
+    "STR1" : "& Z"
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -317,8 +300,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -347,8 +329,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -362,8 +343,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -377,8 +357,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -392,8 +371,7 @@
   "COMPANY_PREFIX" : "ing",
   "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "oug",
-    "STR2" : ""
+    "STR1" : "oug"
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -407,8 +385,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -422,8 +399,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -437,8 +413,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -452,8 +427,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -467,8 +441,7 @@
   "COMPANY_PREFIX" : "ing",
   "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "oug",
-    "STR2" : ""
+    "STR1" : "oug"
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -482,8 +455,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -510,11 +482,7 @@
   "AMOUNT" : 39.93
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -527,8 +495,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -542,8 +509,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -557,8 +523,7 @@
   "COMPANY_PREFIX" : "ing",
   "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "oug",
-    "STR2" : ""
+    "STR1" : "oug"
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -572,8 +537,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -587,8 +551,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -617,8 +580,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -632,8 +594,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -647,8 +608,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -660,11 +620,7 @@
   "AMOUNT" : 59.26
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -707,8 +663,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -737,8 +692,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -752,8 +706,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -767,8 +720,7 @@
   "COMPANY_PREFIX" : "ing",
   "COMPANY_NAME" : "oug",
   "FILLER_1" : {
-    "STR1" : "oug",
-    "STR2" : ""
+    "STR1" : "oug"
   },
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILLER_2" : {
@@ -782,8 +734,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -797,8 +748,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -827,8 +777,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -842,8 +791,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -857,8 +805,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -887,8 +834,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -902,8 +848,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -917,8 +862,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -932,8 +876,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -947,8 +890,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -962,8 +904,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -992,8 +933,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1007,8 +947,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -1022,8 +961,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1035,11 +973,7 @@
   "AMOUNT" : 86.27
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -1052,8 +986,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1082,8 +1015,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -1112,8 +1044,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "auh.",
   "FILLER_1" : {
-    "STR1" : "auh.",
-    "STR2" : ""
+    "STR1" : "auh."
   },
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILLER_2" : {
@@ -1155,11 +1086,7 @@
   "AMOUNT" : 94.68
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -1172,8 +1099,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1202,8 +1128,7 @@
   "COMPANY_PREFIX" : "oan",
   "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "& Z",
-    "STR2" : ""
+    "STR1" : "& Z"
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -1217,8 +1142,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {
@@ -1262,8 +1186,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1277,8 +1200,7 @@
   "COMPANY_PREFIX" : "oan",
   "COMPANY_NAME" : "& Z",
   "FILLER_1" : {
-    "STR1" : "& Z",
-    "STR2" : ""
+    "STR1" : "& Z"
   },
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILLER_2" : {
@@ -1307,8 +1229,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -1322,8 +1243,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1337,8 +1257,7 @@
   "COMPANY_PREFIX" : "BCD",
   "COMPANY_NAME" : "td.",
   "FILLER_1" : {
-    "STR1" : "td.",
-    "STR2" : ""
+    "STR1" : "td."
   },
   "ADDRESS" : "74 Lawn ave., New York",
   "FILLER_2" : {
@@ -1352,8 +1271,7 @@
   "COMPANY_PREFIX" : "eie",
   "COMPANY_NAME" : "qweq.",
   "FILLER_1" : {
-    "STR1" : "qweq.",
-    "STR2" : ""
+    "STR1" : "qweq."
   },
   "ADDRESS" : "901 Ztt, Munich",
   "FILLER_2" : {
@@ -1367,8 +1285,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1380,11 +1297,7 @@
   "AMOUNT" : 122.19
 }, {
   "COMPANY_PREFIX" : "jkL",
-  "COMPANY_NAME" : "",
-  "FILLER_1" : {
-    "STR1" : "",
-    "STR2" : ""
-  },
+  "FILLER_1" : { },
   "ADDRESS" : "5574, Tokyo",
   "FILLER_2" : {
     "STR4" : "5574, Toky"
@@ -1412,8 +1325,7 @@
   "COMPANY_PREFIX" : "CSR",
   "COMPANY_NAME" : "O",
   "FILLER_1" : {
-    "STR1" : "O",
-    "STR2" : ""
+    "STR1" : "O"
   },
   "ADDRESS" : "123/B Prome str., Denver",
   "FILLER_2" : {
@@ -1472,8 +1384,7 @@
   "COMPANY_PREFIX" : "est",
   "COMPANY_NAME" : "ank",
   "FILLER_1" : {
-    "STR1" : "ank",
-    "STR2" : ""
+    "STR1" : "ank"
   },
   "ADDRESS" : "1 Garden str., London",
   "FILLER_2" : {
@@ -1487,8 +1398,7 @@
   "COMPANY_PREFIX" : "ear",
   "COMPANY_NAME" : "MBH.",
   "FILLER_1" : {
-    "STR1" : "MBH.",
-    "STR2" : ""
+    "STR1" : "MBH."
   },
   "ADDRESS" : "107 Labe str., Berlin",
   "FILLER_2" : {

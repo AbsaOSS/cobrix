@@ -62,6 +62,7 @@ class Test13bVarLenFileHeadersSpec extends FunSuite with SparkTestBase {
       .option("copybook_contents", copybookContents)
       .option("schema_retention_policy", "collapse_root")
       .option("record_format", "V")
+      .option("improved_null_detection", "false")
       .option("is_rdw_big_endian", "true")
       .option("segment_field", "SEGMENT_ID")
       .option("segment_id_level0", "C")

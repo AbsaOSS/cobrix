@@ -6,8 +6,7 @@
   "COMPANY_NAME" : "& Z",
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -18,11 +17,9 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Jene",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Jene"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Jene"
@@ -96,8 +93,7 @@
   "COMPANY_NAME" : "MBH.",
   "ADDRESS" : "107 Labe str., Berlin",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Jene",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Jene"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Jene"
@@ -138,7 +134,6 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
     "FILLER_P6" : "Sulem",
@@ -201,8 +196,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Starr",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Starr"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Starr"
@@ -231,8 +225,7 @@
   "COMPANY_NAME" : "d Inc.",
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Alona",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Alona"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Alona"
@@ -276,8 +269,7 @@
   "COMPANY_NAME" : "oug",
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -321,8 +313,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Jene",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Jene"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Jene"
@@ -336,8 +327,7 @@
   "COMPANY_NAME" : "d Inc.",
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Inge",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Inge"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Inge"
@@ -351,8 +341,7 @@
   "COMPANY_NAME" : "MBH.",
   "ADDRESS" : "107 Labe str., Berlin",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Edyth",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Edyth"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Edyth"
@@ -366,8 +355,7 @@
   "COMPANY_NAME" : "O",
   "ADDRESS" : "123/B Prome str., Denver",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -396,8 +384,7 @@
   "COMPANY_NAME" : "oug",
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -411,8 +398,7 @@
   "COMPANY_NAME" : "ank",
   "ADDRESS" : "1 Garden str., London",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Alona",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Alona"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Alona"
@@ -426,8 +412,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Edyth",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Edyth"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Edyth"
@@ -441,8 +426,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Edyth",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Edyth"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Edyth"
@@ -501,8 +485,7 @@
   "COMPANY_NAME" : "d Inc.",
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Alona",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Alona"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Alona"
@@ -513,11 +496,9 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -546,8 +527,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Inge",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Inge"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Inge"
@@ -561,8 +541,7 @@
   "COMPANY_NAME" : "oug",
   "ADDRESS" : "74 Qing ave., Beijing",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Alona",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Alona"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Alona"
@@ -576,8 +555,7 @@
   "COMPANY_NAME" : "auh.",
   "ADDRESS" : "2 G. str., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Cliff",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Cliff"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cliff"
@@ -606,8 +584,7 @@
   "COMPANY_NAME" : "on Inc.",
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -663,7 +640,6 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
     "FILLER_P6" : "Doret",
@@ -696,8 +672,7 @@
   "COMPANY_NAME" : "Pivovar",
   "ADDRESS" : "74 Staromestka., Prague",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -741,8 +716,7 @@
   "COMPANY_NAME" : "td.",
   "ADDRESS" : "74 Lawn ave., New York",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Edyth",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Edyth"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Edyth"
@@ -801,8 +775,7 @@
   "COMPANY_NAME" : "O",
   "ADDRESS" : "123/B Prome str., Denver",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Cliff",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Cliff"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cliff"
@@ -816,8 +789,7 @@
   "COMPANY_NAME" : "d Inc.",
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -831,8 +803,7 @@
   "COMPANY_NAME" : "ank",
   "ADDRESS" : "1 Garden str., London",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Maya",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Maya"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Maya"
@@ -966,8 +937,7 @@
   "COMPANY_NAME" : "O",
   "ADDRESS" : "123/B Prome str., Denver",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Starr",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Starr"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Starr"
@@ -981,8 +951,7 @@
   "COMPANY_NAME" : "d Inc.",
   "ADDRESS" : "2 Park ave., Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Tyson",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Tyson"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Tyson"
@@ -1038,11 +1007,9 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -1056,8 +1023,7 @@
   "COMPANY_NAME" : "td.",
   "ADDRESS" : "74 Lawn ave., New York",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -1158,7 +1124,6 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
     "FILLER_P6" : "Casse",
@@ -1176,8 +1141,7 @@
   "COMPANY_NAME" : "O",
   "ADDRESS" : "123/B Prome str., Denver",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Cliff",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Cliff"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cliff"
@@ -1251,8 +1215,7 @@
   "COMPANY_NAME" : "Pivovar",
   "ADDRESS" : "74 Staromestka., Prague",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Maya",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Maya"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Maya"
@@ -1281,8 +1244,7 @@
   "COMPANY_NAME" : "& Z",
   "ADDRESS" : "10 Sandton, Johannesburg",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Mindy",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Mindy"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Mindy"
@@ -1311,8 +1273,7 @@
   "COMPANY_NAME" : "ank",
   "ADDRESS" : "1 Garden str., London",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Mindy",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Mindy"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Mindy"
@@ -1356,8 +1317,7 @@
   "COMPANY_NAME" : "qweq.",
   "ADDRESS" : "901 Ztt, Munich",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Maya",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Maya"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Maya"
@@ -1383,11 +1343,9 @@
   "COMPANY_PREFIX" : "jkL",
   "FILLER_P2" : "P",
   "FILLER_P3" : "j",
-  "COMPANY_NAME" : "",
   "ADDRESS" : "5574, Tokyo",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Cliff",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Cliff"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Cliff"
@@ -1446,8 +1404,7 @@
   "COMPANY_NAME" : "on Inc.",
   "ADDRESS" : "871A Forest ave., Toronto",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Maya",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Maya"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Maya"
@@ -1461,8 +1418,7 @@
   "COMPANY_NAME" : "Pivovar",
   "ADDRESS" : "74 Staromestka., Prague",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"
@@ -1491,8 +1447,7 @@
   "COMPANY_NAME" : "MBH.",
   "ADDRESS" : "107 Labe str., Berlin",
   "FILL_FIELD" : {
-    "FILLER_P6" : "Suk",
-    "FILLER_P7" : ""
+    "FILLER_P6" : "Suk"
   },
   "CONTACT_PERSON" : {
     "FIRST_NAME" : "Suk"

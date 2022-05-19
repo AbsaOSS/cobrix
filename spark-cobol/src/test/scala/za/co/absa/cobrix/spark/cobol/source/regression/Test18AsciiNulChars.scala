@@ -58,7 +58,7 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
           .option("string_trimming_policy", "none")
           .load(tmpFileName)
 
-        val expected = """[{"A":"1","B":"   "},{"A":"1","B":" "},{"A":"1","B":""},{"A":"1","B":""}]"""
+        val expected = """[{"A":"1","B":"   "},{"A":"1","B":" "},{"A":"1"},{"A":"1","B":""}]"""
 
         val count = df.count()
         val actual = df.toJSON.collect().mkString("[", ",", "]")
@@ -118,6 +118,7 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
           .option("encoding", "ascii")
           .option("string_trimming_policy", "keep_all")
           .option("generate_record_id", "true")
+          .option("improved_null_detection", "false")
           .load(tmpFileName)
 
         val expected =
@@ -206,6 +207,7 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
           .option("copybook_contents", copybook)
           .option("pedantic", "true")
           .option("record_format", "D2")
+          .option("improved_null_detection", "false")
           .option("encoding", "ascii")
           .option("string_trimming_policy", "keep_all")
           .option("generate_record_id", "true")
@@ -274,6 +276,7 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
           .option("copybook_contents", copybook)
           .option("pedantic", "true")
           .option("record_format", "D")
+          .option("improved_null_detection", "false")
           .option("input_split_records", 2)
           .option("encoding", "ascii")
           .option("string_trimming_policy", "keep_all")

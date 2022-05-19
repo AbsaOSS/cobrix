@@ -65,6 +65,7 @@ class Test11CustomRDWParser extends FunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .option("record_header_parser", "za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser")
       .option("rhp_additional_info", "rhp info")
+      .option("improved_null_detection", "false")
       .load(inputDataPath)
       .drop("Record_Byte_Length")
 

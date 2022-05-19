@@ -46,7 +46,7 @@ object StringDecoders {
     * @return A string representation of the binary data
     */
   final def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, conversionTable: Array[Char], improvedNullDetection: Boolean): String = {
-    if (improvedNullDetection && isArrayNull(bytes))
+    if (improvedNullDetection && trimmingType != KeepAll && isArrayNull(bytes))
       return null
 
     var i = 0
@@ -76,7 +76,7 @@ object StringDecoders {
     * @return A string representation of the binary data
     */
   final def decodeAsciiString(bytes: Array[Byte], trimmingType: Int, improvedNullDetection: Boolean): String = {
-    if (improvedNullDetection && isArrayNull(bytes))
+    if (improvedNullDetection && trimmingType != KeepAll && isArrayNull(bytes))
       return null
 
     var i = 0
