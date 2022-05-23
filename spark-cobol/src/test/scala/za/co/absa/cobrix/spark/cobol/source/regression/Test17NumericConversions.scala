@@ -125,6 +125,162 @@ class Test17NumericConversions extends WordSpec with SparkTestBase with BinaryFi
         }
       }
     }
+
+    "scaling should be parsed correctly for scaled signed decimal" when {
+      val copybook = "      10 N PIC SVP9(15)."
+
+      val asciiContents = "123456789012345\n23456789012345O\n"
+
+      withTempTextFile("num_conversion", ".dat", StandardCharsets.UTF_8, asciiContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N: decimal(16,16) (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "N" : 0.0123456789012345
+              |}, {
+              |  "N" : -0.0234567890123456
+              |} ]""".stripMargin
+
+          assertEqualsMultiline(actualData, expectedData)
+        }
+      }
+    }
+
+    "scaling should be parsed correctly for scaled signed shortened decimal" when {
+      val copybook = "      10 N PIC SP9(15)."
+
+      val asciiContents = "123456789012345\n23456789012345O\n"
+
+      withTempTextFile("num_conversion", ".dat", StandardCharsets.UTF_8, asciiContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N: decimal(16,16) (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "N" : 0.0123456789012345
+              |}, {
+              |  "N" : -0.0234567890123456
+              |} ]""".stripMargin
+
+          assertEqualsMultiline(actualData, expectedData)
+        }
+      }
+    }
+
+    "scaling should be parsed correctly for scaled decimal" when {
+      val copybook = "      10 N PIC VP9(15)."
+
+      val asciiContents = "123456789012345\n234567890123456\n"
+
+      withTempTextFile("num_conversion", ".dat", StandardCharsets.UTF_8, asciiContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N: decimal(16,16) (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "N" : 0.0123456789012345
+              |}, {
+              |  "N" : 0.0234567890123456
+              |} ]""".stripMargin
+
+          assertEqualsMultiline(actualData, expectedData)
+        }
+      }
+    }
+
+    "scaling should be parsed correctly for scaled integer" when {
+      val copybook = "      10 N PIC 9(15)P."
+
+      val asciiContents = "123456789012345\n234567890123456\n"
+
+      withTempTextFile("num_conversion", ".dat", StandardCharsets.UTF_8, asciiContents) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N: decimal(16,0) (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "N" : 1234567890123450
+              |}, {
+              |  "N" : 2345678901234560
+              |} ]""".stripMargin
+
+          assertEqualsMultiline(actualData, expectedData)
+        }
+      }
+    }
   }
 
 }
