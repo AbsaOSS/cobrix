@@ -112,7 +112,7 @@ class FieldSizeSpec extends FunSuite {
     assert(size_s9_decimal_ppp_2 == 9)
     assert(scale(9, copybook) == (0, -3))
     assert(size_s9_decimal_ppp_3 == 5)
-    assert(scale(10, copybook) == (5, 2))
+    assert(scale(10, copybook) == (5, -2))
     assert(size_s9_decimal_ppp_4 == 4)
     assert(scale(11, copybook) == (0, -2))
     assert(two_sets_braces == 17)
