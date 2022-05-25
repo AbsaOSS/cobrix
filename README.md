@@ -1408,6 +1408,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
      (false by default). When set to `true` sign overpunching is not allowed for unsigned fields. When `false`, positive sign overpunching is
      allowed for unsigned fields.
    - [#501](https://github.com/AbsaOSS/cobrix/issues/501) Fixed decimal field null detection when 'improved_null_detection' is turned on.
+   - [#502](https://github.com/AbsaOSS/cobrix/issues/502) Fixed parsing of scaled decimals that have a pattern similar to `SVP9(5)`.
 
 - #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
