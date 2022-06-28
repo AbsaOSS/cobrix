@@ -1400,7 +1400,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.5.0 will be released soon.
+- #### 2.5.0 released 28 June 2022.
    - [#396](https://github.com/AbsaOSS/cobrix/issues/396) Added support for parsing copybooks that do not have root record GROUP.
    - [#423](https://github.com/AbsaOSS/cobrix/issues/423) Added `Record_Byte_Length` field to be generated when `generate_record_id` is set to `true`.
    - [#500](https://github.com/AbsaOSS/cobrix/issues/500) Improved null detection by default (the old behavior can be restored using `.option("improved_null_detection", "false")`).
