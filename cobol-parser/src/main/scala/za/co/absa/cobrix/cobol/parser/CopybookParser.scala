@@ -867,7 +867,7 @@ object CopybookParser extends Logging {
           if (newGrp.children.nonEmpty) {
             newChildren += newGrp
           }
-          if (!grp.isFiller) hasNonFillers = true
+          if (!newGrp.isFiller) hasNonFillers = true
         case st: Primitive =>
           val newSt = processPrimitive(st)
           newChildren += newSt
@@ -878,7 +878,7 @@ object CopybookParser extends Logging {
 
     val (newSchema, hasNonFillers) = renameFillers(ast)
     if (!hasNonFillers) {
-      throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
+      throw new IllegalStateException("The copybook is empty since it consists only of FILLER fields.")
     }
     newSchema
   }
