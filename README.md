@@ -1400,7 +1400,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.5.1 to be released soon.
+- #### 2.5.1 released 24 August 2022.
    - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fix dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
 
 - #### 2.5.0 released 28 June 2022.
