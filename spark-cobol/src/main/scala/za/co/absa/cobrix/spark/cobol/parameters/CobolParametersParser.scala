@@ -428,11 +428,11 @@ object CobolParametersParser extends Logging {
       } else if (i == 0 && params.contains(PARAM_SEGMENT_ID_ROOT)) {
         levels += params(PARAM_SEGMENT_ID_ROOT)
       } else {
-        return levels
+        return levels.toList
       }
       i = i + 1
     }
-    levels
+    levels.toList
   }
 
   private def getParameter(key: String, params: Parameters): Option[String] = {

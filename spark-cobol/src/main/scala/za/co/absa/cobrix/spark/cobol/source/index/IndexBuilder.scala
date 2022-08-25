@@ -126,7 +126,7 @@ private[source] object IndexBuilder extends Logging {
         partition.flatMap(row => {
           generateIndexEntry(row, sconf.value, reader)
         })
-      }).cache
+      }).cache()
 
     repartitionIndexes(indexRDD)
   }
@@ -145,7 +145,7 @@ private[source] object IndexBuilder extends Logging {
           val element = SparseIndexEntry(0, -1, fileId, 0L)
           ArrayBuffer[SparseIndexEntry](element)
         })
-      }).cache
+      }).cache()
 
     repartitionIndexes(indexRDD)
   }

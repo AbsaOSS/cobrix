@@ -175,13 +175,13 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val rootRecords = if (isAstFlat) {
+    val rootRecords: Seq[Statement] = if (isAstFlat) {
       Seq(ast)
     } else {
-      ast.children
+      ast.children.toSeq
     }
 
-    val records = for (record <- rootRecords) yield {
+    val records: Seq[T] = for (record <- rootRecords) yield {
       val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
       if (!record.isRedefined) {
         nextOffset += size
@@ -393,13 +393,13 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val rootRecords = if (isAstFlat) {
+    val rootRecords: Seq[Statement] = if (isAstFlat) {
       Seq(ast)
     } else {
-      ast.children
+      ast.children.toList
     }
 
-    val records = rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
+    val records: Seq[T] = rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
       val (size, values) = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
       nextOffset += size
       values

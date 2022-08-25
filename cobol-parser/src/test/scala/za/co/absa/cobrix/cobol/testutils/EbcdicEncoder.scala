@@ -26,7 +26,7 @@ object EbcdicEncoder {
 
   private val asciiToEbcdicTable = {
     Range(0, 256).map(charCode => {
-      val ind = ebcdicToAsciiTable.indexOf(charCode.toByte)
+      val ind = ebcdicToAsciiTable.indexOf(charCode.toByte.toChar)
       if (ind >= 0) {
         ind.toByte
       } else {

@@ -19,21 +19,26 @@ import sbt._
 object Dependencies {
   private val guavaVersion = "15.0"
   private val scodecBitsVersion = "1.1.4"
-  private val scodecCoreVersion = "1.10.3"
+  private val scodecCoreVersion = "1.11.4"
   private val antlrValue = "4.7.2"
   private val slf4jVersion = "1.7.25"
   private val jacksonVersion = "2.13.0"
 
-  private val scalatestVersion = "3.0.1"
+  private val scalatestVersion = "3.0.9"
 
   private val defaultSparkVersionForScala211 = "2.4.8"
   private val defaultSparkVersionForScala212 = "3.2.2"
+  private val defaultSparkVersionForScala213 = "3.3.0"
 
   def sparkFallbackVersion(scalaVersion: String): String = {
-    if (scalaVersion.startsWith("2.11")) {
+    if (scalaVersion.startsWith("2.11.")) {
       defaultSparkVersionForScala211
-    } else {
+    } else if (scalaVersion.startsWith("2.12.")) {
       defaultSparkVersionForScala212
+    } else if (scalaVersion.startsWith("2.13.")) {
+      defaultSparkVersionForScala213
+    } else {
+      throw new IllegalArgumentException(s"Scala $scalaVersion is not supported.")
     }
   }
 

@@ -57,7 +57,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
     new RowHandler()
   ) with FixedLenReader with Serializable {
 
-  class RowIterator(private val iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
+  class RowIterator(iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
     override def hasNext: Boolean = iterator.hasNext
 
     @throws(classOf[IllegalStateException])

@@ -185,22 +185,18 @@ class CobolSchema(copybook: Copybook,
   }
 
   private def getChildSegments(group: Group, segmentRedefines: List[Group]): ArrayBuffer[StructField] = {
-    segmentRedefines.flatMap(segment => {
-      segment.parentSegment match {
-        case Some(parent) =>
+    val childSegments = new mutable.ArrayBuffer[StructField]()
+
+    segmentRedefines.foreach(segment => {
+      segment.parentSegment.foreach(parent => {
           if (parent.name.equalsIgnoreCase(group.name)) {
             val child = parseGroup(segment, segmentRedefines)
             val fields = child.dataType.asInstanceOf[StructType].fields
-            List(
-              StructField(segment.name, ArrayType(StructType(fields)), nullable = true)
-            )
-          } else {
-            Nil
+            childSegments += StructField(segment.name, ArrayType(StructType(fields)), nullable = true)
           }
-        case None =>
-          Nil
-      }
-    }).to[mutable.ArrayBuffer]
+      })
+    })
+    childSegments
   }
 
   @throws(classOf[IllegalStateException])

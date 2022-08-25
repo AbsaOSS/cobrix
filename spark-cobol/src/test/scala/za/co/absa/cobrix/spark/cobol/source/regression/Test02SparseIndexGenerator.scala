@@ -17,12 +17,13 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import java.io.{DataOutputStream, FileOutputStream}
-
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TempDir
+
+import java.nio.file.Paths
 
 // These examples are provided by Peter Moon
 
@@ -37,9 +38,9 @@ class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with Sp
            03 D       PIC 9(1).
     """
 
-  private val dataWithHeaderPath = baseTestDir + "/data_with_header.dat"
-  private val dataWithoutHeaderPath = baseTestDir + "/data_without_header.dat"
-  private val dataWithHeaderOnly = baseTestDir + "/header_only.dat"
+  private val dataWithHeaderPath = Paths.get(baseTestDir.toString, "/data_with_header.dat").toString
+  private val dataWithoutHeaderPath = Paths.get(baseTestDir.toString, "/data_without_header.dat").toString
+  private val dataWithHeaderOnly = Paths.get(baseTestDir.toString, "/header_only.dat").toString
 
   override def beforeAll(): Unit = {
     if (!baseTestDir.exists() || !baseTestDir.isDirectory) {

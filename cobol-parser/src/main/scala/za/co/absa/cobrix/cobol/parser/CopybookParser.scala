@@ -774,7 +774,7 @@ object CopybookParser extends Logging {
           List[Group]()
         }
       )
-      (parent.name, children)
+      (parent.name, children.toList)
     }).toMap
   }
 

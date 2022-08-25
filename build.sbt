@@ -19,11 +19,12 @@ import BuildInfoTemplateSettings._
 
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.16"
+lazy val scala213 = "2.13.8"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 
-ThisBuild / scalaVersion := scala212
-ThisBuild / crossScalaVersions := Seq(scala211, scala212)
+ThisBuild / scalaVersion := scala213
+ThisBuild / crossScalaVersions := Seq(scala211, scala212, scala213)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
 

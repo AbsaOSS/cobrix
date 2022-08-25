@@ -18,14 +18,13 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
 import org.scalatest.FunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, VarOccursRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.stream.FSStream
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.mutable.ListBuffer
 
@@ -111,7 +110,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
       .load(inputDataPath + "/data.dat")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = df.schema.json
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
@@ -139,7 +138,7 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
       .load(inputDataPath + "/data2.dat")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val actualSchema = df.schema.json
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)

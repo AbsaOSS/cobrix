@@ -62,9 +62,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
   val isFlatCopybook: Boolean = ast.children.exists(f => f.isInstanceOf[Primitive])
 
-  def getRootRecords: Seq[Statement] = {
+  def getRootRecords: scala.collection.Seq[Statement] = {
     if (isFlatCopybook) {
-      Seq(ast)
+      scala.collection.Seq(ast)
     } else {
       ast.children
     }
@@ -98,7 +98,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       getFieldByNameInGroup(schema, transformedFieldName)
     }
 
-    def getFieldByPathInGroup(group: Group, path: Array[String]): Seq[Statement] = {
+    def getFieldByPathInGroup(group: Group, path: Array[String]): scala.collection.Seq[Statement] = {
       if (path.length == 0) {
         throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract it's value.")
       } else {
@@ -107,11 +107,11 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
             case g: Group =>
               if (g.name.equalsIgnoreCase(path.head))
                 getFieldByPathInGroup(g, path.drop(1))
-              else Seq()
+              else scala.collection.Seq.empty[Statement]
             case st: Primitive =>
               if (st.name.equalsIgnoreCase(path.head))
                 Seq(st)
-              else Seq()
+              else scala.collection.Seq.empty[Statement]
           }
         })
       }
@@ -124,7 +124,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       } )
     }
 
-    def getFieldByPathName(ast: CopybookAST, fieldName: String): Seq[Statement] = {
+    def getFieldByPathName(ast: CopybookAST, fieldName: String): scala.collection.Seq[Statement] = {
       val origPath = fieldName.split('.').map(str => CopybookParser.transformIdentifier(str))
       val rootRecords = getRootRecords
       val path = if (!pathBeginsWithRoot(ast, origPath)) {
@@ -136,7 +136,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
         if (grp.name.equalsIgnoreCase(path.head))
           getFieldByPathInGroup(grp.asInstanceOf[Group], path.drop(1))
         else
-          Seq()
+          scala.collection.Seq()
       )
     }
 
