@@ -17,7 +17,7 @@
 ThisBuild / organization := "com.example"
 ThisBuild / name         := "spark-cobol-app"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "2.12.12"
+ThisBuild / scalaVersion := "2.12.16"
 
 val sparkVersion = "3.0.1"
 val sparkCobolVersion = "2.5.1"

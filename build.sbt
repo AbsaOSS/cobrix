@@ -18,7 +18,7 @@ import Dependencies._
 import BuildInfoTemplateSettings._
 
 lazy val scala211 = "2.11.12"
-lazy val scala212 = "2.12.15"
+lazy val scala212 = "2.12.16"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 

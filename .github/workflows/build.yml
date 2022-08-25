@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scala: [ 2.11.12, 2.12.15 ]
+        scala: [ 2.11.12, 2.12.16 ]
         spark: [ 2.4.8, 3.2.1 ]
         exclude:
           - scala: 2.11.12
