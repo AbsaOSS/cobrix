@@ -13,10 +13,10 @@ jobs:
       fail-fast: false
       matrix:
         scala: [ 2.11.12, 2.12.16 ]
-        spark: [ 2.4.8, 3.2.1 ]
+        spark: [ 2.4.8, 3.2.2 ]
         exclude:
           - scala: 2.11.12
-            spark: 3.2.1
+            spark: 3.2.2
     name: Spark ${{matrix.spark}} on Scala ${{matrix.scala}}
     steps:
       - name: Checkout code
