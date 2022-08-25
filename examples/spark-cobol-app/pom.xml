@@ -27,7 +27,7 @@
 	
 	<properties>
 		<encoding>UTF-8</encoding>
-		<scala.version>2.12.12</scala.version>
+		<scala.version>2.12.16</scala.version>
 		<scala.compat.version>2.12</scala.compat.version>
 		<scalatest.version>3.0.1</scalatest.version>
 		<spark.version>3.0.1</spark.version>
