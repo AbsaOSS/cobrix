@@ -41,7 +41,7 @@ class CopybooksOperationsSpec extends FunSuite with SimpleComparisonBase {
     assert(copybook1.getRecordSize == 30)
     assert(copybookDR1.getRecordSize == 30)
 
-    assertEqualsMultiline(copybook1.generateRecordLayoutPositions,
+    assertEqualsMultiline(copybook1.generateRecordLayoutPositions(),
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
         |1 RECORD_COPYBOOK_1                                   1      1     30     30
@@ -52,7 +52,7 @@ class CopybooksOperationsSpec extends FunSuite with SimpleComparisonBase {
         |      10 NESTED_FIELD_1                               6     16     25     10
         |      10 FILLER                                       7     26     30      5"""
         .stripMargin.replace("\r\n", "\n"))
-    assertEqualsMultiline(copybookDR1.generateRecordLayoutPositions,
+    assertEqualsMultiline(copybookDR1.generateRecordLayoutPositions(),
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
         |
         |5 GROUP_1                                             1      1     30     30

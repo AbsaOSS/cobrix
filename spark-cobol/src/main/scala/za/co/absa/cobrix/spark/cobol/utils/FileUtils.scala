@@ -66,7 +66,7 @@ object FileUtils extends Logging {
       throw new IllegalArgumentException(s"Input path does not exist: $dir")
     }
 
-    val allFiles = stats.flatMap(stat => {
+    val allFiles = stats.iterator.flatMap(stat => {
       if (stat.isDirectory) {
         if (recursive) {
           getAllFiles(stat.getPath, fileSystem)

@@ -129,7 +129,7 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
         ids += acc.getSegmentLevelId(i)
         i += 1
       }
-      ids
+      ids.toList
     } else {
       Nil
     }

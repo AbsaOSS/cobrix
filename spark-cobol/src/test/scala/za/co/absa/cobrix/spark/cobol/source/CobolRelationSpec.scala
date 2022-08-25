@@ -60,7 +60,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   behavior of "CobolRelation"
 
   it should "return an RDD[Row] if data are correct" in {
-    val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => Unit)
+    val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => ())
     val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
@@ -99,7 +99,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   it should "manage records with missing fields" in {
     val absentField = "absentField"
     val modifiedSparkSchema = sparkSchema.add(StructField(absentField, StringType, false))
-    val testReader: FixedLenReader = new DummyFixedLenReader(modifiedSparkSchema, cobolSchema, testData)(() => Unit)
+    val testReader: FixedLenReader = new DummyFixedLenReader(modifiedSparkSchema, cobolSchema, testData)(() => ())
     val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,

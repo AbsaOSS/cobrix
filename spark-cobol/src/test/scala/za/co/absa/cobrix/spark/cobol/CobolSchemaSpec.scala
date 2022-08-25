@@ -38,7 +38,7 @@ class CobolSchemaSpec extends FunSuite {
       |               10  EXAMPLE-STR-FLD      PIC X(06).
       |""".stripMargin
 
-  test("Test simple Spark schema devivation from a Copybook") {
+  test("Test simple Spark schema derivation from a Copybook") {
     val expectedSchema: String = "StructType(StructField(BIN_INT,IntegerType,true), StructField(STRUCT_FLD,StructType" +
       "(StructField(STR_FLD,StringType,true))," +
       "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"

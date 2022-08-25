@@ -37,7 +37,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 ) extends ReaderVarLenNestedReader[GenericRow](copybookContents, readerProperties, new RowHandler())
   with VarLenReader {
 
-  class RowIterator(private val iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
+  class RowIterator(iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
     override def hasNext: Boolean = iterator.hasNext
 
     override def next(): Row = Row.fromSeq(iterator.next())

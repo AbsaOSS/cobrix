@@ -78,7 +78,7 @@ class VRLRecordReader(cobolSchema: Copybook,
       val binaryData = recordExtractor match {
         case Some(extractor) =>
           if (extractor.hasNext) {
-            Option(extractor.next)
+            Option(extractor.next())
           } else {
             None
           }

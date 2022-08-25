@@ -43,7 +43,7 @@ class HDFSFileWriter(
 
   implicit val hdfs = FileSystem.get(hdfsConf)
 
-  private var totalBytesWritten = 0l
+  private var totalBytesWritten = 0L
   private var filePointer = 0
   private var pointer = 0
 

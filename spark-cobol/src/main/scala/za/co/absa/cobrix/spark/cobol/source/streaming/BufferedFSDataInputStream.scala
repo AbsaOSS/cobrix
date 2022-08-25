@@ -67,7 +67,7 @@ class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOff
       }
       bufferPos = 0
       bufferConitainBytes = if ( (maximumBytes>0 && bytesRead >= maximumBytes) || isStreamClosed) {
-        close
+        close()
         0
       } else {
         val toRead = if (maximumBytes >0) Math.min(bufferSizeInBytes, maximumBytes - bytesRead) else bufferSizeInBytes

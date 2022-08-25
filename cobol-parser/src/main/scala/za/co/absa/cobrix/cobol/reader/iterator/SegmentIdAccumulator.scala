@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.iterator
 
-final class SegmentIdAccumulator (segmentIds: Seq[String], segmentIdPrefix: String, val fileId: Int) {
+final class SegmentIdAccumulator (segmentIds: scala.collection.Seq[String], segmentIdPrefix: String, val fileId: Int) {
   private val segmentIdsArr = segmentIds.toArray.map(_.split(","))
   private val segmentIdCount = segmentIds.size
   private val segmentIdAccumulator = new Array[Long](segmentIdCount + 1)

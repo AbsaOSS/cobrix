@@ -174,7 +174,7 @@ object SparkUtils extends Logging {
 
     flattenGroup("", "", df.schema)
     logger.info(stringFields.mkString("Flattening code: \n.select(\n", ",\n", "\n)"))
-    df.select(fields: _*)
+    df.select(fields.toSeq: _*)
   }
 
 
@@ -212,7 +212,7 @@ object SparkUtils extends Logging {
     }
 
     convertToStrings("", df.schema)
-    df.select(fields: _*)
+    df.select(fields.toSeq: _*)
   }
 
 

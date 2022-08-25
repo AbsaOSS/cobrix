@@ -71,7 +71,7 @@ class FixedLenFlatRowIterator[T](val binaryData: Array[Byte], val cobolSchema: C
           }
           fields ++= values
       }
-      fields
+      fields.toList
     }
 
     def extractValue(field: Statement, useOffset: Int, isNullPath: Boolean = false): Seq[Any] = {
@@ -109,7 +109,7 @@ class FixedLenFlatRowIterator[T](val binaryData: Array[Byte], val cobolSchema: C
           fields ++= fieldValues
         }
       }
-      fields
+      fields.toList
     }
 
     if (!hasNext) {
@@ -128,7 +128,7 @@ class FixedLenFlatRowIterator[T](val binaryData: Array[Byte], val cobolSchema: C
     val lastRecordActualSize = lastRecord.binaryProperties.offset + lastRecord.binaryProperties.actualSize
     byteIndex += lastRecordActualSize
 
-    records
+    records.toList
   }
 
 }

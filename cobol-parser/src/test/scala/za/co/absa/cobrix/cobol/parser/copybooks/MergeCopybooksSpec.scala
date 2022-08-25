@@ -128,7 +128,7 @@ class MergeCopybooksSpec extends FunSuite with SimpleComparisonBase {
     val copybook1M = Copybook.merge(List(copybook1))
     assert(copybook1M.getRecordSize == 30)
 
-    assert(copybook1M.generateRecordLayoutPositions == copybook1.generateRecordLayoutPositions)
+    assert(copybook1M.generateRecordLayoutPositions() == copybook1.generateRecordLayoutPositions())
 
     assertEqualsMultiline(copybook1M.generateRecordLayoutPositions(),
       """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH

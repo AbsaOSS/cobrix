@@ -41,7 +41,7 @@ class JsonSpec extends FunSuite {
     assert(parse("\"1.2\"") == "1.2")
     assert(parse("\"5\"") == "5")
     // arrays
-    assert(parse("[\"ABC\", 1, 2]").asInstanceOf[Array[Any]].deep == Array("ABC", 1.0, 2.0).deep)
+    assert(parse("[\"ABC\", 1, 2]").asInstanceOf[Array[Any]] sameElements Array("ABC", 1.0, 2.0))
     // maps
     assert(parse("{\"ABC\": 1.2}") == Map("ABC" -> 1.2))
     // as map

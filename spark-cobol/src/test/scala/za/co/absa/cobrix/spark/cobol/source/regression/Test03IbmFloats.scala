@@ -17,12 +17,13 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import java.io.{DataOutputStream, FileOutputStream}
-
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.spark.sql.functions._
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TempDir
+
+import java.nio.file.Paths
 
 class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase {
 
@@ -34,11 +35,11 @@ class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase
                 03 D       COMP-2.
     """
 
-  private val ibmBigEndianPath = baseTestDir + "/ibm_fp_big_endian.dat"
-  private val ibmLittleEndianPath = baseTestDir + "/ibm_fp_little_endian.dat"
+  private val ibmBigEndianPath = Paths.get(baseTestDir.toString, "/ibm_fp_big_endian.dat").toString
+  private val ibmLittleEndianPath = Paths.get(baseTestDir.toString, "/ibm_fp_little_endian.dat").toString
 
-  private val ieee754BigEndianPath = baseTestDir + "/ieee754_fp_big_endian.dat"
-  private val ieee754LittleEndianPath = baseTestDir + "/ieee754_little_endian.dat"
+  private val ieee754BigEndianPath = Paths.get(baseTestDir.toString, "/ieee754_fp_big_endian.dat").toString
+  private val ieee754LittleEndianPath = Paths.get(baseTestDir.toString, "/ieee754_little_endian.dat").toString
 
   def assertFloatEqual(a: Float, b: Float): Unit = {
     assert(Math.abs(a - b) < 0.00001, s"($a != $b)")
