@@ -224,7 +224,7 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val ex = intercept[IllegalStateException] {
           CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapSelfParent)
         }
-        assert(ex.getMessage.contains("A segment SEGMENT_C cannot be a parent of itself"))
+        assert(ex.getMessage.contains("A segment SEGMENT_C cannot be a parent of itself") || ex.getMessage.contains("A segment SEGMENT_B cannot be a parent of itself"))
       }
 
       "a parent-child relationship forms a cycle, should throw an exception" in {
@@ -233,7 +233,8 @@ class ParentSegmentFieldsSpec extends WordSpec {
         val ex = intercept[IllegalStateException] {
           CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMapCycle)
         }
-        assert(ex.getMessage.contains("Segments parent-child relation form a cycle: SEGMENT_C, SEGMENT_B, SEGMENT_C"))
+        assert(ex.getMessage.contains("Segments parent-child relation form a cycle: SEGMENT_C, SEGMENT_B, SEGMENT_C") ||
+          ex.getMessage.contains("Segments parent-child relation form a cycle: SEGMENT_B, SEGMENT_C, SEGMENT_B"))
       }
 
       "a field is specified that does not exist" in {
