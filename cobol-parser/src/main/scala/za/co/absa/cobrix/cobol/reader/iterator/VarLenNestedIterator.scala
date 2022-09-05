@@ -119,7 +119,7 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
 
   // The gets all values for the helper fields for the current record having a specific segment id
   // It is deliberately written imperative style for performance
-  private def getSegmentLevelIds(segmentId: String): Seq[String] = {
+  private def getSegmentLevelIds(segmentId: String): List[String] = {
     if (segmentLevelIdsCount > 0 && segmentIdAccumulator.isDefined) {
       val acc = segmentIdAccumulator.get
       acc.acquiredSegmentId(segmentId, rawRecordIterator.getRecordIndex)
