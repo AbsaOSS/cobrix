@@ -37,8 +37,8 @@
               },
               "nullable" : true,
               "metadata" : {
-                "minElements" : 0,
-                "maxElements" : 3
+                [redacted],
+                [redacted]
               }
             } ]
           },
@@ -46,8 +46,8 @@
         },
         "nullable" : true,
         "metadata" : {
-          "minElements" : 0,
-          "maxElements" : 2
+          [redacted],
+          [redacted]
         }
       } ]
     },

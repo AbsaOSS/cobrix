@@ -35,8 +35,8 @@
             },
             "nullable" : true,
             "metadata" : {
-              "minElements" : 0,
-              "maxElements" : 2
+              "maxElements" : 2,
+              "minElements" : 0
             }
           }, {
             "name" : "DETAIL2",
@@ -55,8 +55,8 @@
             },
             "nullable" : true,
             "metadata" : {
-              "minElements" : 0,
-              "maxElements" : 2
+              "maxElements" : 2,
+              "minElements" : 0
             }
           } ]
         },

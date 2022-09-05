@@ -78,8 +78,8 @@
             },
             "nullable" : true,
             "metadata" : {
-              "minElements" : 0,
-              "maxElements" : 80
+              [redacted],
+              [redacted]
             }
           } ]
         },
