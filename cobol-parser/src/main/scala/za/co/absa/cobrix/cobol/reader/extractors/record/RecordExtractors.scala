@@ -21,7 +21,7 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.reflect.ClassTag
 
 
@@ -53,7 +53,7 @@ object RecordExtractors {
     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
     variableLengthOccurs: Boolean = false,
     generateRecordId: Boolean = false,
-    segmentLevelIds: Seq[String] = Nil,
+    segmentLevelIds: List[String] = Nil,
     fileId: Int = 0,
     recordId: Long = 0,
     activeSegmentRedefine: String = "",
@@ -175,18 +175,20 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val rootRecords: Seq[Statement] = if (isAstFlat) {
+    val rootRecords: scala.collection.Seq[Statement] = if (isAstFlat) {
       Seq(ast)
     } else {
-      ast.children.toSeq
+      ast.children
     }
 
-    val records: Seq[T] = for (record <- rootRecords) yield {
+    val records: ListBuffer[T] = ListBuffer.empty[T]
+
+    for (record <- rootRecords) yield {
       val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
       if (!record.isRedefined) {
         nextOffset += size
       }
-      values
+      records += values
     }
 
     val effectiveSchemaRetentionPolicy = if (isAstFlat) {
@@ -195,7 +197,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records, effectiveSchemaRetentionPolicy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -393,16 +395,18 @@ object RecordExtractors {
 
     var nextOffset = offsetBytes
 
-    val rootRecords: Seq[Statement] = if (isAstFlat) {
+    val rootRecords: scala.collection.Seq[Statement] = if (isAstFlat) {
       Seq(ast)
     } else {
-      ast.children.toList
+      ast.children
     }
 
-    val records: Seq[T] = rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
+    val records: ListBuffer[T] = ListBuffer.empty[T]
+
+    rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
       val (size, values) = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
       nextOffset += size
-      values
+      records += values
     }
 
     val recordLength = segmentsData.map(_._2.length).sum
@@ -413,7 +417,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records, effectiveSchemaRetentionPolicy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -441,10 +445,10 @@ object RecordExtractors {
     */
   private def applyRecordPostProcessing[T](
     ast: CopybookAST,
-    records: Seq[T],
+    records: List[T],
     policy: SchemaRetentionPolicy,
     generateRecordId: Boolean,
-    segmentLevelIds: Seq[String],
+    segmentLevelIds: List[String],
     fileId: Int,
     recordId: Long,
     recordByteLength: Int,
