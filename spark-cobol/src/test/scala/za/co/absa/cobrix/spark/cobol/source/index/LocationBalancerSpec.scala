@@ -57,10 +57,12 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     val availableExecutors = Seq("exec4")
 
     val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
+      .map(x => (x._1, x._2.sorted))
+      .sortBy(_._1.offsetFrom)
 
     val expected = List[(Any,Seq[String])](
-      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
-      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
     )
 
     assert(actual == expected)
@@ -75,10 +77,12 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     val availableExecutors = Seq("exec2", "exec3", "exec4", "exec5")
 
     val actual = LocationBalancer.balance(currentDistribution, availableExecutors)
+      .map(x => (x._1, x._2.sorted))
+      .sortBy(_._1.offsetFrom)
 
     val expected = List[(Any,Seq[String])](
-      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec3", "exec1")),
-      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4"))
+      (SparseIndexEntry(0l, 2l, 1, 1l), List("exec2", "exec4")),
+      (SparseIndexEntry(2l, 4l, 1, 2l), List("exec1", "exec3"))
     )
 
     assert(actual == expected)
