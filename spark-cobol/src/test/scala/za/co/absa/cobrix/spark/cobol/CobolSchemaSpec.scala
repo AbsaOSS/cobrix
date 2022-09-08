@@ -16,55 +16,69 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.apache.spark.sql.types.StructType
-import org.scalatest.FunSuite
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.scalatest.{FunSuite, WordSpec}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-class CobolSchemaSpec extends FunSuite {
+class CobolSchemaSpec extends WordSpec {
+  "for simple copybooks" should {
+    val copyBookContents: String =
+      """       01  RECORD.
+        |      ******************************************************************
+        |      *             This is an example COBOL copybook
+        |      ******************************************************************
+        |           05  BIN-INT                  PIC S9(4)  COMP.
+        |           05  STRUCT-FLD.
+        |               10  STR-FLD
+        |                   PIC X(10).
+        |           05  DATA-STRUCT.
+        |               10  EXAMPLE-INT-FLD      PIC 9(07) COMP-3.
+        |               10  EXAMPLE-STR-FLD      PIC X(06).
+        |""".stripMargin
 
-  val copyBookContents: String =
-    """       01  RECORD.
-      |      ******************************************************************
-      |      *             This is an example COBOL copybook
-      |      ******************************************************************
-      |           05  BIN-INT                  PIC S9(4)  COMP.
-      |           05  STRUCT-FLD.
-      |               10  STR-FLD
-      |                   PIC X(10).
-      |           05  DATA-STRUCT.
-      |               10  EXAMPLE-INT-FLD      PIC 9(07) COMP-3.
-      |               10  EXAMPLE-STR-FLD      PIC X(06).
-      |""".stripMargin
+    "Derive Spark schema from a Copybook" in {
+      val expectedSchema =
+        """root
+          | |-- BIN_INT: integer (nullable = true)
+          | |-- STRUCT_FLD: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          | |-- DATA_STRUCT: struct (nullable = true)
+          | |    |-- EXAMPLE_INT_FLD: integer (nullable = true)
+          | |    |-- EXAMPLE_STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
-  test("Test simple Spark schema derivation from a Copybook") {
-    val expectedSchema: String = "StructType(StructField(BIN_INT,IntegerType,true), StructField(STRUCT_FLD,StructType" +
-      "(StructField(STR_FLD,StringType,true))," +
-      "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
+      val parsedSchema = CopybookParser.parseTree(copyBookContents)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    val parsedSchema = CopybookParser.parseTree(copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
-    val actualSchema = cobolSchema.getSparkSchema.toString()
+      assert(actualSchema == expectedSchema)
+    }
 
-    assert(actualSchema == expectedSchema)
+    "Generate record id field" in {
+      val expectedSchema: String =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- BIN_INT: integer (nullable = true)
+          | |-- STRUCT_FLD: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          | |-- DATA_STRUCT: struct (nullable = true)
+          | |    |-- EXAMPLE_INT_FLD: integer (nullable = true)
+          | |    |-- EXAMPLE_STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+
+      val parsedSchema = CopybookParser.parseTree(copyBookContents)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
+
+      assert(actualSchema == expectedSchema)
+    }
   }
 
-  test("Test generation of record id field") {
-    val expectedSchema: String = "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(BIN_INT," +
-      "IntegerType,true), StructField(STRUCT_FLD," +
-      "StructType" +
-      "(StructField(STR_FLD,StringType,true))," +
-      "true), StructField(DATA_STRUCT,StructType(StructField(EXAMPLE_INT_FLD,IntegerType,true), StructField(EXAMPLE_STR_FLD,StringType,true)),true))"
-
-    val parsedSchema = CopybookParser.parseTree(copyBookContents)
-    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
-    val actualSchema = cobolSchema.getSparkSchema.toString()
-
-    assert(actualSchema == expectedSchema)
-  }
-
-  test("Test struct case of record id generation") {
+  "for copybook parsing with modifiers" should {
     val copyBook: String =
       """       01  STRUCT1.
         |           05  IntValue            PIC 9(6)  COMP.
@@ -72,43 +86,74 @@ class CobolSchemaSpec extends FunSuite {
         |           10  STR-FLD             PIC X(10).
         |""".stripMargin
 
-    val expectedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(STRUCT1,StructType(StructField(IntValue," +
-        "IntegerType,true)),true), StructField" +
-        "(STRUCT2,StructType(StructField(STR_FLD,StringType,true)),true))"
-    val expectedSchemaWithoutRecordId: String =
-      "StructType(StructField(STRUCT1,StructType(StructField(IntValue,IntegerType,true)),true), StructField(STRUCT2,StructType(StructField(STR_FLD," +
-        "StringType,true)),true))"
+    "keep original + record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- STRUCT1: struct (nullable = true)
+          | |    |-- IntValue: integer (nullable = true)
+          | |-- STRUCT2: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
-    val expectedCollapsedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), StructField(IntValue,IntegerType,true), StructField" +
-        "(STR_FLD,StringType,true))"
-    val expectedCollapsedSchemaWithoutRecordId: String =
-      "StructType(StructField(IntValue,IntegerType,true), StructField(STR_FLD,StringType,true))"
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    val parsedSchema = CopybookParser.parseTree(copyBook)
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true)
-    val actualSchema1 = cobolSchema1.getSparkSchema.toString()
+      assert(actualSchema == expectedSchema)
+    }
 
-    assert(actualSchema1 == expectedSchemaWithRecordId)
+    "keep original and no record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- STRUCT1: struct (nullable = true)
+          | |    |-- IntValue: integer (nullable = true)
+          | |-- STRUCT2: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
-    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false)
-    val actualSchema2 = cobolSchema2.getSparkSchema.toString()
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    assert(actualSchema2 == expectedSchemaWithoutRecordId)
+      assert(actualSchema == expectedSchema)
+    }
 
-    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
-    val actualSchema3 = cobolSchema3.getSparkSchema.toString()
+    "collapse root + record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- IntValue: integer (nullable = true)
+          | |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
-    assert(actualSchema3 == expectedCollapsedSchemaWithRecordId)
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
-    val actualSchema4 = cobolSchema4.getSparkSchema.toString()
+      assert(actualSchema == expectedSchema)
+    }
 
-    assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)
+    "collapse root and no record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- IntValue: integer (nullable = true)
+          | |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
+
+      assert(actualSchema == expectedSchema)
+    }
   }
 
-  test("Test struct case of segment ids generation") {
+  "for multi-segment copybook parsing with modifiers" should {
     val copyBook: String =
       """       01  STRUCT1.
         |           05  IntValue            PIC 9(6)  COMP.
@@ -116,53 +161,78 @@ class CobolSchemaSpec extends FunSuite {
         |           10  STR-FLD             PIC X(10).
         |""".stripMargin
 
-    val expectedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), " +
-        "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
-        "StructField(STRUCT1,StructType(StructField(IntValue," +
-        "IntegerType,true)),true), StructField" +
-        "(STRUCT2,StructType(StructField(STR_FLD,StringType,true)),true))"
+    "multi-segment keep-original with record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- Seg_Id0: string (nullable = true)
+          | |-- Seg_Id1: string (nullable = true)
+          | |-- STRUCT1: struct (nullable = true)
+          | |    |-- IntValue: integer (nullable = true)
+          | |-- STRUCT2: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, 2)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    val expectedSchemaWithoutRecordId: String =
-      "StructType(" +
-        "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
-        "StructField(STRUCT1,StructType(StructField(IntValue,IntegerType,true)),true), StructField(STRUCT2,StructType(StructField(STR_FLD," +
-        "StringType,true)),true))"
+      assert(actualSchema == expectedSchema)
+    }
 
-    val expectedCollapsedSchemaWithRecordId: String =
-      "StructType(StructField(File_Id,IntegerType,false), StructField(Record_Id,LongType,false), StructField(Record_Byte_Length,IntegerType,false), " +
-        "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
-        "StructField(IntValue,IntegerType,true), StructField" +
-        "(STR_FLD,StringType,true))"
-    val expectedCollapsedSchemaWithoutRecordId: String =
-      "StructType(" +
-        "StructField(Seg_Id0,StringType,true), StructField(Seg_Id1,StringType,true), " +
-        "StructField(IntValue,IntegerType,true), StructField(STR_FLD,StringType,true))"
+    "multi-segment keep-original without record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- Seg_Id0: string (nullable = true)
+          | |-- Seg_Id1: string (nullable = true)
+          | |-- STRUCT1: struct (nullable = true)
+          | |    |-- IntValue: integer (nullable = true)
+          | |-- STRUCT2: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, 2)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
+      assert(actualSchema == expectedSchema)
+    }
 
-    val parsedSchema = CopybookParser.parseTree(copyBook)
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, 2)
-    val actualSchema1 = cobolSchema1.getSparkSchema.toString()
+    "multi-segment collapse root with record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- Seg_Id0: string (nullable = true)
+          | |-- Seg_Id1: string (nullable = true)
+          | |-- IntValue: integer (nullable = true)
+          | |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, 2)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    assert(actualSchema1 == expectedSchemaWithRecordId)
+      assert(actualSchema == expectedSchema)
+    }
 
-    val cobolSchema2 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, 2)
-    val actualSchema2 = cobolSchema2.getSparkSchema.toString()
+    "multi-segment collapse root without record id generation" in {
+      val expectedSchema =
+        """root
+          | |-- Seg_Id0: string (nullable = true)
+          | |-- Seg_Id1: string (nullable = true)
+          | |-- IntValue: integer (nullable = true)
+          | |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, 2)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
 
-    assert(actualSchema2 == expectedSchemaWithoutRecordId)
-
-    val cobolSchema3 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, 2)
-    val actualSchema3 = cobolSchema3.getSparkSchema.toString()
-
-    assert(actualSchema3 == expectedCollapsedSchemaWithRecordId)
-
-    val cobolSchema4 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, 2)
-    val actualSchema4 = cobolSchema4.getSparkSchema.toString()
-
-    assert(actualSchema4 == expectedCollapsedSchemaWithoutRecordId)
+      assert(actualSchema == expectedSchema)
+    }
   }
 
-  test("Metadata generation for OCCURS") {
+  "Metadata generation for OCCURS" in {
     val copyBook: String =
       """       01  RECORD.
         |         05  FIELD1                  PIC X(10).

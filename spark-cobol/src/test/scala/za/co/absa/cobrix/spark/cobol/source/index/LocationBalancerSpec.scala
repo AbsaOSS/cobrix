@@ -45,7 +45,6 @@ class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
     )
     val availableExecutors = Seq("exec2", "exec3")
     assert(currentDistribution == LocationBalancer.balance(currentDistribution, availableExecutors))
-
   }
 
   it should "rebalance if fewer executors in the list but any of them not in the current distribution" in {
