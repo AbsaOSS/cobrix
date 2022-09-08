@@ -111,6 +111,9 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+      .replace("\"maxElements\" : 2", "[redacted]") // different versions of Spark sort metadata columns differently
+      .replace("\"minElements\" : 0", "[redacted]")
+
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
@@ -139,6 +142,8 @@ class Test25OccursMappings extends FunSuite with SparkTestBase {
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+      .replace("\"maxElements\" : 2", "[redacted]") // different versions of Spark sort metadata columns differently
+      .replace("\"minElements\" : 0", "[redacted]")
 
     if (actualSchema != expectedSchema) {
       FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
