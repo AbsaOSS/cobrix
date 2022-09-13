@@ -22,6 +22,7 @@ import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.asttransform.AstTransformerBinaryProperties
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringDecoders}
@@ -265,6 +266,14 @@ object CopybookParser extends Logging {
     val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
     validateFieldParentMap(correctedFieldParentMap)
 
+    val transformers = Seq(
+      AstTransformerBinaryProperties() // Calculate sized of fields and their positions from the beginning of a record
+    )
+
+    val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
+      transformer.transform(ast)
+    }
+
     new Copybook(
       if (dropGroupFillers) {
         calculateNonFillerSizes(
@@ -275,7 +284,7 @@ object CopybookParser extends Logging {
                   processGroupFillers(
                     markDependeeFields(
                       addNonTerminals(
-                        calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
+                        transformedAst, nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
                       occursHandlers
                     ), dropValueFillers
                   ), dropGroupFillers, dropValueFillers
@@ -292,7 +301,7 @@ object CopybookParser extends Logging {
                 renameGroupFillers(
                   markDependeeFields(
                     addNonTerminals(
-                      calculateBinaryProperties(schemaANTLR), nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
+                      transformedAst, nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
                     occursHandlers
                   ),
                   dropGroupFillers, dropValueFillers
@@ -360,102 +369,6 @@ object CopybookParser extends Logging {
       }
     }
     copybook.copy(children = newChildren)(copybook.parent)
-  }
-
-  /** Calculate binary properties based on the whole AST
-    *
-    * @param ast An AST as a set of copybook records
-    * @return The same AST with binary properties set for every field
-    */
-  def calculateBinaryProperties(ast: CopybookAST): CopybookAST = {
-    getSchemaWithOffsets(0, calculateSchemaSizes(ast))
-  }
-
-  /**
-    * Calculate binary properties for a mutable Cobybook schema which is just an array of AST objects
-    *
-    * @param ast An array of AST objects
-    * @return The same AST with binary properties set for every field
-    */
-  @throws(classOf[SyntaxErrorException])
-  def calculateSchemaSizes(ast: CopybookAST): CopybookAST = {
-    val newChildren: mutable.ArrayBuffer[Statement] = new mutable.ArrayBuffer[Statement]()
-    val redefinedSizes = new mutable.ArrayBuffer[Int]()
-    val redefinedNames = new mutable.HashSet[String]()
-
-    // Calculate sizes of all elements of the AST array
-    for ((child, i) <- ast.children.zipWithIndex) {
-      child.redefines match {
-        case None =>
-          redefinedSizes.clear()
-          redefinedNames.clear()
-        case Some(redefines) =>
-          if (i == 0) {
-            throw new SyntaxErrorException(child.lineNumber, child.name, s"The first field of a group cannot use REDEFINES keyword.")
-          }
-          if (!redefinedNames.contains(redefines.toUpperCase)) {
-            throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
-          }
-          newChildren(i - 1) = newChildren(i - 1).withUpdatedIsRedefined(newIsRedefined = true)
-      }
-
-      val childWithSizes = child match {
-        case group: Group => calculateSchemaSizes(group)
-        case st: Primitive =>
-          val size = st.getBinarySizeBytes
-          val sizeAllOccurs = size * st.arrayMaxSize
-          val binProps = BinaryProperties(st.binaryProperties.offset, size, sizeAllOccurs)
-          st.withUpdatedBinaryProperties(binProps)
-      }
-      redefinedSizes += childWithSizes.binaryProperties.actualSize
-      redefinedNames += childWithSizes.name.toUpperCase
-      newChildren += childWithSizes
-      if (child.redefines.nonEmpty) {
-        // Calculate maximum redefine size
-        val maxSize = redefinedSizes.max
-        for (j <- redefinedSizes.indices) {
-          val updatedBinProps = newChildren(i - j).binaryProperties.copy(actualSize = maxSize)
-          val updatedChild = newChildren(i - j).withUpdatedBinaryProperties(updatedBinProps)
-          newChildren(i - j) = updatedChild
-        }
-      }
-    }
-
-    val groupSize = (for (child <- newChildren if child.redefines.isEmpty) yield child.binaryProperties.actualSize).sum
-    val groupSizeAllOccurs = groupSize * ast.arrayMaxSize
-    val newBinProps = BinaryProperties(ast.binaryProperties.offset, groupSize, groupSizeAllOccurs)
-    ast.withUpdatedChildren(newChildren).withUpdatedBinaryProperties(newBinProps)
-  }
-
-  /**
-    * Calculate binary offsets for a mutable Cobybook schema which is just an array of AST objects
-    *
-    * @param ast An array of AST objects
-    * @return The same AST with all offsets set for every field
-    */
-  def getSchemaWithOffsets(bitOffset: Int, ast: CopybookAST): CopybookAST = {
-    var offset = bitOffset
-    var redefinedOffset = bitOffset
-    val newChildren = for (field <- ast.children) yield {
-      val useOffset = if (field.redefines.isEmpty) {
-        redefinedOffset = offset
-        offset
-      } else redefinedOffset
-      val newField = field match {
-        case grp: Group =>
-          getSchemaWithOffsets(useOffset, grp)
-        case st: Primitive =>
-          val binProps = BinaryProperties(useOffset, st.binaryProperties.dataSize, st.binaryProperties.actualSize)
-          st.withUpdatedBinaryProperties(binProps)
-        case _ => field
-      }
-      if (field.redefines.isEmpty) {
-        offset += newField.binaryProperties.actualSize
-      }
-      newField
-    }
-    val binProps = BinaryProperties(bitOffset, ast.binaryProperties.dataSize, ast.binaryProperties.actualSize)
-    ast.withUpdatedChildren(newChildren).withUpdatedBinaryProperties(binProps)
   }
 
   /**
