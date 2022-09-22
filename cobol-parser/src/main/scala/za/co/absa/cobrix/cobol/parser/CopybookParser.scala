@@ -271,7 +271,9 @@ object CopybookParser extends Logging {
       // Adds virtual primitive fields for GROUPs that can be parsed as concatenation of their children.
       NonTerminalsAdder(nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
       // Sets isDependee attribute for fields in the schema which are used by other fields in DEPENDING ON clause
-      DependencyMarker(occursHandlers)
+      DependencyMarker(occursHandlers),
+      // Drops group FILLERs if necessary
+      GroupFillersRemover(dropGroupFillers, dropValueFillers),
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
@@ -279,33 +281,18 @@ object CopybookParser extends Logging {
     }
 
     new Copybook(
-      if (dropGroupFillers) {
-        calculateNonFillerSizes(
-          addDebugFields(
-            setSegmentParents(
-              markSegmentRedefines(
-                renameGroupFillers(
-                  processGroupFillers(
-                    transformedAst, dropValueFillers
-                  ), dropGroupFillers, dropValueFillers
-                ), segmentRedefines
-              ), correctedFieldParentMap
-            ), debugFieldsPolicy
-          )
+      calculateNonFillerSizes(
+        addDebugFields(
+          setSegmentParents(
+            markSegmentRedefines(
+              renameGroupFillers(
+                transformedAst,
+                dropGroupFillers, dropValueFillers
+              ), segmentRedefines
+            ), correctedFieldParentMap
+          ), debugFieldsPolicy
         )
-      } else {
-        calculateNonFillerSizes(
-          addDebugFields(
-            setSegmentParents(
-              markSegmentRedefines(
-                renameGroupFillers(
-                  transformedAst,
-                  dropGroupFillers, dropValueFillers
-                ), segmentRedefines), correctedFieldParentMap
-            ), debugFieldsPolicy
-          )
-        )
-      }
+      )
     )
   }
 
@@ -638,51 +625,6 @@ object CopybookParser extends Logging {
     val (newSchema, hasNonFillers) = renameFillers(ast)
     if (!hasNonFillers) {
       throw new IllegalStateException("The copybook is empty since it consists only of FILLER fields.")
-    }
-    newSchema
-  }
-
-  /**
-    * Process group fillers.
-    * <ul>
-    * <li>Make fillers each group that contains only filler fields.</li>
-    * <li>Remove all groups that don't have child nodes.</li>
-    * </ul>
-    *
-    * @param ast              An AST as a set of copybook records
-    * @param dropValueFillers is there intention to drop primitive fields fillers
-    * @return The same AST with group fillers processed
-    */
-  private def processGroupFillers(ast: CopybookAST, dropValueFillers: Boolean): CopybookAST = {
-
-    def processSubGroupFillers(group: Group): Group = {
-      val (newChildren, hasNonFillers) = processFillers(group)
-      if (hasNonFillers)
-        group.copy(children = newChildren.children)(group.parent)
-      else
-        group.copy(children = newChildren.children, isFiller = true)(group.parent)
-    }
-
-    def processFillers(group: CopybookAST): (CopybookAST, Boolean) = {
-      val newChildren = ArrayBuffer[Statement]()
-      var hasNonFillers = false
-      group.children.foreach {
-        case grp: Group =>
-          val newGrp = processSubGroupFillers(grp)
-          if (newGrp.children.nonEmpty) {
-            newChildren += newGrp
-          }
-          if (!grp.isFiller) hasNonFillers = true
-        case st: Primitive =>
-          newChildren += st
-          if (!st.isFiller || !dropValueFillers) hasNonFillers = true
-      }
-      (group.withUpdatedChildren(newChildren), hasNonFillers)
-    }
-
-    val (newSchema, hasNonFillers) = processFillers(ast)
-    if (!hasNonFillers) {
-      throw new IllegalStateException("The copybook is empty of consists only of FILLER fields.")
     }
     newSchema
   }
