@@ -22,7 +22,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
 import scala.collection.mutable
 
-class AstTransformerBinaryProperties extends AstTransformer {
+class BinaryPropertiesAdder extends AstTransformer {
   /**
     * Calculate binary properties based on the whole AST
     *
@@ -121,6 +121,6 @@ class AstTransformerBinaryProperties extends AstTransformer {
   }
 }
 
-object AstTransformerBinaryProperties {
-  def apply(): AstTransformerBinaryProperties = new AstTransformerBinaryProperties()
+object BinaryPropertiesAdder {
+  def apply(): BinaryPropertiesAdder = new BinaryPropertiesAdder()
 }

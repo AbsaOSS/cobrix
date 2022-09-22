@@ -17,15 +17,13 @@
 package za.co.absa.cobrix.cobol.parser
 
 import za.co.absa.cobrix.cobol.internal.Logging
-
-import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, Integral}
-import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.asttransform.AstTransformerBinaryProperties
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.asttransform.{BinaryPropertiesAdder, NonTerminalsAdder}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, FloatingPointFormat, StringDecoders}
+import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding, HEX, RAW}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
@@ -33,6 +31,7 @@ import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPoli
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
 
+import java.nio.charset.{Charset, StandardCharsets}
 import scala.annotation.tailrec
 import scala.collection.immutable.HashMap
 import scala.collection.mutable
@@ -267,7 +266,10 @@ object CopybookParser extends Logging {
     validateFieldParentMap(correctedFieldParentMap)
 
     val transformers = Seq(
-      AstTransformerBinaryProperties() // Calculate sized of fields and their positions from the beginning of a record
+      // Calculate sized of fields and their positions from the beginning of a record
+      BinaryPropertiesAdder(),
+      // Adds virtual primitive fields for GROUPs that can be parsed as concatenation of their children.
+      NonTerminalsAdder(nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
@@ -283,8 +285,7 @@ object CopybookParser extends Logging {
                 renameGroupFillers(
                   processGroupFillers(
                     markDependeeFields(
-                      addNonTerminals(
-                        transformedAst, nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
+                      transformedAst,
                       occursHandlers
                     ), dropValueFillers
                   ), dropGroupFillers, dropValueFillers
@@ -300,8 +301,7 @@ object CopybookParser extends Logging {
               markSegmentRedefines(
                 renameGroupFillers(
                   markDependeeFields(
-                    addNonTerminals(
-                      transformedAst, nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
+                    transformedAst,
                     occursHandlers
                   ),
                   dropGroupFillers, dropValueFillers
@@ -311,64 +311,6 @@ object CopybookParser extends Logging {
         )
       }
     )
-  }
-
-  private def addNonTerminals(copybook: CopybookAST, nonTerminals: Set[String],
-                              enc: Encoding,
-                              stringTrimmingPolicy: StringTrimmingPolicy,
-                              ebcdicCodePage: CodePage,
-                              asciiCharset: Charset,
-                              isUtf16BigEndian: Boolean,
-                              floatingPointFormat: FloatingPointFormat,
-                              strictSignOverpunch: Boolean,
-                              improvedNullDetection: Boolean
-                             ): CopybookAST = {
-
-    def getNonTerminalName(name: String, parent: Group): String = {
-      val existingNames = parent.children.map {
-        case x: Primitive => x.name
-        case x: Group => x.name
-      }
-
-      var modifier = 0
-      var wantedName = name + Constants.nonTerminalsPostfix
-      while (existingNames contains wantedName) {
-        modifier += 1
-        wantedName = name + Constants.nonTerminalsPostfix + modifier.toString
-      }
-      wantedName
-    }
-
-    val newChildren: ArrayBuffer[Statement] = new ArrayBuffer[Statement]()
-    for (stmt <- copybook.children) {
-      stmt match {
-        case s: Primitive => newChildren.append(s)
-        case g: Group =>
-          if (nonTerminals contains g.name) {
-            newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection).copy(isRedefined = true)(g.parent)
-            )
-            val sz = g.binaryProperties.actualSize
-            val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
-            val newName = getNonTerminalName(g.name, g.parent.get)
-            newChildren.append(
-              Primitive(
-                g.level, newName, g.lineNumber,
-                dataType,
-                redefines = Some(g.name),
-                decode = decode,
-                binaryProperties = g.binaryProperties
-              )(g.parent)
-            )
-          }
-          else
-            newChildren.append(
-              addNonTerminals(g, nonTerminals, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
-            )
-      }
-    }
-    copybook.copy(children = newChildren)(copybook.parent)
   }
 
   /**
