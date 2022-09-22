@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.asttransform.AstTransformerBinaryProperties
+import za.co.absa.cobrix.cobol.parser.asttransform.BinaryPropertiesAdder
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -273,7 +273,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       throw new RuntimeException("All elements of the root element must be record groups.")
 
     val newRoot = ast.children.head.asInstanceOf[Group].copy()(None)
-    new Copybook(AstTransformerBinaryProperties().transform(newRoot))
+    new Copybook(BinaryPropertiesAdder().transform(newRoot))
   }
 
   def dropFillers(dropGroupFillers: Boolean, dropValueFillers: Boolean): Copybook = {
@@ -309,7 +309,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     if (stmt.isInstanceOf[Primitive])
       throw new RuntimeException("Can only restrict the copybook to a group element.")
     val newRoot = Group.root.copy(children = mutable.ArrayBuffer(stmt))(None)
-    val schema = new AstTransformerBinaryProperties().transform(newRoot)
+    val schema = new BinaryPropertiesAdder().transform(newRoot)
     new Copybook(schema)
   }
 
@@ -390,7 +390,7 @@ object Copybook {
     }
 
     // recompute sizes
-    val schema = AstTransformerBinaryProperties().transform(newRoot)
+    val schema = BinaryPropertiesAdder().transform(newRoot)
 
     new Copybook(schema)
   }
