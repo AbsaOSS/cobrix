@@ -274,6 +274,8 @@ object CopybookParser extends Logging {
       DependencyMarker(occursHandlers),
       // Drops group FILLERs if necessary
       GroupFillersRemover(dropGroupFillers, dropValueFillers),
+      // Renames FILLERs that will be kept in the ast
+      GroupFillersRenamer(dropGroupFillers, dropValueFillers)
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
@@ -284,11 +286,7 @@ object CopybookParser extends Logging {
       calculateNonFillerSizes(
         addDebugFields(
           setSegmentParents(
-            markSegmentRedefines(
-              renameGroupFillers(
-                transformedAst,
-                dropGroupFillers, dropValueFillers
-              ), segmentRedefines
+            markSegmentRedefines(transformedAst, segmentRedefines
             ), correctedFieldParentMap
           ), debugFieldsPolicy
         )
@@ -564,70 +562,6 @@ object CopybookParser extends Logging {
       .toList
   }
 
-
-  /**
-    * Rename group fillers so filed names in the scheme doesn't repeat
-    * Also, remove all group fillers that doesn't have child nodes
-    *
-    * @param ast An AST as a set of copybook records
-    * @return The same AST with group fillers renamed
-    */
-  private def renameGroupFillers(ast: CopybookAST, dropGroupFillers: Boolean, dropValueFillers: Boolean): CopybookAST = {
-    var lastFillerIndex = 0
-    var lastFillerPrimitiveIndex = 0
-
-    def processPrimitive(st: Primitive): Primitive = {
-      if (dropValueFillers || !st.isFiller) {
-        st
-      } else {
-        lastFillerPrimitiveIndex += 1
-        val newName = s"${Constants.FILLER}_P$lastFillerPrimitiveIndex"
-        st.copy(name = newName, isFiller = false)(st.parent)
-      }
-    }
-
-    def renameSubGroupFillers(group: Group): Group = {
-      val (newChildren, hasNonFillers) = renameFillers(group)
-      val renamedGroup = if (hasNonFillers) {
-        if (group.isFiller && !dropGroupFillers) {
-          lastFillerIndex += 1
-          group.copy(name = s"${
-            Constants.FILLER
-          }_$lastFillerIndex", children = newChildren.children, isFiller = false)(group.parent)
-        } else {
-          group.withUpdatedChildren(newChildren.children)
-        }
-      } else {
-        // All the children are fillers
-        group.copy(children = newChildren.children, isFiller = true)(group.parent)
-      }
-      renamedGroup
-    }
-
-    def renameFillers(group: Group): (Group, Boolean) = {
-      val newChildren = ArrayBuffer[Statement]()
-      var hasNonFillers = false
-      group.children.foreach {
-        case grp: Group =>
-          val newGrp = renameSubGroupFillers(grp)
-          if (newGrp.children.nonEmpty) {
-            newChildren += newGrp
-          }
-          if (!newGrp.isFiller) hasNonFillers = true
-        case st: Primitive =>
-          val newSt = processPrimitive(st)
-          newChildren += newSt
-          if (!newSt.isFiller) hasNonFillers = true
-      }
-      (group.withUpdatedChildren(newChildren), hasNonFillers)
-    }
-
-    val (newSchema, hasNonFillers) = renameFillers(ast)
-    if (!hasNonFillers) {
-      throw new IllegalStateException("The copybook is empty since it consists only of FILLER fields.")
-    }
-    newSchema
-  }
 
   /**
     * Add debugging fields if debug mode is enabled
