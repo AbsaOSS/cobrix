@@ -16,13 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.asttransform
 
-import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.Integral
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 
-import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * @param dropGroupFillers specifies if we actually neeed to drop group FILLERs
@@ -33,8 +30,6 @@ class GroupFillersRemover(
                       dropGroupFillers: Boolean,
                       dropValueFillers: Boolean
                     ) extends AstTransformer {
-  private val log = LoggerFactory.getLogger(this.getClass)
-
   /**
     * Process group fillers.
     * <ul>
