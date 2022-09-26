@@ -277,7 +277,9 @@ object CopybookParser extends Logging {
       // Renames FILLERs that will be kept in the ast
       GroupFillersRenamer(dropGroupFillers, dropValueFillers),
       // Sets isSegmentRedefine property of redefined groups
-      SegmentRedefinesMarker(segmentRedefines)
+      SegmentRedefinesMarker(segmentRedefines),
+      // Sets parent groups for child segment redefines.
+      SegmentParentsSetter(correctedFieldParentMap)
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
@@ -287,9 +289,7 @@ object CopybookParser extends Logging {
     new Copybook(
       calculateNonFillerSizes(
         addDebugFields(
-          setSegmentParents(
-            transformedAst, correctedFieldParentMap
-          ), debugFieldsPolicy
+          transformedAst, debugFieldsPolicy
         )
       )
     )
