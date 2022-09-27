@@ -267,14 +267,18 @@ scala>
 Gathering all dependencies manually maybe a tiresome task. A better approach would be to create a jar file that contains
 all required dependencies (an uber jar aka fat jar). 
 
-Creating an uber jar for Cobrix is very easy. Just clone the repository and run one of the following commands:
-```sh
-sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
-sbt ++2.12.16 assembly -DSPARK_VERSION=2.4.8
-sbt ++2.12.16 assembly -DSPARK_VERSION=3.1.3
-sbt ++2.12.16 assembly -DSPARK_VERSION=3.2.2
-sbt ++2.13.8 assembly -DSPARK_VERSION=3.2.2
-```
+Creating an uber jar for Cobrix is very easy. Steps to build:
+- Install JDK 1.8
+- Install SBT
+- Clone Cobrix repository
+- Run `sbt assembly` in the root directory of the repository specifying the Scala and Spark version you want to build for:
+    ```sh
+    sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
+    sbt ++2.12.16 assembly -DSPARK_VERSION=2.4.8
+    sbt ++2.12.16 assembly -DSPARK_VERSION=3.1.3
+    sbt ++2.12.16 assembly -DSPARK_VERSION=3.2.2
+    sbt ++2.13.8 assembly -DSPARK_VERSION=3.2.2
+    ```
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
