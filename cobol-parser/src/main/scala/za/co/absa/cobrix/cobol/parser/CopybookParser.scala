@@ -18,14 +18,12 @@ package za.co.absa.cobrix.cobol.parser
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.antlr.ANTLRParser
-import za.co.absa.cobrix.cobol.parser.ast.datatype.AlphaNumeric
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.asttransform._
-import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.decoders.{FloatingPointFormat, StringDecoders}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding, HEX, RAW}
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
@@ -279,7 +277,9 @@ object CopybookParser extends Logging {
       // Sets isSegmentRedefine property of redefined groups
       SegmentRedefinesMarker(segmentRedefines),
       // Sets parent groups for child segment redefines.
-      SegmentParentsSetter(correctedFieldParentMap)
+      SegmentParentsSetter(correctedFieldParentMap),
+      // Add debugging fields if debug mode is enabled.
+      DebugFieldsAdder(debugFieldsPolicy)
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
@@ -288,83 +288,9 @@ object CopybookParser extends Logging {
 
     new Copybook(
       calculateNonFillerSizes(
-        addDebugFields(
-          transformedAst, debugFieldsPolicy
-        )
+        transformedAst
       )
     )
-  }
-
-  /**
-    * Sets parent groups for child segment redefines.
-    * This relies on segment id to redefines map. The assumptions are
-    *
-    * * Only one segment redefine field has empty parent - the root segment.
-    * * All other segment redefines should have a parent segment.
-    * * isSegmentRedefine should be already set for all segment redefines.
-    * * A parent of a segment redefine should be a segment redefine as well
-    *
-    * @param originalSchema An AST as a set of copybook records
-    * @param fieldParentMap A mapping between field names and their parents
-    * @return The same AST with binary properties set for every field
-    */
-  @throws(classOf[IllegalStateException])
-  def setSegmentParents(originalSchema: CopybookAST, fieldParentMap: Map[String, String]): CopybookAST = {
-    val rootSegments = ListBuffer[String]()
-    val redefinedFields = getAllSegmentRedefines(originalSchema)
-
-    def getParentField(childName: String): Option[Group] = {
-      fieldParentMap
-        .get(childName)
-        .map(field => {
-          val parentOpt = redefinedFields.find(f => f.name == field)
-          parentOpt match {
-            case Some(group) => group
-            case _ => throw new IllegalStateException(s"Field $field is specified to be the parent of $childName, " +
-              s"but $field is not a segment redefine. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
-          }
-        })
-    }
-
-    def processGroupFields(group: Group): Group = {
-      val childrenWithSegmentRedefines: ArrayBuffer[Statement] = group.children.map {
-        case p: Primitive =>
-          p
-        case g: Group =>
-          if (g.isSegmentRedefine) {
-            val newGroup = g.withUpdatedParentSegment(getParentField(g.name))
-            if (newGroup.parentSegment.isEmpty) {
-              rootSegments += g.name
-            }
-            newGroup
-          } else {
-            if (fieldParentMap.contains(g.name)) {
-              throw new IllegalStateException("Parent field is defined for a field that is not a segment redefine. " +
-                s"Field: '${g.name}'. Please, check if the field is specified for any of 'redefine-segment-id-map' options.")
-            }
-            processGroupFields(g)
-          }
-      }
-      group.copy(children = childrenWithSegmentRedefines)(group.parent)
-    }
-
-    def validateRootSegments(): Unit = {
-      if (rootSegments.size > 1) {
-        val rootSegmentsStr = rootSegments.mkString(", ")
-        throw new IllegalStateException(s"Only one root segment is allowed. Found root segments: [ $rootSegmentsStr ]. ")
-      }
-      if (rootSegments.isEmpty) {
-        throw new IllegalStateException(s"No root segment found in the segment parent-child map.")
-      }
-    }
-
-    if (fieldParentMap.isEmpty) {
-      originalSchema
-    } else {
-      val newSchema = processGroupFields(originalSchema)
-      validateRootSegments()
-      newSchema
-    }
   }
 
   /**
@@ -464,62 +390,6 @@ object CopybookParser extends Logging {
       .toSet
       .diff(fieldParentMap.keys.toSet)
       .toList
-  }
-
-
-  /**
-    * Add debugging fields if debug mode is enabled
-    *
-    * @param ast               An AST as a set of copybook records
-    * @param debugFieldsPolicy Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
-    * @return The same AST with debugging fields added
-    */
-  private def addDebugFields(ast: CopybookAST, debugFieldsPolicy: DebugFieldsPolicy): CopybookAST = {
-    def getDebugField(field: Primitive): Primitive = {
-      val debugEncoding = debugFieldsPolicy match {
-        case DebugFieldsPolicy.HexValue => HEX
-        case DebugFieldsPolicy.RawValue => RAW
-        case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
-      }
-
-      val debugDecoder = debugFieldsPolicy match {
-        case DebugFieldsPolicy.HexValue => StringDecoders.decodeHex _
-        case DebugFieldsPolicy.RawValue => StringDecoders.decodeRaw _
-        case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
-      }
-
-      val size = field.binaryProperties.dataSize
-      val debugFieldName = field.name + "_debug"
-      val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(debugEncoding), None)
-
-      val debugField = field.copy(name = debugFieldName,
-        dataType = debugDataType,
-        redefines = Some(field.name),
-        isDependee = false,
-        decode = debugDecoder)(parent = field.parent)
-
-      debugField
-    }
-
-    def processGroup(group: Group): Group = {
-      val newChildren = ArrayBuffer[Statement]()
-      group.children.foreach {
-        case grp: Group =>
-          val newGrp = processGroup(grp)
-          newChildren += newGrp
-        case st: Primitive =>
-          newChildren += st.withUpdatedIsRedefined(newIsRedefined = true)
-          newChildren += getDebugField(st)
-      }
-      group.withUpdatedChildren(newChildren)
-    }
-
-    if (debugFieldsPolicy != DebugFieldsPolicy.NoDebug) {
-      processGroup(ast)
-    } else {
-      ast
-    }
-
   }
 
   /**
