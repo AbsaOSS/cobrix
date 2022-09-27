@@ -16,6 +16,7 @@
 
 import Dependencies._
 import BuildInfoTemplateSettings._
+import ScalacOptions._
 
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.16"
@@ -28,7 +29,9 @@ ThisBuild / crossScalaVersions := Seq(scala211, scala212, scala213)
 
 ThisBuild / Test / javaOptions += "-Xmx2G"
 
-ThisBuild / scalacOptions := Seq("-unchecked", "-deprecation")
+ThisBuild / javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
+
+ThisBuild / scalacOptions := scalacOptionsFor(scalaVersion.value)
 
 // Scala shouldn't be packaged so it is explicitly added as a provided dependency below
 ThisBuild / autoScalaLibrary := false

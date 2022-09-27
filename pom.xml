@@ -93,8 +93,9 @@
 
         <!-- Build and plugins properties -->
         <maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssX</maven.build.timestamp.format>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.version>3.10.1</maven.compiler.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <maven.scala.version>3.2.1</maven.scala.version>
         <maven.shade.version>2.3</maven.shade.version>
         <maven.sources.version>3.0.1</maven.sources.version>
@@ -262,6 +263,16 @@
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
+            <!-- Java compiler plugin - needed to specify JDK requirements -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                </configuration>
+            </plugin>
             <!-- the Maven Scala plugin -->
             <plugin>
                 <groupId>net.alchim31.maven</groupId>
