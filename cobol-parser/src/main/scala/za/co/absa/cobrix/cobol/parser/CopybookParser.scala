@@ -279,18 +279,16 @@ object CopybookParser extends Logging {
       // Sets parent groups for child segment redefines.
       SegmentParentsSetter(correctedFieldParentMap),
       // Add debugging fields if debug mode is enabled.
-      DebugFieldsAdder(debugFieldsPolicy)
+      DebugFieldsAdder(debugFieldsPolicy),
+      // For each group calculates the number of non-filler items.
+      NonFillerCountSetter()
     )
 
-    val transformedAst = transformers.foldLeft(schemaANTLR) { (ast, transformer) =>
-      transformer.transform(ast)
+    val transformedAst = transformers.foldLeft(schemaANTLR) {
+      (ast, transformer) => transformer.transform(ast)
     }
 
-    new Copybook(
-      calculateNonFillerSizes(
-        transformedAst
-      )
-    )
+    new Copybook(transformedAst)
   }
 
   /**
@@ -381,52 +379,6 @@ object CopybookParser extends Logging {
     }
   }
 
-  /**
-    * From a mapping from fields to their parents returns roots field - the ones that does not have a parent.
-    */
-  private def getRootSegmentFields(fieldParentMap: Map[String, String]): List[String] = {
-    fieldParentMap
-      .values
-      .toSet
-      .diff(fieldParentMap.keys.toSet)
-      .toList
-  }
-
-  /**
-    * For each group calculates the number of non-filler items
-    *
-    * @param ast An AST as a set of copybook records
-    * @return The same AST with non-filler size set for each group
-    */
-  private def calculateNonFillerSizes(ast: CopybookAST): CopybookAST = {
-    def calcGroupNonFillers(group: Group): Group = {
-      val newChildren = calcNonFillerChildren(group)
-      var i = 0
-      var nonFillers = 0
-      while (i < group.children.length) {
-        if (!group.children(i).isFiller && !group.children(i).isChildSegment)
-          nonFillers += 1
-        i += 1
-      }
-      group.copy(nonFillerSize = nonFillers, children = newChildren.children)(group.parent)
-    }
-
-    def calcNonFillerChildren(group: CopybookAST): CopybookAST = {
-      val newChildren = ArrayBuffer[Statement]()
-      group.children.foreach {
-        case grp: Group =>
-          val newGrp = calcGroupNonFillers(grp)
-          if (newGrp.children.nonEmpty) {
-            newChildren += newGrp
-          }
-        case st: Primitive => newChildren += st
-      }
-      group.withUpdatedChildren(newChildren)
-    }
-
-    calcGroupNonFillers(ast)
-  }
-
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
   def transformIdentifier(identifier: String): String = {
     identifier
@@ -472,6 +424,17 @@ object CopybookParser extends Logging {
       })
       .find(_.nonEmpty)
       .getOrElse(List[String]())
+  }
+
+  /**
+    * From a mapping from fields to their parents returns roots field - the ones that does not have a parent.
+    */
+  private def getRootSegmentFields(fieldParentMap: Map[String, String]): List[String] = {
+    fieldParentMap
+      .values
+      .toSet
+      .diff(fieldParentMap.keys.toSet)
+      .toList
   }
 
   /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
