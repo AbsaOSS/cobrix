@@ -30,7 +30,9 @@
                     "name" : "FIELD",
                     "type" : "string",
                     "nullable" : true,
-                    "metadata" : { }
+                    "metadata" : {
+                      "maxLength" : 1
+                    }
                   } ]
                 },
                 "containsNull" : true

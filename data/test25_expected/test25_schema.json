@@ -17,7 +17,9 @@
             "name" : "FIELD",
             "type" : "string",
             "nullable" : true,
-            "metadata" : { }
+            "metadata" : {
+              "maxLength" : 1
+            }
           }, {
             "name" : "DETAIL1",
             "type" : {
@@ -28,7 +30,9 @@
                   "name" : "VAL1",
                   "type" : "string",
                   "nullable" : true,
-                  "metadata" : { }
+                  "metadata" : {
+                    "maxLength" : 1
+                  }
                 } ]
               },
               "containsNull" : true
@@ -48,7 +52,9 @@
                   "name" : "VAL2",
                   "type" : "string",
                   "nullable" : true,
-                  "metadata" : { }
+                  "metadata" : {
+                    "maxLength" : 1
+                  }
                 } ]
               },
               "containsNull" : true

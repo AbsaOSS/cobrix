@@ -4,7 +4,9 @@
     "name" : "SEGMENT_ID",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 1
+    }
   }, {
     "name" : "COMPANY",
     "type" : {
@@ -13,17 +15,23 @@
         "name" : "COMPANY_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 20
+        }
       }, {
         "name" : "ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 30
+        }
       }, {
         "name" : "TAXPAYER",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 8
+        }
       } ]
     },
     "nullable" : true,
@@ -36,22 +44,30 @@
         "name" : "FIRST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "LAST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 20
+        }
       }, {
         "name" : "PHONE_NUM",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 11
+        }
       } ]
     },
     "nullable" : true,
@@ -64,12 +80,16 @@
         "name" : "PO_NUMBER",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 12
+        }
       }, {
         "name" : "BRANCH_ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 20
+        }
       } ]
     },
     "nullable" : true,
