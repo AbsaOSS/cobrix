@@ -137,8 +137,9 @@ class CobolSchema(copybook: Copybook,
     })
     val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
     if (group.isArray) {
-      val metadata = getArrayMetadata(group)
-      StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true, metadata)
+      val metadata = new MetadataBuilder()
+      addArrayMetadata(metadata, group)
+      StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true, metadata.build())
     } else {
       StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true)
     }
@@ -146,6 +147,7 @@ class CobolSchema(copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def parsePrimitive(p: Primitive): StructField = {
+    val metadata = new MetadataBuilder()
     val dataType: DataType = p.dataType match {
       case d: Decimal =>
         d.compact match {
@@ -154,6 +156,7 @@ class CobolSchema(copybook: Copybook,
           case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
         }
       case a: AlphaNumeric =>
+        addAlphaNumericMetadata(metadata, a)
         a.enc match {
           case Some(RAW) => BinaryType
           case _ => StringType
@@ -170,18 +173,20 @@ class CobolSchema(copybook: Copybook,
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     if (p.isArray) {
-      val metadata = getArrayMetadata(p)
-      StructField(p.name, ArrayType(dataType), nullable = true, metadata)
+      addArrayMetadata(metadata, p)
+      StructField(p.name, ArrayType(dataType), nullable = true, metadata.build())
     } else {
-      StructField(p.name, dataType, nullable = true)
+      StructField(p.name, dataType, nullable = true, metadata.build())
     }
   }
 
-  private def getArrayMetadata(st: Statement): Metadata = {
-    val metadata = new MetadataBuilder()
-    metadata.putLong("minElements", st.arrayMinSize)
-    metadata.putLong("maxElements", st.arrayMaxSize)
-    metadata.build()
+  private def addArrayMetadata(metadataBuilder: MetadataBuilder, st: Statement): MetadataBuilder = {
+    metadataBuilder.putLong("minElements", st.arrayMinSize)
+    metadataBuilder.putLong("maxElements", st.arrayMaxSize)
+  }
+
+  private def addAlphaNumericMetadata(metadataBuilder: MetadataBuilder, a: AlphaNumeric): MetadataBuilder = {
+    metadataBuilder.putLong("maxLength", a.length)
   }
 
   private def getChildSegments(group: Group, segmentRedefines: List[Group]): ArrayBuffer[StructField] = {

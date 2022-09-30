@@ -9,7 +9,9 @@
     "name" : "STRING_VAL",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 10
+    }
   }, {
     "name" : "NUM_STR_INT01",
     "type" : "integer",
@@ -779,12 +781,16 @@
     "name" : "NUM_SLI_DEBUG",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 7
+    }
   }, {
     "name" : "NUM_STI_DEBUG",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 7
+    }
   }, {
     "name" : "FLOAT_01",
     "type" : "float",

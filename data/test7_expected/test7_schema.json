@@ -4,17 +4,23 @@
     "name" : "COMPANY_PREFIX",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 3
+    }
   }, {
     "name" : "COMPANY_NAME",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 9
+    }
   }, {
     "name" : "ADDRESS",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 25
+    }
   }, {
     "name" : "CONTACT_PERSON",
     "type" : {
@@ -23,7 +29,9 @@
         "name" : "FIRST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 6
+        }
       } ]
     },
     "nullable" : true,

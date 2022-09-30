@@ -19,12 +19,16 @@
     "name" : "SEGMENT_ID",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 5
+    }
   }, {
     "name" : "COMPANY_ID",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 10
+    }
   }, {
     "name" : "STATIC_DETAILS",
     "type" : {
@@ -33,12 +37,16 @@
         "name" : "COMPANY_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 15
+        }
       }, {
         "name" : "ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 25
+        }
       }, {
         "name" : "TAXPAYER",
         "type" : {
@@ -47,12 +55,16 @@
             "name" : "TAXPAYER_TYPE",
             "type" : "string",
             "nullable" : true,
-            "metadata" : { }
+            "metadata" : {
+              "maxLength" : 1
+            }
           }, {
             "name" : "TAXPAYER_STR",
             "type" : "string",
             "nullable" : true,
-            "metadata" : { }
+            "metadata" : {
+              "maxLength" : 8
+            }
           }, {
             "name" : "TAXPAYER_NUM",
             "type" : "integer",
@@ -72,12 +84,16 @@
               "name" : "PHONE_NUMBER",
               "type" : "string",
               "nullable" : true,
-              "metadata" : { }
+              "metadata" : {
+                "maxLength" : 17
+              }
             }, {
               "name" : "CONTACT_PERSON",
               "type" : "string",
               "nullable" : true,
-              "metadata" : { }
+              "metadata" : {
+                "maxLength" : 28
+              }
             } ]
           },
           "containsNull" : true

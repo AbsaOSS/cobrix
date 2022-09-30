@@ -8,7 +8,9 @@
         "name" : "SHORT_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 10
+        }
       }, {
         "name" : "COMPANY_ID_NUM",
         "type" : "integer",
@@ -18,7 +20,9 @@
         "name" : "COMPANY_ID_STR",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 3
+        }
       } ]
     },
     "nullable" : true,
@@ -31,12 +35,16 @@
         "name" : "CLIENTID",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 15
+        }
       }, {
         "name" : "REGISTRATION_NUM",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 10
+        }
       }, {
         "name" : "NUMBER_OF_ACCTS",
         "type" : "integer",
@@ -56,7 +64,9 @@
                   "name" : "ACCOUNT_NUMBER",
                   "type" : "string",
                   "nullable" : true,
-                  "metadata" : { }
+                  "metadata" : {
+                    "maxLength" : 24
+                  }
                 }, {
                   "name" : "ACCOUNT_TYPE_N",
                   "type" : "integer",
@@ -66,7 +76,9 @@
                   "name" : "ACCOUNT_TYPE_X",
                   "type" : "string",
                   "nullable" : true,
-                  "metadata" : { }
+                  "metadata" : {
+                    "maxLength" : 3
+                  }
                 } ]
               },
               "containsNull" : true

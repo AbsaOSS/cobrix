@@ -28,12 +28,16 @@
         "name" : "COMPANY_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 20
+        }
       }, {
         "name" : "ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 30
+        }
       }, {
         "name" : "TAXPAYER",
         "type" : "integer",
@@ -51,7 +55,9 @@
         "name" : "DEPT_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 22
+        }
       }, {
         "name" : "EXTENSION",
         "type" : "integer",
@@ -69,27 +75,37 @@
         "name" : "FIRST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "LAST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "ROLE",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 18
+        }
       }, {
         "name" : "HOME_ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 40
+        }
       }, {
         "name" : "PHONE_NUM",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 17
+        }
       } ]
     },
     "nullable" : true,
@@ -102,7 +118,9 @@
         "name" : "ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 30
+        }
       }, {
         "name" : "FLOOR",
         "type" : "integer",
@@ -125,17 +143,23 @@
         "name" : "CUSTOMER_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 20
+        }
       }, {
         "name" : "POSTAL_ADDRESS",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 30
+        }
       }, {
         "name" : "ZIP",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 10
+        }
       } ]
     },
     "nullable" : true,
@@ -148,17 +172,23 @@
         "name" : "FIRST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "LAST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 16
+        }
       }, {
         "name" : "PHONE_NUM",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 17
+        }
       } ]
     },
     "nullable" : true,
@@ -171,17 +201,23 @@
         "name" : "CONTRACT_NUMBER",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 15
+        }
       }, {
         "name" : "STATE",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 8
+        }
       }, {
         "name" : "DUE_DATE",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 10
+        }
       }, {
         "name" : "AMOUNT",
         "type" : "decimal(12,2)",

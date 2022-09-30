@@ -4,32 +4,44 @@
     "name" : "FILLER_P1",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 1
+    }
   }, {
     "name" : "COMPANY_PREFIX",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 3
+    }
   }, {
     "name" : "FILLER_P2",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 1
+    }
   }, {
     "name" : "FILLER_P3",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 1
+    }
   }, {
     "name" : "COMPANY_NAME",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 9
+    }
   }, {
     "name" : "ADDRESS",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 25
+    }
   }, {
     "name" : "FILL_FIELD",
     "type" : {
@@ -38,12 +50,16 @@
         "name" : "FILLER_P6",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 5
+        }
       }, {
         "name" : "FILLER_P7",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 2
+        }
       } ]
     },
     "nullable" : true,
@@ -56,7 +72,9 @@
         "name" : "FIRST_NAME",
         "type" : "string",
         "nullable" : true,
-        "metadata" : { }
+        "metadata" : {
+          "maxLength" : 6
+        }
       } ]
     },
     "nullable" : true,

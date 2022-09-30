@@ -4,22 +4,30 @@
     "name" : "CURRENCY",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 3
+    }
   }, {
     "name" : "SIGNATURE",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 8
+    }
   }, {
     "name" : "COMPANY_NAME",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 15
+    }
   }, {
     "name" : "COMPANY_ID",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 10
+    }
   }, {
     "name" : "WEALTH_QFY",
     "type" : "integer",
