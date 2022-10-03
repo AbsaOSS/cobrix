@@ -327,6 +327,23 @@ val copyBook = CopybookParser.parseSimple(copyBookContents)
 println(copyBook.generateRecordLayoutPositions())
 ```
 
+### Spark schema metadata
+When a copybook is converted to a Spark schema, some information is lost, such as length of string fields or
+minimum and maximum number of elements in arrays. To preserve this information, Cobrix adds metadata to Spark schema
+fields. The following metadata is added:
+
+| Metadata key | Description                                 |
+|--------------|---------------------------------------------|
+| maxLength    | The maximum length of a string field.       |
+| minElements  | The minimum number of elements in an array. |
+| maxElements  | The maximum number of elements in an array. |
+
+You can access the metadata in the usual way:
+```scala
+// This example returns the maximum length of a string field that is the first field of the copybook
+df.schema.fields(0).metadata.getLong("maxLength")
+```
+
 ### Fixed record length files
 Cobrix assumes files has fixed length (`F`) record format by default. The record length is determined by the length of
 the record defined by the copybook. But you can specify the record length explicitly:
@@ -1405,6 +1422,10 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.0 to be released soon.
+   - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Add 'maxLength' metadata for Spark schema string fields.
+   - [#514](https://github.com/AbsaOSS/cobrix/issues/514) Add support for Scala 2.13 and Spark 3.3.0.
+
 - #### 2.5.1 released 24 August 2022.
    - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fix dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
 
