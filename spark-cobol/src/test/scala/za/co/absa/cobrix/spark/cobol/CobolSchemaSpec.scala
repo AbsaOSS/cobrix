@@ -263,4 +263,31 @@ class CobolSchemaSpec extends WordSpec {
     assert(metadataStruct.getLong("maxElements") == 10)
   }
 
+  "Metadata generation for string types" in {
+    val copyBook: String =
+      """       01  RECORD.
+        |         05  STR1                  PIC X(10).
+        |         05  STR2                  PIC A(7).
+        |         05  NUM3                  PIC 9(7).
+        |""".stripMargin
+
+    val parsedSchema = CopybookParser.parseTree(copyBook)
+
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
+    val actualSparkSchema = cobolSchema1.getSparkSchema
+
+    val metadataStr1 = actualSparkSchema.fields.head.metadata
+    val metadataStr2 = actualSparkSchema.fields(1).metadata
+    val metadataNum3 = actualSparkSchema.fields(2).metadata
+
+    assert(metadataStr1.contains("maxLength"))
+    assert(metadataStr2.contains("maxLength"))
+    assert(!metadataNum3.contains("maxLength"))
+
+    actualSparkSchema.fields(1).metadata.getLong("maxLength")
+
+    assert(metadataStr1.getLong("maxLength") == 10)
+    assert(metadataStr2.getLong("maxLength") == 7)
+  }
+
 }
