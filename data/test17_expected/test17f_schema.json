@@ -27,7 +27,7 @@
     "type" : "string",
     "nullable" : true,
     "metadata" : {
-      "maxLength" : 5
+      "maxLength" : 10
     }
   }, {
     "name" : "COMPANY_ID",
@@ -41,7 +41,7 @@
     "type" : "string",
     "nullable" : true,
     "metadata" : {
-      "maxLength" : 10
+      "maxLength" : 20
     }
   }, {
     "name" : "STATIC_DETAILS",
@@ -59,7 +59,7 @@
         "type" : "string",
         "nullable" : true,
         "metadata" : {
-          "maxLength" : 15
+          "maxLength" : 30
         }
       }, {
         "name" : "ADDRESS",
@@ -73,7 +73,7 @@
         "type" : "string",
         "nullable" : true,
         "metadata" : {
-          "maxLength" : 25
+          "maxLength" : 50
         }
       }, {
         "name" : "TAXPAYER",
@@ -91,7 +91,7 @@
             "type" : "string",
             "nullable" : true,
             "metadata" : {
-              "maxLength" : 1
+              "maxLength" : 2
             }
           }, {
             "name" : "TAXPAYER_STR",
@@ -105,7 +105,7 @@
             "type" : "string",
             "nullable" : true,
             "metadata" : {
-              "maxLength" : 8
+              "maxLength" : 16
             }
           }, {
             "name" : "TAXPAYER_NUM",
@@ -117,7 +117,7 @@
             "type" : "string",
             "nullable" : true,
             "metadata" : {
-              "maxLength" : 4
+              "maxLength" : 8
             }
           } ]
         },
@@ -141,7 +141,7 @@
               "type" : "string",
               "nullable" : true,
               "metadata" : {
-                "maxLength" : 17
+                "maxLength" : 34
               }
             }, {
               "name" : "CONTACT_PERSON",
@@ -155,7 +155,7 @@
               "type" : "string",
               "nullable" : true,
               "metadata" : {
-                "maxLength" : 28
+                "maxLength" : 56
               }
             } ]
           },

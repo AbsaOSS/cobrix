@@ -50,7 +50,12 @@ class DebugFieldsAdder(debugFieldsPolicy: DebugFieldsPolicy) extends AstTransfor
         case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
       }
 
-      val size = field.binaryProperties.dataSize
+      val size = debugFieldsPolicy match {
+        case DebugFieldsPolicy.HexValue => field.binaryProperties.dataSize * 2
+        case DebugFieldsPolicy.RawValue => field.binaryProperties.dataSize
+        case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
+      }
+
       val debugFieldName = field.name + "_debug"
       val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(debugEncoding), None)
 
