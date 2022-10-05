@@ -268,16 +268,21 @@ Gathering all dependencies manually maybe a tiresome task. A better approach wou
 all required dependencies (an uber jar aka fat jar). 
 
 Creating an uber jar for Cobrix is very easy. Steps to build:
-- Install JDK 1.8
+- Install JDK 8
 - Install SBT
 - Clone Cobrix repository
 - Run `sbt assembly` in the root directory of the repository specifying the Scala and Spark version you want to build for:
     ```sh
+    # For Scala 2.11
     sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
-    sbt ++2.12.16 assembly -DSPARK_VERSION=2.4.8
-    sbt ++2.12.16 assembly -DSPARK_VERSION=3.1.3
-    sbt ++2.12.16 assembly -DSPARK_VERSION=3.2.2
-    sbt ++2.13.8 assembly -DSPARK_VERSION=3.2.2
+  
+    # For Scala 2.12
+    sbt ++2.12.17 assembly -DSPARK_VERSION=2.4.8
+    sbt ++2.12.17 assembly -DSPARK_VERSION=3.1.3
+    sbt ++2.12.17 assembly -DSPARK_VERSION=3.2.2
+  
+    # For Scala 2.13
+    sbt ++2.13.9 assembly -DSPARK_VERSION=3.2.2
     ```
 
 You can collect the uber jar of `spark-cobol` either at
@@ -285,7 +290,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.5.2-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol-assembly-2.6.0-SNAPSHOT.jar
 ```
 
 ## Other Features
@@ -1423,8 +1428,8 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.6.0 to be released soon.
-   - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Add 'maxLength' metadata for Spark schema string fields.
    - [#514](https://github.com/AbsaOSS/cobrix/issues/514) Add support for Scala 2.13 and Spark 3.3.0.
+   - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Add 'maxLength' metadata for Spark schema string fields.
 
 - #### 2.5.1 released 24 August 2022.
    - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fix dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
