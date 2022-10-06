@@ -20,8 +20,12 @@ import scala.collection.mutable
 
 class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   private val recordQueue = new mutable.Queue[Array[Byte]]
+  private var canSplitAtCurrentOffset = true
+  private var recordOffset: Long = ctx.inputStream.offset
 
-  override def offset: Long = ctx.inputStream.offset
+  override def offset: Long = recordOffset
+
+  override def canSplitHere: Boolean = canSplitAtCurrentOffset
 
   override def hasNext: Boolean = {
     if (recordQueue.isEmpty) {
@@ -63,6 +67,13 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
     if (!hasNext) {
       throw new NoSuchElementException
     }
-    recordQueue.dequeue()
+    if (canSplitAtCurrentOffset) {
+      recordOffset += ctx.bdwDecoder.headerSize
+    }
+    val record = recordQueue.dequeue()
+    recordOffset += ctx.rdwDecoder.headerSize + record.length
+
+    canSplitAtCurrentOffset = recordQueue.isEmpty
+    record
   }
 }

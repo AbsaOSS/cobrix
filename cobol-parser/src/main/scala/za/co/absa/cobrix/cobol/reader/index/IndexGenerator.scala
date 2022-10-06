@@ -59,9 +59,10 @@ object IndexGenerator extends Logging {
     var endOfFileReached = false
     while (!endOfFileReached) {
       var record: Array[Byte] = null
-      val (recordSize: Long, isValid, hasMoreRecords) = recordExtractor match {
+      val (recordSize: Long, isValid, hasMoreRecords, canSplit) = recordExtractor match {
         case Some(extractor) =>
           val offset0 = extractor.offset
+          val canSplit = extractor.canSplitHere
           val isValid = if (extractor.hasNext) {
             record = extractor.next()
             true
@@ -70,7 +71,7 @@ object IndexGenerator extends Logging {
           }
           val offset1 = extractor.offset
           val recordLength = offset1 - offset0
-          (recordLength, isValid, extractor.hasNext)
+          (recordLength, isValid, extractor.hasNext, canSplit)
         case None =>
           val headerSize = recordHeaderParser.getHeaderLength
           val headerBytes = dataStream.next(headerSize)
@@ -80,8 +81,9 @@ object IndexGenerator extends Logging {
           }
           val recordSize = dataStream.offset - byteIndex
           val hasMoreRecords = recordSize > 0 && !dataStream.isEndOfStream
-          (recordSize, recordMetadata.isValid, hasMoreRecords)
+          (recordSize, recordMetadata.isValid, hasMoreRecords, true)
       }
+
       if (!hasMoreRecords) {
         endOfFileReached = true
       } else {
@@ -93,13 +95,16 @@ object IndexGenerator extends Logging {
               rootRecordId = curSegmentId
             }
           }
-          if (needSplit(recordsInChunk, bytesInChunk)) {
+          if (canSplit && needSplit(recordsInChunk, bytesInChunk)) {
             if (!isReallyHierarchical || isSegmentGoodForSplit(rootSegmentIds, copybook.get, segmentField.get, record)) {
               val indexEntry = SparseIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
-              index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
-              index += indexEntry
-              recordsInChunk = 0
+              // Do not add an entry if we are still at the same position as the previous entry.
+              if (index(len - 1).offsetFrom != indexEntry.offsetFrom) {
+                index(len - 1) = index(len - 1).copy(offsetTo = indexEntry.offsetFrom)
+                index += indexEntry
+                recordsInChunk = 0
+              }
               if (isSplitBySize) {
                 // If indexes are split by size subtract the size of the split from the total bytes read.
                 // This way the mismatch between Spark partitions and HDFS blocks won't accumulate.
@@ -111,11 +116,11 @@ object IndexGenerator extends Logging {
             }
           }
         }
+        recordIndex += 1
+        recordsInChunk += 1
+        byteIndex += recordSize
+        bytesInChunk += recordSize
       }
-      recordIndex += 1
-      recordsInChunk += 1
-      byteIndex += recordSize
-      bytesInChunk += recordSize
     }
     if (isReallyHierarchical && rootSegmentId.nonEmpty && rootRecordId.isEmpty) {
       logger.error(s"Root segment ${segmentField.get.name}=='$rootSegmentId' not found in the data file.")
