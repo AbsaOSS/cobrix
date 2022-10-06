@@ -34,6 +34,14 @@ trait RawRecordExtractor extends Iterator[Array[Byte]] {
   def offset: Long
 
   /**
+    * Returns true if the input stream can be split at the given location.
+    *
+    * Usually every file can be split by the location at the beginning of each record.
+    * However, block variable length files (record_format = VB) can only be split by blocks
+    */
+  def canSplitHere: Boolean = true
+
+  /**
     * Clients of 'spark-cobol' can pass additional information to custom record header parsers using
     *
     * ```

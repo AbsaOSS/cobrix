@@ -30,11 +30,13 @@ class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtu
 
   private val copybook =
     """      01  R.
-                03 A        PIC X(1).
+                03 A        PIC X(2).
       """
 
-  val expected2Records = """[{"A":"0"},{"A":"1"}]"""
-  val expected4Records = """[{"A":"0"},{"A":"1"},{"A":"2"},{"A":"3"}]"""
+  val expected2Records = """[{"A":"00"},{"A":"01"}]"""
+  val expected4Records = """[{"A":"00"},{"A":"01"},{"A":"02"},{"A":"03"}]"""
+  val expected20Records = """[{"A":"00"},{"A":"01"},{"A":"02"},{"A":"03"},{"A":"04"},{"A":"05"},{"A":"06"},{"A":"07"},{"A":"08"},{"A":"09"},{"A":"10"},{"A":"11"},{"A":"12"},{"A":"13"},{"A":"14"},{"A":"15"},{"A":"16"},{"A":"17"},{"A":"18"},{"A":"19"}]"""
+  val expected20RecordsWithIds = """[{"R":0,"A":"00"},{"R":1,"A":"01"},{"R":2,"A":"02"},{"R":3,"A":"03"},{"R":4,"A":"04"},{"R":5,"A":"05"},{"R":6,"A":"06"},{"R":7,"A":"07"},{"R":8,"A":"08"}]"""
 
   "VB record (little-endian BDW, little-endian RDW)" should {
     "load data without adjustments" in {
@@ -70,6 +72,14 @@ class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtu
     "load data with adjustments" in {
       testVbRecordLoad(true, true, -1, 1, 2, 2, expected4Records)
     }
+    "VB indexing" in {
+      testVbRecordLoad(true, true, 0, 0, 5, 4, expected20Records,
+        Map("input_split_records" -> "3"), Some(5))
+    }
+    "VB indexing with record id generator" in {
+      testVbRecordLoad(true, true, 0, 0, 3, 3, expected20RecordsWithIds,
+        Map("input_split_records" -> "4", "generate_record_id" -> "true"), Some(2))
+    }
   }
 
   "in case of failures" should {
@@ -99,12 +109,15 @@ class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtu
                                rdwAdjustment: Int,
                                blocks: Int,
                                records: Int,
-                               expected: String): Unit = {
+                               expected: String,
+                               options: Map[String, String] = Map.empty[String, String],
+                               expectedPartitions: Option[Int] = None): Unit = {
     val record: Seq[Byte] = Range(0, blocks).flatMap(blockNum => {
-      getHeader(records * 5, bdwBigEndian, bdwAdjustment) ++
+      getHeader(records * 6, bdwBigEndian, bdwAdjustment) ++
       Range(0, records).flatMap(recordNum => {
-        val idx = (blockNum * records + recordNum) % 10
-        getHeader(1, rdwBigEndian, rdwAdjustment) ++ Seq((0xF0 + idx).toByte)
+        val idx0 = (blockNum * records + recordNum) / 10
+        val idx1 = (blockNum * records + recordNum) % 10
+        getHeader(2, rdwBigEndian, rdwAdjustment) ++ Seq((0xF0 + idx0).toByte, (0xF0.toByte + idx1).toByte)
       })
     })
 
@@ -118,9 +131,18 @@ class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtu
         .option("is_rdw_big_endian", rdwBigEndian)
         .option("bdw_adjustment", -bdwAdjustment)
         .option("rdw_adjustment", -rdwAdjustment)
+        .options(options)
         .load(tmpFileName1)
 
-      val actual = df
+      val df2 = if (df.schema.fields.length > 1) {
+        df.drop("File_Id")
+          .drop("Record_Byte_Length")
+          .withColumnRenamed("Record_Id", "R")
+      } else {
+        df
+      }
+
+      val actual = df2
         .orderBy(col("A"))
         .toJSON
         .collect()
@@ -128,6 +150,9 @@ class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixtu
 
       assert(df.count() == blocks * records)
       assert(actual == expected)
+      expectedPartitions.foreach(expectedPartitions => {
+        assert(df.rdd.getNumPartitions == expectedPartitions)
+      })
     }
   }
 
