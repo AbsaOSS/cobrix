@@ -1428,11 +1428,13 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.6.0 to be released soon.
-   - [#514](https://github.com/AbsaOSS/cobrix/issues/514) Add support for Scala 2.13 and Spark 3.3.0.
-   - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Add 'maxLength' metadata for Spark schema string fields.
+   - [#514](https://github.com/AbsaOSS/cobrix/issues/514) Added support for Scala 2.13 and Spark 3.3.0.
+   - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Added 'maxLength' metadata for Spark schema string fields.
+   - [#521](https://github.com/AbsaOSS/cobrix/issues/521) Fixed index generation and improved performance of variable
+     block length files processing (record_format='VB').
 
 - #### 2.5.1 released 24 August 2022.
-   - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fix dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
+   - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fixed dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
 
 - #### 2.5.0 released 28 June 2022.
    - [#396](https://github.com/AbsaOSS/cobrix/issues/396) Added support for parsing copybooks that do not have root record GROUP.
