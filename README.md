@@ -1427,7 +1427,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.6.0 to be released soon.
+- #### 2.6.0 released 14 October 2022.
    - [#514](https://github.com/AbsaOSS/cobrix/issues/514) Added support for Scala 2.13 and Spark 3.3.0.
    - [#517](https://github.com/AbsaOSS/cobrix/issues/517) Added 'maxLength' metadata for Spark schema string fields.
    - [#521](https://github.com/AbsaOSS/cobrix/issues/521) Fixed index generation and improved performance of variable
