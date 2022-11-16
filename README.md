@@ -308,6 +308,18 @@ Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 $ spark-shell --jars spark-cobol-assembly-2.6.1-SNAPSHOT.jar
 ```
 
+> <b>A note for building and running tests on Windows</b>
+> - `java.lang.UnsatisfiedLinkError: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat` is a Hadoop compatibility with
+>   Windows issue. The workaround is described here: https://stackoverflow.com/questions/41851066/exception-in-thread-main-java-lang-unsatisfiedlinkerror-org-apache-hadoop-io
+> - When running assembly with `-DSPARK_VERSION=...` on Windows, it seems an sbt compatibility with Windows issue:
+>   https://stackoverflow.com/questions/59144913/run-sbt-1-2-8-project-with-java-d-options-on-windows
+>   You can work around it by using default Spark version for a given Scala version:
+>   ```sh
+>   sbt ++2.11.12 assembly
+>   sbt ++2.12.17 assembly
+>   sbt ++2.13.9 assembly
+>   ```
+
 ## Other Features
 
 ### Loading several paths
