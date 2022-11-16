@@ -105,7 +105,7 @@ class Test18AsciiNulChars extends WordSpec with SparkTestBase with BinaryFileFix
         |123456789
         |12345678901234567890123456789
         |5678
-        |""".stripMargin
+        |""".stripMargin.replaceAll("\r", "")
 
     "not generate redundant records" in {
       withTempTextFile("ascii_nul", ".dat", StandardCharsets.UTF_8, text) { tmpFileName =>

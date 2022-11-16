@@ -16,13 +16,17 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
-import org.scalatest.{FunSuite, WordSpec}
+import org.apache.spark.sql.types.StructType
+import org.scalatest.WordSpec
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
+import za.co.absa.cobrix.spark.cobol.source.base.SimpleComparisonBase
 
-class CobolSchemaSpec extends WordSpec {
+class CobolSchemaSpec extends WordSpec with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
   "for simple copybooks" should {
     val copyBookContents: String =
       """       01  RECORD.
@@ -53,7 +57,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "Generate record id field" in {
@@ -74,7 +78,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 
@@ -102,7 +106,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "keep original and no record id generation" in {
@@ -118,7 +122,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "collapse root + record id generation" in {
@@ -135,7 +139,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "collapse root and no record id generation" in {
@@ -149,7 +153,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 
@@ -178,7 +182,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "multi-segment keep-original without record id generation" in {
@@ -195,7 +199,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "multi-segment collapse root with record id generation" in {
@@ -213,7 +217,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
     "multi-segment collapse root without record id generation" in {
@@ -228,7 +232,7 @@ class CobolSchemaSpec extends WordSpec {
       val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
-      assert(actualSchema == expectedSchema)
+      assertEqualsMultiline(actualSchema, expectedSchema)
     }
   }
 
