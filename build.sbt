@@ -17,6 +17,7 @@
 import Dependencies._
 import BuildInfoTemplateSettings._
 import ScalacOptions._
+import com.github.sbt.jacoco.report.JacocoReportSettings
 
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.17"
@@ -38,6 +39,15 @@ ThisBuild / autoScalaLibrary := false
 
 lazy val printSparkVersion = taskKey[Unit]("Print Spark version spark-cobol is building against.")
 
+lazy val commonJacocoReportSettings: JacocoReportSettings = JacocoReportSettings(
+  formats = Seq(JacocoReportFormats.HTML, JacocoReportFormats.XML)
+)
+
+lazy val commonJacocoExcludes: Seq[String] = Seq(
+//  "za.co.absa.cobrix.spark.cobol.reader.FixedLenTextReader*", // class and related objects
+//  "za.co.absa.cobrix.spark.cobol.reader.RowHandler" // class only
+)
+
 lazy val cobrix = (project in file("."))
   .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings(
@@ -56,6 +66,10 @@ lazy val cobolParser = (project in file("cobol-parser"))
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings
+  )
+  .settings(
+    jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-parser Jacoco Report"),
+    jacocoExcludes := commonJacocoExcludes
   ).enablePlugins(AutomateHeaderPlugin)
 
 lazy val cobolConverters = (project in file("cobol-converters"))
@@ -64,6 +78,10 @@ lazy val cobolConverters = (project in file("cobol-converters"))
       name := "cobol-converters",
       libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
       releasePublishArtifactsAction := PgpKeys.publishSigned.value
+  )
+  .settings(
+    jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-converters Jacoco Report"),
+    jacocoExcludes := commonJacocoExcludes
   ).dependsOn(cobolParser)
   .enablePlugins(AutomateHeaderPlugin)
 
@@ -82,6 +100,10 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     populateBuildInfoTemplate,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings
+  )
+  .settings(
+    jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:spark-cobol Jacoco Report"),
+    jacocoExcludes := commonJacocoExcludes
   )
   .dependsOn(cobolParser)
   .enablePlugins(AutomateHeaderPlugin)
