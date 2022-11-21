@@ -125,6 +125,15 @@ of that project for the detailed guide how to run the examples locally and on a 
 When running `mvn clean package` in `examples/spark-cobol-app` an uber jar will be created. It can be used to run
 jobs via `spark-submit` or `spark-shell`. 
 
+## How to generate Code coverage report
+```sbt
+sbt ++{scala_version} jacoco
+```
+Code coverage will be generated on path:
+```
+{project-root}/cobrix/{module}/target/scala-{scala_version}/jacoco/report/html
+```
+
 ### Reading Cobol binary files from HDFS/local and querying them 
 
 1. Create a Spark ```SQLContext```
@@ -1422,6 +1431,16 @@ For multisegment variable lengths tests:
 
 ![](performance/images/exp3_multiseg_wide_time.svg) ![](performance/images/exp3_multiseg_wide_efficiency.svg)    
 ![](performance/images/exp3_multiseg_wide_records_throughput.svg) ![](performance/images/exp3_multiseg_wide_mb_throughput.svg)
+
+
+### How to generate Code coverage report
+```sbt
+sbt jacoco
+```
+Code coverage will be generated on path:
+```
+{local-path}\fixed-width\target\scala-2.XY\jacoco\report\html
+```
 
 ## FAQ
 
