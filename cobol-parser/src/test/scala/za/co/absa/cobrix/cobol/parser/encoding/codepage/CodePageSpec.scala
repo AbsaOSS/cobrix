@@ -42,6 +42,16 @@ class CodePageSpec extends FunSuite {
     assert(codePage.codePageShortName == "cp037_extended")
   }
 
+  test("Ensure codepage 'cp875' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp875")
+    assert(codePage.codePageShortName == "cp875")
+  }
+
+  test("Ensure codepage 'cp1047' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1047")
+    assert(codePage.codePageShortName == "cp1047")
+  }
+
   test("Ensure an unknown codepage throws an IllegalArgumentException") {
     assert(Try {
       CodePage.getCodePageByName("sdw")
