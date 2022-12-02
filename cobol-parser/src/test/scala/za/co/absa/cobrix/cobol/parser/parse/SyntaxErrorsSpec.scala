@@ -127,7 +127,7 @@ class SyntaxErrorsSpec extends FunSuite {
   }
 
 
-  test (""){
+  test ("Test parser tolerance for USAGE clause following PIC without a space"){
     val copyBookContents: String =
       """      01 GROUP.
         |         02 FIELD1 PIC X(2).
