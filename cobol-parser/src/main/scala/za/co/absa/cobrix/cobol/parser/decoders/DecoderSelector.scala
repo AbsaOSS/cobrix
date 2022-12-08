@@ -17,8 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import java.nio.charset.{Charset, StandardCharsets}
-
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
+import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding._
@@ -143,7 +142,10 @@ object DecoderSelector {
         getDoublePrecisionFpDecoder(floatingPointFormat)
       case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
-        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor)
+        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor, mandatorySignNibble = true)
+      case Some(COMP3U()) =>
+        // COMP-3 aka BCD-encoded number
+        BCDNumberDecoders.decodeBigBCDDecimal(_, decimalType.scale, decimalType.scaleFactor, mandatorySignNibble = false)
       case Some(COMP4()) =>
         // COMP aka BINARY encoded number
         (bytes: Array[Byte]) => toBigDecimal(BinaryUtils.decodeBinaryNumber(bytes, bigEndian = true, signed = isSigned, decimalType.scale, decimalType.scaleFactor))
@@ -221,7 +223,10 @@ object DecoderSelector {
         throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
       case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
-        getBCDIntegralDecoder(integralType.precision)
+        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = true)
+      case Some(COMP3U()) =>
+        // COMP-3U aka Unsigned BCD-encoded number aka Unsigned Packed
+        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = false)
       case Some(COMP4()) =>
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(COMP4()), integralType.precision, integralType.signPosition, isBigEndian = true)
@@ -232,7 +237,7 @@ object DecoderSelector {
         // COMP aka BINARY encoded number
         getBinaryEncodedIntegralDecoder(Some(COMP9()), integralType.precision, integralType.signPosition, isBigEndian = false)
       case _ =>
-        throw new IllegalStateException(s"Unknown number compression format (COMP-${integralType.compact}).")
+        throw new IllegalStateException(s"Unknown number compression format (${integralType.compact.get}).")
     }
   }
 
@@ -266,7 +271,7 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a BCD-encoded integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getBCDIntegralDecoder(precision: Int): Decoder = {
+  private def getBCDIntegralDecoder(precision: Int, mandatorySignNibble: Boolean): Decoder = {
     val decoder =
       if (precision <= Constants.maxIntegerPrecision) {
         a: Array[Byte] => {
@@ -281,7 +286,7 @@ object DecoderSelector {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a)
       } else {
         a: Array[Byte] =>
-          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0, 0)
+          val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0, 0, mandatorySignNibble)
           if (bcdDecoded != null)
             BigDecimal(bcdDecoded)
           else

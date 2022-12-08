@@ -20,6 +20,7 @@ import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
 class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
@@ -118,6 +119,42 @@ class ParseCopybookFeaturesSpec extends FunSuite with SimpleComparisonBase {
     val layout = copybook.generateRecordLayoutPositions()
 
     assertEqualsMultiline(layout, expectedLayout)
+  }
+
+  test("Test copybooks containing COMP-3U Cobrix extension data type") {
+    val copybookContents =
+      """
+      01  ROOT-GROUP.
+          05  NUM1 PIC X(4)    COMP-3U.
+          05  NUM2 PIC 9(4)V99 COMP-3U.
+      """
+
+    val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |1 ROOT_GROUP                                          1      1      7      7
+        |  5 NUM1                                              2      1      4      4
+        |  5 NUM2                                              3      5      7      3"""
+        .stripMargin.replace("\r\n", "\n")
+
+    val copybook = CopybookParser.parseTree(copybookContents)
+    val layout = copybook.generateRecordLayoutPositions()
+
+    assertEqualsMultiline(layout, expectedLayout)
+  }
+
+  test("Test throwning an exception when a USAGE clause is unexpected for a PIC") {
+    val copybookContents =
+      """
+      01  ROOT-GROUP.
+          05  NUM PIC X(4)    COMP-3.
+      """
+
+    val ex = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copybookContents)
+    }
+
+    assert(ex.msg.contains("The field should be numeric"))
   }
 
   test("Test parseSimple() not dropping fillers") {

@@ -78,9 +78,10 @@ object BCDNumberDecoders {
     * @param bytes A byte array that represents the binary data
     * @param scale A decimal scale if a number is a decimal. Should be greater or equal to zero
     * @param scaleFactor Additional zeros to be added before of after the decimal point
+    * @param mandatorySignNibble If true the BCD number should contain the sign nibble. Otherwise the number is considered unsigned.
     * @return A string representation of the binary data, null if the data is not properly formatted
     */
-  def decodeBigBCDNumber(bytes: Array[Byte], scale: Int, scaleFactor: Int): String = {
+  def decodeBigBCDNumber(bytes: Array[Byte], scale: Int, scaleFactor: Int, mandatorySignNibble: Boolean): String = {
     if (scale < 0) {
       throw new IllegalArgumentException(s"Invalid scale=$scale, should be greater or equal to zero.")
     }
@@ -120,7 +121,7 @@ object BCDNumberDecoders {
         return null
       }
 
-      if (i + 1 == bytes.length) {
+      if (mandatorySignNibble && i + 1 == bytes.length) {
         // The last nibble is a sign
         sign = lowNibble match {
           case 0x0C => "" // +, signed
@@ -159,9 +160,9 @@ object BCDNumberDecoders {
   }
 
   /** Malformed data does not cause exceptions in Spark. Null values are returned instead */
-  def decodeBigBCDDecimal(binBytes: Array[Byte], scale: Int, scaleFactor: Int): BigDecimal = {
+  def decodeBigBCDDecimal(binBytes: Array[Byte], scale: Int, scaleFactor: Int, mandatorySignNibble: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeBigBCDNumber(binBytes, scale, scaleFactor))
+      BigDecimal(decodeBigBCDNumber(binBytes, scale, scaleFactor, mandatorySignNibble))
     } catch {
       case NonFatal(_) => null
     }

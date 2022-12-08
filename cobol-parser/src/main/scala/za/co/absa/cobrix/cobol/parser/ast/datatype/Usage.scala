@@ -30,6 +30,11 @@ case class COMP2() extends Usage {
 case class COMP3() extends Usage {
   override def toString = "COMP-3"
 }
+
+case class COMP3U() extends Usage {
+  override def toString = "COMP-3U"
+}
+
 case class COMP4() extends Usage {
   override def toString = "COMP-4"
 }
