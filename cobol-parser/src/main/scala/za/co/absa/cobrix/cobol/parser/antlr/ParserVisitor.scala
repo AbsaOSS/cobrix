@@ -17,11 +17,10 @@
 package za.co.absa.cobrix.cobol.parser.antlr
 
 import java.nio.charset.Charset
-
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP4, COMP5, COMP9, CobolType, Decimal, Integral, Usage}
+import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
@@ -123,6 +122,7 @@ class ParserVisitor(enc: Encoding,
       case "COMP-1" | "COMPUTATIONAL-1" => Some(COMP1())
       case "COMP-2" | "COMPUTATIONAL-2" => Some(COMP2())
       case "COMP-3" | "COMPUTATIONAL-3" | "PACKED-DECIMAL" => Some(COMP3())
+      case "COMP-3U" | "COMPUTATIONAL-3U" => Some(COMP3U())
       case "COMP-4" | "COMPUTATIONAL-4" => Some(COMP4())
       case "COMP-5" | "COMPUTATIONAL-5" => Some(COMP5())
       case "COMP-9" | "COMPUTATIONAL-9" => Some(COMP9())
@@ -157,6 +157,11 @@ class ParserVisitor(enc: Encoding,
               if (int.compact.isDefined && !int.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
               int.copy(compact=usage)
+            case x: AlphaNumeric if usageVal == COMP3U() =>
+              val num = x.asInstanceOf[AlphaNumeric]
+              Integral(num.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
+            case x =>
+              throw new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
           }
         )
     }
