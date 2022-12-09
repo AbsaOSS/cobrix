@@ -142,7 +142,7 @@ object BinaryUtils {
       case Some(comp) if comp == COMP1() => floatSize
       case Some(comp) if comp == COMP2() => doubleSize
       case Some(comp) if comp == COMP3() => precision / 2 + 1  // bcd
-      case Some(comp) if comp == COMP3U() => precision / 2
+      case Some(comp) if comp == COMP3U() => (precision + 1) / 2 // unsigned bcd - 3 digits -> 2 bytes, 4 digits -> 2 bytes
       case Some(comp) => throw new IllegalArgumentException(s"Illegal clause $comp.")
       case None =>
         var size = precision

@@ -120,29 +120,41 @@ class BinaryDecoderSpec extends FunSuite {
     val comp3BytesUnsigned = Array[Byte](0x10.toByte,0x11.toByte,0x44.toByte, 0x75.toByte,0x00.toByte,0x00.toByte,0x00.toByte,0x4C.toByte)
     val comp3ValueUnsigned = "101144750000004"
 
-    val v = BCDNumberDecoders.decodeBCDIntegralNumber(comp3BytesUnsigned).toString
+    val v = BCDNumberDecoders.decodeBCDIntegralNumber(comp3BytesUnsigned, mandatorySignNibble = true).toString
     assert (v.contains(comp3ValueUnsigned))
+  }
+
+  test("Test unsigned COMP-3U format decoding") {
+    val comp3BytesUnsigned = Array[Byte](0x10.toByte, 0x11.toByte, 0x44.toByte, 0x75.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x45.toByte)
+    val comp3ValueUnsigned = "1011447500000045"
+
+    val v = BCDNumberDecoders.decodeBCDIntegralNumber(comp3BytesUnsigned, mandatorySignNibble = false).toString
+    assert(v.contains(comp3ValueUnsigned))
   }
 
   test("Test COMP-3 wrong format cases") {
     // The low order nybble is >= 10
-    val v1 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x1A.toByte,0x11.toByte,0x4C.toByte))
+    val v1 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x1A.toByte,0x11.toByte,0x4C.toByte), mandatorySignNibble = true)
     assert (v1 == null)
 
     // The high order nybble is >= 10
-    val v2 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0xA1.toByte,0x11.toByte,0x4F.toByte))
+    val v2 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0xA1.toByte,0x11.toByte,0x4F.toByte), mandatorySignNibble = true)
     assert (v2 == null)
 
     // The sign nybble is wrong
-    val v3 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x11.toByte,0x40.toByte))
+    val v3 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x11.toByte,0x40.toByte), mandatorySignNibble = true)
     assert (v3 == null)
 
+    // The sign nybble is present in comp-3u
+    val v3u = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte, 0x11.toByte, 0x4C.toByte), mandatorySignNibble = false)
+    assert(v3u == null)
+
     // This should be a normal number
-    val v4 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x22.toByte,0x4C.toByte))
+    val v4 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](0x11.toByte,0x22.toByte,0x4C.toByte), mandatorySignNibble = true)
     assert (v4 != null)
 
     // This should be null
-    val v5 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte]())
+    val v5 = BCDNumberDecoders.decodeBCDIntegralNumber(Array[Byte](), mandatorySignNibble = true)
     assert (v5 == null)
 
     // Use string decoder
@@ -181,6 +193,24 @@ class BinaryDecoderSpec extends FunSuite {
                                 0x85.toByte, 0x47.toByte, 0x75.toByte, 0x79.toByte, 0x8F.toByte)
     val v2 = BCDNumberDecoders.decodeBigBCDNumber(byteArray, scale = 2, scaleFactor = 0, mandatorySignNibble = true)
     assert (v2.contains("92233720368547757.98"))
+  }
+
+  test("Test COMP-3U decimal cases") {
+    // A simple decimal number
+    val v1 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x15.toByte, 0x88.toByte, 0x40.toByte), scale = 2, scaleFactor = 0, mandatorySignNibble = false)
+    assert(v1.contains("1588.40"))
+    assert(v1.toDouble == 1588.4)
+
+    // A simple decimal number with an odd scale
+    val v3 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x01.toByte, 0x58.toByte, 0x84.toByte), scale = 3, scaleFactor = 0, mandatorySignNibble = false)
+    assert(v3.contains("015.884"))
+    assert(v3.toDouble == 15.884)
+
+    // A number the doesn't fit Double
+    val byteArray = Array[Byte](0x92.toByte, 0x23.toByte, 0x37.toByte, 0x20.toByte, 0x36.toByte,
+      0x85.toByte, 0x47.toByte, 0x75.toByte, 0x79.toByte, 0x81.toByte)
+    val v2 = BCDNumberDecoders.decodeBigBCDNumber(byteArray, scale = 2, scaleFactor = 0, mandatorySignNibble = false)
+    assert(v2.contains("922337203685477579.81"))
   }
 
 

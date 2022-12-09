@@ -275,7 +275,7 @@ object DecoderSelector {
     val decoder =
       if (precision <= Constants.maxIntegerPrecision) {
         a: Array[Byte] => {
-          val num = BCDNumberDecoders.decodeBCDIntegralNumber(a)
+          val num = BCDNumberDecoders.decodeBCDIntegralNumber(a, mandatorySignNibble)
           if (num != null) {
             num.asInstanceOf[Long].toInt
           } else {
@@ -283,7 +283,7 @@ object DecoderSelector {
           }
         }
       } else if (precision <= Constants.maxLongPrecision) {
-        a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a)
+        a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a, mandatorySignNibble)
       } else {
         a: Array[Byte] =>
           val bcdDecoded = BCDNumberDecoders.decodeBigBCDNumber(a, 0, 0, mandatorySignNibble)
