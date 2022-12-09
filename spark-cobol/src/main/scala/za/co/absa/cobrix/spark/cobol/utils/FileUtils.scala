@@ -173,8 +173,15 @@ object FileUtils extends Logging {
     })
   }
 
-  def getNumberOfFilesInDir(directory: String, fileSystem: FileSystem): Int =
-    expandDirectories(fileSystem, fileSystem.globStatus(new Path(directory), hiddenFileFilter)).length
+  def getNumberOfFilesInDir(directory: String, fileSystem: FileSystem): Int = {
+    val statuses = fileSystem.globStatus(new Path(directory), hiddenFileFilter)
+
+    if (statuses == null) {
+      throw new IllegalArgumentException(s"File or directory does not exist: $directory")
+    }
+
+    expandDirectories(fileSystem, statuses).length
+  }
 
   /**
     * Finds the first file that is non-divisible by a given divisor and logs its name.
