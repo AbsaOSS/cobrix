@@ -24,9 +24,10 @@ object BCDNumberDecoders {
     * Decode an integral binary encoded decimal (BCD) aka COMP-3 format to a String
     *
     * @param bytes A byte array that represents the binary data
+    * @param mandatorySignNibble If true the BCD number should contain the sign nibble. Otherwise the number is considered unsigned.
     * @return A boxed long representation of the binary data, null if the data is not properly formatted
     */
-  def decodeBCDIntegralNumber(bytes: Array[Byte]): java.lang.Long = {
+  def decodeBCDIntegralNumber(bytes: Array[Byte], mandatorySignNibble: Boolean): java.lang.Long = {
     if (bytes.length < 1) {
       return null
     }
@@ -47,7 +48,7 @@ object BCDNumberDecoders {
         return null
       }
 
-      if (i + 1 == bytes.length) {
+      if (mandatorySignNibble && i + 1 == bytes.length) {
         // The last nibble is a sign
         sign = lowNibble match {
           case 0x0C => 1 // +, signed
@@ -91,7 +92,10 @@ object BCDNumberDecoders {
 
     var sign = ""
 
-    val intendedDecimalPosition = bytes.length * 2 - (scale + 1)
+    val intendedDecimalPosition = if (mandatorySignNibble)
+      bytes.length * 2 - (scale + 1)
+    else
+      bytes.length * 2 - scale
 
     val additionalZeros = if (intendedDecimalPosition <= 0) {
       -intendedDecimalPosition + 1
@@ -100,7 +104,7 @@ object BCDNumberDecoders {
     }
 
     val chars = new StringBuffer(bytes.length * 2 + 2 + additionalZeros)
-    val decimalPointPosition = bytes.length * 2 - (scale + 1) + additionalZeros
+    val decimalPointPosition = intendedDecimalPosition + additionalZeros
 
     var i: Int = 0
     while (i < additionalZeros) {
