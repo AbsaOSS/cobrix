@@ -1245,6 +1245,44 @@ dfJoined.show(13, truncate = false)
 Again, the full example is available at
 `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
 
+## COBOL parser extensions
+
+Some encoding formats are not expressible by the standard copybook spec. Cobrix has extensions to help you decode 
+fields encoded in this way.   
+
+### Parsing little-endian binary numbers
+
+Cobrix expects all binary numbers to be big-endian. If you have a binary number in the little-endian format, use 
+`COMP-9` (Cobrix extension) instead of `COMP` or `COMP-5` for the affected fields.
+
+For example, `0x01 0x02` is `1 + 2*256 = 513` in big-endian (`COMP`) and `1*256 + 2 = 258` (`COMP-9`) in little-endian.   
+
+```
+  10 NUM  PIC S9(8) COMP.    ** Big-endian
+  10 NUM  PIC S9(8) COMP-9.  ** Little-endian
+```
+
+### Parsing 'unsigned packed' aka Easyextract numbers
+Unsigned backed numbers are encoded as BCD (`COMP-3`) without the sign nibble. For example, bytes `0x12 0x34` encode
+the number `1234`. As of `2.6.2` Cobrix supports decoding such numbers using an extension. Use `COMP-3U` for unsigned
+packed numbers.
+
+The 'COMP-3U' usage 
+```
+  10 NUM  PIC X(4) COMP-3U.
+```
+Note that when using `X` 4 refers to the number of bytes the field occupies. Here, the number of digits is 4*2 = 8. 
+
+```
+  10 NUM  PIC 9(8) COMP-3U.
+```
+When using `9` 8 refers to the number of digits the number has. Here, the size of the field in bytes is 8/2 = 4.
+
+```
+  10 NUM  PIC 9(6)V99 COMP-3U.
+```
+You can have decimals when using COMP-3 as well.
+
 ## Summary of all available options
 
 ##### File reading options
@@ -1473,6 +1511,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.2 will be released soon.
+   - [#516](https://github.com/AbsaOSS/cobrix/issues/516) Added support for unsigned packed numbers via a Cobrix extension (COMP-3U).
+
 - #### 2.6.1 released 2 December 2022.
    - [#531](https://github.com/AbsaOSS/cobrix/issues/531) Added support for CP1047 EBCDIC code page.
    - [#532](https://github.com/AbsaOSS/cobrix/issues/532) Added Jacoco code coverage support.
