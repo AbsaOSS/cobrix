@@ -205,19 +205,19 @@ object CobolParametersParser extends Logging {
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
     val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
 
-    val recordFormat = getRecordFormat(params)
+    val recordFormatDefined = getRecordFormat(params)
 
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
       if (encoding.isEmpty) {
-        if (recordFormat == AsciiText || recordFormat == BasicAsciiText) {
+        if (recordFormatDefined == AsciiText || recordFormatDefined == BasicAsciiText) {
           false
         } else {
           true
         }
       } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
-        if (recordFormat == AsciiText || recordFormat == BasicAsciiText) {
-          logger.warn(s"$PARAM_RECORD_FORMAT = D and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
+        if (recordFormatDefined == AsciiText || recordFormatDefined == BasicAsciiText) {
+          logger.warn(s"$PARAM_RECORD_FORMAT = D/D2/T and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
         }
         true
       } else {
@@ -230,6 +230,15 @@ object CobolParametersParser extends Logging {
     }
 
     val paths = getParameter(PARAM_SOURCE_PATHS, params).map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
+
+    val variableLengthParams = parseVariableLengthParameters(params, recordFormatDefined)
+
+    val recordFormat = if (recordFormatDefined == AsciiText && variableLengthParams.isEmpty) {
+      logger.info("According to options passed, the fast performing test format (BasicAscii = D2) is used.")
+      BasicAsciiText
+    } else {
+      recordFormatDefined
+    }
 
     val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
@@ -247,7 +256,8 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       params.get(PARAM_RECORD_LENGTH).map(_.toInt),
-      parseVariableLengthParameters(params, recordFormat),
+      variableLengthParams,
+      params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
       params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean,
@@ -261,7 +271,6 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
-
     )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
@@ -276,6 +285,14 @@ object CobolParametersParser extends Logging {
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
 
+    val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
+    val allowPartialRecords = params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean
+
+    // Fallback to basic Ascii when the format is 'D' or 'T', but no special Cobrix features are enabled
+    val basicAscii = recordFormat == AsciiText && asciiCharset.isEmpty && !allowPartialRecords
+
+    val nonTextVariableLengthOccurs = varLenOccursEnabled && recordFormat != BasicAsciiText && !basicAscii
+
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM))) {
       throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH_FIELD' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
@@ -287,7 +304,7 @@ object CobolParametersParser extends Logging {
       fileStartOffset > 0 ||
       fileEndOffset > 0 ||
       hasRecordExtractor ||
-      varLenOccursEnabled
+      nonTextVariableLengthOccurs
     ) {
       Some(VariableLengthParameters
       (
@@ -303,7 +320,6 @@ object CobolParametersParser extends Logging {
         recordLengthFieldOpt.getOrElse(""),
         fileStartOffset,
         fileEndOffset,
-        varLenOccursEnabled,
         isRecordIdGenerationEnabled,
         params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
@@ -556,7 +572,6 @@ object CobolParametersParser extends Logging {
   private def validateSparkCobolOptions(params: Parameters, recordFormat: RecordFormat): Unit = {
     val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, "false").toBoolean ||
       params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean ||
-      params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean ||
       params.contains(PARAM_FILE_START_OFFSET) ||
       params.contains(PARAM_FILE_END_OFFSET) ||
       params.contains(PARAM_RECORD_LENGTH_FIELD) ||
@@ -673,7 +688,7 @@ object CobolParametersParser extends Logging {
       }
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
-      val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_IS_RECORD_SEQUENCE' = true or '$PARAM_VARIABLE_SIZE_OCCURS' = true" +
+      val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_RECORD_FORMAT' = D or '$PARAM_IS_RECORD_SEQUENCE' = true" +
         s" or one of these options is set: '$PARAM_RECORD_LENGTH_FIELD', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET' or " +
         "a custom record extractor is specified"
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
