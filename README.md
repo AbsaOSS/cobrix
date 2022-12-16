@@ -1513,6 +1513,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.6.2 will be released soon.
    - [#516](https://github.com/AbsaOSS/cobrix/issues/516) Added support for unsigned packed numbers via a Cobrix extension (COMP-3U).
+   - [#543](https://github.com/AbsaOSS/cobrix/issues/543) Improved performance of processing ASCII text (D/D2/T) files with variable OCCURS.
 
 - #### 2.6.1 released 2 December 2022.
    - [#531](https://github.com/AbsaOSS/cobrix/issues/531) Added support for CP1047 EBCDIC code page.

@@ -66,6 +66,7 @@ class Test21VariableOccurs extends FunSuite with SparkTestBase {
       .read
       .format("cobol")
       .option("copybook", inputCopybookPath)
+      .option("record_format", "F")
       .option("encoding", "ascii")
       .option("variable_size_occurs", "true")
       .option("schema_retention_policy", "keep_original")

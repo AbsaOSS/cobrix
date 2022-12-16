@@ -48,6 +48,7 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
         .option("pedantic", "true")
         .option("is_text", "true")
         .option("encoding", "ascii")
+        .option("ascii_charset", "US-ASCII")
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
@@ -87,11 +88,12 @@ class Test01AsciiTextFiles extends FunSuite with SparkTestBase with BinaryFileFi
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
         .option("record_format", "D")
+        .option("ascii_charset", "UTF-8")
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
-      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
+      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data¡3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
