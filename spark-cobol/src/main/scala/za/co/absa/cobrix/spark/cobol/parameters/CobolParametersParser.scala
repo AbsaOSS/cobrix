@@ -185,17 +185,23 @@ object CobolParametersParser extends Logging {
     }
   }
 
-  private def getDebuggingFieldsPolicy(params: Parameters): DebugFieldsPolicy = {
+  private def getDebuggingFieldsPolicy(recordFormat: RecordFormat, params: Parameters): DebugFieldsPolicy = {
     val debugFieldsPolicyName = params.getOrElse(PARAM_DEBUG, "false")
     val debugFieldsPolicy = DebugFieldsPolicy.withNameOpt(debugFieldsPolicyName)
 
-    debugFieldsPolicy match {
+    val policy = debugFieldsPolicy match {
       case Some(p) =>
         p
       case None =>
         throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
-          "Allowed one of: 'true' = 'hex', 'raw', 'false' = 'none'. ")
+          "Allowed one of: 'true' = 'hex', 'raw', 'binary', 'string' (ASCII only), 'false' = 'none'. ")
     }
+    if (policy == DebugFieldsPolicy.StringValue && recordFormat != RecordFormat.AsciiText && recordFormat != RecordFormat.BasicAsciiText) {
+      throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
+        "Allowed only for record_format = 'D' or 'D2'.")
+    }
+
+    policy
   }
 
   def parse(params: Parameters): CobolParameters = {
@@ -269,7 +275,7 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
-      getDebuggingFieldsPolicy(params),
+      getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
     )
     validateSparkCobolOptions(params, recordFormat)

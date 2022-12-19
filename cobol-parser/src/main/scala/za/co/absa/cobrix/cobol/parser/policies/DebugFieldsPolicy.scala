@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.policies
 object DebugFieldsPolicy extends Enumeration {
   type DebugFieldsPolicy = Value
 
-  val NoDebug, HexValue, RawValue = Value
+  val NoDebug, HexValue, RawValue, StringValue = Value
 
   def withNameOpt(s: String): Option[Value] = {
     val exactNames = values.find(_.toString == s)
@@ -31,6 +31,8 @@ object DebugFieldsPolicy extends Enumeration {
         Some(HexValue)
       } else if (sLowerCase == "binary" || sLowerCase == "raw") {
         Some(RawValue)
+      } else if (sLowerCase == "string") {
+        Some(StringValue)
       } else {
         None
       }
