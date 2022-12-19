@@ -18,17 +18,17 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
 import org.scalatest.FunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
+import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.JavaConverters._
 
-class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleComparisonBase {
+class Test24DebugModeSpec extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val exampleName = "Test24 (debug mode)"
@@ -145,6 +145,33 @@ class Test24DebugModeSpec extends FunSuite with SparkTestBase with SimpleCompari
         s"$actualResultsPath for details.")
     }
     Files.delete(Paths.get(actualResultsPath))
+  }
+
+  test("Test debugging of an OCCURS of primitives") {
+    val copybook =
+      """       01  RECORD.
+               05  A          PIC X(2).
+               05  B          PIC 9(3).
+        """
+
+    val inputText = "1 345\n6  9 "
+    withTempTextFile("debug_mode", ".dat", StandardCharsets.UTF_8, inputText) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("schema_retention_policy", "collapse_root")
+        .option("debug", "string")
+        .load(tmpFileName)
+
+      val expected = """[{"A":"1","A_debug":"1 ","B":345,"B_debug":"345"},{"A":"6","A_debug":"6 ","B":9,"B_debug":" 9 "}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
   }
 
 

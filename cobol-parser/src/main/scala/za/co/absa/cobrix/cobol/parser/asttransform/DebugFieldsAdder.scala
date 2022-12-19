@@ -20,6 +20,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.AlphaNumeric
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.decoders.StringDecoders
+import za.co.absa.cobrix.cobol.parser.decoders.StringDecoders.KeepAll
 import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
@@ -41,18 +42,21 @@ class DebugFieldsAdder(debugFieldsPolicy: DebugFieldsPolicy) extends AstTransfor
       val debugEncoding = debugFieldsPolicy match {
         case DebugFieldsPolicy.HexValue => HEX
         case DebugFieldsPolicy.RawValue => RAW
+        case DebugFieldsPolicy.StringValue => ASCII
         case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
       }
 
       val debugDecoder = debugFieldsPolicy match {
         case DebugFieldsPolicy.HexValue => StringDecoders.decodeHex _
         case DebugFieldsPolicy.RawValue => StringDecoders.decodeRaw _
+        case DebugFieldsPolicy.StringValue => (a: Array[Byte]) => new String(a)
         case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
       }
 
       val size = debugFieldsPolicy match {
         case DebugFieldsPolicy.HexValue => field.binaryProperties.dataSize * 2
         case DebugFieldsPolicy.RawValue => field.binaryProperties.dataSize
+        case DebugFieldsPolicy.StringValue => field.binaryProperties.dataSize
         case _ => throw new IllegalStateException(s"Unexpected debug fields policy: $debugFieldsPolicy.")
       }
 
