@@ -303,10 +303,10 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
     # For Scala 2.12
     sbt ++2.12.17 assembly -DSPARK_VERSION=2.4.8
     sbt ++2.12.17 assembly -DSPARK_VERSION=3.1.3
-    sbt ++2.12.17 assembly -DSPARK_VERSION=3.2.2
+    sbt ++2.12.17 assembly -DSPARK_VERSION=3.2.3
   
     # For Scala 2.13
-    sbt ++2.13.9 assembly -DSPARK_VERSION=3.2.2
+    sbt ++2.13.10 assembly -DSPARK_VERSION=3.3.1
     ```
 
 You can collect the uber jar of `spark-cobol` either at
@@ -326,7 +326,7 @@ $ spark-shell --jars spark-cobol-assembly-2.6.2-SNAPSHOT.jar
 >   ```sh
 >   sbt ++2.11.12 assembly
 >   sbt ++2.12.17 assembly
->   sbt ++2.13.9 assembly
+>   sbt ++2.13.10 assembly
 >   ```
 
 ## Other Features
