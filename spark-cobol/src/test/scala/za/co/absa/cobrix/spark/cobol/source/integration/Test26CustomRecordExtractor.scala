@@ -17,13 +17,13 @@
 package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.mocks.CustomRecordExtractorMock
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 //noinspection NameBooleanParameters
-class Test26CustomRecordExtractor extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test26 (custom record extractor)"
 

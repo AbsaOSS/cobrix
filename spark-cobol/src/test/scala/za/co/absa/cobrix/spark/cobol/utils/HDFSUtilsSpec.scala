@@ -18,13 +18,13 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 import java.io.{DataOutputStream, File, FileOutputStream}
 import java.util.UUID
-
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.scalatest.flatspec.AnyFlatSpec
 
-class HDFSUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class HDFSUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   private val baseTestDir = TempDir.getNew
   private val validFile = new File(baseTestDir, "a_valid_file")

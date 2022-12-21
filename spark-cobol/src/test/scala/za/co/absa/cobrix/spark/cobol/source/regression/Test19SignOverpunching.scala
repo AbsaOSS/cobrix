@@ -16,14 +16,14 @@
 
 package za.co.absa.cobrix.spark.cobol.source.regression
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 import java.nio.charset.StandardCharsets
 
-class Test19SignOverpunching extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test19SignOverpunching extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

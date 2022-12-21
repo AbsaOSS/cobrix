@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.{Failure, Success, Try}
 
-class CodePageSpec extends FunSuite {
+class CodePageSpec extends AnyFunSuite {
 
   test("Ensure codepage 'common' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("common")

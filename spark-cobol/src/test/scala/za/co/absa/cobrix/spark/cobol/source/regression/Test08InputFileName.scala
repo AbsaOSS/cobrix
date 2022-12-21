@@ -17,12 +17,12 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import org.apache.spark.sql.functions.col
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class Test08InputFileName extends FunSuite with SparkTestBase with BinaryFileFixture {
+class Test08InputFileName extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

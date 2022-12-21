@@ -18,9 +18,9 @@ package com.example.spark.cobol.app
 
 import com.example.spark.cobol.utils.SparkLocalMaster
 import com.example.spark.cobol.utils.SparkJobRunHelper
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class SparkTypesAppRunner extends FunSuite
+class SparkTypesAppRunner extends AnyFunSuite
   with SparkJobRunHelper
   with SparkLocalMaster {
       runSparkJobAsTest[SparkTypesApp.type]

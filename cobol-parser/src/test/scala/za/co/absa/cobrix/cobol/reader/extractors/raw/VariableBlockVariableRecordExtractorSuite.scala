@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.cobol.reader.extractors.raw
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.memorystream.TestByteStream
 import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParametersFactory}
 
-class VariableBlockVariableRecordExtractorSuite extends WordSpec {
+class VariableBlockVariableRecordExtractorSuite extends AnyWordSpec {
   private val copybookContent =
     """      01 RECORD.
           02 X PIC X(1).

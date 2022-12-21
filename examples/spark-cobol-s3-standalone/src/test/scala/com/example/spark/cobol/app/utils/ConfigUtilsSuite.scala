@@ -18,7 +18,7 @@ package com.example.spark.cobol.app.utils
 import com.example.spark.cobol.app.utils.ConfigUtils._
 import com.typesafe.config.ConfigException.WrongType
 import com.typesafe.config.ConfigFactory
-import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.wordspec.AnyWordSpec.AnyWordSpec
 
 class ConfigUtilsSuite extends AnyWordSpec {
   private val testConfig = ConfigFactory.parseResources("test/config/testconfig.conf")

@@ -16,12 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.BeforeAndAfter
 import scodec.bits.BitVector
 
 import scala.util.Random
 
-class BinaryNumbersSpec extends FunSuite with BeforeAndAfter {
+class BinaryNumbersSpec extends AnyFunSuite with BeforeAndAfter {
   val numberOfTests = 10000
   val rand = new Random()
 

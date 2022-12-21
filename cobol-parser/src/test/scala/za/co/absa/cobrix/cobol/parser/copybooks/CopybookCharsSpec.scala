@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.copybooks
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
-class CopybookCharsSpec extends FunSuite {
+class CopybookCharsSpec extends AnyFunSuite {
   test("Test a copybook that has unbreakable spaces (0xA0) and tabs") {
     val c = '\u00a0'
     val t = 0x09.toByte.toChar

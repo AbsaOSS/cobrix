@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy
@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.JavaConverters._
 
-class Test24DebugModeSpec extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test24DebugModeSpec extends AnyFunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val exampleName = "Test24 (debug mode)"

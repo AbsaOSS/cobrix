@@ -18,14 +18,14 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 import java.io.{File, RandomAccessFile}
 import java.util.{Random, UUID}
-
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec}
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.slf4j.LoggerFactory
 
-class FileUtilsSpec extends FlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val baseTestDir = TempDir.getNew // tmpDir/8377740/

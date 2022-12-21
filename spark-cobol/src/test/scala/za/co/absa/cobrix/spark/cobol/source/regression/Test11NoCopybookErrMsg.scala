@@ -18,12 +18,12 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 
 import java.nio.file.Paths
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class Test11NoCopybookErrMsg extends FunSuite with SparkTestBase with BinaryFileFixture {
+class Test11NoCopybookErrMsg extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

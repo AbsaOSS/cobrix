@@ -16,14 +16,14 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 
-class FieldSizeSpec extends FunSuite {
+class FieldSizeSpec extends AnyFunSuite {
   val copyBookContents: String =
     """        01  RECORD.
       |           10  NUM1               PIC S9(2) USAGE COMP.

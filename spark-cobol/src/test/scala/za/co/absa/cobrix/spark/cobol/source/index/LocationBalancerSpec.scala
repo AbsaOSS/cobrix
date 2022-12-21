@@ -16,12 +16,13 @@
 
 package za.co.absa.cobrix.spark.cobol.source.index
 
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.flatspec.AnyFlatSpec
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 
 import scala.collection.mutable.ArrayBuffer
 
-class LocationBalancerSpec extends FlatSpec with BeforeAndAfterAll {
+class LocationBalancerSpec extends AnyFlatSpec with BeforeAndAfterAll {
 
   behavior of LocationBalancer.getClass.getName
 

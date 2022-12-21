@@ -19,13 +19,13 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 //noinspection NameBooleanParameters
-class Test16FixedLenSegmentRedefinesSpec extends FunSuite with SparkTestBase {
+class Test16FixedLenSegmentRedefinesSpec extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test16"
   private val inputCopybookPath = "../data/test16_fix_len_segments.cob"

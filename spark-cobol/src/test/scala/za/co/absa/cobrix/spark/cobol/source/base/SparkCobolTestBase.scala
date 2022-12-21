@@ -18,14 +18,16 @@ package za.co.absa.cobrix.spark.cobol.source.base
 
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.types.StructType
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 import za.co.absa.cobrix.spark.cobol.source.types.SparkTypeResolver
 
 /**
  * This class should be extended by Specs that need a SQLContext instance.
  * The SQLContext instance is only created once, thus, if new instantiations are needed, the subclasses must perform them.
  */
-class SparkCobolTestBase extends FlatSpec with BeforeAndAfter with Matchers with Serializable with SparkTestBase {
+class SparkCobolTestBase extends AnyFlatSpec with BeforeAndAfter with Matchers with Serializable with SparkTestBase {
 
   @transient protected var sqlContext: SQLContext = spark.sqlContext
 
@@ -33,7 +35,7 @@ class SparkCobolTestBase extends FlatSpec with BeforeAndAfter with Matchers with
     createSparkSchema(types.map(t => (t._1, t._2, false)).toList)
   }
 
-  protected def createSparkSchema(types: List[(String, Any, Boolean)]) = {
+  protected def createSparkSchema(types: List[(String, Any, Boolean)]): StructType = {
     val fields = types.map(tuple => SparkTypeResolver.toSparkType(tuple._1, tuple._2, tuple._3))
     new StructType(fields.toArray)
   }

@@ -111,7 +111,7 @@
         <scala.version>2.12.17</scala.version>
         <scala.compat.version>2.12</scala.compat.version>
         <spark.version>3.2.3</spark.version>
-        <scalatest.version>3.0.1</scalatest.version>
+        <scalatest.version>3.2.14</scalatest.version>
         <specs.version>2.4.16</specs.version>
         <guava.version>15.0</guava.version>
         <jackson.version>2.13.1</jackson.version>

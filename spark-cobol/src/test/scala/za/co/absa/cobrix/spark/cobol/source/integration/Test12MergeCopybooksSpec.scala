@@ -19,11 +19,11 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-class Test12MergeCopybooksSpec extends FunSuite with SparkTestBase {
+class Test12MergeCopybooksSpec extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test12"
   private val inputCopybookPath = "file://../data/test12_copybook.cob"

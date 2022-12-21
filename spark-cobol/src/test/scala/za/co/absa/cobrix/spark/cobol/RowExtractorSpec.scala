@@ -17,13 +17,13 @@
 package za.co.absa.cobrix.spark.cobol
 
 import org.apache.spark.sql.Row
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
 import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 
 
-class RowExtractorSpec extends FunSuite {
+class RowExtractorSpec extends AnyFunSuite {
   val copyBookContents: String =
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.

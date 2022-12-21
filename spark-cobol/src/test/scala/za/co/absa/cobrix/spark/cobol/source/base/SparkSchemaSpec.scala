@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.base
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-class SparkSchemaSpec extends FunSuite {
+class SparkSchemaSpec extends AnyFunSuite {
 
   test("Test Spark schema produced from a copybook with unbreakable spaces (0xA0) and tabs") {
     val c = '\u00a0'

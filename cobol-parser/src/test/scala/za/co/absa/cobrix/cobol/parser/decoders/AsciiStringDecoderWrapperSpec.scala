@@ -19,9 +19,9 @@ package za.co.absa.cobrix.cobol.parser.decoders
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 import java.nio.charset.StandardCharsets
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 
-class AsciiStringDecoderWrapperSpec extends WordSpec {
+class AsciiStringDecoderWrapperSpec extends AnyWordSpec {
 
   import StringDecoders._
 

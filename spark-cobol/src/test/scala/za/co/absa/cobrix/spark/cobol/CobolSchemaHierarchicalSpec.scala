@@ -16,14 +16,14 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.immutable.HashMap
 
-class CobolSchemaHierarchicalSpec extends WordSpec {
+class CobolSchemaHierarchicalSpec extends AnyWordSpec {
 
   "createSparkSchema" should {
     "create a hierarchical schema if a simple parent-child relation is specified" in {

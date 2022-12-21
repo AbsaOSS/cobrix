@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
-class SyntaxErrorsSpec extends FunSuite {
+class SyntaxErrorsSpec extends AnyFunSuite {
 
   test("Test handle group field having a PIC modifier") {
     val copyBookContents: String =

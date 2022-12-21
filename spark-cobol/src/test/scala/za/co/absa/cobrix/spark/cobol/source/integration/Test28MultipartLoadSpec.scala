@@ -18,12 +18,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.col
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 //noinspection NameBooleanParameters
-class Test28MultipartLoadSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test28 (multipart load)"
 

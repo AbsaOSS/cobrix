@@ -18,11 +18,11 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.{DataFrame, DataFrameReader}
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 
 //noinspection NameBooleanParameters
-class Test20InputFileNameSpec extends WordSpec with SparkTestBase {
+class Test20InputFileNameSpec extends AnyWordSpec with SparkTestBase {
 
   "input_file_name()" when {
     "a fixed-record length file is used" should {

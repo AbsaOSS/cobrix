@@ -16,13 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{COMP3, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
-class UsageInheritanceSpec extends FunSuite {
+class UsageInheritanceSpec extends AnyFunSuite {
 
   test("Test nested fields inherit group usage fields") {
     val copyBookContents: String =

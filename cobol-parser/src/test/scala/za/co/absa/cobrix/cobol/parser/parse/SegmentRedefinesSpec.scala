@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
-class SegmentRedefinesSpec extends FunSuite {
+class SegmentRedefinesSpec extends AnyFunSuite {
 
   test ("Test segment redefines should not throw if no segment redefines ar provided") {
     val copybook =

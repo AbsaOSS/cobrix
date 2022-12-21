@@ -18,12 +18,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.SparkException
 import org.apache.spark.sql.functions.col
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 //noinspection NameBooleanParameters
-class Test30FbFileSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test30FbFileSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test30 (FB record format)"
 

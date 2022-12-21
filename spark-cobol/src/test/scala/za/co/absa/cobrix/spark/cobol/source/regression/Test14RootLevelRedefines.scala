@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.regression
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
@@ -28,7 +28,7 @@ import java.nio.file.{Files, Paths}
 /**
   * This suite validates issues observed when root level fields are redefined, including the case of several copybooks merging.
   */
-class Test14RootLevelRedefines extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test14RootLevelRedefines extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val copybook1 =

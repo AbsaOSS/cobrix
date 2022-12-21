@@ -17,11 +17,11 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import org.antlr.v4.runtime.misc.ParseCancellationException
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.antlr.{ParserJson}
 
 
-class JsonSpec extends FunSuite {
+class JsonSpec extends AnyFunSuite {
   val parser = new ParserJson()
   def parse(text: String) = parser.parse(text)
 

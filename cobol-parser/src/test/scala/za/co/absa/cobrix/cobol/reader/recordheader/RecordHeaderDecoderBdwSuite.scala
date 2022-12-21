@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.reader.recordheader
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 
-class RecordHeaderDecoderBdwSuite extends WordSpec {
+class RecordHeaderDecoderBdwSuite extends AnyWordSpec {
   "headerSize" should {
     "always return 4" in {
       val rhd = new RecordHeaderDecoderBdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters())

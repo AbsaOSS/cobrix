@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 
-class FloatingPointDecodersSpec extends WordSpec {
+class FloatingPointDecodersSpec extends AnyWordSpec {
 
   def assertFloatEqual(a: Float, b: Float): Unit = {
     assert(Math.abs(a - b) < 0.00001, s"($a != $b)")

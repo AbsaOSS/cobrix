@@ -16,10 +16,10 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 
-class BinaryDecoderSpec extends FunSuite {
+class BinaryDecoderSpec extends AnyFunSuite {
   import BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
 
   test("Test string fields decoding") {

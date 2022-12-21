@@ -18,11 +18,11 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.{DecimalType, IntegerType}
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class Test31CobrixExtensionsSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test31CobrixExtensionsSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
   "COMP-3U" should {
     "be a interpreted as unsigned packed with PIC X" when {
       val copybook =

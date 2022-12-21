@@ -17,14 +17,14 @@
 package za.co.absa.cobrix.spark.cobol
 
 import org.apache.spark.sql.types.StructType
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.base.SimpleComparisonBase
 
-class CobolSchemaSpec extends WordSpec with SimpleComparisonBase {
+class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   "for simple copybooks" should {

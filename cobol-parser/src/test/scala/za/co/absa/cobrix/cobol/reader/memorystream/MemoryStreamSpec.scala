@@ -16,10 +16,10 @@
 
 package za.co.absa.cobrix.cobol.reader.memorystream
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.reader.stream.{SimpleMemoryStream, SimpleStream}
 
-class MemoryStreamSpec extends FunSuite {
+class MemoryStreamSpec extends AnyFunSuite {
 
   private val textStr = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 

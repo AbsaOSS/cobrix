@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.spark.sql.types.{ArrayType, StructType}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -26,7 +26,7 @@ import za.co.absa.cobrix.spark.cobol.utils.TestUtils._
 import java.nio.charset.StandardCharsets
 import scala.collection.immutable
 
-class SparkUtilsSuite extends FunSuite with SparkTestBase with BinaryFileFixture {
+class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
 
   import spark.implicits._
 

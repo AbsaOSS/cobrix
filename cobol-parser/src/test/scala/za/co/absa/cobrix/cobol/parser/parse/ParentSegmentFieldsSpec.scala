@@ -18,13 +18,13 @@ package za.co.absa.cobrix.cobol.parser.parse
 
 import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
 import scala.collection.immutable.HashMap
 
-class ParentSegmentFieldsSpec extends WordSpec {
+class ParentSegmentFieldsSpec extends AnyWordSpec {
 
   "For a simple copybook" when {
     val copybook =

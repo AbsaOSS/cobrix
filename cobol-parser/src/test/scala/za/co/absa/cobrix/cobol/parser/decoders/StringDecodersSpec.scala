@@ -18,10 +18,10 @@ package za.co.absa.cobrix.cobol.parser.decoders
 
 import java.nio.charset.StandardCharsets
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 
-class StringDecodersSpec extends WordSpec {
+class StringDecodersSpec extends AnyWordSpec {
 
   import StringDecoders._
   import za.co.absa.cobrix.cobol.testutils.EbcdicEncoder._
