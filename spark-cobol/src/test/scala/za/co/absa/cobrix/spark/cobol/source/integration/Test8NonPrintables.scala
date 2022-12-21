@@ -19,12 +19,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 //noinspection NameBooleanParameters
-class Test8NonPrintables extends FunSuite with SparkTestBase {
+class Test8NonPrintables extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test8"
   private val inputCopybookPath = "file://../data/test8_copybook.cob"

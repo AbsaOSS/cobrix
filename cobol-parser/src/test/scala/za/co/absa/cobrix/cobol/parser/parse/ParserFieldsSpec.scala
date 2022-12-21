@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
-class ParserFieldsSpec extends FunSuite {
+class ParserFieldsSpec extends AnyFunSuite {
 
   test("Test parser field names") {
     val fields: List[String] = List(

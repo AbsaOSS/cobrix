@@ -16,10 +16,10 @@
 
 package za.co.absa.cobrix.cobol.reader
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.reader.iterator.SegmentIdAccumulator
 
-class SegmentIdGeneratorSpec extends FunSuite {
+class SegmentIdGeneratorSpec extends AnyFunSuite {
 
   // Here we test segment id generator for hierarchical databases
   // Each hierarchy level has a record id unique for that

@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.{CobolTestBase, SparkTestBase}
 
 //noinspection NameBooleanParameters
-class Test18PathSpecialCharSpec extends WordSpec with SparkTestBase with CobolTestBase {
+class Test18PathSpecialCharSpec extends AnyWordSpec with SparkTestBase with CobolTestBase {
 
   "A copybook and a binary file contains special character in pathname" when {
     val dataPath = "test18 special_char"

@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.extract
 
 import java.nio.charset.{Charset, StandardCharsets}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
@@ -32,7 +32,7 @@ import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPol
 
 import scala.collection.immutable.HashMap
 
-class OccursExtractorSpec extends FunSuite {
+class OccursExtractorSpec extends AnyFunSuite {
 
   val copyBookContents: String =
     """       01  RECORD.

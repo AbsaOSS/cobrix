@@ -16,14 +16,14 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 import scala.collection.mutable.ArrayBuffer
 
 
-class NonTerminalsSpec extends FunSuite {
+class NonTerminalsSpec extends AnyFunSuite {
 
 
   test("Test non-terminal fields") {

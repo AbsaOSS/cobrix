@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.regression
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-class Test09PrimitiveOccurs extends FunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test09PrimitiveOccurs extends AnyFunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

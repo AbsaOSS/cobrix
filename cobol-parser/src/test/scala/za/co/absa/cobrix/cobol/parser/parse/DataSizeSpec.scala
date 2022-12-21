@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import org.antlr.v4.runtime.{CharStreams, CommonTokenStream}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.antlr._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
@@ -29,7 +29,7 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
 
 import java.nio.charset.StandardCharsets
 
-class DataSizeSpec extends FunSuite {
+class DataSizeSpec extends AnyFunSuite {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private def parse(pic: String): Primitive = {

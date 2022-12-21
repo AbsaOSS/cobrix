@@ -20,12 +20,12 @@ import java.io.{DataOutputStream, File, FileOutputStream}
 import java.nio.file.{FileSystem, Files, Path, Paths}
 
 import org.apache.hadoop.fs.{FileSystem => HadoopFs}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
-class Test07IgnoreHiddenFiles extends FunSuite with BinaryFileFixture with SparkTestBase {
+class Test07IgnoreHiddenFiles extends AnyFunSuite with BinaryFileFixture with SparkTestBase {
   private val fileSystem = HadoopFs.get(spark.sparkContext.hadoopConfiguration)
 
   test("Test findAndLogFirstNonDivisibleFile() finds a file") {

@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
@@ -29,7 +29,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 
-class Test12MultiRootSparseIndex extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test12MultiRootSparseIndex extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 

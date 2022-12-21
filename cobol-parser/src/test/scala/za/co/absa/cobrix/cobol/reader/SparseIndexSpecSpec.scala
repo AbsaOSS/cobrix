@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.common.Constants
@@ -27,7 +27,7 @@ import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, TextFull
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 
 
-class SparseIndexSpecSpec extends WordSpec  {
+class SparseIndexSpecSpec extends AnyWordSpec  {
 
   private val copybookContents =
     """       01  RECORD.

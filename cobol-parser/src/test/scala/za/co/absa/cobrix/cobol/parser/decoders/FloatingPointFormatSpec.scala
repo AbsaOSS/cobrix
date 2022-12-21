@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 
-class FloatingPointFormatSpec extends WordSpec {
+class FloatingPointFormatSpec extends AnyWordSpec {
 
   import FloatingPointFormat._
 

@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.cobol.parser.copybooks
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
-class ParseFieldNamesSpec extends FunSuite with SimpleComparisonBase {
+class ParseFieldNamesSpec extends AnyFunSuite with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test copybook parser handles comment lines") {

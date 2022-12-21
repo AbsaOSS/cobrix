@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.regression
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets
 /**
   * This suite checks if numerics are converted properly, even if there are leading zeros
   */
-class Test17NumericConversions extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test17NumericConversions extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   "COMP-9" should {

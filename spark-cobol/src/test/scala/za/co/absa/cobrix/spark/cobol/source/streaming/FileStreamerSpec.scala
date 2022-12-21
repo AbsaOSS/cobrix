@@ -17,13 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import java.io.File
-
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class FileStreamerSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
   private val TEMP_DIR = new File("tmp-"+System.currentTimeMillis())
   private var streamer: FileStreamer = _

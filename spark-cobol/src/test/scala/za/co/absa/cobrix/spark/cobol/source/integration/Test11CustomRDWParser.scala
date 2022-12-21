@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.utils.Test10CustomRDWParser
@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 import scala.collection.JavaConverters._
 
 //noinspection NameBooleanParameters
-class Test11CustomRDWParser extends FunSuite with SparkTestBase {
+class Test11CustomRDWParser extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test11(custom record header parser)"
   private val inputCopybookPath = "file://../data/test11_copybook.cob"

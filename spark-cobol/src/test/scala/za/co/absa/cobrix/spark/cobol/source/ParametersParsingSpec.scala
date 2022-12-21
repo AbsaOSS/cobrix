@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.immutable.HashMap
 
-class ParametersParsingSpec extends FunSuite {
+class ParametersParsingSpec extends AnyFunSuite {
   test("Test segment id - redefine mapping") {
     val config = HashMap[String,String] ("is_record_sequence"-> "true",
       "redefine-segment-id-map:0" -> "COMPANY => C,D",

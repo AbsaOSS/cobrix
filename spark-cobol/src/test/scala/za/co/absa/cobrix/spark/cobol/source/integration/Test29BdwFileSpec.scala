@@ -19,12 +19,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import org.apache.spark.SparkException
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.col
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 //noinspection NameBooleanParameters
-class Test29BdwFileSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test29BdwFileSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test29 (VB record format RDW+BDW)"
 

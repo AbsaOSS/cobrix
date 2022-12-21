@@ -19,13 +19,14 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 import java.io.{DataOutputStream, FileOutputStream}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.spark.sql.functions._
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TempDir
 
 import java.nio.file.Paths
 
-class Test03IbmFloats extends FunSuite with BeforeAndAfterAll with SparkTestBase {
+class Test03IbmFloats extends AnyFunSuite with BeforeAndAfterAll with SparkTestBase {
 
   private val baseTestDir = TempDir.getNew
 

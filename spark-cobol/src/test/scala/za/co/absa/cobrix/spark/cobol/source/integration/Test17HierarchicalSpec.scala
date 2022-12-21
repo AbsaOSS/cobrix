@@ -19,11 +19,11 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.{CobolTestBase, SparkTestBase}
 
 //noinspection NameBooleanParameters
-class Test17HierarchicalSpec extends WordSpec with SparkTestBase with CobolTestBase {
+class Test17HierarchicalSpec extends AnyWordSpec with SparkTestBase with CobolTestBase {
 
   "Multisegment hierarchical file" when {
     val exampleName = "Test17 (hierarchical)"

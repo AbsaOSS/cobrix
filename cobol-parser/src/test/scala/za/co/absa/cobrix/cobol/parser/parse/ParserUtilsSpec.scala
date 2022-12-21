@@ -16,13 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
 
 import scala.collection.immutable.HashMap
 
-class ParserUtilsSpec extends WordSpec {
+class ParserUtilsSpec extends AnyWordSpec {
 
   private val simpleCopybook =
     """      01 RECORD.

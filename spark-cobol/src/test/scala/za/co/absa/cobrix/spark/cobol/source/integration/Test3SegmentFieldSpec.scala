@@ -20,14 +20,14 @@ import java.io.PrintWriter
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 // This test suite will be deprecated soon since search reader is deprecated
 
 //noinspection NameBooleanParameters
-class Test3SegmentFieldSpec extends FunSuite with SparkTestBase {
+class Test3SegmentFieldSpec extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test3"
   private val inputCopybookPath = "file://../data/test3_copybook.cob"

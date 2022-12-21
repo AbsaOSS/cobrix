@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 
-class MalformedValuesSpec extends FunSuite {
+class MalformedValuesSpec extends AnyFunSuite {
 
   test("Test out of bounds integer handling") {
     val copyBookContents: String =

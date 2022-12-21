@@ -21,13 +21,14 @@ import java.io.{DataOutputStream, File, FileOutputStream}
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.functions.col
-import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.scalatest.BeforeAndAfter
+import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TestUtils._
 
 //noinspection NameBooleanParameters
-class Test01RecordIdSequence extends FunSuite with BeforeAndAfter with SparkTestBase {
+class Test01RecordIdSequence extends AnyFunSuite with BeforeAndAfter with SparkTestBase {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 

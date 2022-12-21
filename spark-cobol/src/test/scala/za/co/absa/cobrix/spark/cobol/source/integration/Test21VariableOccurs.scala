@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, VarOccursRecordExtractor}
@@ -28,7 +28,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
 import scala.collection.mutable.ListBuffer
 
-class Test21VariableOccurs extends FunSuite with SparkTestBase {
+class Test21VariableOccurs extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test21"
   private val inputCopybookPath = "file://../data/test21_copybook.cob"

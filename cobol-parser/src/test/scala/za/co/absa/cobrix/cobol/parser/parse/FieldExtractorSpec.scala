@@ -16,13 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.parse
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.ast.datatype.AlphaNumeric
 import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
 
-class FieldExtractorSpec extends FunSuite {
+class FieldExtractorSpec extends AnyFunSuite {
 
   val copyBookContents: String =
     """       01  RECORD.

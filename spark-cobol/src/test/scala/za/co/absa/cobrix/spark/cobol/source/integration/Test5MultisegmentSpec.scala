@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.common.Constants
@@ -34,7 +34,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 import scala.collection.JavaConverters._
 
 //noinspection NameBooleanParameters
-class Test5MultisegmentSpec extends FunSuite with SparkTestBase {
+class Test5MultisegmentSpec extends AnyFunSuite with SparkTestBase {
 
   private val exampleName = "Test5(multisegment,ebcdic)"
   private val inputCopybookPath = "file://../data/test5_copybook.cob"

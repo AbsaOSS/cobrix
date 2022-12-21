@@ -18,7 +18,8 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 
 import java.io.{DataOutputStream, FileOutputStream}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
-import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.BeforeAndAfterAll
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.TempDir
@@ -27,7 +28,7 @@ import java.nio.file.Paths
 
 // These examples are provided by Peter Moon
 
-class Test02SparseIndexGenerator extends FunSuite with BeforeAndAfterAll with SparkTestBase {
+class Test02SparseIndexGenerator extends AnyFunSuite with BeforeAndAfterAll with SparkTestBase {
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val baseTestDir = TempDir.getNew

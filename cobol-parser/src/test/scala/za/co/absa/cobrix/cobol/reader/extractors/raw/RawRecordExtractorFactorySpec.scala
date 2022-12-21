@@ -16,12 +16,12 @@
 
 package za.co.absa.cobrix.cobol.reader.extractors.raw
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordContextFactory.getDummyRawRecordContext
 import za.co.absa.cobrix.cobol.reader.memorystream.TestStringStream
 
-class RawRecordExtractorFactorySpec extends WordSpec {
+class RawRecordExtractorFactorySpec extends AnyWordSpec {
   "createRecordHeaderParser()" should {
 
     val copybookContent =

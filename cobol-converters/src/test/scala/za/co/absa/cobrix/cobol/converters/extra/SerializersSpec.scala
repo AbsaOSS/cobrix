@@ -16,14 +16,14 @@
 
 package za.co.absa.cobrix.cobol.converters.extra
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 
-class SerializersSpec extends FunSuite {
+class SerializersSpec extends AnyFunSuite {
   val copyBookContents: String =
     """       01  RECORD.
       |           05  ID                        PIC S9(4)  COMP.

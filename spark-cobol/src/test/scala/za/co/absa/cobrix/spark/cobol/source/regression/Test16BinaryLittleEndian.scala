@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.regression
 
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -25,7 +25,7 @@ import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 /**
   * This suite checks if Spark is able to read numbers from ASCII files that overflow the expected data type.
   */
-class Test16BinaryLittleEndian extends WordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test16BinaryLittleEndian extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   val binFileContents: Array[Byte] = Array[Byte](

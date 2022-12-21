@@ -17,12 +17,12 @@
 package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
-import org.scalatest.WordSpec
+import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 //noinspection NameBooleanParameters
-class Test27RecordLengthSpec extends WordSpec with SparkTestBase with BinaryFileFixture {
+class Test27RecordLengthSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test27 (record length option)"
 

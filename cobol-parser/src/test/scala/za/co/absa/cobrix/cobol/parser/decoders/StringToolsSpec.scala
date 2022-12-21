@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class StringToolsSpec extends FunSuite {
+class StringToolsSpec extends AnyFunSuite {
   import StringTools._
 
   test("Test trimLeft() works as expected") {
