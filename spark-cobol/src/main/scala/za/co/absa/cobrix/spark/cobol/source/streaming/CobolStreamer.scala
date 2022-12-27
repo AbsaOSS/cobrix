@@ -22,7 +22,7 @@ import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{FillerNamingPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
@@ -47,6 +47,7 @@ object CobolStreamer {
       stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
       dropGroupFillers = true,
       dropValueFillers = true,
+      fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
       nonTerminals = Seq(),
       occursMappings = Map(),
       readerProperties = ReaderParameters()

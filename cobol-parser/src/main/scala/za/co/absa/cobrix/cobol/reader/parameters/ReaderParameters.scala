@@ -20,7 +20,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.FixedLength
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -59,7 +59,8 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param commentPolicy           A comment truncation policy
   * @param improvedNullDetection   If true, string values that contain only zero bytes (0x0) will be considered null.
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
-  * @param dropValueFillers       If true the parser will drop all value FILLER fields
+  * @param dropValueFillers        If true the parser will drop all value FILLER fields
+  * @param fillerNamingPolicy      Specifies the strategy of renaming FILLER names to make them unique
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param debugFieldsPolicy       Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param recordHeaderParser      A parser used to parse data field record headers
@@ -101,6 +102,7 @@ case class ReaderParameters(
                              improvedNullDetection:   Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,
+                             fillerNamingPolicy:      FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
                              nonTerminals:            Seq[String] = Nil,
                              occursMappings:          Map[String, Map[String, Int]] = Map(),
                              debugFieldsPolicy:       DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,

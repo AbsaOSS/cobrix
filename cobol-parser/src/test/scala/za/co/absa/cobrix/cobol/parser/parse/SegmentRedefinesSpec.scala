@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.parse
 import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 
 class SegmentRedefinesSpec extends AnyFunSuite {
 
@@ -33,7 +34,7 @@ class SegmentRedefinesSpec extends AnyFunSuite {
 
     val segmentRedefines: Seq[String] = Nil
 
-    CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines)
+    CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
   }
 
   test ("Test segment redefines should worked if only one segment is specified") {
@@ -47,7 +48,7 @@ class SegmentRedefinesSpec extends AnyFunSuite {
 
     val segmentRedefines = "SEGMENT-A" :: Nil
 
-    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines)
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
 
     assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
     assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
@@ -71,11 +72,11 @@ class SegmentRedefinesSpec extends AnyFunSuite {
     val segmentRedefinesOk = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: Nil
     val segmentRedefinesMissing = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: "SEGMENT-D" :: Nil
 
-    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefinesOk)
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesOk)
 
     // If a segment redefine is missing in the copybook an exception should be raised
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefinesMissing)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesMissing)
     }
     assert(exception1.getMessage.contains("The following segment redefines not found: [ SEGMENT_D ]"))
 
@@ -109,7 +110,7 @@ class SegmentRedefinesSpec extends AnyFunSuite {
     val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
 
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
     }
     assert(exception1.getMessage.contains("The 'SEGMENT_C' field is specified to be a segment redefine."))
   }

@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextFullRecordExtractor, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
@@ -208,6 +209,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         copyBookContents.head,
         readerProperties.dropGroupFillers,
         readerProperties.dropValueFillers,
+        readerProperties.fillerNamingPolicy,
         segmentRedefines,
         fieldParentMap,
         readerProperties.stringTrimmingPolicy,
@@ -227,6 +229,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
           cpb,
           readerProperties.dropGroupFillers,
           readerProperties.dropValueFillers,
+          readerProperties.fillerNamingPolicy,
           segmentRedefines,
           fieldParentMap,
           readerProperties.stringTrimmingPolicy,

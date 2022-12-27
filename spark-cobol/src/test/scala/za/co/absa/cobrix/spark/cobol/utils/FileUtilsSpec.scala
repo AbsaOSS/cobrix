@@ -67,8 +67,7 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     controlledLengthFilesDir.mkdirs()
   }
 
-  override def afterAll() {
-    logger.debug(s"Deleting test directory at ${baseTestDir.getAbsolutePath}")
+  override def afterAll() {    logger.debug(s"Deleting test directory at ${baseTestDir.getAbsolutePath}")
     CommonsFileUtils.deleteDirectory(baseTestDir)
   }
 

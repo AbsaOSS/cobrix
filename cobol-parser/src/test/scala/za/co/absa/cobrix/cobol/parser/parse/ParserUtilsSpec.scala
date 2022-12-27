@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.parse
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 
 import scala.collection.immutable.HashMap
 
@@ -96,7 +97,7 @@ class ParserUtilsSpec extends AnyWordSpec {
       val segmentRedefines: Seq[String] = Nil
       val fieldParentMap = HashMap[String, String]()
 
-      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines, fieldParentMap)
 
       val redefines = CopybookParser.getAllSegmentRedefines(parsedCopybook.ast)
 
@@ -104,7 +105,7 @@ class ParserUtilsSpec extends AnyWordSpec {
     }
 
     "return a list of segment redefines for a hierarchical copybook" in {
-      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines, fieldParentMap)
 
       val redefines = CopybookParser.getAllSegmentRedefines(parsedCopybook.ast)
 
@@ -117,7 +118,7 @@ class ParserUtilsSpec extends AnyWordSpec {
       val segmentRedefines: Seq[String] = Nil
       val fieldParentMap = HashMap[String, String]()
 
-      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(simpleCopybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines, fieldParentMap)
 
       val rootAst = CopybookParser.getRootSegmentAST(parsedCopybook.ast)
 
@@ -127,7 +128,7 @@ class ParserUtilsSpec extends AnyWordSpec {
     }
 
     "return an AST without parent segments for a hierarchical copybook" in {
-      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, segmentRedefines, fieldParentMap)
+      val parsedCopybook = CopybookParser.parseTree(hierarchicalCopybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines, fieldParentMap)
 
       val rootAst = CopybookParser.getRootSegmentAST(parsedCopybook.ast)
 

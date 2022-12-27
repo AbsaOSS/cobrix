@@ -94,6 +94,7 @@ class DefaultSource
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
+      parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,
       getReaderProperties(parameters, spark)
@@ -116,6 +117,7 @@ class DefaultSource
       parameters.stringTrimmingPolicy,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
+      parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,
       getReaderProperties(parameters, spark)
@@ -202,6 +204,7 @@ class DefaultSource
       parameters.improvedNullDetection,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
+      parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,
       parameters.debugFieldsPolicy,

@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy}
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
@@ -82,6 +82,7 @@ case class CobolParameters(
                             improvedNullDetection: Boolean,
                             dropGroupFillers:      Boolean,
                             dropValueFillers:      Boolean,
+                            fillerNamingPolicy:    FillerNamingPolicy,
                             nonTerminals:          Seq[String],
                             occursMappings:        Map[String, Map[String, Int]],
                             debugFieldsPolicy:     DebugFieldsPolicy,
