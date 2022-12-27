@@ -18,9 +18,9 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
 import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
@@ -35,22 +35,26 @@ class Test7FillersSpec extends AnyFunSuite with SparkTestBase {
   private val inpudDataPath = "../data/test7_data"
 
   test(s"Integration test on $exampleName - drop fillers and group fillers") {
-    runTest("test7", dropValueFillers = true, dropGroupFillers = true)  }
+    runTest("test7", dropValueFillers = true, dropGroupFillers = true, "sequence_numbers")
+  }
 
   test(s"Integration test on $exampleName - drop fillers but retain group fillers") {
-    runTest("test7a", dropValueFillers = true, dropGroupFillers = false)
+    runTest("test7a", dropValueFillers = true, dropGroupFillers = false, "sequence_numbers")
   }
 
   test(s"Integration test on $exampleName - retain fillers, but drop group fillers") {
-    runTest("test7b", dropValueFillers = false, dropGroupFillers = true)
+    runTest("test7b", dropValueFillers = false, dropGroupFillers = true, "sequence_numbers")
   }
 
   test(s"Integration test on $exampleName - retain fillers and group fillers") {
-    runTest("test7c", dropValueFillers = false, dropGroupFillers = false)
+    runTest("test7c", dropValueFillers = false, dropGroupFillers = false, "sequence_numbers")
   }
 
-  private def runTest(namePrefix: String, dropValueFillers: Boolean, dropGroupFillers: Boolean): Unit = {
+  test(s"Integration test on $exampleName - retain fillers and rename based on previous field") {
+    runTest("test7d", dropValueFillers = false, dropGroupFillers = false, "previous_field_name")
+  }
 
+  private def runTest(namePrefix: String, dropValueFillers: Boolean, dropGroupFillers: Boolean, fillerNamingPolicy: String): Unit = {
     val expectedSchemaPath = s"../data/test7_expected/${namePrefix}_schema.json"
     val expectedLayoutPath = s"../data/test7_expected/${namePrefix}_layout.txt"
     val actualSchemaPath = s"../data/test7_expected/${namePrefix}_schema_actual.json"
@@ -60,7 +64,8 @@ class Test7FillersSpec extends AnyFunSuite with SparkTestBase {
 
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
-    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers, dropValueFillers)
+    val fillerNamingPolicyObj = FillerNamingPolicy(fillerNamingPolicy)
+    val cobolSchema = CopybookParser.parseTree(copybookContents, dropGroupFillers, dropValueFillers, fillerNamingPolicyObj)
     val actualLayout = cobolSchema.generateRecordLayoutPositions()
     val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
@@ -77,6 +82,7 @@ class Test7FillersSpec extends AnyFunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .option("drop_group_fillers", dropGroupFillers)
       .option("drop_value_fillers", dropValueFillers)
+      .option("filler_naming_policy", fillerNamingPolicy)
       .load(inpudDataPath)
 
     // This is to print the actual output
@@ -92,8 +98,8 @@ class Test7FillersSpec extends AnyFunSuite with SparkTestBase {
         s"$actualSchemaPath for details.")
     }
 
-    // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
-    val actualDf =  SparkUtils.convertDataFrameToPrettyJSON(df.orderBy("AMOUNT"), 100)
+    // Fill nulls with zeros so by looking at json you can tell a field is missing. Otherwise json won't contain null fields.
+    val actualDf = SparkUtils.convertDataFrameToPrettyJSON(df.orderBy("AMOUNT"), 100)
     FileUtils.writeStringToFile(actualDf, actualResultsPath)
     val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
 

@@ -1,0 +1,139 @@
+{
+  "type" : "struct",
+  "fields" : [ {
+    "name" : "FILLER_AFTER_RECORD",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 1
+    }
+  }, {
+    "name" : "COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 3
+    }
+  }, {
+    "name" : "FILLER_AFTER_COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 1
+    }
+  }, {
+    "name" : "FILLER_AFTER_FILLER_AFTER_COMPANY_PREFIX",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 1
+    }
+  }, {
+    "name" : "COMPANY_NAME",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 9
+    }
+  }, {
+    "name" : "FILLER_AFTER_COMPANY_NAME",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "STR1",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 5
+        }
+      }, {
+        "name" : "STR2",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 2
+        }
+      }, {
+        "name" : "FILLER_AFTER_STR2",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 1
+        }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "ADDRESS",
+    "type" : "string",
+    "nullable" : true,
+    "metadata" : {
+      "maxLength" : 25
+    }
+  }, {
+    "name" : "FILLER_AFTER_ADDRESS",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "STR4",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 10
+        }
+      }, {
+        "name" : "FILLER_AFTER_STR4",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 20
+        }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "FILL_FIELD",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "FILLER_AFTER_FILL_FIELD",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 5
+        }
+      }, {
+        "name" : "FILLER_AFTER_FILLER_AFTER_FILL_FIELD",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 2
+        }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "CONTACT_PERSON",
+    "type" : {
+      "type" : "struct",
+      "fields" : [ {
+        "name" : "FIRST_NAME",
+        "type" : "string",
+        "nullable" : true,
+        "metadata" : {
+          "maxLength" : 6
+        }
+      } ]
+    },
+    "nullable" : true,
+    "metadata" : { }
+  }, {
+    "name" : "AMOUNT",
+    "type" : "decimal(11,2)",
+    "nullable" : true,
+    "metadata" : { }
+  } ]
+}

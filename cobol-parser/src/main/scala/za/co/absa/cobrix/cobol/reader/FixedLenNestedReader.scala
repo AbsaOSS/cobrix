@@ -20,6 +20,7 @@ import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{AsciiText, BasicAsciiText}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
@@ -50,6 +51,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
                                         stringTrimmingPolicy: StringTrimmingPolicy,
                                         dropGroupFillers: Boolean,
                                         dropValueFillers: Boolean,
+                                        fillerNamingPolicy: FillerNamingPolicy,
                                         nonTerminals: Seq[String],
                                         occursMappings: Map[String, Map[String, Int]],
                                         readerProperties: ReaderParameters,
@@ -109,6 +111,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
         copyBookContents.head,
         dropGroupFillers,
         dropValueFillers,
+        fillerNamingPolicy,
         segmentRedefines,
         fieldParentMap,
         stringTrimmingPolicy,
@@ -129,6 +132,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
             _,
             dropGroupFillers,
             dropValueFillers,
+            fillerNamingPolicy,
             segmentRedefines,
             fieldParentMap,
             stringTrimmingPolicy,

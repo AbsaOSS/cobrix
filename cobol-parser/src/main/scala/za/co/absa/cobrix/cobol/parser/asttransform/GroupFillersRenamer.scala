@@ -19,18 +19,21 @@ package za.co.absa.cobrix.cobol.parser.asttransform
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 
 import scala.collection.mutable.ArrayBuffer
 
 /**
-  * @param dropGroupFillers specifies if group FILLERs are going to be dropped so they don't need renaming
-  * @param dropValueFillers specifies if value FILLERs are going to be dropped so they don't need renaming
+  * @param dropGroupFillers   specifies if group FILLERs are going to be dropped so they don't need renaming
+  * @param dropValueFillers   specifies if value FILLERs are going to be dropped so they don't need renaming
+  * @param fillerNamingPolicy specifies the strategy of renaming FILLER names to make them unique
   * @return The same AST with group fillers processed
   */
 class GroupFillersRenamer(
-                      dropGroupFillers: Boolean,
-                      dropValueFillers: Boolean
-                    ) extends AstTransformer {
+                           dropGroupFillers: Boolean,
+                           dropValueFillers: Boolean,
+                           fillerNamingPolicy: FillerNamingPolicy
+                         ) extends AstTransformer {
   /**
     * Rename group fillers so filed names in the scheme doesn't repeat
     * Also, remove all group fillers that doesn't have child nodes
@@ -42,24 +45,31 @@ class GroupFillersRenamer(
     var lastFillerIndex = 0
     var lastFillerPrimitiveIndex = 0
 
-    def processPrimitive(st: Primitive): Primitive = {
+    def processPrimitive(st: Primitive, lastPrimitiveFieldName: String): Primitive = {
       if (dropValueFillers || !st.isFiller) {
         st
       } else {
         lastFillerPrimitiveIndex += 1
-        val newName = s"${Constants.FILLER}_P$lastFillerPrimitiveIndex"
-        st.copy(name = newName, isFiller = false)(st.parent)
+        val newName = fillerNamingPolicy match {
+          case FillerNamingPolicy.SequenceNumbers => s"${Constants.FILLER}_P$lastFillerPrimitiveIndex"
+          case FillerNamingPolicy.PreviousFieldName => s"FILLER_AFTER_$lastPrimitiveFieldName"
+        }
+        val newSt = st.copy(name = newName, isFiller = false)(st.parent)
+
+        newSt
       }
     }
 
-    def renameSubGroupFillers(group: Group): Group = {
+    def renameSubGroupFillers(group: Group, lastGroupName: String): Group = {
       val (newChildren, hasNonFillers) = renameFillers(group)
       val renamedGroup = if (hasNonFillers) {
         if (group.isFiller && !dropGroupFillers) {
           lastFillerIndex += 1
-          group.copy(name = s"${
-            Constants.FILLER
-          }_$lastFillerIndex", children = newChildren.children, isFiller = false)(group.parent)
+          val newName = fillerNamingPolicy match {
+            case FillerNamingPolicy.SequenceNumbers => s"${Constants.FILLER}_$lastFillerIndex"
+            case FillerNamingPolicy.PreviousFieldName => s"FILLER_AFTER_$lastGroupName"
+          }
+          group.copy(name = newName, children = newChildren.children, isFiller = false)(group.parent)
         } else {
           group.withUpdatedChildren(newChildren.children)
         }
@@ -71,17 +81,23 @@ class GroupFillersRenamer(
     }
 
     def renameFillers(group: Group): (Group, Boolean) = {
+      var lastGroupFieldName = group.name
+      var lastPrimitiveFieldName = group.name
       val newChildren = ArrayBuffer[Statement]()
       var hasNonFillers = false
       group.children.foreach {
         case grp: Group =>
-          val newGrp = renameSubGroupFillers(grp)
+          val newGrp = renameSubGroupFillers(grp, lastGroupFieldName)
+          lastGroupFieldName = newGrp.name
+          lastPrimitiveFieldName = newGrp.name
           if (newGrp.children.nonEmpty) {
             newChildren += newGrp
           }
           if (!newGrp.isFiller) hasNonFillers = true
         case st: Primitive =>
-          val newSt = processPrimitive(st)
+          val newSt = processPrimitive(st, lastPrimitiveFieldName)
+          lastPrimitiveFieldName = newSt.name
+          lastGroupFieldName = newSt.name
           newChildren += newSt
           if (!newSt.isFiller) hasNonFillers = true
       }
@@ -97,5 +113,7 @@ class GroupFillersRenamer(
 }
 
 object GroupFillersRenamer {
-  def apply(dropGroupFillers: Boolean, dropValueFillers: Boolean): GroupFillersRenamer = new GroupFillersRenamer(dropGroupFillers, dropValueFillers)
+  def apply(dropGroupFillers: Boolean,
+            dropValueFillers: Boolean,
+            fillerNamingPolicy: FillerNamingPolicy): GroupFillersRenamer = new GroupFillersRenamer(dropGroupFillers, dropValueFillers, fillerNamingPolicy)
 }

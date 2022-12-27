@@ -21,6 +21,7 @@ import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -46,6 +47,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
                                stringTrimmingPolicy: StringTrimmingPolicy,
                                dropGroupFillers: Boolean,
                                dropValueFillers: Boolean,
+                               fillerNamingPolicy: FillerNamingPolicy,
                                nonTerminals: Seq[String],
                                occursMappings: Map[String, Map[String, Int]],
                                readerProperties: ReaderParameters
@@ -53,7 +55,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
   extends ReaderFixedLenNestedReader[GenericRow](
     copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
     startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
-    dropGroupFillers, dropValueFillers, nonTerminals, occursMappings, readerProperties,
+    dropGroupFillers, dropValueFillers, fillerNamingPolicy, nonTerminals, occursMappings, readerProperties,
     new RowHandler()
   ) with FixedLenReader with Serializable {
 

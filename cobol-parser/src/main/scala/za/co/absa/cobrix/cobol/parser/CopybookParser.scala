@@ -27,7 +27,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
 
 import java.nio.charset.{Charset, StandardCharsets}
 import scala.annotation.tailrec
@@ -108,6 +108,7 @@ object CopybookParser extends Logging {
     * @param copyBookContents      A string containing all lines of a copybook
     * @param dropGroupFillers      Drop groups marked as fillers from the output AST
     * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param fillerNamingPolicy    Specifies a naming policy for fillers
     * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping
@@ -127,6 +128,7 @@ object CopybookParser extends Logging {
             dataEncoding: Encoding = EBCDIC,
             dropGroupFillers: Boolean = false,
             dropValueFillers: Boolean = true,
+            fillerNamingPolicy: FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
             segmentRedefines: Seq[String] = Nil,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
@@ -144,6 +146,7 @@ object CopybookParser extends Logging {
       copyBookContents,
       dropGroupFillers,
       dropValueFillers,
+      fillerNamingPolicy,
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
@@ -165,6 +168,7 @@ object CopybookParser extends Logging {
     * @param copyBookContents      A string containing all lines of a copybook
     * @param dropGroupFillers      Drop groups marked as fillers from the output AST
     * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param fillerNamingPolicy    Specifies a naming policy for fillers
     * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     * @param fieldParentMap        A segment fields parent mapping
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
@@ -182,6 +186,7 @@ object CopybookParser extends Logging {
   def parseTree(copyBookContents: String,
                 dropGroupFillers: Boolean = false,
                 dropValueFillers: Boolean = true,
+                fillerNamingPolicy: FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
                 segmentRedefines: Seq[String] = Nil,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
@@ -199,6 +204,7 @@ object CopybookParser extends Logging {
       copyBookContents,
       dropGroupFillers,
       dropValueFillers,
+      fillerNamingPolicy,
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
@@ -221,6 +227,7 @@ object CopybookParser extends Logging {
     * @param copyBookContents      A string containing all lines of a copybook
     * @param dropGroupFillers      Drop groups marked as fillers from the output AST
     * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
+    * @param fillerNamingPolicy    Specifies a naming policy for fillers
     * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping
@@ -240,6 +247,7 @@ object CopybookParser extends Logging {
                 copyBookContents: String,
                 dropGroupFillers: Boolean,
                 dropValueFillers: Boolean,
+                fillerNamingPolicy: FillerNamingPolicy,
                 segmentRedefines: Seq[String],
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
@@ -273,7 +281,7 @@ object CopybookParser extends Logging {
       // Drops group FILLERs if necessary
       GroupFillersRemover(dropGroupFillers, dropValueFillers),
       // Renames FILLERs that will be kept in the ast
-      GroupFillersRenamer(dropGroupFillers, dropValueFillers),
+      GroupFillersRenamer(dropGroupFillers, dropValueFillers, fillerNamingPolicy),
       // Sets isSegmentRedefine property of redefined groups
       SegmentRedefinesMarker(segmentRedefines),
       // Sets parent groups for child segment redefines.

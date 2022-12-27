@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
 import za.co.absa.cobrix.cobol.reader.parameters.{Bdw, CobolParameters, MultisegmentParameters, VariableLengthParameters}
@@ -57,6 +57,7 @@ object CobolParametersParser extends Logging {
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
+  val PARAM_FILLER_NAMING_POLICY      = "filler_naming_policy"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -273,6 +274,7 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "true").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
+      FillerNamingPolicy(params.getOrElse(PARAM_FILLER_NAMING_POLICY, "sequence_numbers")),
       params.getOrElse(PARAM_GROUP_NOT_TERMINALS, "").split(','),
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(recordFormat, params),
