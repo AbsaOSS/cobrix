@@ -77,6 +77,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
       binaryData,
       offset,
       policy,
+      readerProperties.variableSizeOccurs,
       activeSegmentRedefine = activeSegmentRedefine,
       handler = handler
     )

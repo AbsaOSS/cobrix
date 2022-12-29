@@ -102,7 +102,7 @@ private[source] object CobolScanners extends Logging {
       .reduce((a,b) => a.union(b))
 
     val records = rddText
-      .filter(str => str.length > 0)
+      .filter(str => str.nonEmpty)
       .map(str => {
         str.getBytes(StandardCharsets.UTF_8)
       })

@@ -1517,7 +1517,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
    - [#545](https://github.com/AbsaOSS/cobrix/issues/545) Added support for `string` debug columns for ASCII (D/D2/T) files (`.option("debug", "string")`).
    - [#542](https://github.com/AbsaOSS/cobrix/issues/542) Added `.option("filler_naming_policy", "previous_field_name")` allowing for a different filler naming strategy.
    - [#543](https://github.com/AbsaOSS/cobrix/issues/543) Improved performance of processing ASCII text (D/D2/T) files with variable OCCURS.
-   
+   - [#553](https://github.com/AbsaOSS/cobrix/issues/553) Fixed variable occurs now working properly with basic ASCII record format (D2).
 
 - #### 2.6.1 released 2 December 2022.
    - [#531](https://github.com/AbsaOSS/cobrix/issues/531) Added support for CP1047 EBCDIC code page.

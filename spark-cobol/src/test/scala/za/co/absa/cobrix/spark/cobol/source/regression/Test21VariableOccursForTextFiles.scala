@@ -36,20 +36,21 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
            03 INNER-GROUP OCCURS 0 TO 3 TIMES
                               DEPENDING ON INNER-COUNT.
               04 FIELD PIC X.
+        02 MARKER PIC X(1).
     """
 
   "ASCII files" should {
 
     val data =
-      """0
-        |01
-        |10
-        |11A
-        |12AB
-        |13ABC
-        |21AB
-        |22ABC
-        |23ABCD
+      """0M
+        |01M
+        |10M
+        |11AM
+        |12ABM
+        |13ABCM
+        |21A1BM
+        |22AB1CM
+        |23ABC1DM
         |""".stripMargin
 
     val expectedSchema =
@@ -61,21 +62,25 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         | |    |    |-- INNER_GROUP: array (nullable = true)
         | |    |    |    |-- element: struct (containsNull = true)
         | |    |    |    |    |-- FIELD: string (nullable = true)
+        | |-- MARKER: string (nullable = true)
         |""".stripMargin
 
     val expectedData =
       """[ {
         |  "COUNT" : 0,
-        |  "GROUP" : [ ]
+        |  "GROUP" : [ ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 0,
-        |  "GROUP" : [ ]
+        |  "GROUP" : [ ],
+        |  "MARKER" : "1"
         |}, {
         |  "COUNT" : 1,
         |  "GROUP" : [ {
         |    "INNER_COUNT" : 0,
         |    "INNER_GROUP" : [ ]
-        |  } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 1,
         |  "GROUP" : [ {
@@ -83,7 +88,8 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |    "INNER_GROUP" : [ {
         |      "FIELD" : "A"
         |    } ]
-        |  } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 1,
         |  "GROUP" : [ {
@@ -93,7 +99,8 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |    }, {
         |      "FIELD" : "B"
         |    } ]
-        |  } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 1,
         |  "GROUP" : [ {
@@ -105,7 +112,8 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |    }, {
         |      "FIELD" : "C"
         |    } ]
-        |  } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 2,
         |  "GROUP" : [ {
@@ -114,8 +122,12 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |      "FIELD" : "A"
         |    } ]
         |  }, {
-        |    "INNER_GROUP" : [ { } ]
-        |  } ]
+        |    "INNER_COUNT" : 1,
+        |    "INNER_GROUP" : [ {
+        |      "FIELD" : "B"
+        |    } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 2,
         |  "GROUP" : [ {
@@ -126,8 +138,12 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |      "FIELD" : "B"
         |    } ]
         |  }, {
-        |    "INNER_GROUP" : [ { }, { } ]
-        |  } ]
+        |    "INNER_COUNT" : 1,
+        |    "INNER_GROUP" : [ {
+        |      "FIELD" : "C"
+        |    } ]
+        |  } ],
+        |  "MARKER" : "M"
         |}, {
         |  "COUNT" : 2,
         |  "GROUP" : [ {
@@ -140,8 +156,12 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         |      "FIELD" : "C"
         |    } ]
         |  }, {
-        |    "INNER_GROUP" : [ { }, { }, { } ]
-        |  } ]
+        |    "INNER_COUNT" : 1,
+        |    "INNER_GROUP" : [ {
+        |      "FIELD" : "D"
+        |    } ]
+        |  } ],
+        |  "MARKER" : "M"
         |} ]
         |""".stripMargin.replace("\r\n", "\n")
 
