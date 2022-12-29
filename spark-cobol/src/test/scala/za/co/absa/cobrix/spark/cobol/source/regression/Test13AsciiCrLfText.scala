@@ -271,6 +271,7 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
         .option("copybook_contents", copybook2)
         .option("pedantic", "true")
         .option("record_format", "D")
+        .option("ascii_charset", "UTF-8")
         .option("input_split_records", 2)
         .load(tmpFileName)
 
@@ -379,6 +380,7 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
         .option("copybook_contents", copybook2)
         .option("pedantic", "true")
         .option("record_format", "D")
+        .option("ascii_charset", "UTF-8")
         .option("input_split_records", 2)
         .load(tmpFileName)
 

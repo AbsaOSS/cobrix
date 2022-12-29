@@ -286,20 +286,22 @@ object CobolParametersParser extends Logging {
 
   private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
-    val isRecordSequence = Seq(FixedBlock, VariableLength, VariableBlock, AsciiText).contains(recordFormat)
+    val isRecordSequence = Seq(FixedBlock, VariableLength, VariableBlock).contains(recordFormat)
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
+    val isHierarchical = params.getMap.keys.exists(k => k.startsWith("segment-children"))
 
     val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
     val allowPartialRecords = params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean
 
     // Fallback to basic Ascii when the format is 'D' or 'T', but no special Cobrix features are enabled
-    val basicAscii = recordFormat == AsciiText && asciiCharset.isEmpty && !allowPartialRecords
+    val basicAscii = (recordFormat == AsciiText || recordFormat == BasicAsciiText) && asciiCharset.isEmpty && !allowPartialRecords
+    val variableLengthAscii = recordFormat == AsciiText && !basicAscii
 
-    val nonTextVariableLengthOccurs = varLenOccursEnabled && recordFormat != BasicAsciiText && !basicAscii
+    val nonTextVariableLengthOccurs = varLenOccursEnabled && !basicAscii
 
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM))) {
@@ -312,7 +314,9 @@ object CobolParametersParser extends Logging {
       fileStartOffset > 0 ||
       fileEndOffset > 0 ||
       hasRecordExtractor ||
-      nonTextVariableLengthOccurs
+      nonTextVariableLengthOccurs ||
+      variableLengthAscii ||
+      isHierarchical
     ) {
       Some(VariableLengthParameters
       (
