@@ -35,9 +35,9 @@ class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with Binary
   private val data2 = "101112131415161718"
 
   "Multipart path spec" should {
-    "load avv available copybooks" in {
-      val expected = """[{"A":"01"},{"A":"02"},{"A":"03"},{"A":"04"},{"A":"05"},{"A":"06"},{"A":"07"},{"A":"08"},{"A":"09"},{"A":"10"},{"A":"11"},{"A":"12"},{"A":"13"},{"A":"14"},{"A":"15"},{"A":"16"},{"A":"17"},{"A":"18"}]"""
+    val expected = """[{"A":"01"},{"A":"02"},{"A":"03"},{"A":"04"},{"A":"05"},{"A":"06"},{"A":"07"},{"A":"08"},{"A":"09"},{"A":"10"},{"A":"11"},{"A":"12"},{"A":"13"},{"A":"14"},{"A":"15"},{"A":"16"},{"A":"17"},{"A":"18"}]"""
 
+    "load all available files using data_paths option" in {
       withTempBinFile("rec_len1", ".dat", data1.getBytes) { tmpFileName1 =>
         withTempBinFile("rec_len2", ".dat", data2.getBytes) { tmpFileName2 =>
           val df = getDataFrame(Seq(tmpFileName1, tmpFileName2))
@@ -53,19 +53,53 @@ class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with Binary
         }
       }
     }
+
+    "load a single path using data_paths option" in {
+      val expected = """[{"A":"01"},{"A":"02"},{"A":"03"},{"A":"04"},{"A":"05"},{"A":"06"},{"A":"07"},{"A":"08"},{"A":"09"}]"""
+
+      withTempBinFile("rec_len1", ".dat", data1.getBytes) { tmpFileName1 =>
+        val df = getDataFrame(Seq(tmpFileName1))
+
+        val actual = df
+          .orderBy(col("A"))
+          .toJSON
+          .collect()
+          .mkString("[", ",", "]")
+
+        assert(df.count() == 9)
+        assert(actual == expected)
+      }
+    }
+
+    "load all available files using legacy paths option" in {
+      withTempBinFile("rec_len1", ".dat", data1.getBytes) { tmpFileName1 =>
+        withTempBinFile("rec_len2", ".dat", data2.getBytes) { tmpFileName2 =>
+          val df = getDataFrame(Seq(tmpFileName1, tmpFileName2), optionToUse = "paths")
+
+          val actual = df
+            .orderBy(col("A"))
+            .toJSON
+            .collect()
+            .mkString("[", ",", "]")
+
+          assert(df.count() == 18)
+          assert(actual == expected)
+        }
+      }
+    }
   }
 
-  private def getDataFrame(inputPaths: Seq[String], extraOptions: Map[String, String] = Map.empty[String, String]): DataFrame = {
+  private def getDataFrame(inputPaths: Seq[String],
+                           extraOptions: Map[String, String] = Map.empty[String, String],
+                           optionToUse: String = "data_paths"): DataFrame = {
     spark
       .read
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("encoding", "ascii")
       .option("schema_retention_policy", "collapse_root")
-      .option("paths", inputPaths.mkString(","))
+      .option(optionToUse, inputPaths.mkString(","))
       .options(extraOptions)
       .load()
   }
-
-
 }

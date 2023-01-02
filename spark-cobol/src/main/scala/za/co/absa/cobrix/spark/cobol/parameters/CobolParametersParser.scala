@@ -43,7 +43,8 @@ object CobolParametersParser extends Logging {
   val PARAM_MULTI_COPYBOOK_PATH       = "copybooks"
   val PARAM_COPYBOOK_CONTENTS         = "copybook_contents"
   val PARAM_SOURCE_PATH               = "path"
-  val PARAM_SOURCE_PATHS              = "paths"
+  val PARAM_SOURCE_PATHS              = "data_paths"
+  val PARAM_SOURCE_PATHS_LEGACY       = "paths"
   val PARAM_ENCODING                  = "encoding"
   val PARAM_PEDANTIC                  = "pedantic"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
@@ -236,7 +237,9 @@ object CobolParametersParser extends Logging {
       }
     }
 
-    val paths = getParameter(PARAM_SOURCE_PATHS, params).map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
+    val pathsParam = getParameter(PARAM_SOURCE_PATHS, params).orElse(getParameter(PARAM_SOURCE_PATHS_LEGACY, params))
+
+    val paths = pathsParam.map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
 
     val variableLengthParams = parseVariableLengthParameters(params, recordFormatDefined)
 

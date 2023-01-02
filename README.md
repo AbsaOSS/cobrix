@@ -1250,6 +1250,27 @@ Again, the full example is available at
 Some encoding formats are not expressible by the standard copybook spec. Cobrix has extensions to help you decode 
 fields encoded in this way.   
 
+### Loading multiple paths
+
+Loading multiple paths in the standard way is not supported.
+```scala
+ val df = spark
+   .read
+   .format("cobol")
+   .option("copybook_contents", copybook)
+   .load("/path1", "/paths2")
+```
+
+But there is a Cobrix extension that allows you to load multiple paths:
+```scala
+ val df = spark
+   .read
+   .format("cobol")
+   .option("copybook_contents", copybook)
+   .option("data_paths", "/path1,/paths2")
+   .load()
+```
+
 ### Parsing little-endian binary numbers
 
 Cobrix expects all binary numbers to be big-endian. If you have a binary number in the little-endian format, use 
@@ -1287,13 +1308,13 @@ You can have decimals when using COMP-3 as well.
 
 ##### File reading options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("paths", "/path1,/path2")          | Allows loading data from multiple unrelated paths on the same filesystem. |
-| .option("file_start_offset", "0")          | Specifies the number of bytes to skip at the beginning of each file.          |
-| .option("file_end_offset", "0")            | Specifies the number of bytes to skip at the end of each file.                |
-| .option("record_start_offset", "0")        | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
-| .option("record_end_offset", "0")          | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data. |
+| Option (usage example)                 | Description                                                                                                    |
+|----------------------------------------|:---------------------------------------------------------------------------------------------------------------|
+| .option("data_paths", "/path1,/path2") | Allows loading data from multiple unrelated paths on the same filesystem.                                      |
+| .option("file_start_offset", "0")      | Specifies the number of bytes to skip at the beginning of each file.                                           |
+| .option("file_end_offset", "0")        | Specifies the number of bytes to skip at the end of each file.                                                 |
+| .option("record_start_offset", "0")    | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
+| .option("record_end_offset", "0")      | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data.        |
 
 ##### Copybook parsing options
 
@@ -1514,10 +1535,12 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.6.2 will be released soon.
    - [#516](https://github.com/AbsaOSS/cobrix/issues/516) Added support for unsigned packed numbers via a Cobrix extension (COMP-3U).
-   - [#545](https://github.com/AbsaOSS/cobrix/issues/545) Added support for `string` debug columns for ASCII (D/D2/T) files (`.option("debug", "string")`).
    - [#542](https://github.com/AbsaOSS/cobrix/issues/542) Added `.option("filler_naming_policy", "previous_field_name")` allowing for a different filler naming strategy.
+   - [#544](https://github.com/AbsaOSS/cobrix/issues/553) Added `data_paths` option to replace `paths` option that conflicts with Sparks internal option `paths`.
+   - [#545](https://github.com/AbsaOSS/cobrix/issues/545) Added support for `string` debug columns for ASCII (D/D2/T) files (`.option("debug", "string")`).
    - [#543](https://github.com/AbsaOSS/cobrix/issues/543) Improved performance of processing ASCII text (D/D2/T) files with variable OCCURS.
    - [#553](https://github.com/AbsaOSS/cobrix/issues/553) Fixed variable occurs now working properly with basic ASCII record format (D2).
+   
 
 - #### 2.6.1 released 2 December 2022.
    - [#531](https://github.com/AbsaOSS/cobrix/issues/531) Added support for CP1047 EBCDIC code page.

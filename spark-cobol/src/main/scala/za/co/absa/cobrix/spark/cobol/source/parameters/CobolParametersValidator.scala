@@ -52,9 +52,13 @@ object CobolParametersValidator {
     val copyBookPathFileName = parameters.get(PARAM_COPYBOOK_PATH)
     val copyBookMultiPathFileNames = parameters.get(PARAM_MULTI_COPYBOOK_PATH)
 
-    if (!parameters.isDefinedAt(PARAM_SOURCE_PATH) && !parameters.isDefinedAt(PARAM_SOURCE_PATHS)) {
+    if (!parameters.isDefinedAt(PARAM_SOURCE_PATH) && !parameters.isDefinedAt(PARAM_SOURCE_PATHS) && !parameters.isDefinedAt(PARAM_SOURCE_PATHS_LEGACY)) {
       throw new IllegalStateException(s"Cannot define path to data files: missing " +
-        s"parameter: '$PARAM_SOURCE_PATH' or '$PARAM_SOURCE_PATHS'. It is automatically set when you invoke .load()")
+        s"parameter: '$PARAM_SOURCE_PATH' or '$PARAM_SOURCE_PATHS'. `path` is automatically set when you invoke .load()")
+    }
+
+    if (parameters.isDefinedAt(PARAM_SOURCE_PATHS) && parameters.isDefinedAt(PARAM_SOURCE_PATHS_LEGACY)) {
+      throw new IllegalStateException(s"Only one of '$PARAM_SOURCE_PATHS' or '$PARAM_SOURCE_PATHS_LEGACY' [deprecated] should be defined.")
     }
 
     if (parameters.isDefinedAt(PARAM_SOURCE_PATH) && parameters.isDefinedAt(PARAM_SOURCE_PATHS)) {
