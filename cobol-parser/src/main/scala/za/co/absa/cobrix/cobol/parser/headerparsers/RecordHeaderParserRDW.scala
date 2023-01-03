@@ -38,10 +38,11 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
     * @param header     A record header as an array of bytes
     * @param fileOffset An offset from the beginning of the underlying file
     * @param fileSize   A size of the underlying file
+    * @param maxOffset  A maximum offset allowed to read by the current index chunk
     * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
     if (fileHeaderBytes > getHeaderLength && fileOffset == getHeaderLength) {
       RecordMetadata(fileHeaderBytes - getHeaderLength, isValid = false)
     } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {

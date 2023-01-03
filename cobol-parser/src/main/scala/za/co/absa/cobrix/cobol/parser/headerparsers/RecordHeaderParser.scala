@@ -52,10 +52,11 @@ trait RecordHeaderParser {
     * @param header     A record header as an array of bytes
     * @param fileOffset An offset from the beginning of the underlying file
     * @param fileSize   A size of the underlying file
+    * @param maxOffset  A maximum offset allowed to read by the current index chunk
     * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata
+  def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata
 
   /**
     * Clients of 'spark-cobol' can pass additional information to custom record header parsers using

@@ -27,6 +27,8 @@ class TestStringStream(str: String) extends SimpleStream{
 
   override def size: Long = sz
 
+  override def totalSize: Long = sz
+
   override def offset: Long = position
 
   override def next(numberOfBytes: Int): Array[Byte] = {

@@ -16,11 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.fixtures
 
+import org.apache.commons.io.FileUtils
+
+import java.io.File.createTempFile
 import java.io.{DataOutputStream, File, FileOutputStream}
 import java.nio.charset.Charset
-import java.nio.file.{Files, Path}
-
-import org.apache.commons.io.{FileSystemUtils, FileUtils}
+import java.nio.file.Files
 
 /**
   * This fixture adds ability for a unit test to create temporary files for using them in the tests.
@@ -39,10 +40,7 @@ trait BinaryFileFixture {
     * @return The full path to the temporary file
     */
   def withTempTextFile(prefix: String, suffix: String, charset: Charset, content: String)(f: String => Unit): Unit = {
-    val tempFile = File.createTempFile(prefix, suffix)
-    val ostream = new DataOutputStream(new FileOutputStream(tempFile))
-    ostream.write(content.getBytes(charset))
-    ostream.close()
+    val tempFile = createTempTextFile(None, prefix, suffix, charset, content)
 
     f(tempFile.getAbsolutePath)
 
@@ -101,6 +99,18 @@ trait BinaryFileFixture {
     f(tempFile.getAbsolutePath)
 
     tempFile.delete
+  }
+
+  def createTempTextFile(dirOpt: Option[File], prefix: String, suffix: String, charset: Charset, content: String): File = {
+    val tempFile = dirOpt match {
+      case Some(dir) => createTempFile(prefix, suffix, dir)
+      case None => createTempFile(prefix, suffix)
+    }
+
+    val ostream = new DataOutputStream(new FileOutputStream(tempFile))
+    ostream.write(content.getBytes(charset))
+    ostream.close()
+    tempFile
   }
 
   private def hex2bytes(hex: String): Array[Byte] = {
