@@ -37,12 +37,12 @@ class RecordHeaderParserFixedLen(recordSize: Int,
     * @param recordNum  A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
     if (fileHeaderBytes > 0 && fileOffset == 0L) {
       RecordMetadata(fileHeaderBytes, isValid = false)
     } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
       RecordMetadata((fileSize - fileOffset).toInt, isValid = false)
-    } else if (fileSize - fileOffset >= recordSize) {
+    } else if (maxOffset - fileOffset >= recordSize) {
       RecordMetadata(recordSize, isValid = true)
     } else {
       RecordMetadata(-1, isValid = false)

@@ -21,6 +21,10 @@ import org.apache.spark.sql.functions.col
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
+
+import java.io.File
+import java.nio.charset.StandardCharsets
 
 //noinspection NameBooleanParameters
 class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
@@ -85,6 +89,106 @@ class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with Binary
           assert(df.count() == 18)
           assert(actual == expected)
         }
+      }
+    }
+
+    "file offsets supported when multiple multi-partition files are read" in {
+      val expected = """[ {
+                       |  "A" : "10"
+                       |}, {
+                       |  "A" : "11"
+                       |}, {
+                       |  "A" : "12"
+                       |}, {
+                       |  "A" : "13"
+                       |}, {
+                       |  "A" : "14"
+                       |}, {
+                       |  "A" : "15"
+                       |}, {
+                       |  "A" : "16"
+                       |}, {
+                       |  "A" : "17"
+                       |}, {
+                       |  "A" : "18"
+                       |}, {
+                       |  "A" : "19"
+                       |}, {
+                       |  "A" : "20"
+                       |}, {
+                       |  "A" : "21"
+                       |}, {
+                       |  "A" : "22"
+                       |}, {
+                       |  "A" : "23"
+                       |}, {
+                       |  "A" : "24"
+                       |}, {
+                       |  "A" : "25"
+                       |}, {
+                       |  "A" : "26"
+                       |}, {
+                       |  "A" : "27"
+                       |}, {
+                       |  "A" : "28"
+                       |}, {
+                       |  "A" : "29"
+                       |}, {
+                       |  "A" : "30"
+                       |}, {
+                       |  "A" : "31"
+                       |}, {
+                       |  "A" : "32"
+                       |}, {
+                       |  "A" : "33"
+                       |}, {
+                       |  "A" : "34"
+                       |}, {
+                       |  "A" : "35"
+                       |}, {
+                       |  "A" : "36"
+                       |}, {
+                       |  "A" : "37"
+                       |}, {
+                       |  "A" : "38"
+                       |}, {
+                       |  "A" : "39"
+                       |}, {
+                       |  "A" : "BB"
+                       |}, {
+                       |  "A" : "FF"
+                       |} ]""".stripMargin.replaceAll("[\\r\\n]", "\n")
+
+      val data1 = "AA10111213141516171819" + "B" * 960 + "20212223242526272829CC"
+      val data2 = "EE30313233343536373839" + "F" * 960 + "30313233343536373839GG"
+
+      withTempDirectory("rec_len_multi") { tempDir =>
+        val parentDirOpt = Option(new File(tempDir))
+        createTempTextFile(parentDirOpt, "file1", ".txt", StandardCharsets.UTF_8, data1)
+        createTempTextFile(parentDirOpt, "file2", ".txt", StandardCharsets.UTF_8, data2)
+
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("encoding", "ascii")
+          .option("input_split_records", 10)
+          .option("file_start_offset", "2")
+          .option("file_end_offset", "2")
+          .load(tempDir)
+
+
+        val count = df.count()
+
+        val actual = SparkUtils.prettyJSON(df
+          .distinct()
+          .orderBy(col("A"))
+          .toJSON
+          .collect()
+          .mkString("[", ",", "]"))
+
+        assert(count == 1000)
+        assert(actual == expected)
       }
     }
   }

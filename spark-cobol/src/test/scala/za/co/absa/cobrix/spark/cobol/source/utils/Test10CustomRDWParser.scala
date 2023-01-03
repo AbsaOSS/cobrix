@@ -34,11 +34,12 @@ class Test10CustomRDWParser extends Serializable with RecordHeaderParser {
     *
     * @param header    A record header as an array of bytes
     * @param fileOffset    An offset from the beginning of the underlying file
+    * @param maxOffset  A maximum offset allowed to read by the current index chunk
     * @param fileSize      A size of the underlying file
     * @param recordNum A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
     val rdwHeaderBlock = getHeaderLength
     if (header.length < rdwHeaderBlock) {
       RecordMetadata(-1, isValid = false)

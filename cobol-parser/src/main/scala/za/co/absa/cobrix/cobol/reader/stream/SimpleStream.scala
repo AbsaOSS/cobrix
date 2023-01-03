@@ -21,6 +21,8 @@ package za.co.absa.cobrix.cobol.reader.stream
 trait SimpleStream {
   def size: Long
 
+  def totalSize: Long
+
   def offset: Long
 
   def inputFileName: String

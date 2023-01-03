@@ -157,7 +157,7 @@ class VRLRecordReader(cobolSchema: Copybook,
     while (!isValidRecord && !isEndOfFile) {
       headerBytes = dataStream.next(rdwHeaderBlock)
 
-      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
+      val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, dataStream.totalSize, recordIndex)
       val recordLength = recordMetadata.recordLength
 
       byteIndex += headerBytes.length

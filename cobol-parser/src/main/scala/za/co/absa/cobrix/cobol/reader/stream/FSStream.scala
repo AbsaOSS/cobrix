@@ -27,6 +27,8 @@ class FSStream (fileName: String) extends SimpleStream {
 
   override def size: Long = fileSize
 
+  override def totalSize: Long = fileSize
+
   override def offset: Long = byteIndex
 
   override def inputFileName: String = fileName

@@ -75,7 +75,7 @@ object IndexGenerator extends Logging {
         case None =>
           val headerSize = recordHeaderParser.getHeaderLength
           val headerBytes = dataStream.next(headerSize)
-          val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, recordIndex)
+          val recordMetadata = recordHeaderParser.getRecordMetadata(headerBytes, dataStream.offset, dataStream.size, dataStream.totalSize, recordIndex)
           if (recordMetadata.recordLength > 0) {
             record = dataStream.next(recordMetadata.recordLength)
           }

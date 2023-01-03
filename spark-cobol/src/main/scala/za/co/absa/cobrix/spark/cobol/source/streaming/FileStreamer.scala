@@ -49,6 +49,8 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   override def size: Long = if (maximumBytes > 0) Math.min(fileSize, maximumBytes + startOffset) else fileSize
 
+  override def totalSize: Long = fileSize
+
   override def offset: Long = byteIndex
 
   /**
