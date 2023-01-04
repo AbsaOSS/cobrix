@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
+// Generated from json.g4 by ANTLR 4.8
 package za.co.absa.cobrix.cobol.parser.antlr;
-
-// Generated from json.g4 by ANTLR 4.7.2
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**

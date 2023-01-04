@@ -14,7 +14,7 @@
 # limitations under the License.
 
 # generate java files
-antlr4 *g4 -no-listener -visitor
+antlr4 *g4 -no-listener -visitor -package za.co.absa.cobrix.cobol.parser.antlr
 
 LICENSE="$(cat license.txt)"
 
@@ -23,7 +23,5 @@ do
     DATA="$(cat ${f})"
     # add the license
     echo "${LICENSE}" > "$f"
-    # add the package info
-    printf "\n\npackage za.co.absa.cobrix.cobol.parser.antlr;\n\n" >> "$f"
     echo "${DATA}" >> "$f"
 done
