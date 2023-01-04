@@ -241,13 +241,13 @@ The jars that you need to get are:
 * cobol-parser_2.12-2.6.2.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
-* antlr4-runtime-4.7.2.jar 
+* antlr4-runtime-4.8.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
 $ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.2.jar,cobol-parser_2.12-2.6.2.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.7.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.2.jar,cobol-parser_2.12-2.6.2.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
