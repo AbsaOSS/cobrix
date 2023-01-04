@@ -157,7 +157,7 @@ class Test28MultipartLoadSpec extends AnyWordSpec with SparkTestBase with Binary
                        |  "A" : "BB"
                        |}, {
                        |  "A" : "FF"
-                       |} ]""".stripMargin.replaceAll("[\\r\\n]", "\n")
+                       |} ]""".stripMargin.replaceAll("\r", "")
 
       val data1 = "AA10111213141516171819" + "B" * 960 + "20212223242526272829CC"
       val data2 = "EE30313233343536373839" + "F" * 960 + "30313233343536373839GG"
