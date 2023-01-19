@@ -51,11 +51,10 @@ class VRLRecordReader(cobolSchema: Copybook,
   private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId - 1
-  private val lengthField = ReaderParametersValidator.getLengthField(readerProperties.lengthFieldName, cobolSchema)
-  private val lengthFieldExpr = ReaderParametersValidator.getLengthFieldExpr(readerProperties.lengthFieldName, cobolSchema)
+  private val (lengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
-  private val useRdw = readerProperties.isRecordSequence || (lengthField.isEmpty && lengthFieldExpr.expr.isEmpty)
+  private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
 
   fetchNext()
 
@@ -84,15 +83,14 @@ class VRLRecordReader(cobolSchema: Copybook,
           } else {
             None
           }
-        case None => {
+        case None =>
           if (useRdw) {
             fetchRecordUsingRdwHeaders()
           } else if (lengthField.nonEmpty) {
             fetchRecordUsingRecordLengthField()
           } else {
-            fetchRecordUsingRecordLengthFieldExpression()
+            fetchRecordUsingRecordLengthFieldExpression(lengthFieldExpr.get)
           }
-        }
       }
 
       binaryData match {
@@ -150,9 +148,9 @@ class VRLRecordReader(cobolSchema: Copybook,
     }
   }
 
-  private def fetchRecordUsingRecordLengthFieldExpression(): Option[Array[Byte]] = {
-    val lengthFieldBlock = lengthFieldExpr.requiredBytesToread
-    val evaluator = lengthFieldExpr.evaluator
+  private def fetchRecordUsingRecordLengthFieldExpression(expr: RecordLengthExpression): Option[Array[Byte]] = {
+    val lengthFieldBlock = expr.requiredBytesToread
+    val evaluator = expr.evaluator
 
     val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
 
@@ -162,7 +160,7 @@ class VRLRecordReader(cobolSchema: Copybook,
       return None
     }
 
-    lengthFieldExpr.fields.foreach{
+    expr.fields.foreach{
       case (name, field) =>
         cobolSchema.extractPrimitiveField(field, binaryDataStart, readerProperties.startOffset) match {
           case i: Int    => evaluator.setValue(name, i)

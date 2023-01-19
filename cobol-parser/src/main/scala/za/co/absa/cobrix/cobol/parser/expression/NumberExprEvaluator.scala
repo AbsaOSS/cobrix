@@ -27,7 +27,7 @@ import scala.collection.mutable
   *
   * Example:
   *   {{{
-  *   val evaluator = new NumberExprEvaluator("@record_length + @offset - 1")
+  *   val evaluator = new NumberExprEvaluator("record_length + offset - 1")
   *   evaluator.setValue("record_length", 500)
   *   evaluator.setValue("offset", 50)
   *
