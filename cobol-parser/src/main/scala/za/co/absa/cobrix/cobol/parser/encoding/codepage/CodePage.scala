@@ -53,7 +53,7 @@ abstract class CodePage extends Serializable {
   }
 }
 
-object CodePage extends Logging{
+object CodePage extends Logging {
 
   def getCodePageByName(codePageName: String): CodePage = {
     codePageName match {
@@ -61,9 +61,12 @@ object CodePage extends Logging{
       case "common_extended" => new CodePageCommonExt
       case "cp037"           => new CodePage037
       case "cp037_extended"  => new CodePage037Ext
+      case "cp838"           => new CodePage838
+      case "cp870"           => new CodePage870
       case "cp875"           => new CodePage875
+      case "cp1025"          => new CodePage1025
       case "cp1047"          => new CodePage1047
-      case codePage => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the builtin EBCDIC code pages.")
+      case codePage          => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the builtin EBCDIC code pages.")
     }
   }
 
@@ -75,6 +78,4 @@ object CodePage extends Logging{
       .newInstance()
       .asInstanceOf[CodePage]
   }
-
-
 }
