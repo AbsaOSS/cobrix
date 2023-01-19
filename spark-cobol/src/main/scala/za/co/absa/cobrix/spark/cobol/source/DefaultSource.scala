@@ -180,7 +180,7 @@ class DefaultSource
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = parameters.variableSizeOccurs,
       recordLength = parameters.recordLength,
-      lengthFieldName = recordLengthField,
+      lengthFieldExpression = recordLengthField,
       isRecordSequence = varLenParams.isRecordSequence,
       bdw = varLenParams.bdw,
       isRdwBigEndian = varLenParams.isRdwBigEndian,
@@ -213,7 +213,7 @@ class DefaultSource
       varLenParams.rhpAdditionalInfo,
       varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn
-    )
+      )
   }
 
   private def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {

@@ -23,21 +23,20 @@ import za.co.absa.cobrix.cobol.parser.expression.lexer.Token._
 import scala.collection.mutable.ListBuffer
 
 object Parser {
-  def parse(tokens: List[Token], builder: NumExprBuilder): Unit = {
+  def parse(tokens: Array[Token], builder: NumExprBuilder): Unit = {
     val STATE0 = 0
     val STATE1 = 1
-    val STATE_VARIABLE = 2
     val MINUS_NUM = 3
 
     var state = STATE0
 
     val paranPos = new ListBuffer[Int]
 
-    for (token <- tokens) {
+    var i = 0
+    while (i < tokens.length) {
+      val token = tokens(i)
       if (state == STATE0) {
         token match {
-          case VAR_PREFIX(_) =>
-            state = STATE_VARIABLE
           case COMMA(pos) =>
             throw new ExprSyntaxError(s"Unexpected ',' at pos $pos")
           case OPEN_PARAN(pos) =>
@@ -54,7 +53,12 @@ object Parser {
           case MINUS(_) =>
             state = MINUS_NUM
           case NAME(pos, s) =>
-            builder.addFunction(s, pos)
+            if (i == tokens.length - 1 || !tokens(i + 1).isInstanceOf[OPEN_PARAN]) {
+              builder.addVariable(s, pos)
+              state = STATE1
+            } else {
+              builder.addFunction(s, pos)
+            }
           case NUM_LITERAL(pos, s) =>
             builder.addNumLiteral(s.toInt, pos)
             state = STATE1
@@ -62,8 +66,6 @@ object Parser {
         }
       } else if (state == STATE1) {
         token match {
-          case VAR_PREFIX(pos) =>
-            throw new ExprSyntaxError(s"Unexpected variable at pos $pos")
           case COMMA(_) =>
             state = STATE0
           case OPEN_PARAN(pos) =>
@@ -95,13 +97,6 @@ object Parser {
             builder.addNumLiteral(s.toInt, pos)
           case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
-      } else if (state == STATE_VARIABLE) {
-        token match {
-          case NAME(pos, s) =>
-            builder.addVariable(s, pos)
-            state = STATE1
-          case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
-        }
       } else if (state == MINUS_NUM) {
         token match {
           case OPEN_PARAN(pos) =>
@@ -119,6 +114,7 @@ object Parser {
           case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       }
+      i += 1
     }
 
     if (paranPos.nonEmpty) {

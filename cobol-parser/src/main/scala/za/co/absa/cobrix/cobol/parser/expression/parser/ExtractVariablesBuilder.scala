@@ -42,6 +42,6 @@ class ExtractVariablesBuilder(expr: String) extends NumExprBuilder {
   override def addNumLiteral(num: Int, pos: Int): Unit = { }
 
   def getResult: Seq[String] = {
-    variables.distinct.sorted
+    variables.distinct.sorted.toSeq
   }
 }

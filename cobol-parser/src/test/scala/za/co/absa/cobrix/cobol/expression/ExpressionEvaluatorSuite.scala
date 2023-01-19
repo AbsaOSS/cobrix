@@ -22,7 +22,7 @@ import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
 class ExpressionEvaluatorSuite extends AnyWordSpec {
   "getVariables()" should {
     "return the list of variables in expressions" in {
-      val expr = "@d + @b * @c - @a / @d"
+      val expr = "d + b * c - a / d"
       val vars = new NumberExprEvaluator(expr).getVariables
       assert(vars == Seq("a", "b", "c", "d"))
     }
@@ -53,7 +53,7 @@ class ExpressionEvaluatorSuite extends AnyWordSpec {
     }
 
     "evaluate expressions with variables" in {
-      val expr = "10 * (@a1 + 5) * @bcd"
+      val expr = "10 * (a1 + 5) * bcd"
       val evaluator = new NumberExprEvaluator(expr)
       evaluator.setValue("a1", 2)
       evaluator.setValue("bcd", 3)

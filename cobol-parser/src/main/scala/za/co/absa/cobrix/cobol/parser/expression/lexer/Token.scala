@@ -21,11 +21,6 @@ sealed trait Token {
 }
 
 object Token {
-  case class VAR_PREFIX(pos: Int) extends Token
-  {
-    override def toString = "@"
-  }
-
   case class COMMA(pos: Int) extends Token
   {
     override def toString = ","

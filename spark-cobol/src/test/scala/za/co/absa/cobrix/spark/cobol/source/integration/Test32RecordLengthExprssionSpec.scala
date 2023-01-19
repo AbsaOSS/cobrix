@@ -41,7 +41,6 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
           .option("record_length_field", "LEN")
           .load(fileName)
 
-        df.show
         val expected = "0,98,123"
         val actual = df.select("A").collect().map(_.getString(0)).mkString(",")
 
@@ -49,7 +48,7 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
       }
     }
 
-    "recognize expressions names" in {
+    "recognize expressions names (format=F)" in {
       val copybook =
         """      01  R.
                 03 A-1      PIC 9(1).
@@ -66,10 +65,36 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "F")
-          .option("record_length_field", "@A_1 + @A_2 - 1")
+          .option("record_length_field", "A_1 + A_2 - 1")
           .load(fileName)
 
-        df.show
+        val expected = "01,1234,9"
+        val actual = df.select("X").collect().map(_.getString(0)).mkString(",")
+
+        assert(actual == expected)
+      }
+    }
+
+    "recognize expressions names (format=V)" in {
+      val copybook =
+        """      01  R.
+            03 A-1      PIC 9(1).
+            03 A-2      PIC 9(1).
+            03 X       PIC X(10).
+"""
+
+      val data = Array(0xF1.toByte, 0xF4.toByte, 0xF0.toByte, 0xF1.toByte,
+                       0xF2.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
+                       0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
+
+      withTempBinFile("record_length", ".bin", data) { fileName =>
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "V")
+          .option("record_length_field", "A_1 + A_2 - 1")
+          .load(fileName)
+
         val expected = "01,1234,9"
         val actual = df.select("X").collect().map(_.getString(0)).mkString(",")
 

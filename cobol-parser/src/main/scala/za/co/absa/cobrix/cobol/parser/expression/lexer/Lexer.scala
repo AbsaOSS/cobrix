@@ -30,7 +30,7 @@ class Lexer(expression: String) {
   private var pos = 0
   private val tokens = new ListBuffer[Token]
 
-  def lex(): List[Token] = {
+  def lex(): Array[Token] = {
     pos = 0
     tokens.clear()
 
@@ -40,14 +40,13 @@ class Lexer(expression: String) {
         throw new ExprSyntaxError(s"Unexpected character '${expression(pos)}' at position: $pos")
       }
     }
-    tokens.toList
+    tokens.toArray
   }
 
   def findOneCharTokens(): Boolean = {
     val c = expression(pos)
 
     val found: Option[Token] = c match {
-      case '@' => Some(VAR_PREFIX(pos))
       case ',' => Some(COMMA(pos))
       case '(' => Some(OPEN_PARAN(pos))
       case ')' => Some(CLOSE_PARAN(pos))

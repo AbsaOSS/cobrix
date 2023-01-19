@@ -455,12 +455,12 @@ If a record of the copybook contains record lengths for each record you can use 
 You can use expressions as well:
 ```
 .option("record_format", "F")
-.option("record_length_field", "@RECORD_LENGTH + 10")
+.option("record_length_field", "RECORD_LENGTH + 10")
 ```
 or
 ```
 .option("record_format", "F")
-.option("record_length_field", "@FIELD1 * 10 + 200")
+.option("record_length_field", "FIELD1 * 10 + 200")
 ```
 
 ### Use cases for various variable length formats

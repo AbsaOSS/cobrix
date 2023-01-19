@@ -38,7 +38,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param floatingPointFormat     A format of floating-point numbers
   * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param recordLength            Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
-  * @param lengthFieldName         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param lengthFieldExpression         A name of a field that contains record length. Optional. If not set the copybook record length will be used.
   * @param isRecordSequence        Does input files have 4 byte record length headers
   * @param bdw                     Block descriptor word (if specified), for FB and VB record formats
   * @param isRdwPartRecLength      Does RDW count itself as part of record length itself
@@ -78,7 +78,7 @@ case class ReaderParameters(
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              variableSizeOccurs:      Boolean = false,
                              recordLength:            Option[Int] = None,
-                             lengthFieldName:         Option[String] = None,
+                             lengthFieldExpression:         Option[String] = None,
                              isRecordSequence:        Boolean = false,
                              bdw:                     Option[Bdw] = None,
                              isRdwBigEndian:          Boolean = false,
