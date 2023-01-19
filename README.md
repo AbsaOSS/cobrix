@@ -446,6 +446,23 @@ More on record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic=files-select
 The space used by the headers (both BDW and RDW) should not be mentioned in the copybook if this option is used. Please refer to the
 'Record headers support' section below. 
 
+If a record of the copybook contains record lengths for each record you can use 'record_length_field' like this:
+```
+.option("record_format", "F")
+.option("record_length_field", "RECORD_LENGTH")
+```
+
+You can use expressions as well:
+```
+.option("record_format", "F")
+.option("record_length_field", "@RECORD_LENGTH + 10")
+```
+or
+```
+.option("record_format", "F")
+.option("record_length_field", "@FIELD1 * 10 + 200")
+```
+
 ### Use cases for various variable length formats
 
 In order to understand the file format it is often sufficient to look at the first 4 bytes of the file (un case of RDW only files),
@@ -1318,11 +1335,11 @@ You can have decimals when using COMP-3 as well.
 
 ##### Copybook parsing options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("truncate_comments", "true")       | Historically, COBOL parser ignores the first 6 characters and all characters after 72. When this option is `false`, no truncation is performed. |
-| .option("comments_lbound", 6)              | By default each line starts with a 6 character comment. The exact number of characters can be tuned using this option. |
-| .option("comments_ubound", 72)             | By default all characters after 72th one of each line is ignored by the COBOL parser. The exact number of characters can be tuned using this option. |
+| Option (usage example)               | Description                                                                                                                                          |
+|--------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("truncate_comments", "true") | Historically, COBOL parser ignores the first 6 characters and all characters after 72. When this option is `false`, no truncation is performed.      |
+| .option("comments_lbound", 6)        | By default each line starts with a 6 character comment. The exact number of characters can be tuned using this option.                               |
+| .option("comments_ubound", 72)       | By default all characters after 72th one of each line is ignored by the COBOL parser. The exact number of characters can be tuned using this option. |
 
 ##### Data parsing options
 
@@ -1353,55 +1370,58 @@ You can have decimals when using COMP-3 as well.
 | .option("debug", "hex")                              | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                   |
 
 ##### Fixed length record format options (for record_format = F or FB)
-| .option("record_format", "F")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
-| .option("record_length", "100")               | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files. |
-| .option("block_length", "500")                | Specifies the block length for FB records. It should be a multiple of 'record_length'. Cannot be used together with `records_per_block` |
-| .option("records_per_block", "5")             | Specifies the number of records ber block for FB records. Cannot be used together with `block_length` |
+
+| Option (usage example)            | Description                                                                                                                                                                                                                                                                             |
+|-----------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("record_format", "F")     | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                        |
+| .option("record_length", "100")   | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files.                                                                                           |
+| .option("block_length", "500")    | Specifies the block length for FB records. It should be a multiple of 'record_length'. Cannot be used together with `records_per_block`                                                                                                                                                 |
+| .option("records_per_block", "5") | Specifies the number of records ber block for FB records. Cannot be used together with `block_length`                                                                                                                                                                                   |
 
 ##### Variable record length files options (for record_format = V or VB)
 
-|            Option (usage example)             |                           Description |
-| --------------------------------------------- |:----------------------------------------------------------------------------- |
-| .option("record_format", "V")                 | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text). |
-| .option("is_record_sequence", "true")         | _[deprecated]_ If 'true' the parser will look for 4 byte RDW headers to read variable record length files. Use `.option("record_format", "V")` instead. |
-| .option("is_rdw_big_endian", "true")          | Specifies if RDW headers are big endian. They are considered little-endian by default.       |
-| .option("is_rdw_part_of_record_length", false)| Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. For BDW use `.option("bdw_adjustment", -4)` |
-| .option("rdw_adjustment", 0)                  | If there is a mismatch between RDW and record length this option can be used to adjust the difference. |
-| .option("bdw_adjustment", 0)                  | If there is a mismatch between BDW and record length this option can be used to adjust the difference. |
-| .option("record_length_field", "RECORD-LEN")  | Specifies a record length field to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. The `record_format` should be set to `F`. This option is incompatible with `is_record_sequence`. |
-| .option("record_extractor", "com.example.record.extractor")  | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.  |
-| .option("re_additional_info", "")             | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.  |
-| .option("is_text", "true")                    | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
+| Option (usage example)                                      | Description                                                                                                                                                                                                                                                                                 |
+|-------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("record_format", "V")                               | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                            |
+| .option("is_record_sequence", "true")                       | _[deprecated]_ If 'true' the parser will look for 4 byte RDW headers to read variable record length files. Use `.option("record_format", "V")` instead.                                                                                                                                     |
+| .option("is_rdw_big_endian", "true")                        | Specifies if RDW headers are big endian. They are considered little-endian by default.                                                                                                                                                                                                      |
+| .option("is_rdw_part_of_record_length", false)              | Specifies if RDW headers count themselves as part of record length. By default RDW headers count only payload record in record length, not RDW headers themselves. This is equivalent to `.option("rdw_adjustment", -4)`. For BDW use `.option("bdw_adjustment", -4)`                       |
+| .option("rdw_adjustment", 0)                                | If there is a mismatch between RDW and record length this option can be used to adjust the difference.                                                                                                                                                                                      |
+| .option("bdw_adjustment", 0)                                | If there is a mismatch between BDW and record length this option can be used to adjust the difference.                                                                                                                                                                                      |
+| .option("re_additional_info", "")                           | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.                                                                                                                                                                                     |
+| .option("is_text", "true")                                  | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
+| .option("record_length_field", "RECORD-LEN")                | Specifies a record length field or expression to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. The `record_format` should be set to `F`. This option is incompatible with `is_record_sequence`.     |
+| .option("record_extractor", "com.example.record.extractor") | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.                                                                                                                    |
 
 
 ##### Multisegment files options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("segment_field", "SEG-ID")         | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record. |
-| .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so the option keys are unique. |
-| .option("segment-children:0", "COMPANY => EMPLOYEE,DEPARTMENT") | Specifies a mapping between segment redefined fields and their children. Each option specifies a mapping for a single parent field. The numeric value for each mapping option must be incremented so the option keys are unique. If such mapping is specified hierarchical record structure will be automatically reconstructed. This require `redefine-segment-id-map` to be set. | 
-| .option("enable_indexes", "true")          | Turns on indexing of multisegment variable length files (on by default).      |
-| .option("input_split_records", 50000)      | Specifies how many records will be allocated to each split/partition. It will be processed by Spark tasks. (The default is not set and the split will happen according to size, see the next option) |
-| .option("input_split_size_mb", 100)        | Specify how many megabytes to allocate to each partition/split. (The default is 100 MB) |
+| Option (usage example)                                                                | Description                                                                                                                                                                                                                                                                                                                                                                        |
+|---------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("segment_field", "SEG-ID")                                                    | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record.                                                                                                                                                                                        |
+| .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so the option keys are unique.                                                                                                                                                        |
+| .option("segment-children:0", "COMPANY => EMPLOYEE,DEPARTMENT")                       | Specifies a mapping between segment redefined fields and their children. Each option specifies a mapping for a single parent field. The numeric value for each mapping option must be incremented so the option keys are unique. If such mapping is specified hierarchical record structure will be automatically reconstructed. This require `redefine-segment-id-map` to be set. | 
+| .option("enable_indexes", "true")                                                     | Turns on indexing of multisegment variable length files (on by default).                                                                                                                                                                                                                                                                                                           |
+| .option("input_split_records", 50000)                                                 | Specifies how many records will be allocated to each split/partition. It will be processed by Spark tasks. (The default is not set and the split will happen according to size, see the next option)                                                                                                                                                                               |
+| .option("input_split_size_mb", 100)                                                   | Specify how many megabytes to allocate to each partition/split. (The default is 100 MB)                                                                                                                                                                                                                                                                                            |
 
 ##### Helper fields generation options    
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:---------------------------------------------------------------------------- |
-| .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.         |
-| .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments. |
-| .option("segment_id_level0", "SEGID-ROOT") | Specifies segment id value for root level records. When this option is specified the Seg_Id0 field will be generated for each root record |
-| .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record |
+| Option (usage example)                     | Description                                                                                                                                                                         |
+|--------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.                                                                                                               |
+| .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments.                            |
+| .option("segment_id_level0", "SEGID-ROOT") | Specifies segment id value for root level records. When this option is specified the Seg_Id0 field will be generated for each root record                                           |
+| .option("segment_id_level1", "SEGID-CLD1") | Specifies segment id value for child level records. When this option is specified the Seg_Id1 field will be generated for each root record                                          |
 | .option("segment_id_level2", "SEGID-CLD2") | Specifies segment id value for child of a child level records. When this option is specified the Seg_Id2 field will be generated for each root record. You can use levels 3, 4 etc. |
-| .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'. |
+| .option("segment_id_prefix", "A_PREEFIX")  | Specifies a prefix to be added to each segment id value. This is to mage generated IDs globally unique. By default the prefix is the current timestamp in form of '201811122345_'.  |
 
 ##### Debug helper options
 
-|            Option (usage example)          |                           Description |
-| ------------------------------------------ |:----------------------------------------------------------------------------- |
-| .option("pedantic", "false")               | If 'true' Cobrix will throw an exception is an unknown option is encountered. If 'false' (default), unknown options will be logged as an error without failing Spark Application. |
-| .option("debug_ignore_file_size", "true")  | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file. |
+| Option (usage example)                    | Description                                                                                                                                                                       |
+|-------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("pedantic", "false")              | If 'true' Cobrix will throw an exception is an unknown option is encountered. If 'false' (default), unknown options will be logged as an error without failing Spark Application. |
+| .option("debug_ignore_file_size", "true") | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file.                                     |
 
 ## Performance Analysis
 
@@ -1534,7 +1554,8 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.6.3 will be released soon.
-  - [#567](https://github.com/AbsaOSS/cobrix/issues/567) Added support for new code pages 838, 870, 1025 (Thanks [@sree018](https://github.com/sree018)).
+   - [#567](https://github.com/AbsaOSS/cobrix/issues/567) Added support for new code pages 838, 870, 1025 (Thanks [@sree018](https://github.com/sree018)).
+   - [#569](https://github.com/AbsaOSS/cobrix/issues/569) Added support for field length expressions based on filed on the copybook See [Variable length records support](#variable-length-records-support).
 
 - #### 2.6.2 released 3 January 2023.
    - [#516](https://github.com/AbsaOSS/cobrix/issues/516) Added support for unsigned packed numbers via a Cobrix extension (COMP-3U).
