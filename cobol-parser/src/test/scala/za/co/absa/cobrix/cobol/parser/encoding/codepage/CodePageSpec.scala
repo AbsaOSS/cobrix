@@ -42,9 +42,24 @@ class CodePageSpec extends AnyFunSuite {
     assert(codePage.codePageShortName == "cp037_extended")
   }
 
+  test("Ensure codepage 'cp838' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp838")
+    assert(codePage.codePageShortName == "cp838")
+  }
+
+  test("Ensure codepage 'cp870' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp870")
+    assert(codePage.codePageShortName == "cp870")
+  }
+
   test("Ensure codepage 'cp875' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("cp875")
     assert(codePage.codePageShortName == "cp875")
+  }
+
+  test("Ensure codepage 'cp1025' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1025")
+    assert(codePage.codePageShortName == "cp1025")
   }
 
   test("Ensure codepage 'cp1047' gives the associated CodePage") {
