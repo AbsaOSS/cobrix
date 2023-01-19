@@ -27,34 +27,32 @@ import scala.collection.mutable
   *
   * Example:
   *   {{{
-  *   val expr = new NumberExprEvaluator
-  *   expr.setValue("record_length", 500)
-  *   expr.setValue("offset", 50)
+  *   val evaluator = new NumberExprEvaluator("@record_length + @offset - 1")
+  *   evaluator.setValue("record_length", 500)
+  *   evaluator.setValue("offset", 50)
   *
-  *   assert(expr.evalDate("@record_length + @offset - 1") == 549)
+  *   assert(evaluator.eval() == 549)
   *   }}}
   */
-class NumberExprEvaluator {
+class NumberExprEvaluator(expr: String) {
+  private val tokens = new Lexer(expr).lex()
+
   private val vars = mutable.HashMap[String, Int]()
 
   def setValue(varName: String, value: Int): Unit = {
     vars += varName -> value
   }
 
-  def getVariables(expression: String): Seq[String] = {
-    val tokens = new Lexer(expression).lex()
-
-    val exprBuilder = new ExtractVariablesBuilder(expression)
-    new Parser(tokens, exprBuilder).parse()
+  def getVariables: Seq[String] = {
+    val exprBuilder = new ExtractVariablesBuilder(expr)
+    Parser.parse(tokens, exprBuilder)
 
     exprBuilder.getResult
   }
 
-  def eval(expression: String): Int = {
-    val tokens = new Lexer(expression).lex()
-
-    val exprBuilder = new NumExprBuilderImpl(vars.toMap, expression)
-    new Parser(tokens, exprBuilder).parse()
+  def eval(): Int = {
+    val exprBuilder = new NumExprBuilderImpl(vars.toMap, expr)
+    Parser.parse(tokens, exprBuilder)
 
     exprBuilder.getResult
   }

@@ -22,8 +22,8 @@ import za.co.absa.cobrix.cobol.parser.expression.lexer.Token._
 
 import scala.collection.mutable.ListBuffer
 
-class Parser(tokens: List[Token], builder: NumExprBuilder) {
-  def parse(): Unit = {
+object Parser {
+  def parse(tokens: List[Token], builder: NumExprBuilder): Unit = {
     val STATE0 = 0
     val STATE1 = 1
     val STATE_VARIABLE = 2

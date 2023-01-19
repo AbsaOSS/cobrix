@@ -18,28 +18,55 @@ package za.co.absa.cobrix.cobol.reader.validator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
+import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
+import za.co.absa.cobrix.cobol.reader.iterator.RecordLengthExpression
 import za.co.absa.cobrix.cobol.reader.parameters.MultisegmentParameters
 
 object ReaderParametersValidator {
 
   @throws(classOf[IllegalStateException])
   def getLengthField(recordLengthFieldName: Option[String], cobolSchema: Copybook): Option[Primitive] = {
-    recordLengthFieldName.flatMap(fieldName => {
-      val field = cobolSchema.getFieldByName(fieldName)
-      val astNode = field match {
-        case s: Primitive =>
-          if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
-            throw new IllegalStateException(s"The record length field $fieldName must be an integral type.")
-          }
-          if (s.occurs.isDefined && s.occurs.get > 1) {
-            throw new IllegalStateException(s"The record length field '$fieldName' cannot be an array.")
-          }
-          s
-        case _ =>
-          throw new IllegalStateException(s"The record length field $fieldName must have an primitive integral type.")
-      }
-      Some(astNode)
-    })
+    recordLengthFieldName match {
+      case Some(fieldName) if !fieldName.contains('@') =>
+        val field = cobolSchema.getFieldByName(fieldName)
+        val astNode = field match {
+          case s: Primitive =>
+            if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
+              throw new IllegalStateException(s"The record length field $fieldName must be an integral type.")
+            }
+            if (s.occurs.isDefined && s.occurs.get > 1) {
+              throw new IllegalStateException(s"The record length field '$fieldName' cannot be an array.")
+            }
+            s
+          case _ =>
+            throw new IllegalStateException(s"The record length field $fieldName must have an primitive integral type.")
+        }
+        Some(astNode)
+      case _ => None
+    }
+  }
+
+  @throws(classOf[IllegalStateException])
+  def getLengthFieldExpr(recordLengthFieldExpr: Option[String], cobolSchema: Copybook): RecordLengthExpression = {
+    recordLengthFieldExpr match {
+      case Some(expr) if expr.contains('@') =>
+        val evaluator = new NumberExprEvaluator(expr)
+        val vars = evaluator.getVariables
+        val fields = vars.map { field =>
+          val primitive = getLengthField(Option(field), cobolSchema)
+            .getOrElse(throw new IllegalArgumentException(s"The record length expression '$expr' contains an unknown field '$field'."))
+          (field, primitive)
+        }
+        val requiredBytesToRead = if (fields.nonEmpty) {
+          fields.map { case (_, field) =>
+            field.binaryProperties.offset + field.binaryProperties.actualSize
+          }.max
+        } else {
+          0
+        }
+        RecordLengthExpression(expr, evaluator, fields.toMap, requiredBytesToRead)
+      case _ => RecordLengthExpression("", new NumberExprEvaluator(""), Map.empty, 0)
+    }
   }
 
   @throws(classOf[IllegalStateException])
