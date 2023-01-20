@@ -93,10 +93,7 @@ class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBu
     } else if (values.size > 1) {
       throw new ExprSyntaxError(s"Malformed expression: '$expr'.")
     } else {
-      values.head match {
-        case n: Int => n
-        case n => throw new ExprSyntaxError(s"Unexpected type of '$n' which is the result of: '$expr'.")
-      }
+      values.head
     }
   }
 
@@ -139,9 +136,6 @@ class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBu
   private def getInt: Int = {
     val a = values.last
     values.remove(values.size - 1)
-    a match {
-      case n: Int => n
-      case x => throw new ExprSyntaxError(s"Expected a number, got $x in '$expr'.")
-    }
+    a
   }
 }
