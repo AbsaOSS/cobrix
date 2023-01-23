@@ -40,6 +40,7 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 final class FixedLenTextReader(copyBookContents: Seq[String],
                                isEbcdic: Boolean = true,
                                ebcdicCodePage: CodePage,
+                               val asciiCharset: Option[String],
                                floatingPointFormat: FloatingPointFormat,
                                startOffset: Int = 0,
                                endOffset: Int = 0,

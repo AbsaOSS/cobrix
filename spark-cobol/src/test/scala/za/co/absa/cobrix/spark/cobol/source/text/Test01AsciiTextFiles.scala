@@ -39,7 +39,7 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         "3None Data¡3    ",
         "4 on      Data 4").mkString("\n")
 
-  test("Test EOL separated text files can be read") {
+  test("Test EOL separated text files can be read basic ascii") {
     withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
       val df = spark
         .read
@@ -49,6 +49,28 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .option("is_text", "true")
         .option("encoding", "ascii")
         .option("ascii_charset", "US-ASCII")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  test("Test EOL separated text files can be read custom ascii") {
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("is_text", "true")
+        .option("encoding", "ascii")
+        .option("ascii_charset", "US-ASCII")
+        .option("allow_partial_records", "true")
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
@@ -68,11 +90,11 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
-        .option("record_format", "D2")
+        .option("record_format", "D")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
-      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
+      val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data¡3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 
       val actual = df.toJSON.collect().mkString("[", ",", "]")
 
@@ -80,14 +102,14 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
     }
   }
 
-  test("Test  ASCII record format can be read") {
+  test("Test ASCII record format can be read") {
     withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
         .option("copybook_contents", copybook)
         .option("pedantic", "true")
-        .option("record_format", "D")
+        .option("record_format", "D2")
         .option("ascii_charset", "UTF-8")
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")

@@ -51,7 +51,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
   override def hasNext: Boolean = if (singleRecordOnly) {
-    byteIndex == 0 && byteIndex < binaryData.length
+    byteIndex == startOffset && byteIndex < binaryData.length
   } else {
     byteIndex + recordSize <= binaryData.length
   }

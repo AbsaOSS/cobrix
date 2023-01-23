@@ -272,7 +272,6 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
         .option("pedantic", "true")
         .option("record_format", "D")
         .option("ascii_charset", "UTF-8")
-        .option("input_split_records", 2)
         .load(tmpFileName)
 
       val expected = """[{"A":"A"},{"A":"B"},{"A":"C"},{"A":"D"},{"A":"E"},{"A":"F"}]"""
@@ -366,7 +365,7 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
     }
   }
 
-  "correctly read text files with indexing and a copybook that has a slightly greater record size non-partial" in {
+  "correctly read text files and a copybook that has a slightly greater record size non-partial" in {
     val copybook2 =
       """         01  ENTITY.
            05  A    PIC X(7).
@@ -381,7 +380,6 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
         .option("pedantic", "true")
         .option("record_format", "D")
         .option("ascii_charset", "UTF-8")
-        .option("input_split_records", 2)
         .load(tmpFileName)
 
       val expected = """[{"A":"AAAAA"},{"A":"BBBBB"},{"A":"CCCCC"},{"A":"DDDDD"},{"A":"EEEEE"},{"A":"FFFFF"},{"A":"GGGGG"},{"A":"HHHHH"}]"""
@@ -417,6 +415,37 @@ class Test13AsciiCrLfText extends AnyWordSpec with SparkTestBase with BinaryFile
 
       assert(count == 8)
       assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  "correctly read basic ASCII text files in multiple directories" in {
+    val copybook2 =
+      """         01  ENTITY.
+           05  A    PIC X(7).
+    """
+
+    val text1 = "AAAAA\nBBBBB\nCCCCC\nDDDDD"
+    val text2 = "EEEEE\nFFFFF\nGGGGG\nHHHHH"
+    withTempBinFile("crlf_empty1", ".dat", text1.getBytes()) { tmpFileName1 =>
+      withTempBinFile("crlf_empty2", ".dat", text2.getBytes()) { tmpFileName2 =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook2)
+          .option("pedantic", "true")
+          .option("record_format", "D2")
+          .option("data_paths", s"$tmpFileName1,$tmpFileName2")
+          .load()
+          .orderBy("A")
+
+        val expected = """[{"A":"AAAAA"},{"A":"BBBBB"},{"A":"CCCCC"},{"A":"DDDDD"},{"A":"EEEEE"},{"A":"FFFFF"},{"A":"GGGGG"},{"A":"HHHHH"}]"""
+
+        val count = df.count()
+        val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
+
+        assert(count == 8)
+        assertEqualsMultiline(actual, expected)
+      }
     }
   }
 

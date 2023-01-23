@@ -38,7 +38,7 @@ class Test05FixedLengthVarOccurs extends AnyFunSuite with SparkTestBase with Bin
                   03 FIELD  PIC 9.
     """
 
-  test("Test input data file having a numeric field with a comma as the decimal separator") {
+  test("Test input data file having variable length occurs") {
     withTempTextFile("text", ".dat", StandardCharsets.UTF_8, "   5ABC1ABC2ABC3ABC4ABC5   5DEF1DEF2DEF3DEF4DEF5") { tmpFileName =>
       val df = spark
         .read
