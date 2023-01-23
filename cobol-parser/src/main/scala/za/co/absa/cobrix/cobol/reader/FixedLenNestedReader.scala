@@ -22,7 +22,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{AsciiText, BasicAsciiText}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{AsciiText, CobrixAsciiText, FixedLength}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.iterator.FixedLenNestedRowIterator
@@ -69,7 +69,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
   @throws(classOf[Exception])
   protected def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
-    val singleRecordIterator = readerProperties.recordFormat == BasicAsciiText
+    val singleRecordIterator = readerProperties.recordFormat == AsciiText || readerProperties.recordFormat == FixedLength
     new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, singleRecordIterator, handler)
   }
 
@@ -104,7 +104,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
     val encoding = if (isEbcdic) EBCDIC else ASCII
     val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
-    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
+    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerProperties.asciiCharset)
 
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,

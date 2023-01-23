@@ -24,7 +24,7 @@ object RecordFormat {
   case object VariableLength extends RecordFormat
   case object VariableBlock extends RecordFormat
   case object AsciiText extends RecordFormat
-  case object BasicAsciiText extends RecordFormat
+  case object CobrixAsciiText extends RecordFormat
 
   def withNameOpt(s: String): Option[RecordFormat] = {
     s match {
@@ -32,9 +32,9 @@ object RecordFormat {
       case "FB" => Some(FixedBlock)
       case "V" => Some(VariableLength)
       case "VB" => Some(VariableBlock)
-      case "D" => Some(AsciiText)
-      case "D2" => Some(BasicAsciiText) // Similar to 'D', but uses Spark native text file splitter - Cobrix extension
-      case "T" => Some(AsciiText)       // Same as 'D' - Cobrix extension
+      case "D" => Some(AsciiText)         // Uses Spark facilities to process ASCII files in parallel
+      case "D2" => Some(CobrixAsciiText)  // Similar to 'D', but uses the custom Cobrix ASCII parser
+      case "T" => Some(AsciiText)         // Same as 'D' - Cobrix extension
       case _ => None
     }
   }

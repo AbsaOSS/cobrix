@@ -181,7 +181,7 @@ If the input file is a text file (CRLF / LF are used to split records), use
 Multisegment ASCII text files are supported using this option:
 `.option("record_format", "D)"`.
 
-Basic ASCII text files, have better scalability, especially for large files, but you can't choose the charset:
+Cobrix has better handling of special characters and partial records using its extension format:
 `.option("record_format", "D2")`.
 
 Read more on record formats at https://www.ibm.com/docs/en/zos/2.4.0?topic=files-selecting-record-formats-non-vsam-data-sets
@@ -1556,6 +1556,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 - #### 2.6.3 will be released soon.
    - [#567](https://github.com/AbsaOSS/cobrix/issues/567) Added support for new code pages 838, 870, 1025 (Thanks [@sree018](https://github.com/sree018)).
    - [#569](https://github.com/AbsaOSS/cobrix/issues/569) Added support for field length expressions based on filed on the copybook See [Variable length records support](#variable-length-records-support).
+   - [#572](https://github.com/AbsaOSS/cobrix/issues/572) Improves performance of non-UTF8 encoded ASCII test files.
 
 - #### 2.6.2 released 3 January 2023.
    - [#516](https://github.com/AbsaOSS/cobrix/issues/516) Added support for unsigned packed numbers via a Cobrix extension (COMP-3U).

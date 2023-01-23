@@ -84,9 +84,11 @@ class DefaultSource
     */
   private def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    val charsetOpt = if (parameters.asciiCharset.isEmpty) None else Option(parameters.asciiCharset)
     new FixedLenTextReader(copybookContent,
       parameters.isEbcdic,
       getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
+      charsetOpt,
       parameters.floatingPointFormat,
       parameters.recordStartOffset,
       parameters.recordEndOffset,

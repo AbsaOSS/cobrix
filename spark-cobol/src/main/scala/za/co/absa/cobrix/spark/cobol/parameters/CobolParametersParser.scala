@@ -198,7 +198,7 @@ object CobolParametersParser extends Logging {
         throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
           "Allowed one of: 'true' = 'hex', 'raw', 'binary', 'string' (ASCII only), 'false' = 'none'. ")
     }
-    if (policy == DebugFieldsPolicy.StringValue && recordFormat != RecordFormat.AsciiText && recordFormat != RecordFormat.BasicAsciiText) {
+    if (policy == DebugFieldsPolicy.StringValue && recordFormat != RecordFormat.AsciiText && recordFormat != RecordFormat.CobrixAsciiText) {
       throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
         "Allowed only for record_format = 'D' or 'D2'.")
     }
@@ -218,13 +218,13 @@ object CobolParametersParser extends Logging {
     val encoding = params.getOrElse(PARAM_ENCODING, "")
     val isEbcdic = {
       if (encoding.isEmpty) {
-        if (recordFormatDefined == AsciiText || recordFormatDefined == BasicAsciiText) {
+        if (recordFormatDefined == AsciiText || recordFormatDefined == CobrixAsciiText) {
           false
         } else {
           true
         }
       } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
-        if (recordFormatDefined == AsciiText || recordFormatDefined == BasicAsciiText) {
+        if (recordFormatDefined == AsciiText || recordFormatDefined == CobrixAsciiText) {
           logger.warn(s"$PARAM_RECORD_FORMAT = D/D2/T and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
         }
         true
@@ -243,9 +243,9 @@ object CobolParametersParser extends Logging {
 
     val variableLengthParams = parseVariableLengthParameters(params, recordFormatDefined)
 
-    val recordFormat = if (recordFormatDefined == AsciiText && variableLengthParams.isEmpty) {
-      logger.info("According to options passed, the fast performing test format (BasicAscii = D2) is used.")
-      BasicAsciiText
+    val recordFormat = if (recordFormatDefined == AsciiText && variableLengthParams.nonEmpty) {
+      logger.info("According to options passed, the custom ASCII parser (record_format = D2) is used.")
+      CobrixAsciiText
     } else {
       recordFormatDefined
     }
@@ -256,7 +256,7 @@ object CobolParametersParser extends Logging {
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,
       recordFormat,
-      recordFormat == BasicAsciiText || recordFormat == AsciiText || params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
+      recordFormat == CobrixAsciiText || recordFormat == AsciiText || params.getOrElse(PARAM_IS_TEXT, "false").toBoolean,
       isEbcdic,
       ebcdicCodePageName,
       ebcdicCodePageClass,
@@ -282,7 +282,7 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean
-    )
+      )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
   }
@@ -296,14 +296,11 @@ object CobolParametersParser extends Logging {
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
     val isHierarchical = params.getMap.keys.exists(k => k.startsWith("segment-children"))
-
-    val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
     val allowPartialRecords = params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean
 
     // Fallback to basic Ascii when the format is 'D' or 'T', but no special Cobrix features are enabled
-    val basicAscii = (recordFormat == AsciiText || recordFormat == BasicAsciiText) && asciiCharset.isEmpty && !allowPartialRecords
-    val variableLengthAscii = recordFormat == AsciiText && !basicAscii
-
+    val basicAscii = !allowPartialRecords && recordFormat == AsciiText
+    val variableLengthAscii = (recordFormat == AsciiText && !basicAscii) || recordFormat == CobrixAsciiText
     val nonTextVariableLengthOccurs = varLenOccursEnabled && !basicAscii
 
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
