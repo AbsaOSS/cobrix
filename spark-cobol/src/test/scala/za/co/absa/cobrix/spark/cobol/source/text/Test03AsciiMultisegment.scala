@@ -64,6 +64,100 @@ class Test03AsciiMultisegment extends AnyWordSpec with SparkTestBase with Binary
       }
     }
 
+    "segment filter is supported" in {
+      val textFileContent: String =
+        Seq(
+          "1Tes  0123456789",
+          "2Test 01234",
+          "1None Data  3   ",
+          "2 on  Data ").mkString("\n")
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("segment_field", "T")
+          .option("segment_filter", "2")
+          .load(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "2", "R1": {"A2": "Test", "A3":"01234"}, "R2": {"B1": "Test", "B2": "01234"} },
+            |  { "T": "2", "R1": {"A2": "on", "A3": "Data"}, "R2": {"B1": "on", "B2": "Data"} }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "segment filter with record offset is supported" in {
+      val textFileContent: String =
+        Seq(
+          "==1Tes  0123456789",
+          "==2Test 01234",
+          "==1None Data  3   ",
+          "==2 on  Data ").mkString("\n")
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("segment_field", "T")
+          .option("segment_filter", "2")
+          .option("record_start_offset", 2)
+          .load(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "2", "R1": {"A2": "Test", "A3":"01234"}, "R2": {"B1": "Test", "B2": "01234"} },
+            |  { "T": "2", "R1": {"A2": "on", "A3": "Data"}, "R2": {"B1": "on", "B2": "Data"} }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
+    "segment filter with one byte segments" in {
+      val textFileContent: String = "1\n2\n1\n2"
+
+      val copybook =
+        """       01  RECORD.
+                 05  T          PIC X(1).
+          """
+
+      withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("segment_field", "T")
+          .option("segment_filter", "2")
+          .load(tmpFileName)
+
+        val expected = removeWhiteSpace(
+          """[
+            |  { "T": "2" },
+            |  { "T": "2" }
+            |]""".stripMargin)
+
+        val actual = removeWhiteSpace(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actual, expected)
+      }
+    }
+
     "Records are separated by CRLF" in {
       val textFileContent: String =
         Seq(

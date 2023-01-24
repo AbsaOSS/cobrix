@@ -42,18 +42,31 @@ class FixedLenNestedRowIterator[T: ClassTag](
                                               singleRecordOnly: Boolean,
                                               handler: RecordHandler[T]
 ) extends Iterator[Seq[Any]] with Logging {
-
   private val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
   private var byteIndex = startOffset
 
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema.copybook)
+  private val segmentIdFilter = readerProperties.multisegment.flatMap(_.segmentIdFilter)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
 
-  override def hasNext: Boolean = if (singleRecordOnly) {
-    byteIndex == startOffset && byteIndex < binaryData.length
-  } else {
-    byteIndex + recordSize <= binaryData.length
+  override def hasNext: Boolean = {
+    val correctOffset = if (singleRecordOnly) {
+      byteIndex == startOffset && byteIndex < binaryData.length
+    } else {
+      byteIndex + recordSize <= binaryData.length
+    }
+    if (segmentIdFilter.isEmpty) {
+      correctOffset
+    } else {
+      segmentIdFilter match {
+        case Some(filter) if correctOffset && segmentIdField.nonEmpty && byteIndex + segmentIdField.get.binaryProperties.offset < binaryData.length =>
+          val segmentId = segmentIdField.get.decodeTypeValue(byteIndex + segmentIdField.get.binaryProperties.offset, binaryData).toString
+          filter.contains(segmentId)
+        case _                                                        =>
+          correctOffset
+      }
+    }
   }
 
   @throws(classOf[IllegalStateException])

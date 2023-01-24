@@ -36,28 +36,16 @@ class Test06EmptySegmentIds extends AnyFunSuite with SparkTestBase with BinaryFi
               10  E                 PIC X(1).
     """
 
-  val binFileContents1: Array[Byte] = Array[Byte](
-    // 'Aa'
-    0x00, 0x00, 0x02, 0x00, 0xC1.toByte, 0x81.toByte,
-    // 'Bb'
-    0x00, 0x00, 0x02, 0x00, 0xC2.toByte, 0x82.toByte,
-    // ' e'
-    0x00, 0x00, 0x02, 0x00, 0x40.toByte, 0x85.toByte
-  )
-
-  val binFileContents2: Array[Byte] = Array[Byte](
-    // 'Aa'
-    0x00, 0x00, 0x02, 0x00, 0xC1.toByte, 0x81.toByte,
-    // 'Bb'
-    0x00, 0x00, 0x02, 0x00, 0xC2.toByte, 0x82.toByte,
-    // ' e'
-    0x00, 0x00, 0x02, 0x00, 0x40.toByte, 0x85.toByte,
-    // 'Dd'
-    0x00, 0x00, 0x02, 0x00, 0xC4.toByte, 0x84.toByte
-  )
-
   test("Test a segment redefine case with an empty segment id") {
-    withTempBinFile("binary", ".dat", binFileContents1) { tmpFileName =>
+    val binFileContents: Array[Byte] = Array[Byte](
+      // 'Aa'
+      0x00, 0x00, 0x02, 0x00, 0xC1.toByte, 0x81.toByte,
+      // 'Bb'
+      0x00, 0x00, 0x02, 0x00, 0xC2.toByte, 0x82.toByte,
+      // ' e'
+      0x00, 0x00, 0x02, 0x00, 0x40.toByte, 0x85.toByte)
+
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
@@ -80,7 +68,17 @@ class Test06EmptySegmentIds extends AnyFunSuite with SparkTestBase with BinaryFi
   }
 
   test("Test a segment redefine case with an empty segment id AND some id") {
-    withTempBinFile("binary", ".dat", binFileContents2) { tmpFileName =>
+    val binFileContents: Array[Byte] = Array[Byte](
+      // 'Aa'
+      0x00, 0x00, 0x02, 0x00, 0xC1.toByte, 0x81.toByte,
+      // 'Bb'
+      0x00, 0x00, 0x02, 0x00, 0xC2.toByte, 0x82.toByte,
+      // ' e'
+      0x00, 0x00, 0x02, 0x00, 0x40.toByte, 0x85.toByte,
+      // 'Dd'
+      0x00, 0x00, 0x02, 0x00, 0xC4.toByte, 0x84.toByte)
+
+    withTempBinFile("binary", ".dat", binFileContents) { tmpFileName =>
       val df = spark
         .read
         .format("cobol")
@@ -102,5 +100,37 @@ class Test06EmptySegmentIds extends AnyFunSuite with SparkTestBase with BinaryFi
     }
   }
 
+  test("Test a segment filter works with empty segment ids") {
+    val binFileContents2: Array[Byte] = Array[Byte](
+      // 'Aa'
+      0xC1.toByte, 0x81.toByte,
+      // 'Bb'
+      0xC2.toByte, 0x82.toByte,
+      // ' e'
+      0x40.toByte, 0x85.toByte,
+      // 'Ad'
+      0xC1.toByte, 0x84.toByte)
 
+    withTempBinFile("binary", ".dat", binFileContents2) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "F")
+        .option("schema_retention_policy", "collapse_root")
+        .option("segment_field", "SEGMENT_ID")
+        .option("segment_filter", "A")
+        .option("redefine_segment_id_map:1", "SEG1 => A")
+        .option("redefine-segment-id-map:2", "SEG2 => B")
+        .option("redefine-segment-id-map:3", "SEG3 => ,D")
+        .load(tmpFileName)
+
+      val expected = """[{"SEGMENT_ID":"A","SEG1":{"A":"a"}},{"SEGMENT_ID":"A","SEG1":{"A":"d"}}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
 }
