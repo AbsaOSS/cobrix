@@ -41,17 +41,19 @@ import scala.collection.mutable.ArrayBuffer
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
+  * @param detailedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
   */
 class CobolSchema(copybook: Copybook,
                   policy: SchemaRetentionPolicy,
                   inputFileNameField: String,
                   generateRecordId: Boolean,
                   generateSegIdFieldsCnt: Int = 0,
-                  segmentIdProvidedPrefix: String = "")
+                  segmentIdProvidedPrefix: String = "",
+                  detailedMetadata: Boolean = false)
   extends CobolReaderSchema(
     copybook, policy, inputFileNameField, generateRecordId,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
-  ) with Logging with Serializable {
+    ) with Logging with Serializable {
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()
@@ -135,13 +137,18 @@ class CobolSchema(copybook: Copybook,
         }
       }
     })
+
     val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
+    val metadata = new MetadataBuilder()
+
+    if (detailedMetadata)
+      addDetailedMetadata(metadata, group)
+
     if (group.isArray) {
-      val metadata = new MetadataBuilder()
       addArrayMetadata(metadata, group)
       StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true, metadata.build())
     } else {
-      StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true)
+      StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true, metadata.build())
     }
   }
 
@@ -149,19 +156,19 @@ class CobolSchema(copybook: Copybook,
   private def parsePrimitive(p: Primitive): StructField = {
     val metadata = new MetadataBuilder()
     val dataType: DataType = p.dataType match {
-      case d: Decimal =>
+      case d: Decimal      =>
         d.compact match {
           case Some(COMP1()) => FloatType
           case Some(COMP2()) => DoubleType
-          case _ => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
+          case _             => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
         }
       case a: AlphaNumeric =>
         addAlphaNumericMetadata(metadata, a)
         a.enc match {
           case Some(RAW) => BinaryType
-          case _ => StringType
+          case _         => StringType
         }
-      case dt: Integral =>
+      case dt: Integral    =>
         if (dt.precision > Constants.maxLongPrecision) {
           DecimalType(precision = dt.precision, scale = 0)
         } else if (dt.precision > Constants.maxIntegerPrecision) {
@@ -170,8 +177,12 @@ class CobolSchema(copybook: Copybook,
         else {
           IntegerType
         }
-      case _ => throw new IllegalStateException("Unknown AST object")
+      case _               => throw new IllegalStateException("Unknown AST object")
     }
+
+    if (detailedMetadata)
+      addDetailedMetadata(metadata, p)
+
     if (p.isArray) {
       addArrayMetadata(metadata, p)
       StructField(p.name, ArrayType(dataType), nullable = true, metadata.build())
@@ -189,16 +200,45 @@ class CobolSchema(copybook: Copybook,
     metadataBuilder.putLong("maxLength", a.length)
   }
 
+  private def addDetailedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
+    metadataBuilder.putLong("level", s.level)
+    s.redefines.foreach(redefines => metadataBuilder.putString("redefines", redefines))
+
+    s match {
+      case p: Primitive => addDetailedPrimitiveMetadata(metadataBuilder, p)
+      case g: Group     => addDetailedGroupMetadata(metadataBuilder, g)
+    }
+
+    metadataBuilder
+  }
+
+  private def addDetailedPrimitiveMetadata(metadataBuilder: MetadataBuilder, p: Primitive): MetadataBuilder = {
+    metadataBuilder.putString("pic", p.dataType.originalPic.getOrElse(p.dataType.pic))
+    p.dataType match {
+      case a: Integral =>
+        a.compact.foreach(usage => metadataBuilder.putString("usage", usage.toString))
+      case a: Decimal  =>
+        a.compact.foreach(usage => metadataBuilder.putString("usage", usage.toString))
+      case _           =>
+    }
+    metadataBuilder
+  }
+
+  private def addDetailedGroupMetadata(metadataBuilder: MetadataBuilder, g: Group): MetadataBuilder = {
+    g.groupUsage.foreach(usage => metadataBuilder.putString("usage", usage.toString))
+    metadataBuilder
+  }
+
   private def getChildSegments(group: Group, segmentRedefines: List[Group]): ArrayBuffer[StructField] = {
     val childSegments = new mutable.ArrayBuffer[StructField]()
 
     segmentRedefines.foreach(segment => {
       segment.parentSegment.foreach(parent => {
-          if (parent.name.equalsIgnoreCase(group.name)) {
-            val child = parseGroup(segment, segmentRedefines)
-            val fields = child.dataType.asInstanceOf[StructType].fields
-            childSegments += StructField(segment.name, ArrayType(StructType(fields)), nullable = true)
-          }
+        if (parent.name.equalsIgnoreCase(group.name)) {
+          val child = parseGroup(segment, segmentRedefines)
+          val fields = child.dataType.asInstanceOf[StructType].fields
+          childSegments += StructField(segment.name, ArrayType(StructType(fields)), nullable = true)
+        }
       })
     })
     childSegments
@@ -221,21 +261,21 @@ class CobolSchema(copybook: Copybook,
           }
         case s: Primitive =>
           val dataType: DataType = s.dataType match {
-            case d: Decimal =>
+            case d: Decimal      =>
               DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
             case a: AlphaNumeric =>
               a.enc match {
                 case Some(RAW) => BinaryType
-                case _ => StringType
+                case _         => StringType
               }
-            case dt: Integral =>
+            case dt: Integral    =>
               if (dt.precision > Constants.maxIntegerPrecision) {
                 LongType
               }
               else {
                 IntegerType
               }
-            case _ => throw new IllegalStateException("Unknown AST object")
+            case _               => throw new IllegalStateException("Unknown AST object")
           }
           val path = s"$structPath" //${group.name}_"
           if (s.isArray) {
@@ -260,7 +300,8 @@ object CobolSchema {
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateSegIdFieldsCnt,
-      schema.segmentIdPrefix
-    )
+      schema.segmentIdPrefix,
+      schema.detailedMetadata
+      )
   }
 }
