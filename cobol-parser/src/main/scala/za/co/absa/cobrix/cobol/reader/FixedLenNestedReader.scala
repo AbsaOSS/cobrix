@@ -148,6 +148,6 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
             readerProperties.debugFieldsPolicy)
         )
       )
-    new CobolSchema(schema, schemaRetentionPolicy, "", false)
+    new CobolSchema(schema, schemaRetentionPolicy, "", false, detailedMetadata = readerProperties.detailedMetadata)
   }
 }

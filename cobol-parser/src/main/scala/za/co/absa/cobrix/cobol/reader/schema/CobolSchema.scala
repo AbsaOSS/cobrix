@@ -33,13 +33,15 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
+  * @param detailedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
   */
 class CobolSchema(val copybook: Copybook,
                   val policy: SchemaRetentionPolicy,
                   val inputFileNameField: String,
                   val generateRecordId: Boolean,
                   val generateSegIdFieldsCnt: Int = 0,
-                  segmentIdProvidedPrefix: String = "") extends Serializable {
+                  val segmentIdProvidedPrefix: String = "",
+                  val detailedMetadata: Boolean = false) extends Serializable {
 
   val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 
