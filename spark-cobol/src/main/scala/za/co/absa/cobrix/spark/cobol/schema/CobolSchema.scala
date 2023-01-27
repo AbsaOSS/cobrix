@@ -202,6 +202,8 @@ class CobolSchema(copybook: Copybook,
 
   private def addDetailedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
     metadataBuilder.putLong("level", s.level)
+    if (s.originalName.nonEmpty && s.originalName != s.name)
+      metadataBuilder.putString("originalName", s.originalName)
     s.redefines.foreach(redefines => metadataBuilder.putString("redefines", redefines))
     s.dependingOn.foreach(dependingOn => metadataBuilder.putString("depending_on", dependingOn))
 

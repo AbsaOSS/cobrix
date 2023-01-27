@@ -28,6 +28,9 @@ trait Statement {
   /** Returns the name of the AST element */
   def name: String
 
+  /** Returns the original name of the AST element (before the conversion to the Spark-compatible name) */
+  def originalName: String
+
   /** Returns the line number in the copybook where the ast object is defined */
   def lineNumber: Int
 

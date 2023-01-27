@@ -390,8 +390,10 @@ object CopybookParser extends Logging {
   /** Transforms the Cobol identifiers to be useful in Spark context. Removes characters an identifier cannot contain. */
   def transformIdentifier(identifier: String): String = {
     identifier
-      .replaceAll(":", "")
-      .replaceAll("-", "_")
+      .replace("-", "_")
+      .replace(":", "")
+      .replace("'", "")
+      .replace("\"", "")
   }
 
   /** Transforms all identifiers in a map to be useful in Spark context. Removes characters an identifier cannot contain. */
