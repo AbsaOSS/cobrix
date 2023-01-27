@@ -214,7 +214,8 @@ class DefaultSource
       varLenParams.recordExtractor,
       varLenParams.rhpAdditionalInfo,
       varLenParams.reAdditionalInfo,
-      varLenParams.inputFileNameColumn
+      varLenParams.inputFileNameColumn,
+      parameters.detailedMetadata
       )
   }
 
