@@ -48,7 +48,7 @@ class ParserVisitor(enc: Encoding,
                     strictSignOverpunch: Boolean,
                     improvedNullDetection: Boolean) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
-  case class IdentifierExpr(value: String) extends Expr
+  case class IdentifierExpr(value: String, originalValue: String) extends Expr
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
   case class UsageExpr(value: Option[Usage]) extends Expr
   case class PicExpr(value: CobolType) extends Expr
@@ -455,11 +455,11 @@ class ParserVisitor(enc: Encoding,
   }
 
   override def visitIdentifier(ctx: copybookParser.IdentifierContext): IdentifierExpr = {
+    val text = ctx.getText
     IdentifierExpr(
-      CopybookParser.transformIdentifier(
-        ctx.getText.replace("'", "").replace("\"", "")
+      CopybookParser.transformIdentifier(text),
+      text
       )
-    )
   }
 
   override def visitOccurs(ctx: copybookParser.OccursContext): OccursExpr = {
@@ -498,6 +498,7 @@ class ParserVisitor(enc: Encoding,
     assert(ctx.values.size() < 2)
 
     val identifier = visitIdentifier(ctx.identifier()).value
+    val originalIdentifier = visitIdentifier(ctx.identifier()).originalValue
 
     val redefines: Option[String] = ctx.redefines().asScala.toList match {
       case Nil => None
@@ -517,6 +518,7 @@ class ParserVisitor(enc: Encoding,
     val grp = Group(
       section,
       identifier,
+      originalIdentifier,
       ctx.start.getLine,
       mutable.ArrayBuffer(),
       redefines,
@@ -777,6 +779,7 @@ class ParserVisitor(enc: Encoding,
     assert(ctx.pic.size() == 1)
 
     val identifier = visitIdentifier(ctx.identifier()).value
+    val originalIdentifier = visitIdentifier(ctx.identifier()).originalValue
 
     var pic: PicExpr = visitPic(ctx.pic(0))
 
@@ -810,6 +813,7 @@ class ParserVisitor(enc: Encoding,
     val prim = Primitive(
       section,
       identifier,
+      originalIdentifier,
       ctx.start.getLine,
       pic.value,
       redefines,

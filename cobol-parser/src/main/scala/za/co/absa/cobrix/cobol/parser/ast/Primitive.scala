@@ -21,18 +21,20 @@ import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
-  * @param level       A level for the statement
-  * @param name        An identifier
-  * @param lineNumber  An line number in the copybook
-  * @param redefines   A name of a field which is redefined by this one
-  * @param occurs      The number of elements in an fixed size array / minimum items in variable-sized array
-  * @param to          The maximum number of items in a variable size array
-  * @param dependingOn A field which specifies size of the array in a record
-  * @param parent      A parent node
+  * @param level        A level for the statement
+  * @param name         An identifier
+  * @param originalName Original name of the AST element (before the conversion to the Spark-compatible name)
+  * @param lineNumber   An line number in the copybook
+  * @param redefines    A name of a field which is redefined by this one
+  * @param occurs       The number of elements in an fixed size array / minimum items in variable-sized array
+  * @param to           The maximum number of items in a variable size array
+  * @param dependingOn  A field which specifies size of the array in a record
+  * @param parent       A parent node
   */
 case class Primitive(
                       level: Int,
                       name: String,
+                      originalName: String,
                       lineNumber: Int,
                       dataType: CobolType,
                       redefines: Option[String] = None,

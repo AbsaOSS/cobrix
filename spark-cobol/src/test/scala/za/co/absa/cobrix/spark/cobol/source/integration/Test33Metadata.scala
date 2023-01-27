@@ -96,6 +96,10 @@ class Test33Metadata extends AnyWordSpec with SparkTestBase with BinaryFileFixtu
         assert(pGroupField1.metadata.getString("usage") == "COMP-3")
         assert(pGroupField2.metadata.getString("usage") == "COMP-3")
         assert(pGroupField2.metadata.getString("redefines") == "FLD1")
+
+        assert(pGroupFld.metadata.getString("originalName") == "P-GROUP")
+        assert(innerGroupFld.metadata.getString("originalName") == "INNER-GROUP")
+        assert(innerCountFld.metadata.getString("originalName") == "INNER-COUNT")
       }
     }
   }

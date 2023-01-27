@@ -77,7 +77,7 @@ class NonTerminalsAdder(
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(
-                g.level, newName, g.lineNumber,
+                g.level, newName, "", g.lineNumber,
                 dataType,
                 redefines = Some(g.name),
                 decode = decode,

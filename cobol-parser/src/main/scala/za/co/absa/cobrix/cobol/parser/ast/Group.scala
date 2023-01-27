@@ -24,6 +24,7 @@ import scala.collection.mutable
   *
   * @param level             A level for the statement
   * @param name              An identifier
+  * @param originalName      Original name of the AST element (before the conversion to the Spark-compatible name)
   * @param lineNumber        An line number in the copybook
   * @param children          Child entities
   * @param redefines         A name of a field which is redefined by this one
@@ -42,6 +43,7 @@ import scala.collection.mutable
 case class Group(
                   level: Int,
                   name: String,
+                  originalName: String,
                   lineNumber: Int,
                   children: mutable.ArrayBuffer[Statement] = mutable.ArrayBuffer(),
                   redefines: Option[String] = None,
@@ -113,5 +115,5 @@ case class Group(
 }
 
 object Group {
-  val root: Group = Group(level=0, name="_ROOT_", lineNumber = -1)()
+  val root: Group = Group(level=0, name="_ROOT_", originalName = "_ROOT_", lineNumber = -1)()
 }
