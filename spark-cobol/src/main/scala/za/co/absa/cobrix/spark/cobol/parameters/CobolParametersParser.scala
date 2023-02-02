@@ -216,31 +216,11 @@ object CobolParametersParser extends Logging {
 
     val recordFormatDefined = getRecordFormat(params)
 
-    val encoding = params.getOrElse(PARAM_ENCODING, "")
-    val isEbcdic = {
-      if (encoding.isEmpty) {
-        if (recordFormatDefined == AsciiText || recordFormatDefined == CobrixAsciiText) {
-          false
-        } else {
-          true
-        }
-      } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
-        if (recordFormatDefined == AsciiText || recordFormatDefined == CobrixAsciiText) {
-          logger.warn(s"$PARAM_RECORD_FORMAT = D/D2/T and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
-        }
-        true
-      } else {
-        if (encoding.compareToIgnoreCase("ascii") == 0) {
-          false
-        } else {
-          throw new IllegalArgumentException(s"Invalid value '$encoding' for '$PARAM_ENCODING' option. Should be either 'EBCDIC' or 'ASCII'.")
-        }
-      }
-    }
+    val isEbcdic = getIsEbcdic(params, recordFormatDefined)
 
     val pathsParam = getParameter(PARAM_SOURCE_PATHS, params).orElse(getParameter(PARAM_SOURCE_PATHS_LEGACY, params))
 
-    val paths = pathsParam.map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).get))
+    val paths = pathsParam.map(_.split(',')).getOrElse(Array(getParameter(PARAM_SOURCE_PATH, params).getOrElse("")))
 
     val variableLengthParams = parseVariableLengthParameters(params, recordFormatDefined)
 
@@ -287,6 +267,31 @@ object CobolParametersParser extends Logging {
       )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
+  }
+
+  def getIsEbcdic(params: Parameters, recordFormat: RecordFormat): Boolean = {
+    val encoding = params.getOrElse(PARAM_ENCODING, "")
+    val isEbcdic = {
+      if (encoding.isEmpty) {
+        if (recordFormat == AsciiText || recordFormat == CobrixAsciiText) {
+          false
+        } else {
+          true
+        }
+      } else if (encoding.compareToIgnoreCase("ebcdic") == 0) {
+        if (recordFormat == AsciiText || recordFormat == CobrixAsciiText) {
+          logger.warn(s"$PARAM_RECORD_FORMAT = D/D2/T and $PARAM_ENCODING = $encoding are used together. Most of the time the encoding should be ASCII for text files.")
+        }
+        true
+      } else {
+        if (encoding.compareToIgnoreCase("ascii") == 0) {
+          false
+        } else {
+          throw new IllegalArgumentException(s"Invalid value '$encoding' for '$PARAM_ENCODING' option. Should be either 'EBCDIC' or 'ASCII'.")
+        }
+      }
+    }
+    isEbcdic
   }
 
   private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
