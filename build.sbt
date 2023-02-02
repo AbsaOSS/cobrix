@@ -75,14 +75,15 @@ lazy val cobolParser = (project in file("cobol-parser"))
 lazy val cobolConverters = (project in file("cobol-converters"))
   .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings(
-      name := "cobol-converters",
-      libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
-      releasePublishArtifactsAction := PgpKeys.publishSigned.value
-  )
-  .settings(
+    name := "cobol-converters",
+    libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
+    // No need to publish this artifact since it has test only at the moment
+    publishArtifact := false,
+    publish := {},
+    publishLocal := {},
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-converters Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
-  ).dependsOn(cobolParser)
+    ).dependsOn(cobolParser)
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkCobol = (project in file("spark-cobol"))
