@@ -16,19 +16,18 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters, VariableLengthParameters}
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.spark.cobol.reader._
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters._
-import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, HDFSUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, SparkUtils}
 
 /**
   * This class represents a Cobol data source.
@@ -85,6 +84,7 @@ class DefaultSource
   private def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     val charsetOpt = if (parameters.asciiCharset.isEmpty) None else Option(parameters.asciiCharset)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
     new FixedLenTextReader(copybookContent,
       parameters.isEbcdic,
       getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
@@ -99,7 +99,7 @@ class DefaultSource
       parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,
-      getReaderProperties(parameters, spark)
+      getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
 
@@ -109,6 +109,7 @@ class DefaultSource
   private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
     new FixedLenNestedReader(copybookContent,
       parameters.isEbcdic,
       getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
@@ -122,7 +123,7 @@ class DefaultSource
       parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,
-      getReaderProperties(parameters, spark)
+      getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
 
@@ -135,100 +136,10 @@ class DefaultSource
 
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
     new VarLenNestedReader(
-      copybookContent, getReaderProperties(parameters, spark)
-
+      copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )
-  }
-
-  private def getReaderProperties(parameters: CobolParameters, spark: SparkSession): ReaderParameters = {
-    val varLenParams: VariableLengthParameters = parameters.variableLengthParams
-      .getOrElse(
-        VariableLengthParameters(isRecordSequence = false,
-          None,
-          isRdwBigEndian = false,
-          isRdwPartRecLength = false,
-          rdwAdjustment = 0,
-          recordHeaderParser = None,
-          recordExtractor = None,
-          rhpAdditionalInfo = None,
-          reAdditionalInfo = "",
-          recordLengthField = "",
-          fileStartOffset = 0,
-          fileEndOffset = 0,
-          generateRecordId = false,
-          isUsingIndex = false,
-          inputSplitRecords = None,
-          inputSplitSizeMB = None,
-          improveLocality = false,
-          optimizeAllocation = false,
-          inputFileNameColumn = "",
-          parameters.occursMappings)
-      )
-
-    val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
-      Some(varLenParams.recordLengthField)
-    else
-      None
-
-    ReaderParameters(
-      recordFormat = parameters.recordFormat,
-      isEbcdic = parameters.isEbcdic,
-      isText = parameters.isText,
-      ebcdicCodePage = parameters.ebcdicCodePage,
-      ebcdicCodePageClass = parameters.ebcdicCodePageClass,
-      asciiCharset = parameters.asciiCharset,
-      isUtf16BigEndian = parameters.isUtf16BigEndian,
-      floatingPointFormat = parameters.floatingPointFormat,
-      variableSizeOccurs = parameters.variableSizeOccurs,
-      recordLength = parameters.recordLength,
-      lengthFieldExpression = recordLengthField,
-      isRecordSequence = varLenParams.isRecordSequence,
-      bdw = varLenParams.bdw,
-      isRdwBigEndian = varLenParams.isRdwBigEndian,
-      isRdwPartRecLength = varLenParams.isRdwPartRecLength,
-      rdwAdjustment = varLenParams.rdwAdjustment,
-      isIndexGenerationNeeded = varLenParams.isUsingIndex,
-      inputSplitRecords = varLenParams.inputSplitRecords,
-      inputSplitSizeMB = varLenParams.inputSplitSizeMB,
-      hdfsDefaultBlockSize = getDefaultHdfsBlockSize(spark),
-      startOffset = parameters.recordStartOffset,
-      endOffset = parameters.recordEndOffset,
-      fileStartOffset = varLenParams.fileStartOffset,
-      fileEndOffset = varLenParams.fileEndOffset,
-      generateRecordId = varLenParams.generateRecordId,
-      schemaPolicy = parameters.schemaRetentionPolicy,
-      stringTrimmingPolicy = parameters.stringTrimmingPolicy,
-      allowPartialRecords = parameters.allowPartialRecords,
-      parameters.multisegmentParams,
-      parameters.commentPolicy,
-      parameters.strictSignOverpunch,
-      parameters.improvedNullDetection,
-      parameters.dropGroupFillers,
-      parameters.dropValueFillers,
-      parameters.fillerNamingPolicy,
-      parameters.nonTerminals,
-      parameters.occursMappings,
-      parameters.debugFieldsPolicy,
-      varLenParams.recordHeaderParser,
-      varLenParams.recordExtractor,
-      varLenParams.rhpAdditionalInfo,
-      varLenParams.reAdditionalInfo,
-      varLenParams.inputFileNameColumn,
-      parameters.detailedMetadata
-      )
-  }
-
-  private def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {
-    val conf = spark.sparkContext.hadoopConfiguration
-    val fileSystem = FileSystem.get(conf)
-    val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
-    hdfsBlockSize match {
-      case None => logger.info(s"Unable to get HDFS default block size.")
-      case Some(size) => logger.info(s"HDFS default block size = $size MB.")
-    }
-
-    hdfsBlockSize
   }
 
   private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {

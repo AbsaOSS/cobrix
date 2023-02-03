@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
-import za.co.absa.cobrix.cobol.reader.parameters.{Bdw, CobolParameters, MultisegmentParameters, VariableLengthParameters}
+import za.co.absa.cobrix.cobol.reader.parameters._
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -292,6 +292,84 @@ object CobolParametersParser extends Logging {
       }
     }
     isEbcdic
+  }
+
+  def getReaderProperties(parameters: CobolParameters, defaultBlockSize: Option[Int]): ReaderParameters = {
+    val varLenParams: VariableLengthParameters = parameters.variableLengthParams
+      .getOrElse(
+        VariableLengthParameters(isRecordSequence = false,
+                                 None,
+                                 isRdwBigEndian = false,
+                                 isRdwPartRecLength = false,
+                                 rdwAdjustment = 0,
+                                 recordHeaderParser = None,
+                                 recordExtractor = None,
+                                 rhpAdditionalInfo = None,
+                                 reAdditionalInfo = "",
+                                 recordLengthField = "",
+                                 fileStartOffset = 0,
+                                 fileEndOffset = 0,
+                                 generateRecordId = false,
+                                 isUsingIndex = false,
+                                 inputSplitRecords = None,
+                                 inputSplitSizeMB = None,
+                                 improveLocality = false,
+                                 optimizeAllocation = false,
+                                 inputFileNameColumn = "",
+                                 parameters.occursMappings)
+        )
+
+    val recordLengthField = if (varLenParams.recordLengthField.nonEmpty)
+      Some(varLenParams.recordLengthField)
+    else
+      None
+
+    ReaderParameters(
+      recordFormat = parameters.recordFormat,
+      isEbcdic = parameters.isEbcdic,
+      isText = parameters.isText,
+      ebcdicCodePage = parameters.ebcdicCodePage,
+      ebcdicCodePageClass = parameters.ebcdicCodePageClass,
+      asciiCharset = parameters.asciiCharset,
+      isUtf16BigEndian = parameters.isUtf16BigEndian,
+      floatingPointFormat = parameters.floatingPointFormat,
+      variableSizeOccurs = parameters.variableSizeOccurs,
+      recordLength = parameters.recordLength,
+      lengthFieldExpression = recordLengthField,
+      isRecordSequence = varLenParams.isRecordSequence,
+      bdw = varLenParams.bdw,
+      isRdwBigEndian = varLenParams.isRdwBigEndian,
+      isRdwPartRecLength = varLenParams.isRdwPartRecLength,
+      rdwAdjustment = varLenParams.rdwAdjustment,
+      isIndexGenerationNeeded = varLenParams.isUsingIndex,
+      inputSplitRecords = varLenParams.inputSplitRecords,
+      inputSplitSizeMB = varLenParams.inputSplitSizeMB,
+      hdfsDefaultBlockSize = defaultBlockSize,
+      startOffset = parameters.recordStartOffset,
+      endOffset = parameters.recordEndOffset,
+      fileStartOffset = varLenParams.fileStartOffset,
+      fileEndOffset = varLenParams.fileEndOffset,
+      generateRecordId = varLenParams.generateRecordId,
+      schemaPolicy = parameters.schemaRetentionPolicy,
+      stringTrimmingPolicy = parameters.stringTrimmingPolicy,
+      allowPartialRecords = parameters.allowPartialRecords,
+      parameters.multisegmentParams,
+      parameters.commentPolicy,
+      parameters.strictSignOverpunch,
+      parameters.improvedNullDetection,
+      parameters.dropGroupFillers,
+      parameters.dropValueFillers,
+      parameters.fillerNamingPolicy,
+      parameters.nonTerminals,
+      parameters.occursMappings,
+      parameters.debugFieldsPolicy,
+      varLenParams.recordHeaderParser,
+      varLenParams.recordExtractor,
+      varLenParams.rhpAdditionalInfo,
+      varLenParams.reAdditionalInfo,
+      varLenParams.inputFileNameColumn,
+      parameters.detailedMetadata
+      )
   }
 
   private def parseVariableLengthParameters(params: Parameters, recordFormat: RecordFormat): Option[VariableLengthParameters] = {
