@@ -20,11 +20,14 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters}
 import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
+import java.nio.charset.{Charset, StandardCharsets}
 import scala.collection.mutable
 
 class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSession) {
@@ -52,15 +55,41 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
     getDataFrame(rddText.map(_.getBytes()), params)
   }
 
-  private [cobol] def getDataFrame(rdd: RDD[Array[Byte]], params: RddReaderParams): DataFrame = {
-    val parsedCopybook = CopybookParser.parse(copybookContent, dataEncoding = params.encoding, asciiCharset = params.asciiCharset)
+  private[cobol] def getDataFrame(rdd: RDD[Array[Byte]], readerParams: ReaderParameters): DataFrame = {
+    val encoding = if (readerParams.isEbcdic) EBCDIC else ASCII
+    val asciiCharset = if (readerParams.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerParams.asciiCharset)
+    val segmentRedefines = readerParams.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
 
-    val cobolSchema = new CobolSchema(parsedCopybook, params.schemaRetentionPolicy, "", false)
+    val parsedCopybook = CopybookParser.parse(copyBookContents = copybookContent,
+                                              dataEncoding = encoding,
+                                              dropGroupFillers = readerParams.dropGroupFillers,
+                                              dropValueFillers = readerParams.dropValueFillers,
+                                              fillerNamingPolicy = readerParams.fillerNamingPolicy,
+                                              segmentRedefines = segmentRedefines,
+                                              fieldParentMap = readerParams.multisegment.map(_.fieldParentMap).getOrElse(Map.empty),
+                                              stringTrimmingPolicy = readerParams.stringTrimmingPolicy,
+                                              commentPolicy = readerParams.commentPolicy,
+                                              strictSignOverpunch = readerParams.strictSignOverpunch,
+                                              improvedNullDetection = readerParams.improvedNullDetection,
+                                              ebcdicCodePage = getCodePage(readerParams.ebcdicCodePage, readerParams.ebcdicCodePageClass),
+                                              asciiCharset = asciiCharset,
+                                              isUtf16BigEndian = readerParams.isUtf16BigEndian,
+                                              floatingPointFormat = readerParams.floatingPointFormat,
+                                              nonTerminals = readerParams.nonTerminals,
+                                              occursHandlers = readerParams.occursMappings,
+                                              debugFieldsPolicy = readerParams.debugFieldsPolicy
+                                              )
+
+    val cobolSchema = new CobolSchema(parsedCopybook,
+                                      readerParams.schemaPolicy,
+                                      inputFileNameField = "",
+                                      generateRecordId = false,
+                                      detailedMetadata = readerParams.detailedMetadata)
     val sparkSchema = cobolSchema.getSparkSchema
 
     val recordHandler = new RowHandler()
 
-    val schemaRetentionPolicy = params.schemaRetentionPolicy
+    val schemaRetentionPolicy = readerParams.schemaPolicy
 
     val rddRow = rdd
       .filter(array => array.nonEmpty)
@@ -73,5 +102,12 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
       })
 
     spark.createDataFrame(rddRow, sparkSchema)
+  }
+
+  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
+    codePageClass match {
+      case Some(c) => CodePage.getCodePageByClass(c)
+      case None    => CodePage.getCodePageByName(codePageName)
+    }
   }
 }
