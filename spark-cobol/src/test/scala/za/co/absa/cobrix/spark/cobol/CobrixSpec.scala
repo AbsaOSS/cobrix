@@ -17,44 +17,82 @@
 package za.co.absa.cobrix.spark.cobol
 
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-class CobrixSpec extends AnyWordSpec with SparkTestBase {
-  import spark.implicits._
+class CobrixSpec extends AnyWordSpec with SparkTestBase with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   "fromRdd" should {
+    val copybook: String =
+      """       01  RECORD.
+        |         05  FIELD1                  PIC X(2).
+        |         05  FIELD2                  PIC X(1).
+        |""".stripMargin
+
     "read an RDD of strings" in {
-      val copyBook: String =
-        """       01  RECORD.
-          |         05  FIELD1                  PIC X(2).
-          |         05  FIELD2                  PIC X(1).
+      val expected =
+        """[ {
+          |  "RECORD" : {
+          |    "FIELD1" : "Š",
+          |    "FIELD2" : "B"
+          |  }
+          |}, {
+          |  "RECORD" : {
+          |    "FIELD1" : "DE",
+          |    "FIELD2" : "F"
+          |  }
+          |}, {
+          |  "RECORD" : {
+          |    "FIELD1" : "GH",
+          |    "FIELD2" : "I"
+          |  }
+          |} ]
           |""".stripMargin
 
-      val rdd = spark.sparkContext.parallelize(Seq("ЇBC", "DEF", "GHI"))
+      val rdd = spark.sparkContext.parallelize(Seq("ŠBC", "DEF", "GHI"))
 
       val df = Cobrix.fromRdd
-        .copybookContents(copyBook)
-        //.option("schema_retention_policy", "keep_original")
+        .copybookContents(copybook)
+        .option("schema_retention_policy", "keep_original")
         .loadText(rdd)
 
-      df.show()
+      val actual = SparkUtils.convertDataFrameToPrettyJSON(df)
+
+      assertEqualsMultiline(actual, expected)
     }
 
     "read an RDD of byte arrays" in {
-      val copyBook: String =
-        """       01  RECORD.
-          |         05  FIELD1                  PIC X(2).
-          |         05  FIELD2                  PIC X(1).
+      val expected =
+        """[ {
+          |  "FIELD1" : "AB",
+          |  "FIELD2" : "C"
+          |}, {
+          |  "FIELD1" : "DE",
+          |  "FIELD2" : "F"
+          |}, {
+          |  "FIELD1" : "GH",
+          |  "FIELD2" : "I"
+          |} ]
           |""".stripMargin
 
-      val rdd = spark.sparkContext.parallelize(Seq("ЇBC", "DEF", "GHI")).map(_.getBytes)
+      val data = Seq(
+        Array(0xC1, 0xC2, 0xC3),
+        Array(0xC4, 0xC5, 0xC6),
+        Array(0xC7, 0xC8, 0xC9)
+      ).map(_.map(_.toByte))
+
+      val rdd = spark.sparkContext.parallelize(data)
 
       val df = Cobrix.fromRdd
-        .copybookContents(copyBook)
+        .copybookContents(copybook)
         .option("encoding", "ebcdic")
         .load(rdd)
 
-      df.show()
+      val actual = SparkUtils.convertDataFrameToPrettyJSON(df)
+
+      assertEqualsMultiline(actual, expected)
     }
   }
 }

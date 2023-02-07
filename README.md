@@ -703,6 +703,38 @@ fully qualified class name to the following option:
 .option("record_header_parser", "com.example.record.header.parser")
 ```
 
+### RDDs
+This feature is experimental and will be available in `2.6.4`.
+
+Cobrix provides helper methods to convert `RDD[String]` or `RDD[Array[Byte]]` to `DataFrame` using a copybook.
+This can be used if you want to use a custom logic to split the input file into records as either ASCII strings
+or arrays of bytes, and then parse each record using a copybook.
+
+An example of `RDD[Array[Byte]]`:
+```scala
+import za.co.absa.cobrix.spark.cobol.Cobrix
+
+val rdd = ???
+val df = Cobrix.fromRdd
+    .copybookContents(copybook)
+    .option("encoding", "ebcdic") // any supported option 
+    .load(rdd)
+```
+
+An example of ASCII Strings `RDD[String]`:
+```scala
+import za.co.absa.cobrix.spark.cobol.Cobrix
+
+val rdd = ???
+val df = Cobrix.fromRdd
+    .copybookContents(copybook)
+    .option("variable_size_occurs", "true") // any supported option 
+    .loadText(rdd)
+```
+
+When converting from an RDD some of the options like `record_format` or `generate_record_id` cannot be used since the
+data is assumed to be already split by records and the information about file names and relative order of records is not available.
+
 ## Reading ASCII text file
 Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
 
@@ -718,18 +750,17 @@ Working example 1:
       .load(tmpFileName)
 ````
 
-Working example 2:
+Working example 2 - Using RDDs and helper methods:
 ```scala
-    // This is the way to get better performance, but the charset will always be UTF-8
-    val df = spark
-      .read
-      .format("cobol")
-      .option("copybook_contents", copybook)
-      .option("record_format", "D2")
-      .load(tmpFileName)
+    // This is the way if you have data converted to an RDD[String] already.
+    // You have full control on reading the input data records and converting them to `java.lang.String`.
+    val df = Cobrix.fromRdd
+        .copybookContents(copybook)
+        .option("variable_size_occurs", "true") // any supported option 
+        .loadText(rdd)
 ````
 
-Working example 3:
+Working example 3 - Using RDDs and record parsers directly:
 ```scala
     // This is the most verbose way - creating dataframes from RDDs. But it gives full control on how text files are
     // processed before parsing actual records
@@ -1554,6 +1585,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.4 will be released soon.
+   - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
+
 - #### 2.6.3 released 1 February 2023.
    - [#550](https://github.com/AbsaOSS/cobrix/issues/550) Added `.option("detailed_metadata", true)` option that adds many additional metadata fields (PIC, USAGE, etc) to the generated Spark schema.
    - [#567](https://github.com/AbsaOSS/cobrix/issues/567) Added support for new code pages 838, 870, 1025 (Thanks [@sree018](https://github.com/sree018)).
