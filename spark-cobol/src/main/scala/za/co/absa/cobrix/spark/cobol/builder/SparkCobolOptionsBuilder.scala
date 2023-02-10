@@ -77,7 +77,8 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
                                               floatingPointFormat = readerParams.floatingPointFormat,
                                               nonTerminals = readerParams.nonTerminals,
                                               occursHandlers = readerParams.occursMappings,
-                                              debugFieldsPolicy = readerParams.debugFieldsPolicy
+                                              debugFieldsPolicy = readerParams.debugFieldsPolicy,
+                                              fieldCodePageMap = readerParams.fieldCodePage
                                               )
 
     val cobolSchema = new CobolSchema(parsedCopybook,

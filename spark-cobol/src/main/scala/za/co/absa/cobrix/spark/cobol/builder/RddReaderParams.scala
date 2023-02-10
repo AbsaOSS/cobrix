@@ -43,6 +43,10 @@ object RddReaderParams {
       (PARAM_ENCODING -> "ascii") +
       (PARAM_ASCII_CHARSET -> "utf8")
 
+    if (options.keys.exists(_.startsWith(PARAM_FIELD_CODE_PAGE_PREFIX))) {
+      throw new IllegalArgumentException(s"Code page mapping using '$PARAM_FIELD_CODE_PAGE_PREFIX*' is not supported with text RDD reader. Use forBinary()")
+    }
+
     forBinary(textOptions)
   }
 
