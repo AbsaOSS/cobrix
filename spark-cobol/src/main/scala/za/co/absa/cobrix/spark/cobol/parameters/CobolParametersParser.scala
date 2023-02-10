@@ -81,6 +81,7 @@ object CobolParametersParser extends Logging {
   val PARAM_STRICT_SIGN_OVERPUNCHING  = "strict_sign_overpunching"
   val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
   val PARAM_ALLOW_PARTIAL_RECORDS     = "allow_partial_records"
+  val PARAM_FIELD_CODE_PAGE_PREFIX    = "field_code_page:"
 
   // Parameters for multisegment variable length files
   val PARAM_RECORD_FORMAT             = "record_format"
@@ -242,6 +243,7 @@ object CobolParametersParser extends Logging {
       ebcdicCodePageName,
       ebcdicCodePageClass,
       asciiCharset,
+      getFieldCodepageMap(params),
       params.getOrElse(PARAM_IS_UTF16_BIG_ENDIAN, "true").toBoolean,
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
@@ -294,6 +296,34 @@ object CobolParametersParser extends Logging {
     isEbcdic
   }
 
+  def getFieldCodepageMap(parameters: Parameters): Map[String, String] = {
+    val entries = parameters
+      .getMap
+      .keys
+      .filter(_.startsWith(PARAM_FIELD_CODE_PAGE_PREFIX))
+
+    entries.flatMap { key =>
+      val idx = key.indexOf(':')
+      if (idx >= 0) {
+        val codePage = key.substring(idx + 1).trim
+        val fieldsStr = parameters.get(key).get
+
+        if (codePage.isEmpty) {
+          logger.warn(s"Incorrect code page name for the option '$key' -> '$fieldsStr'.")
+          Array.empty[(String, String)]
+        } else {
+          val fields = fieldsStr.split(',').map(fld =>
+                                                  CopybookParser.transformIdentifier(fld.trim.toLowerCase)
+                                                ).filter(_.nonEmpty)
+
+          fields.map(field => (field, codePage))
+        }
+      } else {
+        Array.empty[(String, String)]
+      }
+    }.toMap
+  }
+
   def getReaderProperties(parameters: CobolParameters, defaultBlockSize: Option[Int]): ReaderParameters = {
     val varLenParams: VariableLengthParameters = parameters.variableLengthParams
       .getOrElse(
@@ -331,6 +361,7 @@ object CobolParametersParser extends Logging {
       ebcdicCodePage = parameters.ebcdicCodePage,
       ebcdicCodePageClass = parameters.ebcdicCodePageClass,
       asciiCharset = parameters.asciiCharset,
+      fieldCodePage = parameters.fieldCodePage,
       isUtf16BigEndian = parameters.isUtf16BigEndian,
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = parameters.variableSizeOccurs,

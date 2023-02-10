@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.antlr
 
 import java.nio.charset.Charset
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
+import sun.nio.cs.StandardCharsets
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
@@ -26,7 +27,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{Encoding, UTF16}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, UTF16}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -46,7 +47,8 @@ class ParserVisitor(enc: Encoding,
                     isUtf16BigEndian: Boolean,
                     floatingPointFormat: FloatingPointFormat,
                     strictSignOverpunch: Boolean,
-                    improvedNullDetection: Boolean) extends copybookParserBaseVisitor[Expr] {
+                    improvedNullDetection: Boolean,
+                    fieldCodePageMap: Map[String, String]) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String, originalValue: String) extends Expr
   case class OccursExpr(m: Int, M: Option[Int], dep: Option[String]) extends Expr
@@ -810,6 +812,21 @@ class ParserVisitor(enc: Encoding,
 
     checkBounds(ctx.pic(0), pic)
 
+    val identifierLowercase = identifier.toLowerCase()
+    val effectiveEbcdicCodePage = if (enc == EBCDIC && fieldCodePageMap.contains(identifierLowercase)) {
+      val codePageStr = fieldCodePageMap(identifierLowercase)
+      CodePage.getCodePageByName(codePageStr)
+    } else {
+      ebcdicCodePage
+    }
+
+    val effectiveAsciiCharset = if (enc == ASCII && fieldCodePageMap.contains(identifierLowercase)) {
+      val charsetStr = fieldCodePageMap(identifierLowercase)
+      Charset.forName(charsetStr)
+    } else {
+      asciiCharset
+    }
+
     val prim = Primitive(
       section,
       identifier,
@@ -824,7 +841,7 @@ class ParserVisitor(enc: Encoding,
       Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
       ) (Some(parent))
 
     parent.children.append(prim)

@@ -60,8 +60,9 @@ object ANTLRParser extends Logging {
             ebcdicCodePage: CodePage,
             asciiCharset: Charset,
             isUtf16BigEndian: Boolean,
-            floatingPointFormat: FloatingPointFormat): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+            floatingPointFormat: FloatingPointFormat,
+            fieldCodePageMap: Map[String, String]): CopybookAST = {
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, fieldCodePageMap)
 
     val strippedContents = filterSpecialCharacters(copyBookContents).split("\\r?\\n").map(
       line =>

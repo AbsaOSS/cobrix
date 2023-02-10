@@ -141,7 +141,8 @@ object CopybookParser extends Logging {
             floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
             nonTerminals: Seq[String] = Nil,
             occursHandlers: Map[String, Map[String, Int]] = Map(),
-            debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug): Copybook = {
+            debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
+            fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
     parseTree(dataEncoding,
       copyBookContents,
       dropGroupFillers,
@@ -159,7 +160,8 @@ object CopybookParser extends Logging {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
-      debugFieldsPolicy)
+      debugFieldsPolicy,
+      fieldCodePageMap)
   }
 
   /**
@@ -199,7 +201,8 @@ object CopybookParser extends Logging {
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil,
                 occursHandlers: Map[String, Map[String, Int]] = Map(),
-                debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug): Copybook = {
+                debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
+                fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
     parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
@@ -217,7 +220,8 @@ object CopybookParser extends Logging {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
-      debugFieldsPolicy)
+      debugFieldsPolicy,
+      fieldCodePageMap)
   }
 
   /**
@@ -260,9 +264,10 @@ object CopybookParser extends Logging {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String],
                 occursHandlers: Map[String, Map[String, Int]],
-                debugFieldsPolicy: DebugFieldsPolicy): Copybook = {
+                debugFieldsPolicy: DebugFieldsPolicy,
+                fieldCodePageMap: Map[String, String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)

@@ -84,4 +84,21 @@ class ParametersParsingSpec extends AnyFunSuite {
     assert(ex.getMessage == "Duplicate child 'EMPLOYEE' for parents DEPT_ROOT and COMPANY_ROOT specified for 'segment-children' option.")
   }
 
+  test("Test getFieldCodepageMap() generating a proper map") {
+    val myMap = Map("copybook" -> "something",
+                    "field_code_page" -> "dummy1",
+                    "field_code_page:" -> "dummy2",
+                    "field_code_page:cp1256" -> "FIELD1",
+                    "field_code_page:us-ascii" -> " FIELD-2 , FIELD_3 "
+                    )
+    val params = new Parameters(myMap)
+
+    val fieldCodaPageMap = CobolParametersParser.getFieldCodepageMap(params)
+
+    assert(fieldCodaPageMap.size == 3)
+    assert(fieldCodaPageMap("field1") == "cp1256")
+    assert(fieldCodaPageMap("field_2") == "us-ascii")
+    assert(fieldCodaPageMap("field_3") == "us-ascii")
+  }
+
 }

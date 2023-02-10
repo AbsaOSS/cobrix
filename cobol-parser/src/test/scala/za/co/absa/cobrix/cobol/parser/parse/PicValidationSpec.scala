@@ -39,7 +39,8 @@ class PicValidationSpec extends AnyFunSuite {
       isUtf16BigEndian = true,
       FloatingPointFormat.IBM,
       strictSignOverpunch = true,
-      improvedNullDetection = false)
+      improvedNullDetection = false,
+      fieldCodePageMap = Map.empty)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
     val lexer = new copybookLexer(charStream)

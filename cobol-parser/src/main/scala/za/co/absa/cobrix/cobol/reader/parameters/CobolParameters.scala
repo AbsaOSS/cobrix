@@ -36,6 +36,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param ebcdicCodePage         Specifies what code page to use for EBCDIC to ASCII/Unicode conversions
   * @param ebcdicCodePageClass    An optional custom code page conversion class provided by a user
   * @param asciiCharset           A charset for ASCII data
+  * @param fieldCodePage          Specifies a mapping between a field name and the code page
   * @param isUtf16BigEndian       If true UTF-16 is considered big-endian.
   * @param floatingPointFormat    A format of floating-point numbers
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
@@ -67,6 +68,7 @@ case class CobolParameters(
                             ebcdicCodePage:        String,
                             ebcdicCodePageClass:   Option[String],
                             asciiCharset:          String,
+                            fieldCodePage:         Map[String, String],
                             isUtf16BigEndian:      Boolean,
                             floatingPointFormat:   FloatingPointFormat,
                             recordStartOffset:     Int,
