@@ -38,8 +38,8 @@ class Test33Metadata extends AnyWordSpec with SparkTestBase with BinaryFileFixtu
                                   DEPENDING ON INNER-COUNT.
                   04 FIELD PIC X.
             02 P-GROUP COMP-3.
-               03 FLD1 PIC 9(8).
-               03 FLD2 PIC 9(5) REDEFINES FLD1.
+               03 FLD1 PIC 9(6)V99.
+               03 FLD2 PIC S9(5) REDEFINES FLD1.
         """
 
       val data = "12345"
@@ -86,7 +86,40 @@ class Test33Metadata extends AnyWordSpec with SparkTestBase with BinaryFileFixtu
         assert(countFld.metadata.getString("pic") == "9(1)")
         assert(innerCountFld.metadata.getString("pic") == "9(1)")
         assert(innerInnerField.metadata.getString("pic") == "X")
-        assert(pGroupField1.metadata.getString("pic") == "9(8)")
+        assert(pGroupField1.metadata.getString("pic") == "9(6)V99")
+
+        assert(countFld.metadata.getLong("precision") == 1)
+        assert(innerCountFld.metadata.getLong("precision") == 1)
+        assert(pGroupField1.metadata.getLong("precision") == 8)
+        assert(pGroupField2.metadata.getLong("precision") == 5)
+
+        assert(!countFld.metadata.getBoolean("signed"))
+        assert(!innerCountFld.metadata.getBoolean("signed"))
+        assert(!pGroupField1.metadata.getBoolean("signed"))
+        assert(pGroupField2.metadata.getBoolean("signed"))
+
+        assert(pGroupField1.metadata.getLong("scale") == 2)
+
+        assert(countFld.metadata.getLong("offset") == 0)
+        assert(groupFld.metadata.getLong("offset") == 1)
+        assert(innerCountFld.metadata.getLong("offset") == 1)
+        assert(innerGroupFld.metadata.getLong("offset") == 2)
+        assert(innerInnerField.metadata.getLong("offset") == 2)
+        assert(pGroupFld.metadata.getLong("offset") == 9)
+        assert(pGroupField1.metadata.getLong("offset") == 9)
+        assert(pGroupField2.metadata.getLong("offset") == 9)
+
+        assert(countFld.metadata.getLong("byte_size") == 1)
+        assert(groupFld.metadata.getLong("byte_size") == 4)
+        assert(innerCountFld.metadata.getLong("byte_size") == 1)
+        assert(innerGroupFld.metadata.getLong("byte_size") == 1)
+        assert(innerInnerField.metadata.getLong("byte_size") == 1)
+        assert(pGroupFld.metadata.getLong("byte_size") == 5)
+        assert(pGroupField1.metadata.getLong("byte_size") == 5)
+        assert(pGroupField2.metadata.getLong("byte_size") == 3)
+
+        assert(pGroupField1.metadata.getBoolean("implied_decimal"))
+        assert(!pGroupField1.metadata.getBoolean("sign_separate"))
 
         assert(groupFld.metadata.getLong("minElements") == 0)
         assert(groupFld.metadata.getLong("maxElements") == 2)

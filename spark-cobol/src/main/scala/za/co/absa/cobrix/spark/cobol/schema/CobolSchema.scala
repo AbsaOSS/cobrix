@@ -206,6 +206,8 @@ class CobolSchema(copybook: Copybook,
       metadataBuilder.putString("originalName", s.originalName)
     s.redefines.foreach(redefines => metadataBuilder.putString("redefines", redefines))
     s.dependingOn.foreach(dependingOn => metadataBuilder.putString("depending_on", dependingOn))
+    metadataBuilder.putLong("offset", s.binaryProperties.offset)
+    metadataBuilder.putLong("byte_size", s.binaryProperties.dataSize)
 
     s match {
       case p: Primitive => addDetailedPrimitiveMetadata(metadataBuilder, p)
@@ -220,8 +222,18 @@ class CobolSchema(copybook: Copybook,
     p.dataType match {
       case a: Integral =>
         a.compact.foreach(usage => metadataBuilder.putString("usage", usage.toString))
+        metadataBuilder.putLong("precision", a.precision)
+        metadataBuilder.putBoolean("signed", a.signPosition.nonEmpty)
+        metadataBuilder.putBoolean("sign_separate", a.isSignSeparate)
       case a: Decimal  =>
         a.compact.foreach(usage => metadataBuilder.putString("usage", usage.toString))
+        metadataBuilder.putLong("precision", a.precision)
+        metadataBuilder.putLong("scale", a.scale)
+        if (a.scaleFactor != 0)
+          metadataBuilder.putLong("scale_factor", a.scaleFactor)
+        metadataBuilder.putBoolean("signed", a.signPosition.nonEmpty)
+        metadataBuilder.putBoolean("sign_separate", a.isSignSeparate)
+        metadataBuilder.putBoolean("implied_decimal", !a.explicitDecimal)
       case _           =>
     }
     metadataBuilder
