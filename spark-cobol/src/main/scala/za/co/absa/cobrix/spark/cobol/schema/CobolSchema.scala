@@ -41,7 +41,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
-  * @param detailedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param extendedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
   */
 class CobolSchema(copybook: Copybook,
                   policy: SchemaRetentionPolicy,
@@ -49,7 +49,7 @@ class CobolSchema(copybook: Copybook,
                   generateRecordId: Boolean,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
-                  detailedMetadata: Boolean = false)
+                  extendedMetadata: Boolean = false)
   extends CobolReaderSchema(
     copybook, policy, inputFileNameField, generateRecordId,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
@@ -141,8 +141,8 @@ class CobolSchema(copybook: Copybook,
     val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
     val metadata = new MetadataBuilder()
 
-    if (detailedMetadata)
-      addDetailedMetadata(metadata, group)
+    if (extendedMetadata)
+      addExtendedMetadata(metadata, group)
 
     if (group.isArray) {
       addArrayMetadata(metadata, group)
@@ -180,8 +180,8 @@ class CobolSchema(copybook: Copybook,
       case _               => throw new IllegalStateException("Unknown AST object")
     }
 
-    if (detailedMetadata)
-      addDetailedMetadata(metadata, p)
+    if (extendedMetadata)
+      addExtendedMetadata(metadata, p)
 
     if (p.isArray) {
       addArrayMetadata(metadata, p)
@@ -200,7 +200,7 @@ class CobolSchema(copybook: Copybook,
     metadataBuilder.putLong("maxLength", a.length)
   }
 
-  private def addDetailedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
+  private def addExtendedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
     metadataBuilder.putLong("level", s.level)
     if (s.originalName.nonEmpty && s.originalName != s.name)
       metadataBuilder.putString("originalName", s.originalName)
@@ -210,14 +210,14 @@ class CobolSchema(copybook: Copybook,
     metadataBuilder.putLong("byte_size", s.binaryProperties.dataSize)
 
     s match {
-      case p: Primitive => addDetailedPrimitiveMetadata(metadataBuilder, p)
-      case g: Group     => addDetailedGroupMetadata(metadataBuilder, g)
+      case p: Primitive => addExtendedPrimitiveMetadata(metadataBuilder, p)
+      case g: Group     => addExtendedGroupMetadata(metadataBuilder, g)
     }
 
     metadataBuilder
   }
 
-  private def addDetailedPrimitiveMetadata(metadataBuilder: MetadataBuilder, p: Primitive): MetadataBuilder = {
+  private def addExtendedPrimitiveMetadata(metadataBuilder: MetadataBuilder, p: Primitive): MetadataBuilder = {
     metadataBuilder.putString("pic", p.dataType.originalPic.getOrElse(p.dataType.pic))
     p.dataType match {
       case a: Integral =>
@@ -239,7 +239,7 @@ class CobolSchema(copybook: Copybook,
     metadataBuilder
   }
 
-  private def addDetailedGroupMetadata(metadataBuilder: MetadataBuilder, g: Group): MetadataBuilder = {
+  private def addExtendedGroupMetadata(metadataBuilder: MetadataBuilder, g: Group): MetadataBuilder = {
     g.groupUsage.foreach(usage => metadataBuilder.putString("usage", usage.toString))
     metadataBuilder
   }
@@ -316,7 +316,7 @@ object CobolSchema {
       schema.generateRecordId,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
-      schema.detailedMetadata
+      schema.extendedMetadata
       )
   }
 }

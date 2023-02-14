@@ -27,7 +27,7 @@ import java.nio.charset.StandardCharsets
 class Test33Metadata extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  "detailed_metadata" should {
+  "extended_metadata" should {
     "add more metadata to the Spark schema" in {
       val copybook =
         """         01 RECORD.
@@ -49,7 +49,7 @@ class Test33Metadata extends AnyWordSpec with SparkTestBase with BinaryFileFixtu
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "D")
-          .option("detailed_metadata", "true")
+          .option("extended_metadata", "true")
           .option("pedantic", "true")
           .load(fileName)
 
