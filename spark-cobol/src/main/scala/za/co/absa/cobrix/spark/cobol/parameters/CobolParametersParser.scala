@@ -63,7 +63,7 @@ object CobolParametersParser extends Logging {
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
   val PARAM_DEBUG                     = "debug"
-  val PARAM_DETAILED_METADATA         = "detailed_metadata"
+  val PARAM_EXTENDED_METADATA         = "extended_metadata"
 
   // General parsing parameters
   val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
@@ -265,7 +265,7 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
-      params.getOrElse(PARAM_DETAILED_METADATA, "false").toBoolean
+      params.getOrElse(PARAM_EXTENDED_METADATA, "false").toBoolean
       )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
@@ -399,7 +399,7 @@ object CobolParametersParser extends Logging {
       varLenParams.rhpAdditionalInfo,
       varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn,
-      parameters.detailedMetadata
+      parameters.extendedMetadata
       )
   }
 

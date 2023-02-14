@@ -1399,7 +1399,7 @@ You can have decimals when using COMP-3 as well.
 | .option("non_terminals", "GROUP1,GROUP2")           | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group.                                                                               |
 | .option("generate_record_id", false)                | Generate autoincremental 'File_Id', 'Record_Id' and 'Record_Byte_Length' fields. This is used for processing record order dependent data.                                                                                                                                                   |
 | .option("with_input_file_name_col", "file_name")    | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
-| .option("detailed_metadata", "false")               | If true, additional metadata is added (PIC, usage, etc) to each field in Spark schema.                                                                                                                                                                                                      |
+| .option("extended_metadata", "false")               | If true, additional metadata is added (PIC, usage, etc) to each field in Spark schema.                                                                                                                                                                                                      |
 | .option("debug", "hex")                             | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                   |
 
 ##### Fixed length record format options (for record_format = F or FB)
@@ -1591,7 +1591,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
    - [#574](https://github.com/AbsaOSS/cobrix/issues/574) Added the ability to read data files with fields encoded using multiple code pages using (`.option("field_code_page:cp037", "FIELD-1,FIELD_2")`).
 
 - #### 2.6.3 released 1 February 2023.
-   - [#550](https://github.com/AbsaOSS/cobrix/issues/550) Added `.option("detailed_metadata", true)` option that adds many additional metadata fields (PIC, USAGE, etc) to the generated Spark schema.
+   - [#550](https://github.com/AbsaOSS/cobrix/issues/550) Added `.option("extended_metadata", true)` option that adds many additional metadata fields (PIC, USAGE, etc) to the generated Spark schema.
    - [#567](https://github.com/AbsaOSS/cobrix/issues/567) Added support for new code pages 838, 870, 1025 (Thanks [@sree018](https://github.com/sree018)).
    - [#569](https://github.com/AbsaOSS/cobrix/issues/569) Added support for field length expressions based on filed on the copybook See [Variable length records support](#variable-length-records-support).
    - [#572](https://github.com/AbsaOSS/cobrix/issues/572) Improved performance of non-UTF8 encoded ASCII test files.

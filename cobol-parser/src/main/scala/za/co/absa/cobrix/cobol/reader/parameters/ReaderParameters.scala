@@ -67,7 +67,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
-  * @param detailedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param extendedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
   */
 case class ReaderParameters(
                              recordFormat:            RecordFormat = FixedLength,
@@ -114,5 +114,5 @@ case class ReaderParameters(
                              rhpAdditionalInfo:       Option[String] = None,
                              reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = "",
-                             detailedMetadata:        Boolean = false
+                             extendedMetadata:        Boolean = false
                            )

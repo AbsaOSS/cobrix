@@ -85,7 +85,7 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
                                       readerParams.schemaPolicy,
                                       inputFileNameField = "",
                                       generateRecordId = false,
-                                      detailedMetadata = readerParams.detailedMetadata)
+                                      extendedMetadata = readerParams.extendedMetadata)
     val sparkSchema = cobolSchema.getSparkSchema
 
     val recordHandler = new RowHandler()
