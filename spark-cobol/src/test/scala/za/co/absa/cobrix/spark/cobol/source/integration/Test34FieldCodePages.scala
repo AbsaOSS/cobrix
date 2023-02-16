@@ -73,8 +73,6 @@ class Test34FieldCodePages extends AnyWordSpec with SparkTestBase with BinaryFil
       val expected = """[{"FIELD_1":"ї","FIELD_2":"ї","FIELD_3":"ä","FIELD_4":"ä"}]"""
       val data = Array(Array(0xBF, 0xBF, 0xE4, 0xE4).map(_.toByte))
 
-      Charset.availableCharsets().asScala.foreach(println)
-
       withTempBinFile("multicodepage", ".dat", data.head) { fileName =>
         val df = spark.read
           .format("cobol")

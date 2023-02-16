@@ -19,10 +19,12 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page with full Cyrillic-charset
   */
-class CodePage1025 extends CodePage {
+class CodePage1025 extends SingleByteCodePage(CodePage1025.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "cp1025"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
+object CodePage1025 {
+  val ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC Code Page 1025 to ASCII conversion table with non-printable characters mapping
        from https://en.everybodywiki.com/EBCDIC_1025  */
     val ebcdic2ascii: Array[Char] = {

@@ -21,11 +21,12 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   *
   * In addition to "cp037" code page it contains conversions for non-printable characters.
   */
-class CodePage037Ext extends CodePage {
-
+class CodePage037Ext extends SingleByteCodePage(CodePage037Ext.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "cp037_extended"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
+object CodePage037Ext {
+  val ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC Code Page 37 to ASCII conversion table with non-printable characters mapping
        from https://en.wikipedia.org/wiki/EBCDIC_037 */
     val ebcdic2ascii: Array[Char] = {

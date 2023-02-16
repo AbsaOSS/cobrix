@@ -16,14 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
-class FakeCodePage extends CodePage {
+class FakeCodePage extends SingleByteCodePage(FakeCodePage.ebcdicToAsciiMapping) {
   /**
    * A short name is used to distinguish between different code pages, so it must be unique
    */
   override def codePageShortName: String = "fake_code_page"
+}
 
-  /**
-   * Each class inherited from CodePage should provide its own conversion table
-   */
-  override protected def ebcdicToAsciiMapping: Array[Char] = Array[Char]('s', 'd', 'w')
+object FakeCodePage {
+  val ebcdicToAsciiMapping: Array[Char] = CodePageCommon.ebcdicToAsciiMapping
 }

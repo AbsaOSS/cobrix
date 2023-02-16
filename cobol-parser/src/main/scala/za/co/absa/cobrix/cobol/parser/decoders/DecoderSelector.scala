@@ -77,7 +77,7 @@ object DecoderSelector {
                                improvedNullDetection: Boolean): Decoder = {
     encoding match {
       case EBCDIC =>
-        StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage.getEbcdicToAsciiMapping, improvedNullDetection)
+        StringDecoders.decodeEbcdicString(_, getStringStrimmingType(stringTrimmingPolicy), ebcdicCodePage, improvedNullDetection)
       case ASCII =>
         if (asciiCharset.name() == "US-ASCII") {
           StringDecoders.decodeAsciiString(_, getStringStrimmingType(stringTrimmingPolicy), improvedNullDetection)
