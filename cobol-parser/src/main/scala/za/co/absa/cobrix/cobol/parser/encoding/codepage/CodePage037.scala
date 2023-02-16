@@ -20,11 +20,12 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 37 contains all of the standard Latin-1 characters.
   *
   */
-class CodePage037 extends CodePage {
-
+class CodePage037 extends SingleByteCodePage(CodePage037.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "cp037"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
+object CodePage037 {
+  val ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC Code Page 37 to ASCII conversion table with non-printable characters mapping
        from https://en.wikipedia.org/wiki/EBCDIC_037 */
     val ebcdic2ascii: Array[Char] = {

@@ -19,10 +19,9 @@ package za.co.absa.cobrix.cobol.testutils
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
 
 object EbcdicEncoder {
-
   // Routines to be used to generate test examples. Not to be used in production code.
 
-  private val ebcdicToAsciiTable = (new CodePageCommon).getEbcdicToAsciiMapping
+  private val ebcdicToAsciiTable = CodePageCommon.ebcdicToAsciiMapping
 
   private val asciiToEbcdicTable = {
     Range(0, 256).map(charCode => {

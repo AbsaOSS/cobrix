@@ -17,8 +17,8 @@
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import java.nio.charset.StandardCharsets
-
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 
 import scala.util.control.NonFatal
 
@@ -41,29 +41,24 @@ object StringDecoders {
     *
     * @param bytes                 A byte array that represents the binary data
     * @param trimmingType          Specifies if and how the soutput string should be trimmed
-    * @param conversionTable       A conversion table to use to convert from EBCDIC to ASCII
+    * @param codePage              EBCDIC code page
     * @param improvedNullDetection if true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  final def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, conversionTable: Array[Char], improvedNullDetection: Boolean): String = {
+  final def decodeEbcdicString(bytes: Array[Byte], trimmingType: Int, codePage: CodePage, improvedNullDetection: Boolean): String = {
     if (improvedNullDetection && trimmingType != KeepAll && isArrayNull(bytes))
       return null
 
-    var i = 0
-    val buf = new StringBuffer(bytes.length)
-    while (i < bytes.length) {
-      buf.append(conversionTable((bytes(i) + 256) % 256))
-      i = i + 1
-    }
+    val str = codePage.convert(bytes)
 
     if (trimmingType == TrimNone || trimmingType == KeepAll ) {
-      buf.toString
+      str
     } else if (trimmingType == TrimLeft) {
-      StringTools.trimLeft(buf.toString)
+      StringTools.trimLeft(str)
     } else if (trimmingType == TrimRight) {
-      StringTools.trimRight(buf.toString)
+      StringTools.trimRight(str)
     } else {
-      buf.toString.trim
+      str.trim
     }
   }
 

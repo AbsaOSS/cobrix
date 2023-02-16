@@ -43,40 +43,40 @@ class StringDecodersSpec extends AnyWordSpec {
 
   "decodeEbcdicString()" should {
     "be able to decode empty strings" in {
-      val actual = decodeEbcdicString(Array[Byte](0, 0, 0, 0), TrimBoth, codePage.getEbcdicToAsciiMapping, improvedNullDetection = false)
+      val actual = decodeEbcdicString(Array[Byte](0, 0, 0, 0), TrimBoth, codePage, improvedNullDetection = false)
 
       assert(actual == "")
     }
 
     "be able to decode nulls" in {
-      val actual = decodeEbcdicString(Array[Byte](0, 0, 0, 0), TrimNone, codePage.getEbcdicToAsciiMapping, improvedNullDetection = true)
+      val actual = decodeEbcdicString(Array[Byte](0, 0, 0, 0), TrimNone, codePage, improvedNullDetection = true)
 
       assert(actual == null)
     }
 
     "decode an EBCDIC string" in {
-      val actual = decodeEbcdicString(ebcdicBytes, TrimNone, codePage.getEbcdicToAsciiMapping, improvedNullDetection = false)
+      val actual = decodeEbcdicString(ebcdicBytes, TrimNone, codePage, improvedNullDetection = false)
 
       assert(actual == asciiString)
     }
 
     "decode an EBCDIC string with left trimming" in {
       val bytes = toEbcdic(asciiString + "  \t ")
-      val actual = decodeEbcdicString(bytes, TrimRight, codePage.getEbcdicToAsciiMapping, improvedNullDetection = false)
+      val actual = decodeEbcdicString(bytes, TrimRight, codePage, improvedNullDetection = false)
 
       assert(actual == asciiString)
     }
 
     "decode an EBCDIC string with right trimming" in {
       val bytes = toEbcdic("  \t " + asciiString)
-      val actual = decodeEbcdicString(bytes, TrimLeft, codePage.getEbcdicToAsciiMapping, improvedNullDetection = false)
+      val actual = decodeEbcdicString(bytes, TrimLeft, codePage, improvedNullDetection = false)
 
       assert(actual == asciiString)
     }
 
     "decode an EBCDIC string with left+right trimming" in {
       val bytes = toEbcdic("  \t " + asciiString + "  \t ")
-      val actual = decodeEbcdicString(bytes, TrimBoth, codePage.getEbcdicToAsciiMapping, improvedNullDetection = false)
+      val actual = decodeEbcdicString(bytes, TrimBoth, codePage, improvedNullDetection = false)
 
       assert(actual == asciiString)
     }

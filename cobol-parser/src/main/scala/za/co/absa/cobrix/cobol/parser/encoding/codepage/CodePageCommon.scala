@@ -21,11 +21,12 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   *
   * It is an "invariant" subset of EBCDIC. Each converted symbol should be present in all EBCDIC pages.
   */
-class CodePageCommon extends CodePage {
-
+class CodePageCommon extends SingleByteCodePage(CodePageCommon.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "common"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
+object CodePageCommon {
+  val ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC "invariant" code page from https://en.wikipedia.org/wiki/EBCDIC */
     val ebcdic2ascii: Array[Char] = {
       val clf = '\r'

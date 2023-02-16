@@ -19,10 +19,12 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page with support for Thai script used in IBM mainframes
   */
-class CodePage838 extends CodePage {
+class CodePage838 extends SingleByteCodePage(CodePage838.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "cp838"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
+object CodePage838 {
+  val ebcdicToAsciiMapping: Array[Char] = {
     /* This is the EBCDIC Code Page 838 to ASCII conversion table with non-printable characters mapping
        from https://en.everybodywiki.com/EBCDIC_838 */
     val ebcdic2ascii: Array[Char] = {

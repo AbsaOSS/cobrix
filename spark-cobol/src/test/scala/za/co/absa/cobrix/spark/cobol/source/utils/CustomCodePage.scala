@@ -16,14 +16,18 @@
 
 package za.co.absa.cobrix.spark.cobol.source.utils
 
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.SingleByteCodePage
 
-class CustomCodePage extends CodePage {
+class CustomCodePage extends SingleByteCodePage(CustomCodePage.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "custom_test"
+}
 
-  override protected def ebcdicToAsciiMapping: Array[Char] = {
-    /* This is a test code page that does not have any practical sinificance beside been different from
-     * the original code page. */
+object CustomCodePage {
+  val ebcdicToAsciiMapping: Array[Char] = {
+    /**
+      * This is a test code page that does not have any practical sinificance beside been different from
+      * the original code page.
+      */
     val ebcdic2ascii: Array[Char] = {
       val spc = ' '
       Array[Char](
