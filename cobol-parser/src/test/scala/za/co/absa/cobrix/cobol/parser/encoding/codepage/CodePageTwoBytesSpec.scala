@@ -26,11 +26,19 @@ class CodePageTwoBytesSpec extends AnyFunSuite {
     assert(codePage.codePageShortName == "cp300")
   }
 
-  test("Ensure 'ccsid300' decodes strings as expected") {
+  test("Ensure 'cp300' decodes strings as expected") {
     val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11 ,0x14, 0x12)
 
     val codePage = CodePage.getCodePageByName("cp300")
 
     assert(codePage.convert(bytes) =="抜抛抗")
+  }
+
+  test("Ensure 'cp300' correctly decodes odd number of bytes") {
+    val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11, 0x14)
+
+    val codePage = CodePage.getCodePageByName("cp300")
+
+    assert(codePage.convert(bytes) == "抜抛")
   }
 }
