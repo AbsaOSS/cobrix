@@ -20,7 +20,7 @@ import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.{Failure, Success, Try}
 
-class CodePageSpec extends AnyFunSuite {
+class CodePageSingleByteSpec extends AnyFunSuite {
 
   test("Ensure codepage 'common' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("common")
