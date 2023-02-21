@@ -735,6 +735,35 @@ val df = Cobrix.fromRdd
 When converting from an RDD some of the options like `record_format` or `generate_record_id` cannot be used since the
 data is assumed to be already split by records and the information about file names and relative order of records is not available.
 
+## EBCDIC code pages
+
+The following code pages are supported:
+* `common` - (default) EBCDIC common characters
+* `common_extended` - EBCDIC common characters with special characters extension
+* `cp037` - IBM EBCDIC US-Canada
+* `cp037_extended` - IBM EBCDIC US-Canada with special characters extension
+* `cp838` - IBM EBCDIC Thailand
+* `cp870` - IBM EBCDIC Multilingual Latin-2
+* `cp875` - IBM EBCDIC Greek
+* `cp1025` - IBM EBCDIC Multilingual Cyrillic
+* `cp1047` - IBM EBCDIC Latin-1/Open System
+* `cp00300` - (experimental support) IBM EBCDIC Japanese (Katakana) Extended (2 byte code page)
+
+By default, Cobrix uses common EBCDIC code page which contains only basic latin characters, numbers, and punctuation.
+You can specify the code page to use for all string fields by setting the `ebcdic_code_page` option to one of the
+following values:
+
+```
+.option("ebcdic_code_page", "cp037")
+```
+
+For multi-codepage files, you can specify the code page to use for each field by setting the `field_code_page:<code page>` option
+```
+.option("ebcdic_code_page", "cp037")
+.option("field_code_page:cp1256" -> "FIELD1")
+.option("field_code_page:us-ascii" -> "FIELD-2, FIELD_3")
+```
+
 ## Reading ASCII text file
 Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
 
@@ -1374,19 +1403,19 @@ You can have decimals when using COMP-3 as well.
 
 ##### Data parsing options
 
-| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                              |
-|-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                                     |
-| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp838`, `cp870`, `cp875`, `cp1025`, `cp1047`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
-| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                            |
-| .option("ascii_charset", "US-ASCII")                      | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                                                                                                                         |
-| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                         |
-| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                              |
-| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                          |
-| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements.        |
-| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                                    |
-| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                       |
-| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                    |
+| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                                       |
+|-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                                              |
+| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp300`, `cp838`, `cp870`, `cp875`, `cp1025`, `cp1047`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                                     |
+| .option("ascii_charset", "US-ASCII")                      | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                                                                                                                                  |
+| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                                  |
+| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                                       |
+| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                                   |
+| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements.                 |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                                             |
+| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                                |
+| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                             |
 
 ##### Modifier options
 
@@ -1589,6 +1618,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 - #### 2.6.4 will be released soon.
    - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
    - [#574](https://github.com/AbsaOSS/cobrix/issues/574) Added the ability to read data files with fields encoded using multiple code pages using (`.option("field_code_page:cp037", "FIELD-1,FIELD_2")`).
+   - [#538](https://github.com/AbsaOSS/cobrix/issues/538) Added experimental support for `cp00300`, the 2 byte Japanese code page (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
 
 - #### 2.6.3 released 1 February 2023.
    - [#550](https://github.com/AbsaOSS/cobrix/issues/550) Added `.option("extended_metadata", true)` option that adds many additional metadata fields (PIC, USAGE, etc) to the generated Spark schema.
