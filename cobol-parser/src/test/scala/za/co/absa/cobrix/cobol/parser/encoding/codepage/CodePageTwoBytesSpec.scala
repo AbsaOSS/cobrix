@@ -21,23 +21,23 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.util.{Failure, Success, Try}
 
 class CodePageTwoBytesSpec extends AnyFunSuite {
-  test("Ensure codepage 'cp300' gives the associated CodePage") {
-    val codePage = CodePage.getCodePageByName("cp300")
-    assert(codePage.codePageShortName == "cp300")
+  test("Ensure codepage 'cp00300' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp00300")
+    assert(codePage.codePageShortName == "cp00300")
   }
 
-  test("Ensure 'cp300' decodes strings as expected") {
+  test("Ensure 'cp00300' decodes strings as expected") {
     val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11 ,0x14, 0x12)
 
-    val codePage = CodePage.getCodePageByName("cp300")
+    val codePage = CodePage.getCodePageByName("cp00300")
 
     assert(codePage.convert(bytes) =="抜抛抗")
   }
 
-  test("Ensure 'cp300' correctly decodes odd number of bytes") {
+  test("Ensure 'cp00300' correctly decodes odd number of bytes") {
     val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11, 0x14)
 
-    val codePage = CodePage.getCodePageByName("cp300")
+    val codePage = CodePage.getCodePageByName("cp00300")
 
     assert(codePage.convert(bytes) == "抜抛")
   }

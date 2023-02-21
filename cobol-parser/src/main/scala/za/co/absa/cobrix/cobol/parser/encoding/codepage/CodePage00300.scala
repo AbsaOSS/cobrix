@@ -19,13 +19,16 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 300 Japanese Latin Host Double-Byte.
   */
-class CodePage300 extends TwoByteCodePage(CodePage300.ebcdicToAsciiMapping) {
-  override def codePageShortName: String = "cp300"
+class CodePage00300 extends TwoByteCodePage(CodePage00300.ebcdicToAsciiMapping) {
+  override def codePageShortName: String = "cp00300"
 }
 
-object CodePage300 {
+object CodePage00300 {
   val ebcdicToAsciiMapping: Array[Char] = {
-    /* This is the EBCDIC Code Page 300 contributed by https://github.com/BenceBenedek */
+    /**
+      * This is the EBCDIC Code Page 00300 contributed by https://github.com/BenceBenedek
+      * https://public.dhe.ibm.com/software/globalization/gcoc/attachments/CP00300.pdf
+      */
     val c00 = '\u0000'
 
     val ebcdic2ascii: Array[Char] =
