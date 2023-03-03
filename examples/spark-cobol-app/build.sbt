@@ -20,7 +20,7 @@ ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.12.17"
 
 val sparkVersion = "3.3.1"
-val sparkCobolVersion = "2.6.3"
+val sparkCobolVersion = "2.6.4"
 val scalatestVersion = "3.2.14"
 
 ThisBuild / libraryDependencies ++= Seq(
