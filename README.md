@@ -1615,7 +1615,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.6.4 will be released soon.
+- #### 2.6.4 released 3 March 2023.
    - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
    - [#574](https://github.com/AbsaOSS/cobrix/issues/574) Added the ability to read data files with fields encoded using multiple code pages using (`.option("field_code_page:cp037", "FIELD-1,FIELD_2")`).
    - [#538](https://github.com/AbsaOSS/cobrix/issues/538) Added experimental support for `cp00300`, the 2 byte Japanese code page (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
