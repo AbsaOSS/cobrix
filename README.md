@@ -314,7 +314,7 @@ You can collect the uber jar of `spark-cobol` either at
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol-assembly-2.6.5-SNAPSHOT.jar
+$ spark-shell --jars spark-cobol_2.12_3.3.1-2.6.5-SNAPSHOT.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
