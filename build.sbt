@@ -142,7 +142,7 @@ lazy val assemblySettings = Seq(
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),
-  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersion(scalaVersion.value)}-${version.value}.jar",
+  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersion(scalaVersion.value)}-${version.value}-bundle.jar",
   assembly / logLevel := Level.Info,
   assembly / test := {}
 )
