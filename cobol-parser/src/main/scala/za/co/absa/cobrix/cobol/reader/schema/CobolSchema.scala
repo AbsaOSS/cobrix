@@ -18,8 +18,8 @@ package za.co.absa.cobrix.cobol.reader.schema
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 
@@ -33,7 +33,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
-  * @param extendedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param metadataPolicy          Specifies a policy to generate metadata fields.
   */
 class CobolSchema(val copybook: Copybook,
                   val policy: SchemaRetentionPolicy,
@@ -41,7 +41,7 @@ class CobolSchema(val copybook: Copybook,
                   val generateRecordId: Boolean,
                   val generateSegIdFieldsCnt: Int = 0,
                   val segmentIdProvidedPrefix: String = "",
-                  val extendedMetadata: Boolean = false) extends Serializable {
+                  val metadataPolicy: MetadataPolicy = MetadataPolicy.Basic) extends Serializable {
 
   val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 

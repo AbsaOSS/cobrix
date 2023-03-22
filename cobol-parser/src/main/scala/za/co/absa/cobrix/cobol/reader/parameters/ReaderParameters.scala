@@ -20,7 +20,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, MetadataPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.FixedLength
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -67,7 +67,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param recordHeaderParser      A parser used to parse data field record headers
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
-  * @param extendedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
   */
 case class ReaderParameters(
                              recordFormat:            RecordFormat = FixedLength,
@@ -114,5 +114,5 @@ case class ReaderParameters(
                              rhpAdditionalInfo:       Option[String] = None,
                              reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = "",
-                             extendedMetadata:        Boolean = false
+                             metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic
                            )

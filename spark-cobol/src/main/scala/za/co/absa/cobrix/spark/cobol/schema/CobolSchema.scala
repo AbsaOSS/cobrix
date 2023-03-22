@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.ast._
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
+import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
@@ -41,7 +42,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
-  * @param extendedMetadata        If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param metadataPolicy          Specifies a policy to generate metadata fields.
   */
 class CobolSchema(copybook: Copybook,
                   policy: SchemaRetentionPolicy,
@@ -49,7 +50,7 @@ class CobolSchema(copybook: Copybook,
                   generateRecordId: Boolean,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
-                  extendedMetadata: Boolean = false)
+                  metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
   extends CobolReaderSchema(
     copybook, policy, inputFileNameField, generateRecordId,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
@@ -141,11 +142,12 @@ class CobolSchema(copybook: Copybook,
     val fieldsWithChildrenSegments = fields ++ getChildSegments(group, segmentRedefines)
     val metadata = new MetadataBuilder()
 
-    if (extendedMetadata)
+    if (metadataPolicy == MetadataPolicy.Extended)
       addExtendedMetadata(metadata, group)
 
     if (group.isArray) {
-      addArrayMetadata(metadata, group)
+      if (metadataPolicy != MetadataPolicy.NoMetadata)
+        addArrayMetadata(metadata, group)
       StructField(group.name, ArrayType(StructType(fieldsWithChildrenSegments.toArray)), nullable = true, metadata.build())
     } else {
       StructField(group.name, StructType(fieldsWithChildrenSegments.toArray), nullable = true, metadata.build())
@@ -163,7 +165,8 @@ class CobolSchema(copybook: Copybook,
           case _             => DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
         }
       case a: AlphaNumeric =>
-        addAlphaNumericMetadata(metadata, a)
+        if (metadataPolicy != MetadataPolicy.NoMetadata)
+          addAlphaNumericMetadata(metadata, a)
         a.enc match {
           case Some(RAW) => BinaryType
           case _         => StringType
@@ -180,11 +183,12 @@ class CobolSchema(copybook: Copybook,
       case _               => throw new IllegalStateException("Unknown AST object")
     }
 
-    if (extendedMetadata)
+    if (metadataPolicy == MetadataPolicy.Extended)
       addExtendedMetadata(metadata, p)
 
     if (p.isArray) {
-      addArrayMetadata(metadata, p)
+      if (metadataPolicy != MetadataPolicy.NoMetadata)
+        addArrayMetadata(metadata, p)
       StructField(p.name, ArrayType(dataType), nullable = true, metadata.build())
     } else {
       StructField(p.name, dataType, nullable = true, metadata.build())
@@ -316,7 +320,7 @@ object CobolSchema {
       schema.generateRecordId,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
-      schema.extendedMetadata
+      schema.metadataPolicy
       )
   }
 }

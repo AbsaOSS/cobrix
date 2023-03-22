@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy, MetadataPolicy}
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
@@ -55,7 +55,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param nonTerminals           A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param debugFieldsPolicy      Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param debugIgnoreFileSize    If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
-  * @param extendedMetadata       If true, Spark schema will be generated with additional metadata (e.g. PICs, USAGE, etc.)
+  * @param metadataPolicy         Specifies the policy of metadat fields to be added to the Spark schema
   */
 case class CobolParameters(
                             copybookPath:          Option[String],
@@ -90,5 +90,5 @@ case class CobolParameters(
                             occursMappings:        Map[String, Map[String, Int]],
                             debugFieldsPolicy:     DebugFieldsPolicy,
                             debugIgnoreFileSize:   Boolean,
-                            extendedMetadata:      Boolean
+                            metadataPolicy:        MetadataPolicy
                           )
