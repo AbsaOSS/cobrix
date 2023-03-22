@@ -43,6 +43,8 @@ class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .load(inpudDataPath)
 
+    println(df.schema.toDDL)
+
     // This is to print the actual output
     //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)

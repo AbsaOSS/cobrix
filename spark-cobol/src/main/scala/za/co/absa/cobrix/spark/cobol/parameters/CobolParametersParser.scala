@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, MetadataPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
 import za.co.absa.cobrix.cobol.reader.parameters._
@@ -63,7 +63,7 @@ object CobolParametersParser extends Logging {
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
   val PARAM_DEBUG                     = "debug"
-  val PARAM_EXTENDED_METADATA         = "extended_metadata"
+  val PARAM_METADATA                  = "metadata"
 
   // General parsing parameters
   val PARAM_TRUNCATE_COMMENTS         = "truncate_comments"
@@ -265,7 +265,7 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
-      params.getOrElse(PARAM_EXTENDED_METADATA, "false").toBoolean
+      MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic"))
       )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
@@ -399,7 +399,7 @@ object CobolParametersParser extends Logging {
       varLenParams.rhpAdditionalInfo,
       varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn,
-      parameters.extendedMetadata
+      parameters.metadataPolicy
       )
   }
 
