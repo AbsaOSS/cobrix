@@ -55,6 +55,7 @@ object CobolParametersParser extends Logging {
 
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
+  val PARAM_GENERATE_RECORD_BYTES     = "generate_record_bytes"
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
@@ -251,6 +252,7 @@ object CobolParametersParser extends Logging {
       params.get(PARAM_RECORD_LENGTH).map(_.toInt),
       variableLengthParams,
       params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
+      params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
       params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean,
@@ -381,6 +383,7 @@ object CobolParametersParser extends Logging {
       fileStartOffset = varLenParams.fileStartOffset,
       fileEndOffset = varLenParams.fileEndOffset,
       generateRecordId = varLenParams.generateRecordId,
+      generateRecordBytes = parameters.generateRecordBytes,
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       allowPartialRecords = parameters.allowPartialRecords,
@@ -813,6 +816,10 @@ object CobolParametersParser extends Logging {
       if (segmentIdLevels.nonEmpty) {
         throw new IllegalArgumentException(s"Options 'segment-children:*' cannot be used with 'segment_id_level*' or 'segment_id_root' " +
           "since ID fields generation is not supported for hierarchical records reader.")
+      }
+      if (params.contains(PARAM_GENERATE_RECORD_BYTES)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_GENERATE_RECORD_BYTES' cannot be used with 'segment-children:*' " +
+          "since hierarchical records are composites of more than one raw record.")
       }
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {

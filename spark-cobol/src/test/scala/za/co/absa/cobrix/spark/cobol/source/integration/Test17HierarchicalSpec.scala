@@ -358,6 +358,25 @@ class Test17HierarchicalSpec extends AnyWordSpec with SparkTestBase with CobolTe
 
         assert(ex.getMessage.contains("ID fields generation is not supported for hierarchical records reader"))
       }
+
+      "throw an exception if record bytes generation is requested" in {
+        val ex = intercept[IllegalArgumentException] {
+          spark
+            .read
+            .format("cobol")
+            .option("copybook", inputCopybookPath)
+            .option("encoding", "ascii")
+            .option("record_format", "V")
+            .option("segment_field", "SEGMENT_ID")
+            .option("redefine_segment_id_map:1", "STATIC-DETAILS => C")
+            .option("redefine-segment-id-map:2", "CONTACTS => P")
+            .option("segment-children:1", "STATIC-DETAILS => CONTACTS")
+            .option("generate_record_bytes", "true")
+            .load(inpudDataPath)
+        }
+
+        assert(ex.getMessage.contains("Option 'generate_record_bytes' cannot be used with 'segment-children:*'"))
+      }
     }
   }
 
