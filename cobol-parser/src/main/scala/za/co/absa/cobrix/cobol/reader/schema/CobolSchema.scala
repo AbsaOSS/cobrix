@@ -30,6 +30,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param copybook                A parsed copybook.
   * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
+  * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -39,6 +40,7 @@ class CobolSchema(val copybook: Copybook,
                   val policy: SchemaRetentionPolicy,
                   val inputFileNameField: String,
                   val generateRecordId: Boolean,
+                  val generateRecordBytes: Boolean,
                   val generateSegIdFieldsCnt: Int = 0,
                   val segmentIdProvidedPrefix: String = "",
                   val metadataPolicy: MetadataPolicy = MetadataPolicy.Basic) extends Serializable {

@@ -85,6 +85,7 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
                                       readerParams.schemaPolicy,
                                       inputFileNameField = "",
                                       generateRecordId = false,
+                                      readerParams.generateRecordBytes,
                                       metadataPolicy = readerParams.metadataPolicy)
     val sparkSchema = cobolSchema.getSparkSchema
 
@@ -98,7 +99,9 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
         val record = RecordExtractors.extractRecord[GenericRow](parsedCopybook.ast,
                                                                 array,
                                                                 0,
-                                                                schemaRetentionPolicy, handler = recordHandler)
+                                                                schemaRetentionPolicy,
+                                                                generateRecordBytes = readerParams.generateRecordBytes,
+                                                                handler = recordHandler)
         Row.fromSeq(record)
       })
 

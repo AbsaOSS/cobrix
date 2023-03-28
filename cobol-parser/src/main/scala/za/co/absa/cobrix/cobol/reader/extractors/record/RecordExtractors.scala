@@ -35,7 +35,8 @@ object RecordExtractors {
     * @param offsetBytes            The offset to the beginning of the record (in bits).
     * @param policy                 A schema retention policy to be applied to the extracted record.
     * @param variableLengthOccurs   If true, OCCURS DEPENDING ON data size will depend on the number of elements.
-    * @param generateRecordId       If true a record id field will be added as the first field of the record.
+    * @param generateRecordId       If true, a record id field will be added as the first field of the record.
+    * @param generateRecordBytes    If true, a record bytes field will be added at the beginning of each record.
     * @param segmentLevelIds        Segment ids to put to the extracted record if id generation it turned on.
     * @param fileId                 A file id to be put to the extractor record if generateRecordId == true.
     * @param recordId               The record id to be saved to the record id field.
@@ -53,6 +54,7 @@ object RecordExtractors {
     policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
     variableLengthOccurs: Boolean = false,
     generateRecordId: Boolean = false,
+    generateRecordBytes: Boolean = false,
     segmentLevelIds: List[String] = Nil,
     fileId: Int = 0,
     recordId: Long = 0,
@@ -197,7 +199,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, segmentLevelIds, fileId, recordId, data.length, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -417,7 +419,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, Nil, fileId, recordId, recordLength, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, handler)
   }
 
   /**
@@ -436,6 +438,7 @@ object RecordExtractors {
     * @param ast                    The parsed copybook
     * @param records                The array of [[T]] object for each Group of the copybook
     * @param generateRecordId       If true a record id field will be added as the first field of the record.
+    * @param generateRecordBytes    If true a record bytes field will be added at the beginning of the record.
     * @param fileId                 The file id to be saved to the file id field
     * @param recordId               The record id to be saved to the record id field
     * @param recordByteLength       The length of the record
@@ -448,43 +451,39 @@ object RecordExtractors {
     records: List[T],
     policy: SchemaRetentionPolicy,
     generateRecordId: Boolean,
+    generateRecordBytes: Boolean,
     segmentLevelIds: List[String],
     fileId: Int,
     recordId: Long,
     recordByteLength: Int,
+    recordBytes: Array[Byte],
     generateInputFileField: Boolean,
     inputFileName: String,
     handler: RecordHandler[T]
   ): Seq[Any] = {
-    (generateRecordId, generateInputFileField) match {
-      case (false, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
+    val generatedFields = new ListBuffer[Any]
+
+    if (generateRecordId) {
+      generatedFields.append(fileId, recordId, recordByteLength)
+    }
+
+    if (generateRecordBytes) {
+      generatedFields.append(recordBytes)
+    }
+
+    if (generateInputFileField) {
+      generatedFields.append(inputFileName)
+    }
+
+    segmentLevelIds.foreach(generatedFields.append(_))
+
+    policy match {
+      case SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
-        segmentLevelIds ++ records.flatMap(record => handler.toSeq(record))
-      case (false, false) =>
+        generatedFields ++ records.flatMap(record => handler.toSeq(record))
+      case SchemaRetentionPolicy.KeepOriginal =>
         // Return rows as the original sequence of groups
-        segmentLevelIds ++ records
-      case (true, false) if policy == SchemaRetentionPolicy.CollapseRoot =>
-        // If the policy for schema retention is root collapsing, expand root fields
-        // and add fileId and recordId
-        val expandedRows = records.flatMap(record => handler.toSeq(record))
-        fileId +: recordId +: recordByteLength +: (segmentLevelIds ++ expandedRows)
-      case (true, false) =>
-        // Add recordId as the first field
-        fileId +: recordId +: recordByteLength +: (segmentLevelIds ++ records)
-      case (false, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
-        // If the policy for schema retention is root collapsing, expand root fields + adding the file name field
-        (segmentLevelIds :+ inputFileName) ++ records.flatMap(record => handler.toSeq(record))
-      case (false, true) =>
-        // Return rows as the original sequence of groups + adding the file name field
-        (segmentLevelIds :+ inputFileName) ++ records
-      case (true, true) if policy == SchemaRetentionPolicy.CollapseRoot =>
-        // If the policy for schema retention is root collapsing, expand root fields
-        // and add fileId and recordId  + adding the file name field
-        val expandedRows = records.flatMap(record => handler.toSeq(record))
-        fileId +: recordId +: recordByteLength +: inputFileName +: (segmentLevelIds ++ expandedRows)
-      case (true, true) =>
-        // Add recordId as the first field + adding the file name field
-        fileId +: recordId +: recordByteLength +: inputFileName +: (segmentLevelIds ++ records)
+        generatedFields ++ records
     }
   }
 }

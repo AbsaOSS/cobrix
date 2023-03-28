@@ -39,6 +39,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param copybook                A parsed copybook.
   * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
+  * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -48,11 +49,12 @@ class CobolSchema(copybook: Copybook,
                   policy: SchemaRetentionPolicy,
                   inputFileNameField: String,
                   generateRecordId: Boolean,
+                  generateRecordBytes: Boolean = false,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
                   metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
   extends CobolReaderSchema(
-    copybook, policy, inputFileNameField, generateRecordId,
+    copybook, policy, inputFileNameField, generateRecordId, generateRecordBytes,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
     ) with Logging with Serializable {
 
@@ -107,12 +109,18 @@ class CobolSchema(copybook: Copybook,
       recordsWithSegmentFields
     }
 
+    val recordsWithRecordBytes = if (generateRecordBytes) {
+      StructField(Constants.recordBytes, BinaryType, nullable = false) +: recordsWithFileName
+    } else {
+      recordsWithFileName
+    }
+
     val recordsWithRecordId = if (generateRecordId) {
       StructField(Constants.fileIdField, IntegerType, nullable = false) +:
         StructField(Constants.recordIdField, LongType, nullable = false) +:
-        StructField(Constants.recordByteLength, IntegerType, nullable = false) +: recordsWithFileName
+        StructField(Constants.recordByteLength, IntegerType, nullable = false) +: recordsWithRecordBytes
     } else {
-      recordsWithFileName
+      recordsWithRecordBytes
     }
 
     StructType(recordsWithRecordId)
@@ -318,6 +326,7 @@ object CobolSchema {
       schema.policy,
       schema.inputFileNameField,
       schema.generateRecordId,
+      schema.generateRecordBytes,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
       schema.metadataPolicy

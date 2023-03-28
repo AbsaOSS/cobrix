@@ -91,6 +91,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
       offset,
       policy,
       readerProperties.variableSizeOccurs,
+      generateRecordBytes = readerProperties.generateRecordBytes,
       activeSegmentRedefine = activeSegmentRedefine,
       handler = handler
     )

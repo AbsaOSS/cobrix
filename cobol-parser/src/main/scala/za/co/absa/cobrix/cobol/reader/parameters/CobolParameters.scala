@@ -44,6 +44,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param recordLength           Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   * @param variableSizeOccurs     If true, OCCURS DEPENDING ON data size will depend on the number of elements
+  * @param generateRecordBytes    Generate 'record_bytes' field containing raw bytes of the original record
   * @param schemaRetentionPolicy  A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   * @param stringTrimmingPolicy   Specify if and how strings should be trimmed when parsed
   * @param allowPartialRecords    If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
@@ -76,6 +77,7 @@ case class CobolParameters(
                             recordLength:          Option[Int],
                             variableLengthParams:  Option[VariableLengthParameters],
                             variableSizeOccurs:    Boolean,
+                            generateRecordBytes:   Boolean,
                             schemaRetentionPolicy: SchemaRetentionPolicy,
                             stringTrimmingPolicy:  StringTrimmingPolicy,
                             allowPartialRecords:   Boolean,

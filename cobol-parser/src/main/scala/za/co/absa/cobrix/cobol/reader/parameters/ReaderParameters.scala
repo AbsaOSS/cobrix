@@ -53,6 +53,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param fileStartOffset         A number of bytes to skip at the beginning of each file
   * @param fileEndOffset           A number of bytes to skip at the end of each file
   * @param generateRecordId        If true, a record id field will be prepended to each record.
+  * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
   * @param schemaPolicy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
   * @param allowPartialRecords     If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
@@ -96,6 +97,7 @@ case class ReaderParameters(
                              fileStartOffset:         Int = 0,
                              fileEndOffset:           Int = 0,
                              generateRecordId:        Boolean = false,
+                             generateRecordBytes:     Boolean = false,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              allowPartialRecords:     Boolean = false,
