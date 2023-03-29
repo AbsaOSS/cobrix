@@ -22,4 +22,5 @@ import za.co.absa.cobrix.cobol.parser.ast.Group
 trait RecordHandler[T] {
   def create(values: Array[Any], group: Group): T
   def toSeq(record: T): Seq[Any]
+  def foreach(record: T)(f: Any => Unit): Unit
 }

@@ -143,6 +143,8 @@ class StructExtractorSpec extends AnyFunSuite {
     override def toSeq(record: Any): Seq[Any] = {
       record.asInstanceOf[Map[String, Any]].values.toSeq
     }
+
+    override def foreach(record: Any)(f: Any => Unit): Unit = record.asInstanceOf[Map[String, Any]].values.foreach(f)
   }
 
   test("Test simple struct generation") {

@@ -25,4 +25,13 @@ class RowHandler extends RecordHandler[GenericRow] with Serializable {
   override def create(values: Array[Any], group: Group): GenericRow = new GenericRow(values)
 
   override def toSeq(record: GenericRow): Seq[Any] = record.toSeq
+
+  override def foreach(record: GenericRow)(f: Any => Unit): Unit = {
+    val len = record.length
+    var i = 0
+    while (i < len) {
+      f(record(i))
+      i += 1
+    }
+  }
 }

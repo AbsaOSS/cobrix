@@ -142,8 +142,9 @@ class SerializersSpec extends AnyFunSuite {
     override def toSeq(record: Map[String, Any]): Seq[Any] = {
       record.values.toSeq
     }
-  }
 
+    override def foreach(record: Map[String, Any])(f: Any => Unit): Unit = record.values.foreach(f)
+  }
 
   test("Test JSON generation") {
     import com.fasterxml.jackson.databind.ObjectMapper

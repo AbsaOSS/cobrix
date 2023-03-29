@@ -133,6 +133,8 @@ class JSONExtractorSpec extends AnyFunSuite {
     }
 
     override def toSeq(record: Any): Seq[Any] = Seq[Any]()
+
+    override def foreach(record: Any)(f: Any => Unit): Unit = {}
   }
 
   test("Test simple JSON generation") {
