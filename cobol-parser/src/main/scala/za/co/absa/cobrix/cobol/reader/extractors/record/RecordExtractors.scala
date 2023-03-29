@@ -461,29 +461,37 @@ object RecordExtractors {
     inputFileName: String,
     handler: RecordHandler[T]
   ): Seq[Any] = {
-    val generatedFields = new ListBuffer[Any]
+    val outputRecords = new ListBuffer[Any]
 
     if (generateRecordId) {
-      generatedFields.append(fileId, recordId, recordByteLength)
+      outputRecords.append(fileId, recordId, recordByteLength)
     }
 
     if (generateRecordBytes) {
-      generatedFields.append(recordBytes)
+      outputRecords.append(recordBytes)
     }
 
     if (generateInputFileField) {
-      generatedFields.append(inputFileName)
+      outputRecords.append(inputFileName)
     }
 
-    segmentLevelIds.foreach(generatedFields.append(_))
+    segmentLevelIds.foreach(outputRecords.append(_))
 
     policy match {
       case SchemaRetentionPolicy.CollapseRoot =>
         // If the policy for schema retention is root collapsing, expand root fields
-        generatedFields ++ records.flatMap(record => handler.toSeq(record))
+        // The original implementation:
+        //   outputRecords ++ records.flatMap(record => handler.toSeq(record))
+        // relies on 'toSeq' which copies data and 'flatMap' which can copy data in certain circumstances
+        // 'outputRecords' is a ListBuffer with constant time append and prepend
+        // 'records' is essentially an Array[Any] with constant time index operation
+        // So using 'foreach()' ensures no copying of collections
+        records.foreach(record => handler.foreach(record)(child => outputRecords.append(child)))
       case SchemaRetentionPolicy.KeepOriginal =>
         // Return rows as the original sequence of groups
-        generatedFields ++ records
+        records.foreach(record => outputRecords.append(record))
     }
+    // toList() is a constant time operation, and List implements immutable Seq, which is exactly what is needed here.
+    outputRecords.toList
   }
 }

@@ -119,6 +119,8 @@ class RowExtractorSpec extends AnyFunSuite {
     override def create(values: Array[Any], group: Group): Array[Any] = values
 
     override def toSeq(record: Array[Any]): Seq[Any] = Seq[Any]()
+
+    override def foreach(record: Array[Any])(f: Any => Unit): Unit = record.foreach(f)
   }
 
 
