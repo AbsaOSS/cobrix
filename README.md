@@ -558,6 +558,17 @@ root
  |-- Record_Byte_Length: integer (nullable = false)
 ```
 
+You can use this option to generate raw bytes of each record as a binary field:
+```
+.option("generate_record_bytes", "true")
+```
+
+The following fields will be added to the top of the schema:
+```
+root
+ |-- Record_Bytes: binary (nullable = false)
+```
+
 ### Locality optimization for variable-length records parsing
 
 Variable-length records depend on headers to have their length calculated, which makes it hard to achieve parallelism while parsing.
@@ -1428,6 +1439,7 @@ You can have decimals when using COMP-3 as well.
 | .option("filler_naming_policy", "sequence_numbers") | Filler renaming strategy so that column names are not duplicated. Either `sequence_numbers` (default) or `previous_field_name` can be used.                                                                                                                                                 |
 | .option("non_terminals", "GROUP1,GROUP2")           | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group.                                                                               |
 | .option("generate_record_id", false)                | Generate autoincremental 'File_Id', 'Record_Id' and 'Record_Byte_Length' fields. This is used for processing record order dependent data.                                                                                                                                                   |
+| .option("generate_record_bytes", false)             | Generate 'Record_Bytes', the binary field that contains raw contents of the original unparsed records.                                                                                                                                                                                      |
 | .option("with_input_file_name_col", "file_name")    | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length files use `input_file_name()`. |
 | .option("metadata", "basic")                        | Specifies wat kind of metadata to include in the Spark schema: `false`, `basic`(default), or `extended` (PIC, usage, etc).                                                                                                                                                                  |
 | .option("debug", "hex")                             | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                   |
@@ -1618,6 +1630,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.6.5 (to be released soon)
    - [#590](https://github.com/AbsaOSS/cobrix/issues/590) Changed from `.option("extended_metadata", true)` to `.option("metadata", "extended")` allowing other modes like 'basic' (default) and 'false' (disable metadata).
+   - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Add option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
 
 - #### 2.6.4 released 3 March 2023.
    - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
