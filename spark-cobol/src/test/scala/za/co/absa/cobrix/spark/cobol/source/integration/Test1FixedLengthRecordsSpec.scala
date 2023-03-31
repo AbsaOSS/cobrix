@@ -43,8 +43,6 @@ class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .load(inpudDataPath)
 
-    println(df.schema.toDDL)
-
     // This is to print the actual output
     //println(df.schema.json)
     //df.toJSON.take(60).foreach(println)
@@ -108,14 +106,8 @@ class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
   }
 
   test(s"Test failure on unrecognized options (pedantic mode on)") {
-    val copybook =
-      """        01  COMPANY-DETAILS.
-        |            05  SEGMENT-ID           PIC X(5).
-        |            05  COMPANY-ID           PIC X(11).
-        |""".stripMargin
-
     val exception = intercept[IllegalArgumentException] {
-      val df1 = spark
+      spark
         .read
         .format("cobol")
         .option("copybook", inputCopybookPath)
