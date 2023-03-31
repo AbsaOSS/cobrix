@@ -27,18 +27,34 @@ class CodePageTwoBytesSpec extends AnyFunSuite {
   }
 
   test("Ensure 'cp00300' decodes strings as expected") {
-    val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11 ,0x14, 0x12)
+    val bytes = Array[Byte](0x0E, 0x46, 0xAF.toByte, 0x46, 0x7A, 0x46, 0x7C)
 
     val codePage = CodePage.getCodePageByName("cp00300")
 
-    assert(codePage.convert(bytes) =="抜抛抗")
+    assert(codePage.convert(bytes) =="不丸由")
   }
 
   test("Ensure 'cp00300' correctly decodes odd number of bytes") {
-    val bytes = Array[Byte](0x14, 0x10, 0x14, 0x11, 0x14)
+    val bytes = Array[Byte](0x0E, 0x46, 0x7A, 0x46, 0x7C, 0x14)
 
     val codePage = CodePage.getCodePageByName("cp00300")
 
-    assert(codePage.convert(bytes) == "抜抛")
+    assert(codePage.convert(bytes) == "丸由")
+  }
+
+  test("Ensure 'cp00300' correctly decodes single bytes sequence") {
+    val bytes = Array[Byte](0x62, 0x63, 0x64, 0x65)
+
+    val codePage = CodePage.getCodePageByName("cp00300")
+
+    assert(codePage.convert(bytes) == "abcd")
+  }
+
+  test("Ensure 'cp00300' correctly decodes single + multiple byte  sequence") {
+    val bytes = Array[Byte](0x62, 0x63, 0x64, 0x65, 0x0E, 0x46, 0xAF.toByte, 0x46, 0x7C, 0x0F, 0x62, 0x63, 0x64, 0x65)
+
+    val codePage = CodePage.getCodePageByName("cp00300")
+
+    assert(codePage.convert(bytes) == "abcd不由abcd")
   }
 }

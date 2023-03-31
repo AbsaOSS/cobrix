@@ -21,23 +21,72 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   */
 abstract class TwoByteCodePage(ebcdicToAsciiMapping: Array[Char]) extends CodePage {
   /**
+    * Byte indicates the transition to the shifted state
+    */
+  val TO_SHIFTED_STATE = 0x0E
+  /**
+    * Byte indicates the transition to the normal (non-shifted) state
+    */
+  val FROM_SHIFTED_STATE = 0x0F
+
+  /**
     * Decodes bytes encoded as single byte EBCDIC code page to string.
     */
   final def convert(bytes: Array[Byte]): String = {
     val tableLen = ebcdicToAsciiMapping.length
-    val outputLen = bytes.length / 2
+    val bytesLen = bytes.length
 
-    var i = 0
-    val buf = new StringBuffer(bytes.length)
-    while (i < outputLen) {
-      val byte1 = bytes(i * 2)
-      val byte2 = bytes(i * 2 + 1)
-      val index = (byte1 + 256) % 256 * 256 + (byte2 + 256) % 256
+    var offset = 0
+    var shiftedState = false
+
+    def readSingleByte: Int = {
+      val byte = bytes(offset)
+      offset += 1
+
+      if (byte == TO_SHIFTED_STATE) {
+        shiftedState = true
+        if (offset < bytesLen) {
+          readDoubleByte
+        }
+        else
+          0
+      } else {
+        (byte + 256) % 256
+      }
+    }
+
+    def readDoubleByte: Int = {
+      val byte1 = bytes(offset)
+      offset += 1
+
+      if (byte1 == FROM_SHIFTED_STATE) {
+        shiftedState = false
+        readSingleByte
+      } else {
+        val byte2 = if (offset < bytesLen) {
+          bytes(offset)
+        } else {
+          return 0
+        }
+
+        offset += 1
+        (byte1 + 256) % 256 * 256 + (byte2 + 256) % 256
+      }
+    }
+
+    val buf = new StringBuilder(bytes.length)
+    while (offset < bytesLen) {
+      val index = if (shiftedState)
+        readDoubleByte
+      else
+        readSingleByte
 
       if (index < tableLen) {
-        buf.append(ebcdicToAsciiMapping(index))
+        val c = ebcdicToAsciiMapping(index)
+        if (c != 0.toChar) {
+          buf.append(ebcdicToAsciiMapping(index))
+        }
       }
-      i = i + 1
     }
     buf.toString
   }
