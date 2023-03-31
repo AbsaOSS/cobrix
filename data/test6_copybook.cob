@@ -78,7 +78,7 @@
           10  NUM-STR-SDEC08      PIC S9(16)V99.
           10  NUM-STR-SDEC09      PIC S9(17)V99.
           10  NUM-STR-SDEC10      PIC S9(18)V9(10).
-********** These types are currently not supported, added for the future
+********** Decimals with explicit decimal point
           10  NUM-STR-EDEC03      PIC S9(3).99.
           10  NUM-STR-EDEC04      PIC S9(4).9(4).
           10  NUM-STR-EDEC05      PIC S9(5).9(4).
