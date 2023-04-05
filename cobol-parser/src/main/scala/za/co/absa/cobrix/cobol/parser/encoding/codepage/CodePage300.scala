@@ -16,37 +16,21 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.TwoByteCodePage.createEbcdicToUnicodeTable
+
 /**
   * EBCDIC code page 300 Japanese Latin Host Double-Byte.
   */
-class CodePage00300 extends TwoByteCodePage(CodePage00300.ebcdicToAsciiMapping) {
-  override def codePageShortName: String = "cp00300"
+class CodePage300 extends TwoByteCodePage(CodePage300.ebcdicToAsciiMapping) {
+  override def codePageShortName: String = "cp300"
 }
 
-object CodePage00300 {
+object CodePage300 {
   val ebcdicToAsciiMapping: Array[Char] = {
     /**
-      * This is the EBCDIC Code Page 00300 contributed by https://github.com/BenceBenedek
+      * This is the EBCDIC Code Page CCSID-00300 contributed by https://github.com/BenceBenedek
       * https://public.dhe.ibm.com/software/globalization/gcoc/attachments/CP00300.pdf
       */
-    val ebcdic2ascii: Array[Char] = {
-      val directMapping = new Array[Char](65536)
-
-      val ebcdic300 = TwoByteTables.mappingTableEbcdic300()
-      val unicode300 = TwoByteTables.mappingTableUnicode300()
-
-      var i = 0
-      val len = ebcdic300.length
-      while (i < len) {
-        val unicode = unicode300(i)
-        val ebcdic = ebcdic300(i)
-        directMapping(ebcdic) = unicode.toChar
-        i += 1
-      }
-      directMapping
-    }
-
-
-    ebcdic2ascii
+    createEbcdicToUnicodeTable(TwoByteTables300.mappingTableEbcdic300(), TwoByteTables300.mappingTableUnicode300())
   }
 }
