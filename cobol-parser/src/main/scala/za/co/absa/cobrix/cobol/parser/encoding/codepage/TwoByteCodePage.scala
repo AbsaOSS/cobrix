@@ -91,3 +91,19 @@ abstract class TwoByteCodePage(ebcdicToAsciiMapping: Array[Char]) extends CodePa
     buf.toString
   }
 }
+
+object TwoByteCodePage {
+  def createEbcdicToUnicodeTable(ebcdicTable: Array[Int], unicodeTable: Array[Int]): Array[Char] = {
+    val directMapping = new Array[Char](65536)
+
+    var i = 0
+    val len = ebcdicTable.length
+    while (i < len) {
+      val unicode = unicodeTable(i)
+      val ebcdic = ebcdicTable(i)
+      directMapping(ebcdic) = unicode.toChar
+      i += 1
+    }
+    directMapping
+  }
+}

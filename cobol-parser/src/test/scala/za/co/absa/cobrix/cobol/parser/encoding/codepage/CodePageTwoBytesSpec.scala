@@ -21,9 +21,24 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.util.{Failure, Success, Try}
 
 class CodePageTwoBytesSpec extends AnyFunSuite {
+  test("Ensure codepage 'cp300' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp300")
+    assert(codePage.codePageShortName == "cp300")
+  }
+
   test("Ensure codepage 'cp00300' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("cp00300")
-    assert(codePage.codePageShortName == "cp00300")
+    assert(codePage.codePageShortName == "cp300")
+  }
+
+  test("Ensure codepage 'cp1364' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1364")
+    assert(codePage.codePageShortName == "cp1364")
+  }
+
+  test("Ensure codepage 'cp1388' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1388")
+    assert(codePage.codePageShortName == "cp1388")
   }
 
   test("Ensure 'cp00300' decodes strings as expected") {
@@ -56,5 +71,21 @@ class CodePageTwoBytesSpec extends AnyFunSuite {
     val codePage = CodePage.getCodePageByName("cp00300")
 
     assert(codePage.convert(bytes) == "abcd不由abcd")
+  }
+
+  test("Ensure 'cp1364' correctly decodes single + multiple byte  sequence") {
+    val bytes = Array(0xF1, 0xF2, 0xF3, 0xF4, 0x0E, 0x4A, 0x77, 0xB0, 0x91, 0x0F, 0x81, 0x82, 0x83, 0x84).map(_.toByte)
+
+    val codePage = CodePage.getCodePageByName("cp1364")
+
+    assert(codePage.convert(bytes) == "1234ф쌤abcd")
+  }
+
+  test("Ensure 'cp1388' correctly decodes single + multiple byte  sequence") {
+    val bytes = Array(0xF1, 0xF2, 0xF3, 0xF4, 0x0E, 0x6B, 0x5A, 0x51, 0xA0, 0x0F, 0x81, 0x82, 0x83, 0x84).map(_.toByte)
+
+    val codePage = CodePage.getCodePageByName("cp1388")
+
+    assert(codePage.convert(bytes) == "1234鹾隆abcd")
   }
 }

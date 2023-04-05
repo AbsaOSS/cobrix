@@ -754,12 +754,14 @@ The following code pages are supported:
 * `common_extended` - EBCDIC common characters with special characters extension
 * `cp037` - IBM EBCDIC US-Canada
 * `cp037_extended` - IBM EBCDIC US-Canada with special characters extension
+* `cp300` - IBM EBCDIC Japanese Extended (2 byte code page)
 * `cp838` - IBM EBCDIC Thailand
 * `cp870` - IBM EBCDIC Multilingual Latin-2
 * `cp875` - IBM EBCDIC Greek
 * `cp1025` - IBM EBCDIC Multilingual Cyrillic
 * `cp1047` - IBM EBCDIC Latin-1/Open System
-* `cp00300` - (experimental support) IBM EBCDIC Japanese (Katakana) Extended (2 byte code page)
+* `cp1364` - (experimental support) IBM EBCDIC Korean (2 byte code page)
+* `cp1388` - (experimental support) IBM EBCDIC Simplified Chinese (2 byte code page)
 
 By default, Cobrix uses common EBCDIC code page which contains only basic latin characters, numbers, and punctuation.
 You can specify the code page to use for all string fields by setting the `ebcdic_code_page` option to one of the
@@ -1629,6 +1631,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.6.5 (to be released soon)
+   - [#539](https://github.com/AbsaOSS/cobrix/issues/539) Fixed 'cp300', and added experimental support for 'cp1364' and 'cp1388' code pages (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
    - [#590](https://github.com/AbsaOSS/cobrix/issues/590) Changed from `.option("extended_metadata", true)` to `.option("metadata", "extended")` allowing other modes like 'basic' (default) and 'false' (disable metadata).
    - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Add option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
 
