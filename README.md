@@ -63,7 +63,7 @@ You can link against this library in your program at the following coordinates:
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.11
-version: 2.6.4
+version: 2.6.5
 ```
 
 ### Scala 2.12
@@ -72,7 +72,7 @@ version: 2.6.4
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.12
-version: 2.6.4
+version: 2.6.5
 ```
 
 ### Scala 2.13
@@ -81,7 +81,7 @@ version: 2.6.4
 ```
 groupId: za.co.absa.cobrix
 artifactId: spark-cobol_2.13
-version: 2.6.4
+version: 2.6.5
 ```
 
 ## Using with Spark shell
@@ -90,17 +90,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.5
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.5
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.5
 ```
 
 ## Usage
@@ -237,17 +237,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.6.4.jar
-* cobol-parser_2.12-2.6.4.jar
+* spark-cobol_2.12-2.6.5.jar
+* cobol-parser_2.12-2.6.5.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.8.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.4
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.5
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.4.jar,cobol-parser_2.12-2.6.4.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.5.jar,cobol-parser_2.12-2.6.5.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -311,11 +311,11 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
-The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.4
+The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.5
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.5-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.6-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -716,8 +716,6 @@ fully qualified class name to the following option:
 ```
 
 ### RDDs
-This feature is experimental and will be available in `2.6.4`.
-
 Cobrix provides helper methods to convert `RDD[String]` or `RDD[Array[Byte]]` to `DataFrame` using a copybook.
 This can be used if you want to use a custom logic to split the input file into records as either ASCII strings
 or arrays of bytes, and then parse each record using a copybook.
@@ -1630,7 +1628,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.6.5 (to be released soon)
+- #### 2.6.5 released 5 April 2023.
    - [#539](https://github.com/AbsaOSS/cobrix/issues/539) Fixed 'cp300', and added experimental support for 'cp1364' and 'cp1388' code pages (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
    - [#590](https://github.com/AbsaOSS/cobrix/issues/590) Changed from `.option("extended_metadata", true)` to `.option("metadata", "extended")` allowing other modes like 'basic' (default) and 'false' (disable metadata).
    - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Add option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
