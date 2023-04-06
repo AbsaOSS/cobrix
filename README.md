@@ -57,32 +57,31 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 You can link against this library in your program at the following coordinates:
 
-### Scala 2.11
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11)
-
-```
-groupId: za.co.absa.cobrix
-artifactId: spark-cobol_2.11
-version: 2.6.5
-```
-
-### Scala 2.12
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12)
-
-```
-groupId: za.co.absa.cobrix
-artifactId: spark-cobol_2.12
-version: 2.6.5
-```
-
-### Scala 2.13
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13)
-
-```
-groupId: za.co.absa.cobrix
-artifactId: spark-cobol_2.13
-version: 2.6.5
-```
+<table>
+<tr><th>Scala 2.11</th><th>Scala 2.12</th><th>Scala 2.13</th></tr>
+<tr>
+<td align="center">
+<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11/badge.svg" alt="Maven Central"></a><br>
+</td>
+<td align="center">
+<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12/badge.svg" alt="Maven Central"></a><br>
+</td>
+<td align="center">
+<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13/badge.svg" alt="Maven Central"></a><br>
+</td>
+</tr>
+<tr>
+<td>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.6.5</pre>
+</td>
+<td>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.6.5</pre>
+</td>
+<td>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.6.5</pre>
+</td>
+</tr>
+</table>
 
 ## Using with Spark shell
 This package can be added to Spark using the `--packages` command line option. For example, to include it when starting the spark shell:
