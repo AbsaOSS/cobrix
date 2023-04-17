@@ -41,12 +41,11 @@ class RecordHeaderParserFixedLen(recordSize: Int,
     if (fileHeaderBytes > 0 && fileOffset == 0L) {
       RecordMetadata(fileHeaderBytes, isValid = false)
     } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
-      RecordMetadata((fileSize - fileOffset).toInt, isValid = false)
+      RecordMetadata((fileSize - fileOffset - fileFooterBytes).toInt, isValid = false)
     } else if (maxOffset - fileOffset >= recordSize) {
       RecordMetadata(recordSize, isValid = true)
     } else {
       RecordMetadata(-1, isValid = false)
     }
   }
-
 }

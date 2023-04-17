@@ -53,7 +53,7 @@ object IndexGenerator extends Logging {
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
 
     // Add the first mandatory index entry
-    val indexEntry = SparseIndexEntry(0, -1, fileId, recordIndex)
+    val indexEntry = SparseIndexEntry(dataStream.offset, -1, fileId, recordIndex)
     index += indexEntry
 
     var endOfFileReached = false

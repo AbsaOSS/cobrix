@@ -156,10 +156,28 @@ private[source] object IndexBuilder extends Logging {
     val fileOrder = fileWithOrder.order
     val fileSystem = path.getFileSystem(config)
 
+    val startOffset = reader.getReaderProperties.fileStartOffset
+    val maximumBytes = if (reader.getReaderProperties.fileEndOffset == 0) {
+      0
+    } else {
+      val bytesToRead = fileSystem.getContentSummary(path).getLength - reader.getReaderProperties.fileEndOffset - startOffset
+      if (bytesToRead < 0)
+        0
+      else
+        bytesToRead
+    }
+
     logger.info(s"Going to generate index for the file: $filePath")
-    val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, 0, 0),
-      fileOrder, reader.isRdwBigEndian)
-    index
+    val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, startOffset, maximumBytes),
+                                     fileOrder, reader.isRdwBigEndian)
+
+    val indexWithEndOffset = if (maximumBytes > 0 ){
+      index.map(entry => if (entry.offsetTo == -1) entry.copy(offsetTo = startOffset + maximumBytes) else entry)
+    } else {
+      index
+    }
+
+    indexWithEndOffset
   }
 
 
