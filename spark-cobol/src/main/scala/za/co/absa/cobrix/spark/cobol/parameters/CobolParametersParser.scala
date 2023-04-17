@@ -823,9 +823,9 @@ object CobolParametersParser extends Logging {
       }
     }
     if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
-      val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_RECORD_FORMAT' = D or '$PARAM_IS_RECORD_SEQUENCE' = true" +
+      val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_IS_RECORD_SEQUENCE' = true" +
         s" or one of these options is set: '$PARAM_RECORD_LENGTH_FIELD', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET' or " +
-        "a custom record extractor is specified"
+        "a custom record extractor is specified. If you see the error, please use Spark standard function 'input_file_name()' instead."
       throw new IllegalArgumentException(s"Option '$PARAM_INPUT_FILE_COLUMN' is supported only when $recordSequenceCondition")
     }
 
