@@ -46,7 +46,7 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
     if (fileHeaderBytes > getHeaderLength && fileOffset == getHeaderLength) {
       RecordMetadata(fileHeaderBytes - getHeaderLength, isValid = false)
     } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
-      RecordMetadata((fileSize - fileOffset).toInt, isValid = false)
+      RecordMetadata((fileSize - fileOffset - fileFooterBytes).toInt, isValid = false)
     } else {
       processRdwHeader(header, fileOffset)
     }

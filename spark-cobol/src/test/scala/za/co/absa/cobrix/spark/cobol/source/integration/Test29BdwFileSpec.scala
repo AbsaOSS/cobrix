@@ -82,6 +82,12 @@ class Test29BdwFileSpec extends AnyWordSpec with SparkTestBase with BinaryFileFi
     }
   }
 
+  "File start and and offset" should {
+    "be supported" in {
+      testVbRecordLoad(true, true, -1, 1, 2, 2, expected4Records, fileStartOffset = 10, fileEndOffset = 15)
+    }
+  }
+
   "in case of failures" should {
     "thrown an exception if there is only BDW, but nor RDW" in {
       val record: Seq[Byte] = getHeader(5, false, 0) ++ Seq(0xF0.toByte)
@@ -111,15 +117,20 @@ class Test29BdwFileSpec extends AnyWordSpec with SparkTestBase with BinaryFileFi
                                records: Int,
                                expected: String,
                                options: Map[String, String] = Map.empty[String, String],
-                               expectedPartitions: Option[Int] = None): Unit = {
-    val record: Seq[Byte] = Range(0, blocks).flatMap(blockNum => {
+                               expectedPartitions: Option[Int] = None,
+                               fileStartOffset: Int = 0,
+                               fileEndOffset: Int = 0
+                              ): Unit = {
+    val header: Seq[Byte] = Range(0, fileStartOffset).map(_.toByte)
+    val footer: Seq[Byte] = Range(0, fileEndOffset).map(n => (n + 100).toByte)
+    val record: Seq[Byte] = header ++ Range(0, blocks).flatMap(blockNum => {
       getHeader(records * 6, bdwBigEndian, bdwAdjustment) ++
       Range(0, records).flatMap(recordNum => {
         val idx0 = (blockNum * records + recordNum) / 10
         val idx1 = (blockNum * records + recordNum) % 10
         getHeader(2, rdwBigEndian, rdwAdjustment) ++ Seq((0xF0 + idx0).toByte, (0xF0.toByte + idx1).toByte)
       })
-    })
+    }) ++ footer
 
     withTempBinFile("rec", ".dat", record.toArray) { tmpFileName1 =>
       val df =     spark
@@ -131,6 +142,8 @@ class Test29BdwFileSpec extends AnyWordSpec with SparkTestBase with BinaryFileFi
         .option("is_rdw_big_endian", rdwBigEndian)
         .option("bdw_adjustment", -bdwAdjustment)
         .option("rdw_adjustment", -rdwAdjustment)
+        .option("file_start_offset", fileStartOffset)
+        .option("file_end_offset", fileEndOffset)
         .options(options)
         .load(tmpFileName1)
 

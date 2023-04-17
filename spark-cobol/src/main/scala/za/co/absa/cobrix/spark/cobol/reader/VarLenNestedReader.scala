@@ -43,6 +43,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     override def next(): Row = Row.fromSeq(iterator.next())
   }
 
+  override def getReaderProperties: ReaderParameters = readerProperties
 
   override def getCobolSchema: CobolSchema = CobolSchema.fromBaseReader(cobolSchema)
 
@@ -57,7 +58,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
       new RowIterator(
         new VarLenHierarchicalIterator(cobolSchema.copybook,
           binaryData,
-          readerProperties,
+          getReaderProperties,
           recordHeaderParser,
           recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
           fileNumber,
@@ -69,7 +70,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
       new RowIterator(
         new VarLenNestedIterator(cobolSchema.copybook,
           binaryData,
-          readerProperties,
+          getReaderProperties,
           recordHeaderParser,
           recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
           fileNumber,
