@@ -85,54 +85,90 @@ class Test27RecordLengthSpec extends AnyWordSpec with SparkTestBase with BinaryF
 
   "Record length option is not compatible with" when {
     "is_record_sequence" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("is_record_sequence" -> "true"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'is_record_sequence' cannot be used together."))
     }
     "is_xcom" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("is_xcom" -> "true"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'is_xcom' cannot be used together."))
     }
     "minimum_record_length" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("minimum_record_length" -> "10"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'minimum_record_length' cannot be used together."))
     }
     "maximum_record_length" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("maximum_record_length" -> "10"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'maximum_record_length' cannot be used together."))
     }
     "is_rdw_big_endian" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("is_rdw_big_endian" -> "true"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'is_rdw_big_endian' cannot be used together."))
     }
     "is_rdw_part_of_record_length" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("is_rdw_part_of_record_length" -> "true"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'is_rdw_part_of_record_length' cannot be used together."))
     }
     "rdw_adjustment" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("rdw_adjustment" -> "-1"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'rdw_adjustment' cannot be used together."))
     }
     "record_length_field" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("record_length_field" -> "A"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'record_length_field' cannot be used together."))
     }
     "record_header_parser" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("record_header_parser" -> "com.example.parser"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'record_header_parser' cannot be used together."))
     }
     "rhp_additional_info" in {
-      intercept[IllegalArgumentException] {
+      val ex = intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("rhp_additional_info" -> "Additional info"))
       }
+      assert(ex.getMessage.contains("Option 'record_length' and 'rhp_additional_info' cannot be used together."))
+    }
+  }
+
+  "record length should be at least 1" when {
+    "minimum_record_length" in {
+      val ex = intercept[IllegalArgumentException] {
+        spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("minimum_record_length", 0)
+          .load("/dummy")
+      }
+      assert(ex.getMessage.contains("The option 'minimum_record_length' should be at least 1."))
+    }
+    "minimum_record_length should not be bigger than maximum_record_length" in {
+      val ex = intercept[IllegalArgumentException] {
+        spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("minimum_record_length", 10)
+          .option("maximum_record_length", 8)
+          .load("/dummy")
+      }
+      assert(ex.getMessage.contains("'minimum_record_length' (10) should be >= 'maximum_record_length' (8)."))
     }
   }
 
