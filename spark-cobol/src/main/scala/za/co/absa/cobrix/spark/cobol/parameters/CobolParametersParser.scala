@@ -196,6 +196,7 @@ object CobolParametersParser extends Logging {
 
   private def getDebuggingFieldsPolicy(recordFormat: RecordFormat, params: Parameters): DebugFieldsPolicy = {
     val debugFieldsPolicyName = params.getOrElse(PARAM_DEBUG, "false")
+    val isText = params.getOrElse(PARAM_IS_TEXT, "false").toBoolean
     val debugFieldsPolicy = DebugFieldsPolicy.withNameOpt(debugFieldsPolicyName)
 
     val policy = debugFieldsPolicy match {
@@ -205,7 +206,7 @@ object CobolParametersParser extends Logging {
         throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
           "Allowed one of: 'true' = 'hex', 'raw', 'binary', 'string' (ASCII only), 'false' = 'none'. ")
     }
-    if (policy == DebugFieldsPolicy.StringValue && recordFormat != RecordFormat.AsciiText && recordFormat != RecordFormat.CobrixAsciiText) {
+    if (policy == DebugFieldsPolicy.StringValue && recordFormat != RecordFormat.AsciiText && recordFormat != RecordFormat.CobrixAsciiText && !isText) {
       throw new IllegalArgumentException(s"Invalid value '$debugFieldsPolicyName' for '$PARAM_DEBUG' option. " +
         "Allowed only for record_format = 'D' or 'D2'.")
     }
@@ -836,7 +837,7 @@ object CobolParametersParser extends Logging {
           "since hierarchical records are composites of more than one raw record.")
       }
     }
-    if (!isRecordSequence && params.contains(PARAM_INPUT_FILE_COLUMN)) {
+    if (!isRecordSequence && recordFormat != AsciiText && recordFormat != CobrixAsciiText && params.contains(PARAM_INPUT_FILE_COLUMN)) {
       val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_IS_RECORD_SEQUENCE' = true" +
         s" or one of these options is set: '$PARAM_RECORD_LENGTH_FIELD', '$PARAM_FILE_START_OFFSET', '$PARAM_FILE_END_OFFSET' or " +
         "a custom record extractor is specified. If you see the error, please use Spark standard function 'input_file_name()' instead."
