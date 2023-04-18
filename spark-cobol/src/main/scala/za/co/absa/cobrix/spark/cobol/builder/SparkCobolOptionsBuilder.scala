@@ -93,8 +93,11 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
 
     val schemaRetentionPolicy = readerParams.schemaPolicy
 
+    val minimumRecordLength = readerParams.minimumRecordLength
+    val maximumRecordLength = readerParams.maximumRecordLength
+
     val rddRow = rdd
-      .filter(array => array.nonEmpty)
+      .filter(array => array.nonEmpty && array.length >= minimumRecordLength && array.length <= maximumRecordLength)
       .map(array => {
         val record = RecordExtractors.extractRecord[GenericRow](parsedCopybook.ast,
                                                                 array,

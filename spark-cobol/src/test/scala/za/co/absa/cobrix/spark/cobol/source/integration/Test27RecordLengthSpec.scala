@@ -94,6 +94,16 @@ class Test27RecordLengthSpec extends AnyWordSpec with SparkTestBase with BinaryF
         getDataFrame("/dummy", Map("is_xcom" -> "true"))
       }
     }
+    "minimum_record_length" in {
+      intercept[IllegalArgumentException] {
+        getDataFrame("/dummy", Map("minimum_record_length" -> "10"))
+      }
+    }
+    "maximum_record_length" in {
+      intercept[IllegalArgumentException] {
+        getDataFrame("/dummy", Map("maximum_record_length" -> "10"))
+      }
+    }
     "is_rdw_big_endian" in {
       intercept[IllegalArgumentException] {
         getDataFrame("/dummy", Map("is_rdw_big_endian" -> "true"))

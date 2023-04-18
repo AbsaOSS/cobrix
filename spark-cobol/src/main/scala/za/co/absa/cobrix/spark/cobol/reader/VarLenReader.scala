@@ -18,7 +18,6 @@ package za.co.absa.cobrix.spark.cobol.reader
 
 import org.apache.spark.sql.Row
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 import scala.collection.mutable.ArrayBuffer
@@ -32,9 +31,6 @@ trait VarLenReader extends Reader with Serializable {
 
   /** Returns true if RDW header of variable length files is big endian */
   def isRdwBigEndian: Boolean
-
-  /** All the properties that the reader might need. */
-  def getReaderProperties: ReaderParameters
 
   /**
     * Returns a file iterator between particular offsets. This is for faster traversal of big binary files

@@ -55,6 +55,8 @@ class VRLRecordReader(cobolSchema: Copybook,
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
   private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
+  private val minimumRecordLength = readerProperties.minimumRecordLength
+  private val maximumRecordLength = readerProperties.maximumRecordLength
 
   fetchNext()
 
@@ -199,14 +201,14 @@ class VRLRecordReader(cobolSchema: Copybook,
 
       byteIndex += headerBytes.length
 
+      isValidRecord = recordMetadata.isValid && recordLength >= minimumRecordLength && recordLength <= maximumRecordLength
+
       if (recordLength > 0) {
         recordBytes = dataStream.next(recordLength)
         byteIndex += recordBytes.length
       } else {
         isEndOfFile = true
       }
-
-      isValidRecord = recordMetadata.isValid
     }
 
     if (!isEndOfFile) {

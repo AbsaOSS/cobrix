@@ -66,6 +66,8 @@ final class FixedLenNestedReader(copyBookContents: Seq[String],
     override def next(): Row = Row.fromSeq(iterator.next())
   }
 
+  override def getReaderProperties: ReaderParameters = readerProperties
+
   override def getCobolSchema: CobolSchema = CobolSchema.fromBaseReader(cobolSchema)
 
   override def getSparkSchema: StructType = getCobolSchema.getSparkSchema

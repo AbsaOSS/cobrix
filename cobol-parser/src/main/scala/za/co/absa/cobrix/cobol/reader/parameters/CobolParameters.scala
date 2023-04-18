@@ -42,6 +42,8 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param recordStartOffset      A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset        A number of bytes to skip at the end of each record
   * @param recordLength           Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
+  * @param minimumRecordLength    Minium record length for which the record is considered valid.
+  * @param maximumRecordLength    Maximum record length for which the record is considered valid.
   * @param variableLengthParams   VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   * @param variableSizeOccurs     If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param generateRecordBytes    Generate 'record_bytes' field containing raw bytes of the original record
@@ -75,6 +77,8 @@ case class CobolParameters(
                             recordStartOffset:     Int,
                             recordEndOffset:       Int,
                             recordLength:          Option[Int],
+                            minimumRecordLength:   Option[Int],
+                            maximumRecordLength:   Option[Int],
                             variableLengthParams:  Option[VariableLengthParameters],
                             variableSizeOccurs:    Boolean,
                             generateRecordBytes:   Boolean,

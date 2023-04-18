@@ -17,9 +17,9 @@
 package za.co.absa.cobrix.spark.cobol.source.text
 
 import java.nio.charset.StandardCharsets
-
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.spark.cobol.Cobrix
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
@@ -147,4 +147,96 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
     }
   }
 
+  test("Test ASCII files with invalid record length (UTF-8)") {
+    val copybook = """       05  A       PIC 9(2)V9(2). """
+
+    val textFileContent = Seq("1234", "1", "23456").mkString("\n")
+
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("minimum_record_length", 2)
+        .option("maximum_record_length", 4)
+        .load(tmpFileName)
+
+      val expected = """[{"A":12.34}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  test("Test ASCII files with invalid record length (us-ascii)") {
+    val copybook = """       05  A       PIC 9(2)V9(2). """
+
+    val textFileContent = Seq("1234", "1", "23456").mkString("\n")
+
+    withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("ascii_charset", "us-ascii")
+        .option("minimum_record_length", 2)
+        .option("maximum_record_length", 4)
+        .load(tmpFileName)
+
+      val expected = """[{"A":12.34}]"""
+
+      val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
+  test("Test ASCII from RDD with invalid record length") {
+    val copybook = """       05  A       PIC 9(2)V9(2). """
+
+    val textFileArray = Seq("1234", "1", "23456")
+
+    val rdd = spark.sparkContext.parallelize(textFileArray).map(_.getBytes)
+
+    val df = Cobrix.fromRdd(spark)
+      .copybookContents(copybook)
+      .option("pedantic", "true")
+      .option("encoding", "ascii")
+      .option("ascii_charset", "us-ascii")
+      .option("minimum_record_length", "2")
+      .option("maximum_record_length", "4")
+      .load(rdd)
+
+    val expected = """[{"A":12.34}]"""
+
+    val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+    assertEqualsMultiline(actual, expected)
+  }
+
+  test("Test ASCII from Text RDD with invalid record length") {
+    val copybook = """       05  A       PIC 9(2)V9(2). """
+
+    val textFileArray = Seq("1234", "1", "23456")
+
+    val rdd = spark.sparkContext.parallelize(textFileArray)
+
+    val df = Cobrix.fromRdd(spark)
+      .copybookContents(copybook)
+      .option("pedantic", "true")
+      .option("minimum_record_length", "2")
+      .option("maximum_record_length", "4")
+      .loadText(rdd)
+
+    val expected = """[{"A":12.34}]"""
+
+    val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+    assertEqualsMultiline(actual, expected)
+  }
 }
