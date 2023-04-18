@@ -99,6 +99,8 @@ class VRLRecordReader(cobolSchema: Copybook,
         case None =>
           cachedValue = None
           recordFetched = true
+        case Some(data) if data.length < minimumRecordLength || data.length > maximumRecordLength =>
+          recordFetched = false
         case Some(data) =>
           val segmentId = getSegmentId(data)
           val segmentIdStr = segmentId.getOrElse("")

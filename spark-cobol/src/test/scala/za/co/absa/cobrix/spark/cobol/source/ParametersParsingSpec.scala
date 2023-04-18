@@ -93,12 +93,12 @@ class ParametersParsingSpec extends AnyFunSuite {
                     )
     val params = new Parameters(myMap)
 
-    val fieldCodaPageMap = CobolParametersParser.getFieldCodepageMap(params)
+    val fieldCodePageMap = CobolParametersParser.getFieldCodepageMap(params)
 
-    assert(fieldCodaPageMap.size == 3)
-    assert(fieldCodaPageMap("field1") == "cp1256")
-    assert(fieldCodaPageMap("field_2") == "us-ascii")
-    assert(fieldCodaPageMap("field_3") == "us-ascii")
+    assert(fieldCodePageMap.size == 3)
+    assert(fieldCodePageMap("field1") == "cp1256")
+    assert(fieldCodePageMap("field_2") == "us-ascii")
+    assert(fieldCodePageMap("field_3") == "us-ascii")
   }
 
 }

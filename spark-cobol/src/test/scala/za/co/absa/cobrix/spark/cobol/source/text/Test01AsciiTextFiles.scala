@@ -239,4 +239,32 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
 
     assertEqualsMultiline(actual, expected)
   }
+
+  test("Throw an exception if ASCII charset is specified for s EBCDIC file") {
+    val ex = intercept[IllegalArgumentException] {
+      spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("encoding", "ebcdic")
+        .option("ascii_charset", "us-ascii")
+        .load("dummy")
+    }
+
+    assert(ex.getMessage.contains("Option 'ascii_charset' cannot be used when 'encoding = ebcdic'"))
+  }
+
+  test("Throw an exception if EBCDIC code page is specified for an ASCII file") {
+    val ex = intercept[IllegalArgumentException] {
+      spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("encoding", "ascii")
+        .option("ebcdic_code_page", "cp037")
+        .load("dummy")
+    }
+
+    assert(ex.getMessage.contains("Option 'ebcdic_code_page' cannot be used when 'encoding = ascii'"))
+  }
 }

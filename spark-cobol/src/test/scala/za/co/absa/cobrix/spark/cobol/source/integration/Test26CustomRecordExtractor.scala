@@ -35,18 +35,44 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
   "Custom record extractor" should {
     "apply the extractor to a binary data" in {
-        val expected = """[{"A":"AA"},{"A":"BBB"},{"A":"CC"},{"A":"DDD"},{"A":"EE"},{"A":"FFF"}]"""
+      val expected = """[{"A":"AA"},{"A":"BBB"},{"A":"CC"},{"A":"DDD"},{"A":"EE"},{"A":"FFF"}]"""
 
-        withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
-          val df = getDataFrame(tmpFileName)
+      withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
+        val df = getDataFrame(tmpFileName)
 
-          val actual = df.toJSON.collect().mkString("[", ",", "]")
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
 
-          assert(actual == expected)
-          assert(CustomRecordExtractorMock.additionalInfo == "re info")
-        }
+        assert(actual == expected)
+        assert(CustomRecordExtractorMock.additionalInfo == "re info")
       }
     }
+
+    "filter out records that are bigger than the specified size" in {
+      val expected = """[{"A":"BBB"},{"A":"DDD"},{"A":"FFF"}]"""
+
+      withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map("minimum_record_length" -> "3"))
+
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(actual == expected)
+        assert(CustomRecordExtractorMock.additionalInfo == "re info")
+      }
+    }
+
+    "filter out records that are smaller than the specified size" in {
+      val expected = """[{"A":"AA"},{"A":"CC"},{"A":"EE"}]"""
+
+      withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map("maximum_record_length" -> "2"))
+
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(actual == expected)
+        assert(CustomRecordExtractorMock.additionalInfo == "re info")
+      }
+    }
+  }
 
   "Custom record extractor options are not compatible with" when {
     "record_length" in {
