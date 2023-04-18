@@ -719,15 +719,15 @@ object CobolParametersParser extends Logging {
 
     if (params.contains(PARAM_RECORD_FORMAT)) {
       if (params.contains(PARAM_IS_XCOM)) {
-        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_XCOM cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and '$PARAM_IS_XCOM' cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
       }
 
       if (params.contains(PARAM_IS_RECORD_SEQUENCE)) {
-        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_RECORD_SEQUENCE cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and '$PARAM_IS_RECORD_SEQUENCE' cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
       }
 
       if (params.contains(PARAM_IS_TEXT)) {
-        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and $PARAM_IS_TEXT cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_FORMAT' and '$PARAM_IS_TEXT' cannot be used together. The use of $PARAM_RECORD_FORMAT is preferable.")
       }
     }
 
@@ -779,7 +779,7 @@ object CobolParametersParser extends Logging {
       }
 
       if (incorrectParameters.nonEmpty) {
-        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_EXTRACTOR' and ${incorrectParameters.mkString(", ")} cannot be used together.")
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_EXTRACTOR' and '${incorrectParameters.mkString(", ")}' cannot be used together.")
       }
     }
 
@@ -820,7 +820,7 @@ object CobolParametersParser extends Logging {
       }
 
       if (incorrectParameters.nonEmpty) {
-        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' and ${incorrectParameters.mkString(", ")} cannot be used together.")
+        throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH' and '${incorrectParameters.mkString(", ")}' cannot be used together.")
       }
     }
 
@@ -882,6 +882,19 @@ object CobolParametersParser extends Logging {
       if (params.contains(PARAM_EBCDIC_CODE_PAGE)) {
         throw new IllegalArgumentException(s"Option '$PARAM_EBCDIC_CODE_PAGE' cannot be used when '$PARAM_ENCODING = ascii'.")
       }
+    }
+
+    if (params.contains(PARAM_MINIMUM_RECORD_LENGTH) && params(PARAM_MINIMUM_RECORD_LENGTH).toInt < 1)
+      throw new IllegalArgumentException(s"The option '$PARAM_MINIMUM_RECORD_LENGTH' should be at least 1.")
+
+    if (params.contains(PARAM_MAXIMUM_RECORD_LENGTH) && params(PARAM_MAXIMUM_RECORD_LENGTH).toInt < 1)
+      throw new IllegalArgumentException(s"The option '$PARAM_MAXIMUM_RECORD_LENGTH' should be at least 1.")
+
+    if (params.contains(PARAM_MINIMUM_RECORD_LENGTH) && params.contains(PARAM_MAXIMUM_RECORD_LENGTH) &&
+      params(PARAM_MINIMUM_RECORD_LENGTH).toInt > params(PARAM_MAXIMUM_RECORD_LENGTH).toInt) {
+      val min = params(PARAM_MINIMUM_RECORD_LENGTH).toInt
+      val max = params(PARAM_MAXIMUM_RECORD_LENGTH).toInt
+      throw new IllegalArgumentException(s"'$PARAM_MINIMUM_RECORD_LENGTH' ($min) should be >= '$PARAM_MAXIMUM_RECORD_LENGTH' ($max).")
     }
 
     if (unusedKeys.nonEmpty) {
