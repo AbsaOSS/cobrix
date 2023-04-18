@@ -113,11 +113,14 @@ private[source] object CobolScanners extends Logging {
                                                 sourceDirs: Seq[String],
                                                 recordParser: (FixedLenTextReader, RDD[Array[Byte]]) => RDD[Row],
                                                 sqlContext: SQLContext): RDD[Row] = {
+    val minimumRecordLength = reader.getReaderProperties.minimumRecordLength
+    val maximumRecordLength = reader.getReaderProperties.maximumRecordLength
+
     val rddText = sourceDirs.map(sourceDir => sqlContext.sparkContext.textFile(sourceDir))
       .reduce((a, b) => a.union(b))
 
     val records = rddText
-      .filter(str => str.nonEmpty)
+      .filter(str => str.nonEmpty && str.length >= minimumRecordLength && str.length <= maximumRecordLength)
       .map(str => {
         str.getBytes(StandardCharsets.UTF_8)
       })
@@ -128,6 +131,9 @@ private[source] object CobolScanners extends Logging {
                                                sourceDirs: Seq[String],
                                                recordParser: (FixedLenTextReader, RDD[Array[Byte]]) => RDD[Row],
                                                sqlContext: SQLContext): RDD[Row] = {
+    val minimumRecordLength = reader.getReaderProperties.minimumRecordLength
+    val maximumRecordLength = reader.getReaderProperties.maximumRecordLength
+
     // The ides for the implementation is taken from the following Spark PR:
     // https://github.com/apache/spark/pull/21287/files
     val rddText = sourceDirs.map(sourceDir => sqlContext
@@ -144,7 +150,7 @@ private[source] object CobolScanners extends Logging {
       }
 
     val records = rddText
-      .filter(str => str.nonEmpty)
+      .filter(str => str.nonEmpty && str.length >= minimumRecordLength && str.length <= maximumRecordLength)
 
     recordParser(reader, records)
   }

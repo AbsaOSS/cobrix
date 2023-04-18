@@ -19,10 +19,13 @@ package za.co.absa.cobrix.spark.cobol.source.base.impl
 import org.apache.commons.lang3.NotImplementedException
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.FixedLenReader
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 class DummyFixedLenReader(sparkSchema: StructType, cobolSchema: CobolSchema, data: List[Map[String, Option[String]]])(invokeOnTraverse: () => Unit) extends FixedLenReader with Serializable {
+  override def getReaderProperties: ReaderParameters = null
+
   def getCobolSchema: CobolSchema = cobolSchema
 
   def getSparkSchema: StructType = sparkSchema

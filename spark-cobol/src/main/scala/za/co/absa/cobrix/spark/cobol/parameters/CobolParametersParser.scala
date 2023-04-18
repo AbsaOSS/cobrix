@@ -47,11 +47,20 @@ object CobolParametersParser extends Logging {
   val PARAM_SOURCE_PATHS_LEGACY       = "paths"
   val PARAM_ENCODING                  = "encoding"
   val PARAM_PEDANTIC                  = "pedantic"
+
+  // Record format options
+  val PARAM_RECORD_FORMAT             = "record_format"
+  val PARAM_RECORD_LENGTH             = "record_length"
+  val PARAM_MINIMUM_RECORD_LENGTH     = "minimum_record_length"
+  val PARAM_MAXIMUM_RECORD_LENGTH     = "maximum_record_length"
+  val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
   val PARAM_FILE_END_OFFSET           = "file_end_offset"
+  val PARAM_IS_XCOM                   = "is_xcom"
+  val PARAM_IS_TEXT                   = "is_text"
 
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
@@ -85,11 +94,6 @@ object CobolParametersParser extends Logging {
   val PARAM_FIELD_CODE_PAGE_PREFIX    = "field_code_page:"
 
   // Parameters for multisegment variable length files
-  val PARAM_RECORD_FORMAT             = "record_format"
-  val PARAM_RECORD_LENGTH             = "record_length"
-  val PARAM_IS_XCOM                   = "is_xcom"
-  val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
-  val PARAM_IS_TEXT                   = "is_text"
   val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
   val PARAM_IS_BDW_BIG_ENDIAN         = "is_bdw_big_endian"
   val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
@@ -250,6 +254,8 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
       params.get(PARAM_RECORD_LENGTH).map(_.toInt),
+      params.get(PARAM_MINIMUM_RECORD_LENGTH).map(_.toInt),
+      params.get(PARAM_MAXIMUM_RECORD_LENGTH).map(_.toInt),
       variableLengthParams,
       params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
@@ -368,6 +374,8 @@ object CobolParametersParser extends Logging {
       floatingPointFormat = parameters.floatingPointFormat,
       variableSizeOccurs = parameters.variableSizeOccurs,
       recordLength = parameters.recordLength,
+      minimumRecordLength = parameters.minimumRecordLength.getOrElse(1),
+      maximumRecordLength = parameters.maximumRecordLength.getOrElse(Int.MaxValue),
       lengthFieldExpression = recordLengthField,
       isRecordSequence = varLenParams.isRecordSequence,
       bdw = varLenParams.bdw,
@@ -786,6 +794,12 @@ object CobolParametersParser extends Logging {
       if (params.contains(PARAM_IS_XCOM)) {
         incorrectParameters += PARAM_IS_XCOM
       }
+      if (params.contains(PARAM_MINIMUM_RECORD_LENGTH)) {
+        incorrectParameters += PARAM_MINIMUM_RECORD_LENGTH
+      }
+      if (params.contains(PARAM_MAXIMUM_RECORD_LENGTH)) {
+        incorrectParameters += PARAM_MAXIMUM_RECORD_LENGTH
+      }
       if (params.contains(PARAM_IS_RDW_BIG_ENDIAN)) {
         incorrectParameters += PARAM_IS_RDW_BIG_ENDIAN
       }
@@ -857,6 +871,19 @@ object CobolParametersParser extends Logging {
         throw new IllegalArgumentException(s"Option '$PARAM_IS_TEXT' and ${incorrectParameters.mkString(", ")} cannot be used together.")
       }
     }
+
+    if (params.contains(PARAM_ENCODING) && params(PARAM_ENCODING).toLowerCase() == "ebcdic") {
+      if (params.contains(PARAM_ASCII_CHARSET)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_ASCII_CHARSET' cannot be used when '$PARAM_ENCODING = ebcdic'.")
+      }
+    }
+
+    if (params.contains(PARAM_ENCODING) && params(PARAM_ENCODING).toLowerCase() == "ascii") {
+      if (params.contains(PARAM_EBCDIC_CODE_PAGE)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_EBCDIC_CODE_PAGE' cannot be used when '$PARAM_ENCODING = ascii'.")
+      }
+    }
+
     if (unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")
       val msg = s"Redundant or unrecognized option(s) to 'spark-cobol': $unusedKeyStr."
