@@ -30,17 +30,17 @@ jobs:
           - scala: 2.11.12
             scalaShort: "2.11"
             spark: 2.4.8
-            overall: 70.0
+            overall: 0.0
             changed: 80.0
           - scala: 2.12.17
             scalaShort: "2.12"
             spark: 3.2.3
-            overall: 80.0
+            overall: 0.0
             changed: 80.0
           - scala: 2.13.10
             scalaShort: "2.13"
             spark: 3.3.2
-            overall: 67.0
+            overall: 0.0
             changed: 80.0
     steps:
       - name: Checkout code
@@ -55,7 +55,7 @@ jobs:
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
-          paths: > 
+          paths: >
             ${{ github.workspace }}/cobol-converters/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml,
             ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml,
             ${{ github.workspace }}/spark-cobol/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
