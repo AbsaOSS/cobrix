@@ -80,10 +80,12 @@ lazy val cobolConverters = (project in file("cobol-converters"))
     // No need to publish this artifact since it has test only at the moment
     publishArtifact := false,
     publish := {},
-    publishLocal := {},
+    publishLocal := {}
+  ).dependsOn(cobolParser)
+  .settings(
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-converters Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
-    ).dependsOn(cobolParser)
+  )
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkCobol = (project in file("spark-cobol"))
@@ -101,12 +103,11 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     populateBuildInfoTemplate,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings
-  )
+  ).dependsOn(cobolParser)
   .settings(
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:spark-cobol Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
   )
-  .dependsOn(cobolParser)
   .enablePlugins(AutomateHeaderPlugin)
 
 // scoverage settings
