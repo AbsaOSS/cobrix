@@ -51,6 +51,7 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .option("ascii_charset", "US-ASCII")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
+        .orderBy("A1")
 
       val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 
@@ -74,6 +75,7 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
+        .orderBy("A1")
 
       val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data  3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 
@@ -93,6 +95,7 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .option("record_format", "D")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
+        .orderBy("A1")
 
       val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data¡3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 
@@ -114,6 +117,7 @@ class Test01AsciiTextFiles extends AnyFunSuite with SparkTestBase with BinaryFil
         .option("input_split_records", 2)
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
+        .orderBy("A1")
 
       val expected = """[{"A1":"1","A2":"Tes","A3":"0123456789"},{"A1":"2","A2":"est2","A3":"SomeText"},{"A1":"3","A2":"None","A3":"Data¡3"},{"A1":"4","A2":"on","A3":"Data 4"}]"""
 

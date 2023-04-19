@@ -122,6 +122,7 @@ class Test01RecordIdSequence extends AnyFunSuite with BeforeAndAfter with SparkT
       .option("record_format", "V")
       .option("schema_retention_policy", "keep_original")
       .load(fileName)
+      .orderBy("Record_Id")
     logger.debug("Rows Count (No Segment Filter): " + dfRecordAll.count())
     val dfRecordFilterAll = dfRecordAll
     logger.debug("Record_Ids after DataFrame filter")
@@ -139,6 +140,7 @@ class Test01RecordIdSequence extends AnyFunSuite with BeforeAndAfter with SparkT
       .option("segment_field", "I")
       .option("segment_filter", "1")
       .load(fileName)
+      .orderBy("Record_Id")
     logger.debug("Row Count (Filtered with Segment Filter): " + dfRecordSegmentFilter.count())
 
     logger.debug("Record_Ids after DataFrame filter")
@@ -159,6 +161,7 @@ class Test01RecordIdSequence extends AnyFunSuite with BeforeAndAfter with SparkT
       .option("segment_id_root", "1")
       .option("segment_id_prefix", "i")
       .load(fileName)
+      .orderBy("Record_Id")
     logger.debug("Row Count (Filtered with Segment Filter and Root Segment): " + dfRecordSegmentFilter.count())
 
     logger.debug("Record_Ids after DataFrame filter")
