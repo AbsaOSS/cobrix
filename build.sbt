@@ -44,7 +44,7 @@ lazy val commonJacocoReportSettings: JacocoReportSettings = JacocoReportSettings
 )
 
 lazy val commonJacocoExcludes: Seq[String] = Seq(
-//  "za.co.absa.cobrix.spark.cobol.reader.FixedLenTextReader*", // class and related objects
+  "za.co.absa.cobrix.cobol.reader.parameters.*" // case classes only
 //  "za.co.absa.cobrix.spark.cobol.reader.RowHandler" // class only
 )
 
