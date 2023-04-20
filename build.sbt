@@ -82,10 +82,6 @@ lazy val cobolConverters = (project in file("cobol-converters"))
     publish := {},
     publishLocal := {}
   ).dependsOn(cobolParser)
-  .settings(
-    jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-converters Jacoco Report"),
-    jacocoExcludes := commonJacocoExcludes
-  )
   .enablePlugins(AutomateHeaderPlugin)
 
 lazy val sparkCobol = (project in file("spark-cobol"))
