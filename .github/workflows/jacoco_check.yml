@@ -19,29 +19,28 @@ name: JaCoCo report
 on:
   pull_request:
     branches: [ master ]
-    types: [ opened, edited, synchronize, reopened ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
+        # The project supports Scala 2.11, 2.12, 2.13
+        # The CI runs all tests suites for all supported Scala versions at build.yml
+        # The codebase for all Scala versions is the same, so the coverage is calculated only once
+        # Scala 2.12 is chosen since it is supported by the most wide range of Spark versions and
+        # vendor distributions.
         include:
-          - scala: 2.11.12
-            scalaShort: "2.11"
-            spark: 2.4.8
-            overall: 0.0
-            changed: 80.0
           - scala: 2.12.17
             scalaShort: "2.12"
-            spark: 3.2.3
-            overall: 0.0
-            changed: 80.0
-          - scala: 2.13.10
-            scalaShort: "2.13"
             spark: 3.3.2
             overall: 0.0
             changed: 80.0
+
+            # Historically, 'cobol-parser' module was part of 'spark-cobol' and the coverage is combined.
+            # Jacoco can't combine coverage across modules, so until 'cobol-parser' has unit tests
+            # that covers the same codepade from the same module, the coverage requirement is lowered to 20%.
+            cobolParserOverride: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,24 +50,38 @@ jobs:
           java-version: "adopt@1.8"
       - name: Build and run tests
         run: sbt ++${{matrix.scala}} jacoco -DSPARK_VERSION=${{matrix.spark}}
-      - name: Add coverage to PR
+      - name: Add coverage of 'cobol-parser' to PR
+        id: jacocoParser
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: >
+            ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: ${{ matrix.overall }}
+          min-coverage-changed-files: ${{ matrix.cobolParserOverride }}
+          title: JaCoCo code coverage report - 'cobol-parser'
+          update-comment: true
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+      - name: Add coverage of 'spark-cobol' to PR
         id: jacoco
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: >
-            ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml,
             ${{ github.workspace }}/spark-cobol/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: ${{ matrix.overall }}
           min-coverage-changed-files: ${{ matrix.changed }}
-          title: JaCoCo code coverage report - scala ${{ matrix.scala }} - spark ${{ matrix.spark }}
+          title: JaCoCo code coverage report - 'spark-cobol'
           update-comment: true
       - name: Get the Coverage info
         run: |
           echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
       - name: Fail PR if changed files coverage is less than ${{ matrix.changed }}%
-        if: ${{ steps.jacoco.outputs.coverage-changed-files < 80.0 }}
+        if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changed }}
         uses: actions/github-script@v6
         with:
           script: |

@@ -47,10 +47,10 @@ class VRLRecordReader(cobolSchema: Copybook,
   type RawRecord = (String, Array[Byte])
 
   private var cachedValue: Option[RawRecord] = _
-
-  private val copyBookRecordSize = cobolSchema.getRecordSize
   private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId - 1
+
+  private val copyBookRecordSize = cobolSchema.getRecordSize
   private val (lengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, cobolSchema)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
