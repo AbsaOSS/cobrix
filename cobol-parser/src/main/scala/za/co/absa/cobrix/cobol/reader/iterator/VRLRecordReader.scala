@@ -113,8 +113,6 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   def getRecordIndex: Long = recordIndex
 
-  def getByteIndex: Long = byteIndex
-
   private def fetchRecordUsingRecordLengthField(): Option[Array[Byte]] = {
     if (lengthField.isEmpty) {
       throw new IllegalStateException(s"For variable length reader either RDW record headers or record length field should be provided.")
