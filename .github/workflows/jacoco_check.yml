@@ -40,7 +40,7 @@ jobs:
             # Historically, 'cobol-parser' module was part of 'spark-cobol' and the coverage is combined.
             # Jacoco can't combine coverage across modules, so until 'cobol-parser' has unit tests
             # that covers the same codepade from the same module, the coverage requirement is lowered to 20%.
-            cobolParserOverride: 20
+            changedCobolParserOverride: 20
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -58,7 +58,7 @@ jobs:
             ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: ${{ matrix.overall }}
-          min-coverage-changed-files: ${{ matrix.cobolParserOverride }}
+          min-coverage-changed-files: ${{ matrix.changedCobolParserOverride }}
           title: JaCoCo code coverage report - 'cobol-parser'
           update-comment: true
       - name: Get the Coverage info
@@ -80,9 +80,9 @@ jobs:
         run: |
           echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
-      - name: Fail PR if changed files coverage is less than ${{ matrix.changed }}%
-        if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changed }}
+      - name: Fail PR if changed files coverage is less than ${{ matrix.changedCobolParserOverride }}%
+        if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changedCobolParserOverride }}
         uses: actions/github-script@v6
         with:
           script: |
-            core.setFailed('Changed files coverage is less than ${{ matrix.changed }}%!')
+            core.setFailed('Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}%!')
