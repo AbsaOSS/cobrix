@@ -80,9 +80,15 @@ jobs:
         run: |
           echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
-      - name: Fail PR if changed files coverage is less than ${{ matrix.changedCobolParserOverride }}%
-        if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changedCobolParserOverride }}
+      - name: Fail PR if changed files coverage for 'cobol-parser' is less than ${{ matrix.changedCobolParserOverride }}%
+        if: ${{ steps.jacocoParser.outputs.coverage-changed-files < matrix.changedCobolParserOverride }}
         uses: actions/github-script@v6
         with:
           script: |
-            core.setFailed('Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}%!')
+            core.setFailed('Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}% for 'cobol-parser'!')
+      - name: Fail PR if changed files coverage for 'spark-cobol' is less than ${{ matrix.changed }}%
+        if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changed }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            core.setFailed('Changed files coverage is less than ${{ matrix.changed }}% for 'spark-cobol!')
