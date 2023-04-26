@@ -101,4 +101,33 @@ class ParametersParsingSpec extends AnyFunSuite {
     assert(fieldCodePageMap("field_3") == "us-ascii")
   }
 
+  test("Test getReassembleParameters() returns None when these params are not defined") {
+    val myMap = Map.empty[String, String]
+    val params = new Parameters(myMap)
+
+    val fieldCodePageMap = CobolParametersParser.getReassembleParameters(params)
+
+    assert(fieldCodePageMap.isEmpty)
+  }
+
+  test("Test getReassembleParameters() parsing parameters properly") {
+    val myMap = Map("copybook" -> "something",
+                    "header_segment_fields" -> "H-1 , H_2",
+                    "main_segment_field" -> " MY-FIELD ",
+                    "child_segment_field" -> " CHLD:1, CHILD:2"
+                    )
+    val params = new Parameters(myMap)
+
+    val reassemblyOpt = CobolParametersParser.getReassembleParameters(params)
+
+    assert(reassemblyOpt.isDefined)
+
+    val r = reassemblyOpt.get
+
+    assert(r.headerSegmentFields == Seq("H_1", "H_2"))
+    assert(r.mainSegmentField == "MY_FIELD")
+    assert(r.childSegmentFields == Seq("CHLD1", "CHILD2"))
+    assert(r.footerSegmentFields.isEmpty)
+  }
+
 }

@@ -21,9 +21,10 @@ package za.co.absa.cobrix.cobol.reader.parameters
   */
 case class MultisegmentParameters(
                                    segmentIdField: String,
-                                   segmentIdFilter: Option[Seq[String]],      // The list of segment ids to read
-                                   segmentLevelIds: Seq[String],              // The list of segment id on corresponding levels
-                                   segmentIdPrefix: String,                   // A prefix that will be added to all segment id fields
-                                   segmentIdRedefineMap: Map[String, String], // Key = a segment id, Value = a redefined field
-                                   fieldParentMap: Map[String, String]        // Key = a segment redefined field, Value = a parent field
+                                   segmentIdFilter: Option[Seq[String]],               // The list of segment ids to read
+                                   segmentLevelIds: Seq[String],                       // The list of segment id on corresponding levels
+                                   segmentIdPrefix: String,                            // A prefix that will be added to all segment id fields
+                                   segmentIdRedefineMap: Map[String, String],          // Key = a segment id, Value = a redefined field
+                                   fieldParentMap: Map[String, String],                // Key = a segment redefined field, Value = a parent field
+                                   reassembleParameters: Option[ReassembleParameters]  // Parameters for reassembling multi-segment data
                                  )

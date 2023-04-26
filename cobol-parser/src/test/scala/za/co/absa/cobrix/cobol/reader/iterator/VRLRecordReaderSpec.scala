@@ -290,7 +290,7 @@ class VRLRecordReaderSpec extends AnyWordSpec {
     val multisegmentParameters = if (segmentIdField.isEmpty)
       None
     else
-      Some(MultisegmentParameters(segmentIdField, None, Nil, "", null, null))
+      Some(MultisegmentParameters(segmentIdField, None, Nil, "", null, null, None))
     val readerParameters = ReaderParameters(
       minimumRecordLength = minimumRecordLength,
       lengthFieldExpression = lengthFieldExpression,

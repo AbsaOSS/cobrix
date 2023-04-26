@@ -93,7 +93,7 @@ object CobolParametersParser extends Logging {
   val PARAM_ALLOW_PARTIAL_RECORDS     = "allow_partial_records"
   val PARAM_FIELD_CODE_PAGE_PREFIX    = "field_code_page:"
 
-  // Parameters for multisegment variable length files
+  // Parameters for variable length files
   val PARAM_IS_RDW_BIG_ENDIAN         = "is_rdw_big_endian"
   val PARAM_IS_BDW_BIG_ENDIAN         = "is_bdw_big_endian"
   val PARAM_IS_RDW_PART_REC_LENGTH    = "is_rdw_part_of_record_length"
@@ -101,17 +101,25 @@ object CobolParametersParser extends Logging {
   val PARAM_BDW_ADJUSTMENT            = "bdw_adjustment"
   val PARAM_BLOCK_LENGTH              = "block_length"
   val PARAM_RECORDS_PER_BLOCK         = "records_per_block"
-  val PARAM_SEGMENT_FIELD             = "segment_field"
-  val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
-  val PARAM_SEGMENT_FILTER            = "segment_filter"
-  val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
   val PARAM_RECORD_HEADER_PARSER      = "record_header_parser"
   val PARAM_RECORD_EXTRACTOR          = "record_extractor"
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
   val PARAM_RE_ADDITIONAL_INFO        = "re_additional_info"
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
 
-  // Indexed multisegment file processing
+  // Parameters for multi-segment files
+  val PARAM_SEGMENT_FIELD             = "segment_field"
+  val PARAM_SEGMENT_ID_ROOT           = "segment_id_root"
+  val PARAM_SEGMENT_FILTER            = "segment_filter"
+  val PARAM_SEGMENT_ID_LEVEL_PREFIX   = "segment_id_level"
+  val PARAM_SEGMENT_REDEFINES_MAP_PREFIX1 = "redefine-segment-id-map"
+  val PARAM_SEGMENT_REDEFINES_MAP_PREFIX2 = "redefine_segment_id_map"
+  val PARAM_HEADER_SEGMENT_FIELDS     = "header_segment_fields"
+  val PARAM_MAIN_SEGMENT_FIELD        = "main_segment_field"
+  val PARAM_CHILD_SEGMENT_FIELDS      = "child_segment_field"
+  val PARAM_FOOTER_SEGMENT_FIELDS     = "footer_segment_fields"
+
+  // Indexed multi-segment file processing
   val PARAM_ENABLE_INDEXES            = "enable_indexes"
   val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
   val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
@@ -536,14 +544,20 @@ object CobolParametersParser extends Logging {
   private def parseMultisegmentParameters(params: Parameters): Option[MultisegmentParameters] = {
     if (params.contains(PARAM_SEGMENT_FIELD)) {
       val levels = parseSegmentLevels(params)
+      val redefineMapping = getSegmentIdRedefineMapping(params)
+      val reassembleParameters = if (redefineMapping.nonEmpty)
+        getReassembleParameters(params)
+      else
+        None
       Some(MultisegmentParameters
       (
         params(PARAM_SEGMENT_FIELD),
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
-        getSegmentIdRedefineMapping(params),
-        getSegmentRedefineParents(params)
+        redefineMapping,
+        getSegmentRedefineParents(params),
+        reassembleParameters
       ))
     }
     else {
@@ -629,12 +643,12 @@ object CobolParametersParser extends Logging {
     params.getMap.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
-        if (keyNoCase.startsWith("redefine-segment-id-map") ||
-          keyNoCase.startsWith("redefine_segment_id_map")) {
+        if (keyNoCase.startsWith(PARAM_SEGMENT_REDEFINES_MAP_PREFIX1) ||
+          keyNoCase.startsWith(PARAM_SEGMENT_REDEFINES_MAP_PREFIX2)) {
           params.markUsed(k)
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) != 0) {
-            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id-map' option: '$v'.")
+            throw new IllegalArgumentException(s"Illegal argument for the '$PARAM_SEGMENT_REDEFINES_MAP_PREFIX2' option: '$v'.")
           }
           val redefine = splitVal(0).trim
           val segmentIds = splitVal(1).split(',').map(_.trim)
@@ -642,6 +656,30 @@ object CobolParametersParser extends Logging {
         } else {
           Nil
         }
+    }
+  }
+
+  def getReassembleParameters(params: Parameters): Option[ReassembleParameters] = {
+    def getIdentifiers(commaSeparatedFields: String): Seq[String] = {
+      commaSeparatedFields
+        .split(',')
+        .map(_.trim)
+        .filter(_.nonEmpty)
+        .map(getIdentifier)
+    }
+
+    def getIdentifier(fieldName: String): String = {
+      CopybookParser.transformIdentifier(fieldName.trim)
+    }
+
+    if (params.contains(PARAM_MAIN_SEGMENT_FIELD)) {
+      val mainSegmentFields = getIdentifier(params(PARAM_MAIN_SEGMENT_FIELD))
+      val headerSegmentFields = getIdentifiers(getParameter(PARAM_HEADER_SEGMENT_FIELDS, params).getOrElse(""))
+      val childSegmentFields = getIdentifiers(getParameter(PARAM_CHILD_SEGMENT_FIELDS, params).getOrElse(""))
+      val footerSegmentFields = getIdentifiers(getParameter(PARAM_FOOTER_SEGMENT_FIELDS, params).getOrElse(""))
+      Some(ReassembleParameters(headerSegmentFields, mainSegmentFields, childSegmentFields, footerSegmentFields))
+    } else {
+      None
     }
   }
 
