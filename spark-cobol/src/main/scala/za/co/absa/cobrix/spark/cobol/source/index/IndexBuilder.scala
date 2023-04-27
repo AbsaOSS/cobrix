@@ -229,7 +229,7 @@ private[source] object IndexBuilder extends Logging {
   private def repartitionIndexes(indexRDD: RDD[SparseIndexEntry]): RDD[SparseIndexEntry] = {
     val indexCount = indexRDD.count()
     val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
-    logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexRDD.repartition(numPartitions).cache()
   }
 

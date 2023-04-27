@@ -30,6 +30,9 @@ trait RawRecordExtractor extends Iterator[Array[Byte]] {
     * The offset should point to the absolute beginning of the record, e.g. including headers,
     * so that if a record extractor is started from this offset it would be able to extract the record
     * by invoking .next().
+    *
+    * IMPORTANT. The offset points to the next record to be fetched by .next(). If this invariant is not held,
+    * the reader might get inconsistent record ids, or can fail in certain circumstances.
     */
   def offset: Long
 
