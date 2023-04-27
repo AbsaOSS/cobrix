@@ -65,7 +65,7 @@ class Test12MultiRootSparseIndex extends AnyWordSpec with SparkTestBase with Bin
         val stream = new FileStreamer(tmpFileName, FileSystem.get(new Configuration()))
 
         val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength, 3, 0, 0, 0)
-        val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+        val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L, isRdwBigEndian = false,
           recordHeaderParser = recordHeaderParser, recordExtractor = None, recordsPerIndexEntry = Some(4),  sizePerIndexEntryMB = None,
           copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValues)
         assert(indexes.length == 3)
@@ -81,7 +81,7 @@ class Test12MultiRootSparseIndex extends AnyWordSpec with SparkTestBase with Bin
         val stream = new FileStreamer(tmpFileName, FileSystem.get(new Configuration()))
 
         val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength, 3, 0, 0, 0)
-        val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+        val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L, isRdwBigEndian = false,
           recordHeaderParser = recordHeaderParser, recordExtractor = None, recordsPerIndexEntry = Some(4), sizePerIndexEntryMB = None,
           copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValues)
         assert(indexes.length == 3)
