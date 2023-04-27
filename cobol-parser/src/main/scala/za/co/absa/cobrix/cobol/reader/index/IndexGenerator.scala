@@ -57,6 +57,14 @@ object IndexGenerator extends Logging {
     val indexEntry = SparseIndexEntry(fileStartOffset, -1, fileId, recordIndex)
     index += indexEntry
 
+    if (dataStream.offset != fileStartOffset && recordExtractor.isDefined) {
+      logger.warn("The record extractor has returned the offset that is not the beginning of the file. " +
+                    s"Expected: $fileStartOffset. Got: ${dataStream.offset}. File: ${dataStream.inputFileName}. " +
+                    "It will be assumed that the offset is shifted by 1 record, but if you have record id inconsistency, " +
+                    "please fix the record extractor.")
+      recordIndex += 1
+    }
+
     var endOfFileReached = false
     while (!endOfFileReached) {
       var record: Array[Byte] = null
