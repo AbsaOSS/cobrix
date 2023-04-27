@@ -63,7 +63,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
 
       val recordExtractor = new TextRecordExtractor(RawRecordContext(0L, stream, copybook, null, null, ""))
 
-      val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+      val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L, isRdwBigEndian = false,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
         copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValue)
       assert(indexes.length == 4)
@@ -84,7 +84,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
 
       val recordExtractor = new TextFullRecordExtractor(RawRecordContext(0L, stream, copybook, null, null, ""))
 
-      val indexes = IndexGenerator.sparseIndexGenerator(0, stream, isRdwBigEndian = false,
+      val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L, isRdwBigEndian = false,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
         copybook = Some(copybook), segmentField = Some(segmentIdField), isHierarchical = true, rootSegmentId = segmentIdRootValue)
       assert(indexes.length == 4)

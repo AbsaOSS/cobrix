@@ -31,6 +31,7 @@ object IndexGenerator extends Logging {
 
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
+                           fileStartOffset: Long,
                            isRdwBigEndian: Boolean,
                            recordHeaderParser: RecordHeaderParser,
                            recordExtractor: Option[RawRecordExtractor],
@@ -41,7 +42,7 @@ object IndexGenerator extends Logging {
                            isHierarchical: Boolean,
                            rootSegmentId: String = ""): ArrayBuffer[SparseIndexEntry] = {
     val rootSegmentIds = rootSegmentId.split(',').toList
-    var byteIndex = 0L
+    var byteIndex = fileStartOffset
     val index = new ArrayBuffer[SparseIndexEntry]
     var rootRecordId: String = ""
     var recordsInChunk = 0
@@ -53,7 +54,7 @@ object IndexGenerator extends Logging {
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
 
     // Add the first mandatory index entry
-    val indexEntry = SparseIndexEntry(dataStream.offset, -1, fileId, recordIndex)
+    val indexEntry = SparseIndexEntry(fileStartOffset, -1, fileId, recordIndex)
     index += indexEntry
 
     var endOfFileReached = false
@@ -61,7 +62,7 @@ object IndexGenerator extends Logging {
       var record: Array[Byte] = null
       val (recordSize: Long, isValid, hasMoreRecords, canSplit) = recordExtractor match {
         case Some(extractor) =>
-          val offset0 = extractor.offset
+          val offset0 = byteIndex
           val canSplit = extractor.canSplitHere
           val isValid = if (extractor.hasNext) {
             record = extractor.next()
