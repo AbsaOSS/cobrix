@@ -53,16 +53,16 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
-  protected val recordHeaderParser: RecordHeaderParser = {
+  val recordHeaderParser: RecordHeaderParser = {
     getRecordHeaderParser
   }
 
   checkInputArgumentsValidity()
 
-  protected def recordExtractor(startingRecordNumber: Long,
-                                binaryData: SimpleStream,
-                                copybook: Copybook
-                               ): Option[RawRecordExtractor] = {
+  def recordExtractor(startingRecordNumber: Long,
+                      binaryData: SimpleStream,
+                      copybook: Copybook
+                     ): Option[RawRecordExtractor] = {
     val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
 
     val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
@@ -143,7 +143,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
   override def generateIndex(binaryData: SimpleStream,
                              fileNumber: Int,
                              isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
-    var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
     val inputSplitSizeMB: Option[Int] = getSplitSizeMB
 
@@ -176,7 +175,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber,
         binaryData,
         readerProperties.fileStartOffset,
-        isRdwBigEndian,
         recordHeaderParser,
         recordExtractor(0L, binaryData, copybook),
         inputSplitSizeRecords,
@@ -188,7 +186,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       case None => IndexGenerator.sparseIndexGenerator(fileNumber,
         binaryData,
         readerProperties.fileStartOffset,
-        isRdwBigEndian,
         recordHeaderParser,
         recordExtractor(0L, binaryData, copybook),
         inputSplitSizeRecords,

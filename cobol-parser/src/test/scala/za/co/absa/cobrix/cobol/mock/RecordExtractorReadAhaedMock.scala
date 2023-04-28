@@ -16,18 +16,21 @@
 
 package za.co.absa.cobrix.cobol.mock
 
-import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordMetadata}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor}
 
-class RecordHeadersParserMock extends RecordHeaderParser {
-  var isHeaderDefinedInCopybook: Boolean = false
+class RecordExtractorReadAhaedMock(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  ctx.inputStream.next(2)
 
-  override def getHeaderLength: Int = 2
+  override def offset: Long = ctx.inputStream.offset
 
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream
+
+  override def next(): Array[Byte] = {
+    val header = ctx.inputStream.next(2)
     if (header.length == 2) {
-      RecordMetadata((header.head + 256) % 256 + ((header(1) + 256) % 256)* 256, isValid = true)
+      ctx.inputStream.next(header.head + header(1) * 256)
     } else {
-      RecordMetadata(0, isValid = false)
+      Array.empty[Byte]
     }
   }
 }

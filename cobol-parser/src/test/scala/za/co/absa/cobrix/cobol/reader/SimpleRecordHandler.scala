@@ -14,20 +14,15 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.mock
+package za.co.absa.cobrix.cobol.reader
 
-import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordMetadata}
+import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 
-class RecordHeadersParserMock extends RecordHeaderParser {
-  var isHeaderDefinedInCopybook: Boolean = false
+class SimpleRecordHandler extends RecordHandler[scala.Array[Any]] {
+  override def create(values: Array[Any], group: Group): Array[Any] = values
 
-  override def getHeaderLength: Int = 2
+  override def toSeq(record: Array[Any]): Seq[Any] = Seq[Any]()
 
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
-    if (header.length == 2) {
-      RecordMetadata((header.head + 256) % 256 + ((header(1) + 256) % 256)* 256, isValid = true)
-    } else {
-      RecordMetadata(0, isValid = false)
-    }
-  }
+  override def foreach(record: Array[Any])(f: Any => Unit): Unit = record.foreach(f)
 }

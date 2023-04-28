@@ -17,10 +17,8 @@
 package za.co.absa.cobrix.cobol.reader
 
 import org.scalatest.funsuite.AnyFunSuite
-import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
 
 
 class RowExtractorSpec extends AnyFunSuite {
@@ -114,18 +112,8 @@ class RowExtractorSpec extends AnyFunSuite {
   val copybook: Copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
-
-  class Handler extends RecordHandler[scala.Array[Any]] {
-    override def create(values: Array[Any], group: Group): Array[Any] = values
-
-    override def toSeq(record: Array[Any]): Seq[Any] = Seq[Any]()
-
-    override def foreach(record: Array[Any])(f: Any => Unit): Unit = record.foreach(f)
-  }
-
-
   test("Test row extractor") {
-    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new Handler())
+    val row = RecordExtractors.extractRecord(copybook.ast, bytes, startOffset, handler = new SimpleRecordHandler())
     // [[6,[EXAMPLE4,0,],[,,3,[Vector([000000000000002000400012,0,], [000000000000003000400102,1,], [000000005006001200301000,2,])]]]]
 
     val innerRow = row.head.asInstanceOf[Array[Any]]
