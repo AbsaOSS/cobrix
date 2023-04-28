@@ -63,9 +63,11 @@ class VRLRecordReaderSpec extends AnyWordSpec {
     }
 
     "work for custom header parser" in {
+      val recordHeaderParser = new RecordHeadersParserMock
+      recordHeaderParser.isHeaderDefinedInCopybook = true
       val reader = getUseCase(
         records = customHeaderRecords,
-        recordHeaderParserOpt = Some(new RecordHeadersParserMock(true)))
+        recordHeaderParserOpt = Some(recordHeaderParser))
 
       assert(reader.hasNext)
       val (segment1, record1) = reader.next()
