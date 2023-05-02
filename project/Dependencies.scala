@@ -25,6 +25,7 @@ object Dependencies {
   private val jacksonVersion = "2.13.0"
 
   private val scalatestVersion = "3.2.14"
+  private val mockitoVersion = "4.11.0"
 
   private val defaultSparkVersionForScala211 = "2.4.8"
   private val defaultSparkVersionForScala212 = "3.2.3"
@@ -52,7 +53,8 @@ object Dependencies {
     "org.apache.spark" %% "spark-streaming"  % sparkVersion(scalaVersion) % Provided,
 
     // test
-    "org.scalatest" %% "scalatest"    % scalatestVersion % Test
+    "org.scalatest"    %% "scalatest"        % scalatestVersion           % Test,
+    "org.mockito"       % "mockito-core"     % mockitoVersion             % Test
   )
 
   val SparkCobolDependenciesOverride: Seq[ModuleID] = Seq(
@@ -64,24 +66,26 @@ object Dependencies {
 
   val CobolParserDependencies: Seq[ModuleID] = Seq(
     // compile
-    "org.scodec" %% "scodec-core"    % scodecCoreVersion,
-    "org.antlr"   % "antlr4-runtime" % antlrValue,
-    "org.slf4j"   % "slf4j-api"      % slf4jVersion,
+    "org.scodec"   %% "scodec-core"    % scodecCoreVersion,
+    "org.antlr"     % "antlr4-runtime" % antlrValue,
+    "org.slf4j"     % "slf4j-api"      % slf4jVersion,
 
     // test
-    "org.scalatest" %% "scalatest"    % scalatestVersion % Test,
-    "org.slf4j"      % "slf4j-simple" % slf4jVersion     % Test
+    "org.scalatest" %% "scalatest"      % scalatestVersion % Test,
+    "org.mockito"    % "mockito-core"   % mockitoVersion   % Test,
+    "org.slf4j"      % "slf4j-simple"   % slf4jVersion     % Test
   )
 
   val CobolConvertersDependencies: Seq[ModuleID] = Seq(
     // compile
-    "org.slf4j"   % "slf4j-api"      % slf4jVersion,
-    "com.fasterxml.jackson.module" %% "jackson-module-scala" % jacksonVersion,
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-xml" % jacksonVersion,
-    "com.fasterxml.jackson.dataformat" % "jackson-dataformat-csv" % jacksonVersion,
+    "org.slf4j"   % "slf4j-api"         % slf4jVersion,
+    "com.fasterxml.jackson.module"     %% "jackson-module-scala"   % jacksonVersion,
+    "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-xml" % jacksonVersion,
+    "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-csv" % jacksonVersion,
 
     // test
     "org.scalatest" %% "scalatest"    % scalatestVersion % Test,
+    "org.mockito"    % "mockito-core" % mockitoVersion   % Test,
     "org.slf4j"      % "slf4j-simple" % slf4jVersion     % Test
   )
 }
