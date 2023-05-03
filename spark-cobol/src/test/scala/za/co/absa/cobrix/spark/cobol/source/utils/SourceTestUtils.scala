@@ -59,9 +59,16 @@ object SourceTestUtils {
       val destination = new File(root, name)
       write(destination, content)     
       destination
-    }    
-  
-    def write(file: File, content: String) = {
+    }
+
+  @throws[Exception]
+  def createFile(root: File, name: String, content: Array[Byte]): File = {
+    val destination = new File(root, name)
+    FileUtils.writeByteArrayToFile(destination, content)
+    destination
+  }
+
+  def write(file: File, content: String) = {
       try {FileUtils.write(file, content, StandardCharsets.UTF_8)} catch {case ex: Exception => ex.printStackTrace()}
     }
     
