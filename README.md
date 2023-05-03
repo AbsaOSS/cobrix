@@ -1641,12 +1641,14 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.6.6 will be released soon.
    - [#601](https://github.com/AbsaOSS/cobrix/issues/601) Fixed `file_start_offset` and `file_end_offset` options for VB record format (BDW+RDW).
-   - [#607](https://github.com/AbsaOSS/cobrix/issues/607) Add `minimum_record_length` and `maximum_record_length` options.
+   - [#614](https://github.com/AbsaOSS/cobrix/issues/614) Fixed catching a state when a custom record extractor does not conform to the contract.
+   - [#613](https://github.com/AbsaOSS/cobrix/issues/613) Added the ability of custom record extractors to get header stream pointing to teh beginning of the file.
+   - [#607](https://github.com/AbsaOSS/cobrix/issues/607) Added `minimum_record_length` and `maximum_record_length` options.
 
 - #### 2.6.5 released 5 April 2023.
    - [#539](https://github.com/AbsaOSS/cobrix/issues/539) Fixed 'cp300', and added experimental support for 'cp1364' and 'cp1388' code pages (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
    - [#590](https://github.com/AbsaOSS/cobrix/issues/590) Changed from `.option("extended_metadata", true)` to `.option("metadata", "extended")` allowing other modes like 'basic' (default) and 'false' (disable metadata).
-   - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Add option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
+   - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Added option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
 
 - #### 2.6.4 released 3 March 2023.
    - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
