@@ -96,12 +96,11 @@ class DependencyMarker(
             val newPrimitive = if (dependees contains primitive) {
               primitive.dataType match {
                 case _: Integral => true
-                case dt => {
+                case dt =>
                   for (stmt <- dependees(primitive)) {
                     if (stmt.dependingOnHandlers.isEmpty)
-                      throw new IllegalStateException(s"Field ${primitive.name} is a DEPENDING ON field of an OCCURS, should be integral, found ${dt.getClass}.")
+                      throw new IllegalStateException(s"Field ${primitive.name} is a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${dt.getClass}.")
                   }
-                }
               }
               primitive.withUpdatedIsDependee(newIsDependee = true)
             } else {
