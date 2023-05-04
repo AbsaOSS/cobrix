@@ -48,19 +48,15 @@ private[source] object IndexBuilder extends Logging {
                  sqlContext: SQLContext)
                 (localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     val fs = new Path(filesList.head.filePath).getFileSystem(sqlContext.sparkSession.sparkContext.hadoopConfiguration)
-    val isIndexSupported = isFileRandomAccessSupported(fs)
 
     cobolReader match {
-      case reader: VarLenReader if isIndexSupported =>
-        if (reader.isIndexGenerationNeeded && localityParams.improveLocality && isDataLocalitySupported(fs)) {
-          buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext, localityParams.optimizeAllocation)
-        }
-        else {
-          buildIndexForVarLenReader(filesList, reader, sqlContext)
-        }
-      case _ =>
+      case reader: VarLenReader if reader.isIndexGenerationNeeded && localityParams.improveLocality && isDataLocalitySupported(fs) =>
+        buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext, localityParams.optimizeAllocation)
+      case reader: VarLenReader                                                                                                    =>
+        buildIndexForVarLenReader(filesList, reader, sqlContext)
+      case _                                                                                                                       =>
         buildIndexForFullFiles(filesList, sqlContext)
-      case _ => null
+      case _                                                                                                                       => null
     }
   }
 
@@ -172,7 +168,9 @@ private[source] object IndexBuilder extends Logging {
     }
 
     logger.info(s"Going to generate index for the file: $filePath")
-    val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, startOffset, maximumBytes),
+    val inputStream = new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+    val headerStream = new FileStreamer(filePath, fileSystem)
+    val index = reader.generateIndex(inputStream, headerStream,
                                      fileOrder, reader.isRdwBigEndian)
 
     val indexWithEndOffset = if (maximumBytes > 0 ){
@@ -236,20 +234,6 @@ private[source] object IndexBuilder extends Logging {
     sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
   }
 
-  private[cobol] def isFileRandomAccessSupported(fs: FileSystem): Boolean = {
-    import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-
-    val isSupportedFx = fs.isInstanceOf[DistributedFileSystem] ||
-      fs.isInstanceOf[RawLocalFileSystem] ||
-      fs.isInstanceOf[FilterFileSystem]
-    if (!isSupportedFx) {
-      val q = "\""
-      logger.warn(s"Filesystem '${fs.getScheme}://' might not support random file access. Please, disable indexes if the job fails. " +
-        s" You can do this using '.option($q$PARAM_ENABLE_INDEXES$q, false)' ")
-    }
-    true
-  }
-
   private[cobol] def isDataLocalitySupported(fs: FileSystem): Boolean = {
     fs.isInstanceOf[DistributedFileSystem]
   }
@@ -260,5 +244,4 @@ private[source] object IndexBuilder extends Logging {
     logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexRDD.repartition(numPartitions).cache()
   }
-
 }

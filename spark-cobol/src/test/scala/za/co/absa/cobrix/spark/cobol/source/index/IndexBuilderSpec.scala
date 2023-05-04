@@ -249,21 +249,6 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
     }
   }
 
-  "isFileRandomAccessSupported()" should {
-    "return true for supported filesystems" in {
-      assert(IndexBuilder.isFileRandomAccessSupported(mock(classOf[DistributedFileSystem])))
-      assert(IndexBuilder.isFileRandomAccessSupported(mock(classOf[RawLocalFileSystem])))
-      assert(IndexBuilder.isFileRandomAccessSupported(mock(classOf[FilterFileSystem])))
-    }
-
-    "return true even for unsupported filesystems" in {
-      val ftpFileSystem = mock(classOf[FileSystem])
-
-      whenMock(ftpFileSystem.getScheme).thenReturn("dummy")
-      assert(IndexBuilder.isFileRandomAccessSupported(ftpFileSystem))
-    }
-  }
-
   "isDataLocalitySupported()" should {
     "return true for supported filesystems" in {
       assert(IndexBuilder.isDataLocalitySupported(mock(classOf[DistributedFileSystem])))
