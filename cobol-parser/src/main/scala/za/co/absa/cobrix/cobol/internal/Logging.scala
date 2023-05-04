@@ -37,4 +37,10 @@ private[cobrix] trait Logging {
     log_
   }
 
+  protected def logDebug(msg: => String): Unit = {
+    if (logger.isDebugEnabled) {
+      logger.debug(msg)
+    }
+  }
+
 }

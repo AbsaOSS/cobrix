@@ -97,10 +97,8 @@ private[source] object IndexBuilder extends Logging {
 
     logger.info(s"Creating RDD for ${offsetsLocations.length} located indexes.")
 
-    if (logger.isDebugEnabled) {
-      logger.debug("Preferred locations per index entry")
-      offsetsLocations.foreach(allocation => logger.debug(allocation.toString()))
-    }
+    logDebug("Preferred locations per index entry")
+    offsetsLocations.foreach(allocation => logDebug(allocation.toString()))
 
     val indexRDD = sqlContext.sparkContext.makeRDD(offsetsLocations)
 
@@ -227,9 +225,7 @@ private[source] object IndexBuilder extends Logging {
       (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
     }).toSeq
 
-    if (logger.isDebugEnabled()) {
-      filesWithPreferredLocations.foreach(a => logger.debug(a.toString()))
-    }
+    filesWithPreferredLocations.foreach(a => logDebug(a.toString()))
 
     sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
   }
