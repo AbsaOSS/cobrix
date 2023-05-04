@@ -44,8 +44,8 @@ lazy val commonJacocoReportSettings: JacocoReportSettings = JacocoReportSettings
 )
 
 lazy val commonJacocoExcludes: Seq[String] = Seq(
-  "za.co.absa.cobrix.cobol.reader.parameters.*" // case classes only
-//  "za.co.absa.cobrix.spark.cobol.reader.RowHandler" // class only
+  "za.co.absa.cobrix.cobol.reader.parameters.*",                     // case classes only
+  "za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordContext*"  // a case class
 )
 
 lazy val cobrix = (project in file("."))
