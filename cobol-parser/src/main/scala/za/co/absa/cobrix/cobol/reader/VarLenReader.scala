@@ -33,14 +33,17 @@ abstract class VarLenReader extends Reader with Serializable {
   /**
     * Returns a file iterator between particular offsets. This is for faster traversal of big binary files
     *
-    * @param binaryData          A stream positioned at the beginning of the intended file portion to read
+    * @param dataStream          A stream positioned at the beginning of the intended file portion to read
+    * @param headerStream        A stream pointing to the beginning of the file, even if inputStream is pointing
+    *                            to a record in the middle.
     * @param startingFileOffset  An offset of the file where parsing should be started
     * @param fileNumber          A file number uniquely identified a particular file of the data set
     * @param startingRecordIndex A starting record index of the data
     * @return An iterator of Spark Row objects
     *
     */
-  def getRecordIterator(binaryData: SimpleStream,
+  def getRecordIterator(dataStream: SimpleStream,
+                        headerStream: SimpleStream,
                         startingFileOffset: Long,
                         fileNumber: Int,
                         startingRecordIndex: Long): Iterator[Seq[Any]]
@@ -49,12 +52,15 @@ abstract class VarLenReader extends Reader with Serializable {
     * Traverses the data sequentially as fast as possible to generate record index.
     * This index will be used to distribute workload of the conversion.
     *
-    * @param binaryData A stream of input binary data
-    * @param fileNumber A file number uniquely identified a particular file of the data set
+    * @param dataStream   A stream of input binary data
+    * @param headerStream A stream pointing to the beginning of the file, even if inputStream is pointing
+    *                     to a record in the middle.
+    * @param fileNumber   A file number uniquely identified a particular file of the data set
     * @return An index of the file
     *
     */
-  def generateIndex(binaryData: SimpleStream,
+  def generateIndex(dataStream: SimpleStream,
+                    headerStream: SimpleStream,
                     fileNumber: Int,
                     isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry]
 }

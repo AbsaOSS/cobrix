@@ -19,9 +19,11 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import scala.collection.mutable
 
 class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val recordQueue = new mutable.Queue[Array[Byte]]
   private var canSplitAtCurrentOffset = true
-  private var recordOffset: Long = ctx.inputStream.offset
+  private var recordOffset: Long = ctx.dataStream.offset
 
   override def offset: Long = recordOffset
 
@@ -38,12 +40,12 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
     val bdwSize = ctx.bdwDecoder.headerSize
     val rdwSize = ctx.rdwDecoder.headerSize
 
-    if (!ctx.inputStream.isEndOfStream) {
-      val bdwOffset = ctx.inputStream.offset
-      val bdw = ctx.inputStream.next(bdwSize)
+    if (!ctx.dataStream.isEndOfStream) {
+      val bdwOffset = ctx.dataStream.offset
+      val bdw = ctx.dataStream.next(bdwSize)
 
       val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
-      val blockBuffer = ctx.inputStream.next(blockLength)
+      val blockBuffer = ctx.dataStream.next(blockLength)
 
       var blockIndex = 0
 

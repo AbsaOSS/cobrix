@@ -31,12 +31,13 @@ object RawRecordContextFactory {
   def getDummyRawRecordContext(
                                 startingRecordNumber: Long = 0L,
                                 inputStream: SimpleStream = new TestStringStream("A1\nB2\n"),
+                                headerStream: SimpleStream = new TestStringStream("A1\nB2\n"),
                                 copybook: Copybook = copybook,
                                 rdwDecoder: RecordHeaderDecoder = new RecordHeaderDecoderBdw(RecordHeaderParameters(isBigEndian = false, 0)),
                                 bdwDecoder: RecordHeaderDecoder = new RecordHeaderDecoderRdw(RecordHeaderParameters(isBigEndian = false, 0)),
                                 additionalInfo: String = ""
                               ): RawRecordContext = {
-    RawRecordContext(startingRecordNumber, inputStream, copybook, rdwDecoder, bdwDecoder, additionalInfo)
+    RawRecordContext(startingRecordNumber, inputStream, headerStream, copybook, rdwDecoder, bdwDecoder, additionalInfo)
   }
 
 }
