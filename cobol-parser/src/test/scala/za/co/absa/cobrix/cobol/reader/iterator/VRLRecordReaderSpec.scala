@@ -88,7 +88,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
     }
 
     "work for custom record extractor" in {
-      val context = RawRecordContext(0, new ByteStreamMock(customHeaderRecords), null, null, null, "")
+      val stream = new ByteStreamMock(customHeaderRecords)
+      val context = RawRecordContext(0, stream, stream, null, null, null, "")
 
       val reader = getUseCase(
         records = customHeaderRecords,

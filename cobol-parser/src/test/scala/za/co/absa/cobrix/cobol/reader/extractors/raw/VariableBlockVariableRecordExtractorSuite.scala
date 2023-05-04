@@ -146,11 +146,12 @@ class VariableBlockVariableRecordExtractorSuite extends AnyWordSpec {
                                   rdwAdjustment: Int
                                  ): RawRecordContext = {
     val ibs = new TestByteStream(bytes)
+    val hbs = new TestByteStream(bytes)
 
     val bdwDecoder = new RecordHeaderDecoderBdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(bdwBigEndian, bdwAdjustment))
     val rdwDecoder = new RecordHeaderDecoderRdw(RecordHeaderParametersFactory.getDummyRecordHeaderParameters(rdwBigEndian, rdwAdjustment))
 
-    RawRecordContext(0, ibs, copybook, rdwDecoder, bdwDecoder, "")
+    RawRecordContext(0, ibs, hbs, copybook, rdwDecoder, bdwDecoder, "")
   }
 
 }

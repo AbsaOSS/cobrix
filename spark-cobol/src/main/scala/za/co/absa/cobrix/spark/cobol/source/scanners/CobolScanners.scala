@@ -50,7 +50,8 @@ private[source] object CobolScanners extends Logging {
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
       val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
-      reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
+      val headerStream = new FileStreamer(filePathName, fileSystem)
+      reader.getRowIterator(dataStream, headerStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }
 
@@ -68,7 +69,9 @@ private[source] object CobolScanners extends Logging {
           val fileSystem = path.getFileSystem(sconf.value)
 
           logger.info(s"Going to parse file: $filePath")
-          reader.getRowIterator(new FileStreamer(filePath, fileSystem), 0L, fileOrder, 0L)
+          val dataStream = new FileStreamer(filePath, fileSystem)
+          val headerStream = new FileStreamer(filePath, fileSystem)
+          reader.getRowIterator(dataStream, headerStream, 0L, fileOrder, 0L)
         }
         )
       })

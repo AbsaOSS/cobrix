@@ -51,9 +51,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
 
   "generateIndex" should {
     "work for fixed length flat files" in {
-      val (reader, stream) = getFlatUseCase(fixedLengthDataExample)
+      val (reader, dataStream, headerStream) = getFlatUseCase(fixedLengthDataExample)
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = false)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = false)
 
       assert(index.length == 3)
       assert(index(0).offsetFrom == 0)
@@ -69,9 +69,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
     }
 
     "work for fixed multi-copybook length flat files" in {
-      val (reader, stream) = getFlatUseCase(fixedLengthDataExample, multiCopyBook = true)
+      val (reader, dataStream, headerStream) = getFlatUseCase(fixedLengthDataExample, multiCopyBook = true)
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = false)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = false)
 
       assert(index.length == 7)
       assert(index(0).offsetFrom == 0)
@@ -83,9 +83,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
     }
 
     "work for files with little-endian RDWs" in {
-      val (reader, stream) = getFlatUseCase(rdwLittleEndianExample, hasRDW = true)
+      val (reader, dataStream, headerStream) = getFlatUseCase(rdwLittleEndianExample, hasRDW = true)
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = false)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = false)
 
       assert(index.length == 2)
       assert(index(0).offsetFrom == 0)
@@ -97,9 +97,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
     }
 
     "work for files with big-endian RDWs" in {
-      val (reader, stream) = getFlatUseCase(rdwBigEndianExample, hasRDW = true, isRdwBigEndian = true)
+      val (reader, dataStream, headerStream) = getFlatUseCase(rdwBigEndianExample, hasRDW = true, isRdwBigEndian = true)
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = true)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = true)
 
       assert(index.length == 2)
       assert(index(0).offsetFrom == 0)
@@ -121,9 +121,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
         0x04, 0x00,             // RDW header
         0xF7, 0xF8, 0xF9, 0xF0  // record 2
         ).map(_.toByte)
-      val (reader, stream) = getFlatUseCase(data, recordHeaderParser = recordHeaderParserClass)
+      val (reader, dataStream, headerStream) = getFlatUseCase(data, recordHeaderParser = recordHeaderParserClass)
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = true)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = true)
 
       assert(index.length == 2)
       assert(index(0).offsetFrom == 0)
@@ -135,9 +135,9 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
     }
 
     "work for hierarchical files" in {
-      val (reader, stream) = getHierarchicalUseCase
+      val (reader, dataStream, headerStream) = getHierarchicalUseCase
 
-      val index = reader.generateIndex(stream, 0, isRdwBigEndian = false)
+      val index = reader.generateIndex(dataStream, headerStream, 0, isRdwBigEndian = false)
 
       assert(index.length == 2)
       assert(index(0).offsetFrom == 0)
@@ -151,17 +151,17 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
 
   "getRecordIterator" should {
     "work for nested records" in {
-      val (reader, stream) = getFlatUseCase(fixedLengthDataExample)
+      val (reader, dataStream, headerStream) = getFlatUseCase(fixedLengthDataExample)
 
-      val it = reader.getRecordIterator(stream, 0, 0, 0)
+      val it = reader.getRecordIterator(dataStream, headerStream, 0, 0, 0)
 
       assert(it.isInstanceOf[VarLenNestedIterator[scala.Array[Any]]])
     }
 
     "work for hierarchical records" in {
-      val (reader, stream) = getHierarchicalUseCase
+      val (reader, dataStream, headerStream) = getHierarchicalUseCase
 
-      val it = reader.getRecordIterator(stream, 0, 0, 0)
+      val it = reader.getRecordIterator(dataStream, headerStream, 0, 0, 0)
 
       assert(it.isInstanceOf[VarLenHierarchicalIterator[scala.Array[Any]]])
     }
@@ -173,7 +173,7 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
                      hasRDW: Boolean = false,
                      isRdwBigEndian: Boolean = false,
                      multiCopyBook: Boolean = false
-                    ): (VarLenNestedReader[scala.Array[Any]], SimpleStream) = {
+                    ): (VarLenNestedReader[scala.Array[Any]], SimpleStream, SimpleStream) = {
     val copybookContents: String =
       """       01  RECORD.
         |          05  A PIC X(2).
@@ -206,14 +206,15 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
     }
 
     val dataStream = new TestByteStream(data)
+    val headerStreat = new TestByteStream(data)
 
     val reader = new VarLenNestedReader[scala.Array[Any]](
       copybooks, readerProperties, new SimpleRecordHandler)
 
-    (reader, dataStream)
+    (reader, dataStream, headerStreat)
   }
 
-  def getHierarchicalUseCase: (VarLenNestedReader[scala.Array[Any]], SimpleStream) = {
+  def getHierarchicalUseCase: (VarLenNestedReader[scala.Array[Any]], SimpleStream, SimpleStream) = {
     val copybookContents: String =
       """       01  RECORD.
         |          05  SEGMENT   PIC X(1).
@@ -243,11 +244,12 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
 
     val data = "P123\nP456\nC78\nC90\nP876\n"
     val dataStream = new TestStringStream(data)
+    val headerStream = new TestStringStream(data)
 
     val reader = new VarLenNestedReader[scala.Array[Any]](
       Seq(copybookContents), readerProperties, new SimpleRecordHandler)
 
-    (reader, dataStream)
+    (reader, dataStream, headerStream)
   }
 
 }

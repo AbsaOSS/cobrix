@@ -22,13 +22,18 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 /**
   * @param startingRecordNumber A record number the input stream is pointing to (zero-based).
-  * @param inputStream          An input stream pointing to the beginning of a file or a record in a file.
+  * @param dataStream           An input stream pointing to the beginning of a file or a record in a file. The
+  *                             record extractor should close the stream when the end of file is reached.
+  * @param headerStream         A stream pointing to the beginning of the file, even if inputStream is pointing
+  *                             to a record in the middle. The record extractor should close the stream when it
+  *                             is no longer needed.
   * @param copybook             A copybook of the input stream.
   * @param additionalInfo       A string provided by a client for the raw record extractor.
   */
 case class RawRecordContext(
                              startingRecordNumber: Long,
-                             inputStream: SimpleStream,
+                             dataStream: SimpleStream,
+                             headerStream: SimpleStream,
                              copybook: Copybook,
                              rdwDecoder: RecordHeaderDecoder,
                              bdwDecoder: RecordHeaderDecoder,

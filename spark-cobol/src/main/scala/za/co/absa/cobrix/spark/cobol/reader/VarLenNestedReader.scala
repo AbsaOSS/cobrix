@@ -49,18 +49,18 @@ final class VarLenNestedReader(copybookContents: Seq[String],
 
   override def getSparkSchema: StructType = getCobolSchema.getSparkSchema
 
-
-  override def getRowIterator(binaryData: SimpleStream,
+  override def getRowIterator(dataStream: SimpleStream,
+                              headerStream: SimpleStream,
                               startingFileOffset: Long,
                               fileNumber: Int,
                               startingRecordIndex: Long): Iterator[Row] =
     if (cobolSchema.copybook.isHierarchical) {
       new RowIterator(
         new VarLenHierarchicalIterator(cobolSchema.copybook,
-          binaryData,
+          dataStream,
           getReaderProperties,
           recordHeaderParser,
-          recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
+          recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
           fileNumber,
           startingRecordIndex,
           startingFileOffset,
@@ -69,10 +69,10 @@ final class VarLenNestedReader(copybookContents: Seq[String],
     } else {
       new RowIterator(
         new VarLenNestedIterator(cobolSchema.copybook,
-          binaryData,
+          dataStream,
           getReaderProperties,
           recordHeaderParser,
-          recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
+          recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
           fileNumber,
           startingRecordIndex,
           startingFileOffset,

@@ -25,12 +25,13 @@ import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecor
   */
 class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   CustomRecordExtractorMock.additionalInfo = ctx.additionalInfo
+  CustomRecordExtractorMock.catchContext = ctx
 
   private var recordNumber = ctx.startingRecordNumber
 
-  override def offset: Long = ctx.inputStream.offset
+  override def offset: Long = ctx.dataStream.offset
 
-  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream
+  override def hasNext: Boolean = !ctx.dataStream.isEndOfStream
 
   @throws[NoSuchElementException]
   override def next(): Array[Byte] = {
@@ -39,9 +40,9 @@ class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with
     }
 
     val rawRecord = if (recordNumber % 2 == 0) {
-      ctx.inputStream.next(2)
+      ctx.dataStream.next(2)
     } else {
-      ctx.inputStream.next(3)
+      ctx.dataStream.next(3)
     }
 
     recordNumber += 1
@@ -52,4 +53,5 @@ class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with
 
 object CustomRecordExtractorMock {
   var additionalInfo: String = ""
+  var catchContext: RawRecordContext = _
 }

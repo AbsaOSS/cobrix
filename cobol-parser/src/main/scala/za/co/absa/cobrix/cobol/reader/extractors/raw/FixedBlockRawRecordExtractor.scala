@@ -19,12 +19,14 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import scala.collection.mutable
 
 class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockParameters) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val recordQueue = new mutable.Queue[Array[Byte]]
 
   private val recordSize = fbParams.recordLength.getOrElse(ctx.copybook.getRecordSize)
   private val bdwSize = fbParams.blockLength.orElse(fbParams.recordsPerBlock.map(_ * recordSize))
 
-  override def offset: Long = ctx.inputStream.offset
+  override def offset: Long = ctx.dataStream.offset
 
   override def hasNext: Boolean = {
     if (recordQueue.isEmpty) {
@@ -34,17 +36,17 @@ class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockPa
   }
 
   private def readNextBlock(): Unit = {
-    if (!ctx.inputStream.isEndOfStream) {
-      var bdwOffset = ctx.inputStream.offset
+    if (!ctx.dataStream.isEndOfStream) {
+      var bdwOffset = ctx.dataStream.offset
 
       val nextBlockSize = bdwSize.getOrElse({
-        val bdw = ctx.inputStream.next(ctx.bdwDecoder.headerSize)
+        val bdw = ctx.dataStream.next(ctx.bdwDecoder.headerSize)
         val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
         bdwOffset += ctx.bdwDecoder.headerSize
         blockLength
       })
 
-      val blockBuffer = ctx.inputStream.next(nextBlockSize)
+      val blockBuffer = ctx.dataStream.next(nextBlockSize)
 
       var blockIndex = 0
 
