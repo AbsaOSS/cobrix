@@ -132,7 +132,7 @@ object RecordExtractors {
               case v: Int => Left(v)
               case v: Number => Left(v.intValue())
               case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
+              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
             }
             dependFields += st.name -> intStringVal
           }
@@ -309,7 +309,7 @@ object RecordExtractors {
               case v: Int => Left(v)
               case v: Number => Left(v.intValue())
               case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
+              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
             }
             dependFields += st.name -> intStringVal
           }
