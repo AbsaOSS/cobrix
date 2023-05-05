@@ -11,28 +11,20 @@ project:
   link: fossa.com
   url: github.com/AbsaOSS/cobrix
 
-vendoredDependencies:
-  forceRescans: false
-  scanMethod: CLILicenseScan
-  licenseScanPathFilters:
-    exclude:
-      - ".git/**"
-      - "**/test/**"
-      - "**/target/**"
-
 targets:
   only:
-    - type: maven
-      path: cobol-parser
-    - type: maven
-      path: spark-cobol
+    - type: scala
+      path: cobrix
 
 paths:
+  only:
+    - cobol-parser
+    - cobol-converters
+    - spark-cobol
+    - target
   exclude:
     - ./examples
-    - "**/target/**"
     - ./project
-    - ./cobol-converters
 
 telemetry:
   scope: "off"
