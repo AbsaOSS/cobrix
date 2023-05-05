@@ -43,7 +43,7 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
-        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.dataStream)
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
       }
     }
 
@@ -57,7 +57,7 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
-        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.dataStream)
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
       }
     }
 
@@ -71,7 +71,7 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
-        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.dataStream)
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
       }
     }
 

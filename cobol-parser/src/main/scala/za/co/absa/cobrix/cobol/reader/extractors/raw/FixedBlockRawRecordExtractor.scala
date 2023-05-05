@@ -26,7 +26,7 @@ class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockPa
   private val recordSize = fbParams.recordLength.getOrElse(ctx.copybook.getRecordSize)
   private val bdwSize = fbParams.blockLength.orElse(fbParams.recordsPerBlock.map(_ * recordSize))
 
-  override def offset: Long = ctx.dataStream.offset
+  override def offset: Long = ctx.inputStream.offset
 
   override def hasNext: Boolean = {
     if (recordQueue.isEmpty) {
@@ -36,17 +36,17 @@ class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockPa
   }
 
   private def readNextBlock(): Unit = {
-    if (!ctx.dataStream.isEndOfStream) {
-      var bdwOffset = ctx.dataStream.offset
+    if (!ctx.inputStream.isEndOfStream) {
+      var bdwOffset = ctx.inputStream.offset
 
       val nextBlockSize = bdwSize.getOrElse({
-        val bdw = ctx.dataStream.next(ctx.bdwDecoder.headerSize)
+        val bdw = ctx.inputStream.next(ctx.bdwDecoder.headerSize)
         val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
         bdwOffset += ctx.bdwDecoder.headerSize
         blockLength
       })
 
-      val blockBuffer = ctx.dataStream.next(nextBlockSize)
+      val blockBuffer = ctx.inputStream.next(nextBlockSize)
 
       var blockIndex = 0
 

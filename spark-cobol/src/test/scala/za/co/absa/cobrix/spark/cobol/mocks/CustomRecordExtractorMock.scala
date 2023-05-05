@@ -29,9 +29,9 @@ class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with
 
   private var recordNumber = ctx.startingRecordNumber
 
-  override def offset: Long = ctx.dataStream.offset
+  override def offset: Long = ctx.inputStream.offset
 
-  override def hasNext: Boolean = !ctx.dataStream.isEndOfStream
+  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream
 
   @throws[NoSuchElementException]
   override def next(): Array[Byte] = {
@@ -40,9 +40,9 @@ class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with
     }
 
     val rawRecord = if (recordNumber % 2 == 0) {
-      ctx.dataStream.next(2)
+      ctx.inputStream.next(2)
     } else {
-      ctx.dataStream.next(3)
+      ctx.inputStream.next(3)
     }
 
     recordNumber += 1

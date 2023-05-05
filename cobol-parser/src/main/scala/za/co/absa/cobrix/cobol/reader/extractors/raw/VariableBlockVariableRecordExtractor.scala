@@ -23,7 +23,7 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
 
   private val recordQueue = new mutable.Queue[Array[Byte]]
   private var canSplitAtCurrentOffset = true
-  private var recordOffset: Long = ctx.dataStream.offset
+  private var recordOffset: Long = ctx.inputStream.offset
 
   override def offset: Long = recordOffset
 
@@ -40,12 +40,12 @@ class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serial
     val bdwSize = ctx.bdwDecoder.headerSize
     val rdwSize = ctx.rdwDecoder.headerSize
 
-    if (!ctx.dataStream.isEndOfStream) {
-      val bdwOffset = ctx.dataStream.offset
-      val bdw = ctx.dataStream.next(bdwSize)
+    if (!ctx.inputStream.isEndOfStream) {
+      val bdwOffset = ctx.inputStream.offset
+      val bdw = ctx.inputStream.next(bdwSize)
 
       val blockLength = ctx.bdwDecoder.getRecordLength(bdw, bdwOffset)
-      val blockBuffer = ctx.dataStream.next(blockLength)
+      val blockBuffer = ctx.inputStream.next(blockLength)
 
       var blockIndex = 0
 

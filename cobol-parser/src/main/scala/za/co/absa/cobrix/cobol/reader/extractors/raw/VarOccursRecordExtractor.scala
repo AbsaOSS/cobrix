@@ -36,7 +36,7 @@ class VarOccursRecordExtractor(ctx: RawRecordContext) extends Serializable with 
   private val bytes = new Array[Byte](maxRecordSize)
   private var bytesSize = 0
 
-  override def hasNext: Boolean = ctx.dataStream.offset < ctx.dataStream.size
+  override def hasNext: Boolean = ctx.inputStream.offset < ctx.inputStream.size
 
   override def next(): Array[Byte] = {
     if (hasVarSizeOccurs) {
@@ -44,11 +44,11 @@ class VarOccursRecordExtractor(ctx: RawRecordContext) extends Serializable with 
       util.Arrays.fill(bytes, 0.toByte)
       extractVarOccursRecordBytes()
     } else {
-      ctx.dataStream.next(maxRecordSize)
+      ctx.inputStream.next(maxRecordSize)
     }
   }
 
-  def offset: Long = ctx.dataStream.offset
+  def offset: Long = ctx.inputStream.offset
 
   private def extractVarOccursRecordBytes(): Array[Byte] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
@@ -140,7 +140,7 @@ class VarOccursRecordExtractor(ctx: RawRecordContext) extends Serializable with 
   private def ensureBytesRead(numOfBytes: Int): Unit = {
     val bytesToRead = numOfBytes - bytesSize
     if (bytesToRead > 0) {
-      val newBytes = ctx.dataStream.next(bytesToRead)
+      val newBytes = ctx.inputStream.next(bytesToRead)
       if (newBytes.length > 0) {
         System.arraycopy(newBytes, 0, bytes, bytesSize, newBytes.length)
         bytesSize = numOfBytes

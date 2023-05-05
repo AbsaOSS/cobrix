@@ -19,16 +19,16 @@ package za.co.absa.cobrix.cobol.mock
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor}
 
 class RecordExtractorReadAhaedMock(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
-  ctx.dataStream.next(2)
+  ctx.inputStream.next(2)
 
-  override def offset: Long = ctx.dataStream.offset
+  override def offset: Long = ctx.inputStream.offset
 
-  override def hasNext: Boolean = !ctx.dataStream.isEndOfStream
+  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream
 
   override def next(): Array[Byte] = {
-    val header = ctx.dataStream.next(2)
+    val header = ctx.inputStream.next(2)
     if (header.length == 2) {
-      ctx.dataStream.next(header.head + header(1) * 256)
+      ctx.inputStream.next(header.head + header(1) * 256)
     } else {
       Array.empty[Byte]
     }
