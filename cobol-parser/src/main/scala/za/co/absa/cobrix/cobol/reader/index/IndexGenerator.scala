@@ -58,11 +58,13 @@ object IndexGenerator extends Logging {
     val indexEntry = SparseIndexEntry(fileStartOffset, -1, fileId, recordIndex)
     index += indexEntry
 
-    if (dataStream.offset != fileStartOffset && recordExtractor.isDefined) {
-      throw new IllegalStateException("The record extractor has returned the offset that is not the beginning of the file. " +
-                    s"Expected: $fileStartOffset. Got: ${dataStream.offset}. File: ${dataStream.inputFileName}. " +
-                    "Make sure 'offset()' points to the record that is going to be returned with next().")
-    }
+    recordExtractor.foreach(extractor => {
+      if (extractor.offset != fileStartOffset) {
+        throw new IllegalStateException("The record extractor has returned the offset that is not the beginning of the file. " +
+          s"Expected: $fileStartOffset. Got: ${extractor.offset}. File: ${dataStream.inputFileName}. " +
+          "Make sure 'offset()' points to the record that is going to be returned with next().")
+      }
+    })
 
     var endOfFileReached = false
     while (!endOfFileReached) {

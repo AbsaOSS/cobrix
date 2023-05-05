@@ -66,13 +66,13 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
     fetchNextRecord()
   }
 
-  override def offset: Long = ctx.dataStream.offset - pendingBytesSize
+  override def offset: Long = ctx.inputStream.offset - pendingBytesSize
 
   // This method ensures that pendingBytes contains the specified number of bytes read from the input stream
   private def ensureBytesRead(numOfBytes: Int): Unit = {
     val bytesToRead = numOfBytes - pendingBytesSize
     if (bytesToRead > 0) {
-      val newBytes = ctx.dataStream.next(bytesToRead)
+      val newBytes = ctx.inputStream.next(bytesToRead)
       if (newBytes.length > 0) {
         System.arraycopy(newBytes, 0, pendingBytes, pendingBytesSize, newBytes.length)
         pendingBytesSize = pendingBytesSize + newBytes.length
@@ -128,7 +128,7 @@ class TextRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRe
     } else {
       // Last record or a record is too large?
       // In the latter case
-      if (pendingBytesSize <= recordSize && ctx.dataStream.isEndOfStream) {
+      if (pendingBytesSize <= recordSize && ctx.inputStream.isEndOfStream) {
         // Last record
         curRecordSize = pendingBytesSize
         curPayloadSize = pendingBytesSize

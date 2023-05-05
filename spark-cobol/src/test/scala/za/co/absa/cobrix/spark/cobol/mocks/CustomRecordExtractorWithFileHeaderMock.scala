@@ -28,9 +28,9 @@ class CustomRecordExtractorWithFileHeaderMock(ctx: RawRecordContext) extends Ser
 
   ctx.headerStream.close()
 
-  override def offset: Long = ctx.dataStream.offset
+  override def offset: Long = ctx.inputStream.offset
 
-  override def hasNext: Boolean = !ctx.dataStream.isEndOfStream
+  override def hasNext: Boolean = !ctx.inputStream.isEndOfStream
 
   @throws[NoSuchElementException]
   override def next(): Array[Byte] = {
@@ -38,10 +38,10 @@ class CustomRecordExtractorWithFileHeaderMock(ctx: RawRecordContext) extends Ser
       throw new NoSuchElementException
     }
 
-    val rawRecord = ctx.dataStream.next(recordSize)
+    val rawRecord = ctx.inputStream.next(recordSize)
 
-    if (rawRecord.length != recordSize || ctx.dataStream.isEndOfStream) {
-      ctx.dataStream.close()
+    if (rawRecord.length != recordSize || ctx.inputStream.isEndOfStream) {
+      ctx.inputStream.close()
     }
 
     recordNumber += 1
