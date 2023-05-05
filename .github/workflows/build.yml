@@ -5,6 +5,12 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    paths:
+      - "cobol-parser/**"
+      - "cobol-converters/**"
+      - "spark-cobol/**"
+      - "project/**"
+      - "build.sbt"
 
 jobs:
   build-sbt:
