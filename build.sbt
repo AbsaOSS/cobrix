@@ -28,7 +28,7 @@ ThisBuild / organization := "za.co.absa.cobrix"
 ThisBuild / scalaVersion := scala213
 ThisBuild / crossScalaVersions := Seq(scala211, scala212, scala213)
 
-ThisBuild / Test / javaOptions ++= Seq("-Xmx4G", "-XX:ReservedCodeCacheSize=1G")
+ThisBuild / Test / javaOptions += "-Xmx2G"
 
 ThisBuild / javacOptions ++= Seq("-source", "1.8", "-target", "1.8")
 
