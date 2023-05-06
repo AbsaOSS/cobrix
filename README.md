@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.6.6</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.6.7</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.6.6</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.6.7</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.6.6</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.6.7</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.6
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.7
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.6
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.7
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.6
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.7
 ```
 
 ## Usage
@@ -238,17 +238,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.6.6.jar
-* cobol-parser_2.12-2.6.6.jar
+* spark-cobol_2.12-2.6.7.jar
+* cobol-parser_2.12-2.6.7.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.8.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.6
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.7
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.6.jar,cobol-parser_2.12-2.6.6.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.7.jar,cobol-parser_2.12-2.6.7.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -316,7 +316,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.7-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.8-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1639,6 +1639,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.7 released 6 May 2023.
+   - [#620](https://github.com/AbsaOSS/cobrix/issues/620) Fixed a regression bug that made a breaking change to custom record extractors. The source code compatibility has been restored.
+
 - #### 2.6.6 released 5 May 2023.
    - [#601](https://github.com/AbsaOSS/cobrix/issues/601) Fixed `file_start_offset` and `file_end_offset` options for VB record format (BDW+RDW).
    - [#614](https://github.com/AbsaOSS/cobrix/issues/614) Fixed catching a state when a custom record extractor does not conform to the contract.
