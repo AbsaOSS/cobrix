@@ -17,7 +17,6 @@
 package za.co.absa.cobrix.cobol.reader
 
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.memorystream.{TestByteStream, TestStringStream}
@@ -230,7 +229,8 @@ class VarLenNestedReaderSpec extends AnyWordSpec {
       segmentLevelIds = Nil,
       segmentIdPrefix = "A",
       segmentIdRedefineMap = Map("P" -> "PARENT", "C" -> "CHILD"),
-      fieldParentMap = Map("CHILD" -> "PARENT")
+      fieldParentMap = Map("CHILD" -> "PARENT"),
+      None
     )
 
     val readerProperties = za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters(
