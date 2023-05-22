@@ -61,7 +61,7 @@ class DebugFieldsAdder(debugFieldsPolicy: DebugFieldsPolicy) extends AstTransfor
       }
 
       val debugFieldName = field.name + "_debug"
-      val debugDataType = AlphaNumeric(s"X($size)", size, None, Some(debugEncoding), None)
+      val debugDataType = AlphaNumeric(s"X($size)", size, None, None, Some(debugEncoding), None)
 
       val debugField = field.copy(name = debugFieldName,
         dataType = debugDataType,
