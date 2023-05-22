@@ -27,7 +27,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, UTF16}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, RAW, UTF16}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -149,20 +149,19 @@ class ParserVisitor(enc: Encoding,
       case Some(usageVal) =>
         PicExpr(
           pic.value match {
-            case x: Decimal =>
-              val dec = x.asInstanceOf[Decimal]
+            case dec: Decimal =>
               if (dec.compact.isDefined && !dec.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${dec.compact.get}) doesn't match group's USAGE ($usageVal).")
               dec.copy(compact=usage)
-            case x: Integral =>
-              val int = x.asInstanceOf[Integral]
+            case int: Integral =>
               if (int.compact.isDefined && !int.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
               int.copy(compact=usage)
             case x: AlphaNumeric if usageVal == COMP3U() =>
-              val num = x.asInstanceOf[AlphaNumeric]
-              Integral(num.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
-            case x =>
+              Integral(x.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
+            case x: AlphaNumeric if usageVal == COMP1() || usageVal == COMP4() =>
+              x.copy(compact=usage, enc=Some(RAW))
+            case x: AlphaNumeric =>
               throw new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
           }
         )
@@ -622,19 +621,19 @@ class ParserVisitor(enc: Encoding,
   override def visitAlphaX(ctx: copybookParser.AlphaXContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len, None, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitAlphaN(ctx: copybookParser.AlphaNContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(UTF16), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, None, Some(UTF16), Some(ctx.getText)))
   }
 
   override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len, None, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitTrailingSign(ctx: copybookParser.TrailingSignContext): PicExpr = {
