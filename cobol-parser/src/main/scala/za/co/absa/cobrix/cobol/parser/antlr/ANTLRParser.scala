@@ -57,12 +57,13 @@ object ANTLRParser extends Logging {
             commentPolicy: CommentPolicy,
             strictSignOverpunch: Boolean,
             improvedNullDetection: Boolean,
+            decodeBinaryAsHex: Boolean,
             ebcdicCodePage: CodePage,
             asciiCharset: Charset,
             isUtf16BigEndian: Boolean,
             floatingPointFormat: FloatingPointFormat,
             fieldCodePageMap: Map[String, String]): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, fieldCodePageMap)
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, decodeBinaryAsHex, fieldCodePageMap)
 
     val strippedContents = filterSpecialCharacters(copyBookContents).split("\\r?\\n").map(
       line =>
