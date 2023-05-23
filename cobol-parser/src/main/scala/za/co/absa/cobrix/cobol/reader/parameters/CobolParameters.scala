@@ -52,6 +52,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param allowPartialRecords    If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
   * @param multisegmentParams     Parameters for reading multisegment mainframe files
   * @param improvedNullDetection  If true, string values that contain only zero bytes (0x0) will be considered null.
+  * @param decodeBinaryAsHex      Decode binary fields as HEX strings
   * @param commentPolicy          A comment truncation policy
   * @param dropGroupFillers       If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param dropValueFillers       If true the parser will drop all value FILLER fields
@@ -89,6 +90,7 @@ case class CobolParameters(
                             commentPolicy:         CommentPolicy,
                             strictSignOverpunch:   Boolean,
                             improvedNullDetection: Boolean,
+                            decodeBinaryAsHex:     Boolean,
                             dropGroupFillers:      Boolean,
                             dropValueFillers:      Boolean,
                             fillerNamingPolicy:    FillerNamingPolicy,

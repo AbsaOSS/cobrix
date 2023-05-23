@@ -40,6 +40,7 @@ class DataSizeSpec extends AnyFunSuite {
       floatingPointFormat = FloatingPointFormat.IBM,
       strictSignOverpunch = true,
       improvedNullDetection = false,
+      decodeBinaryAsHex = false,
       fieldCodePageMap = Map.empty)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")

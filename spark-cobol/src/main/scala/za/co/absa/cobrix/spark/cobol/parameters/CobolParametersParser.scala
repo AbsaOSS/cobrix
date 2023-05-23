@@ -90,6 +90,7 @@ object CobolParametersParser extends Logging {
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
   val PARAM_STRICT_SIGN_OVERPUNCHING  = "strict_sign_overpunching"
   val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
+  val PARAM_BINARY_AS_HEX             = "binary_as_hex"
   val PARAM_ALLOW_PARTIAL_RECORDS     = "allow_partial_records"
   val PARAM_FIELD_CODE_PAGE_PREFIX    = "field_code_page:"
 
@@ -267,6 +268,7 @@ object CobolParametersParser extends Logging {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_STRICT_SIGN_OVERPUNCHING, "true").toBoolean,
       params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "true").toBoolean,
+      params.getOrElse(PARAM_BINARY_AS_HEX, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       FillerNamingPolicy(params.getOrElse(PARAM_FILLER_NAMING_POLICY, "sequence_numbers")),
@@ -400,6 +402,7 @@ object CobolParametersParser extends Logging {
       parameters.commentPolicy,
       parameters.strictSignOverpunch,
       parameters.improvedNullDetection,
+      parameters.decodeBinaryAsHex,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
       parameters.fillerNamingPolicy,

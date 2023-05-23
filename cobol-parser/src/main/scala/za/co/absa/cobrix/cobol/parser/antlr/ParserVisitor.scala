@@ -18,7 +18,6 @@ package za.co.absa.cobrix.cobol.parser.antlr
 
 import java.nio.charset.Charset
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
-import sun.nio.cs.StandardCharsets
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
@@ -27,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, RAW, UTF16}
+import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -48,6 +47,7 @@ class ParserVisitor(enc: Encoding,
                     floatingPointFormat: FloatingPointFormat,
                     strictSignOverpunch: Boolean,
                     improvedNullDetection: Boolean,
+                    decodeBinaryAsHex: Boolean,
                     fieldCodePageMap: Map[String, String]) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String, originalValue: String) extends Expr
@@ -160,7 +160,8 @@ class ParserVisitor(enc: Encoding,
             case x: AlphaNumeric if usageVal == COMP3U() =>
               Integral(x.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
             case x: AlphaNumeric if usageVal == COMP1() || usageVal == COMP4() =>
-              x.copy(compact=usage, enc=Some(RAW))
+              val enc = if (decodeBinaryAsHex) HEX else RAW
+              x.copy(compact=usage, enc=Some(enc))
             case x: AlphaNumeric =>
               throw new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
           }

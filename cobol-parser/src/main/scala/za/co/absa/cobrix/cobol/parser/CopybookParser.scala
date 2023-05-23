@@ -135,6 +135,7 @@ object CopybookParser extends Logging {
             commentPolicy: CommentPolicy = CommentPolicy(),
             strictSignOverpunch: Boolean = true,
             improvedNullDetection: Boolean = false,
+            decodeBinaryAsHex: Boolean = false,
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
             isUtf16BigEndian: Boolean = true,
@@ -154,6 +155,7 @@ object CopybookParser extends Logging {
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
+      decodeBinaryAsHex,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -195,6 +197,7 @@ object CopybookParser extends Logging {
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 strictSignOverpunch: Boolean = true,
                 improvedNullDetection: Boolean = false,
+                decodeBinaryAsHex: Boolean = false,
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
@@ -214,6 +217,7 @@ object CopybookParser extends Logging {
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
+      decodeBinaryAsHex,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -258,6 +262,7 @@ object CopybookParser extends Logging {
                 commentPolicy: CommentPolicy,
                 strictSignOverpunch: Boolean,
                 improvedNullDetection: Boolean,
+                decodeBinaryAsHex: Boolean,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
                 isUtf16BigEndian: Boolean,
@@ -267,7 +272,7 @@ object CopybookParser extends Logging {
                 debugFieldsPolicy: DebugFieldsPolicy,
                 fieldCodePageMap: Map[String, String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, decodeBinaryAsHex, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)
