@@ -66,6 +66,17 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
       assert(schema.getCobolSchema.getCobolSchema.children(1).name == "RECORD2")
       assert(schema.getCobolSchema.getCobolSchema.children(1).redefines.contains("RECORD1"))
     }
+
+    "return a schema for multiple copybooks having ASCII format" in {
+      val reader = getUseCase(Seq(copybookContents1, copybookContents2), isEbcdic = false)
+
+      val schema = reader.getCobolSchema
+
+      assert(schema.getCobolSchema.getCobolSchema.name == "_ROOT_")
+      assert(schema.getCobolSchema.getCobolSchema.children.head.name == "RECORD1")
+      assert(schema.getCobolSchema.getCobolSchema.children(1).name == "RECORD2")
+      assert(schema.getCobolSchema.getCobolSchema.children(1).redefines.contains("RECORD1"))
+    }
   }
 
   "getRecordSize()" should {
@@ -96,7 +107,17 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
 
   "getRecordIterator()" should {
     "return an iterator for single record data" in {
-      val reader = getUseCase(Seq(copybookContents))
+      val reader = getUseCase(Seq(copybookContents), recordFormat = RecordFormat.FixedLength)
+
+      val it = reader.getRecordIterator(fixedLengthDataExample)
+
+      assert(it.hasNext)
+      assert(it.next() == Seq("12", "34"))
+      assert(!it.hasNext)
+    }
+
+    "return an iterator for single ASCII record" in {
+      val reader = getUseCase(Seq(copybookContents), recordFormat = RecordFormat.AsciiText, asciiCharset = "us-ascii")
 
       val it = reader.getRecordIterator(fixedLengthDataExample)
 
@@ -180,19 +201,22 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
   }
 
   def getUseCase(copybooks: Seq[String],
+                 isEbcdic: Boolean = true,
                  recordFormat: RecordFormat = RecordFormat.FixedLength,
                  startOffset: Int = 0,
                  endOffset: Int = 0,
                  recordLength: Option[Int] = None,
+                 asciiCharset: String = ""
                 ): FixedLenNestedReader[scala.Array[Any]] = {
     val readerProperties = za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters(
       recordFormat = recordFormat,
-      recordLength = recordLength
+      recordLength = recordLength,
+      asciiCharset = asciiCharset
     )
 
     val reader = new FixedLenNestedReader[scala.Array[Any]](
       copybooks,
-      isEbcdic = true,
+      isEbcdic = isEbcdic,
       ebcdicCodePage = new CodePageCommon,
       floatingPointFormat = FloatingPointFormat.IEEE754,
       startOffset = startOffset,
