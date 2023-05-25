@@ -79,7 +79,7 @@ final class FixedLenTextReader(copyBookContents: Seq[String],
     new RowIterator(getRecordIterator(binaryData))
   }
 
-  protected override def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
+  override def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
     if (startOffset < 0) {
       throw new IllegalArgumentException(s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
     }

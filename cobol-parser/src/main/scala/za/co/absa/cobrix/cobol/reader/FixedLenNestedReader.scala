@@ -67,14 +67,13 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
   }
 
   @throws(classOf[Exception])
-  protected def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
+  override def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
     val singleRecordIterator = readerProperties.recordFormat == AsciiText || readerProperties.recordFormat == FixedLength
     new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, singleRecordIterator, handler)
   }
 
-  @throws(classOf[IllegalArgumentException])
-  protected def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
+  def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
     if (startOffset < 0) {
       throw new IllegalArgumentException(s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
     }
@@ -86,7 +85,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
         if (len < 1) {
           throw new IllegalArgumentException(s"The specified record size $len cannot be used. The record length should be greater then zero.")
         }
-      case None =>
+      case None      =>
         if (binaryData.length < getExpectedLength) {
           throw new IllegalArgumentException(s"Binary record too small. Expected binary record size = $getExpectedLength, got ${binaryData.length} ")
         }
