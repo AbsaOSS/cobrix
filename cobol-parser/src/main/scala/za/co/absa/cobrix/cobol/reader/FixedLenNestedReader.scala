@@ -42,11 +42,11 @@ import scala.reflect.ClassTag
   * @param schemaRetentionPolicy Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
-                                        isEbcdic: Boolean = true,
+                                        isEbcdic: Boolean,
                                         ebcdicCodePage: CodePage,
                                         floatingPointFormat: FloatingPointFormat,
-                                        startOffset: Int = 0,
-                                        endOffset: Int = 0,
+                                        startOffset: Int,
+                                        endOffset: Int,
                                         schemaRetentionPolicy: SchemaRetentionPolicy,
                                         stringTrimmingPolicy: StringTrimmingPolicy,
                                         dropGroupFillers: Boolean,

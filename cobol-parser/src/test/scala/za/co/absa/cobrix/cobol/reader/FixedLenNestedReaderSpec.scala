@@ -72,17 +72,25 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
     "return a record size for a single copybook" in {
       val reader = getUseCase(Seq(copybookContents))
 
-      val schema = reader.getCobolSchema
+      val recordSize = reader.getRecordSize
 
-      assert(schema.getRecordSize == 4)
+      assert(recordSize == 4)
     }
 
     "return a record size for multiple copybooks" in {
       val reader = getUseCase(Seq(copybookContents1, copybookContents2))
 
-      val schema = reader.getCobolSchema
+      val recordSize = reader.getRecordSize
 
-      assert(schema.getRecordSize == 2)
+      assert(recordSize == 2)
+    }
+
+    "return a record size for files with start offset" in {
+      val reader = getUseCase(Seq(copybookContents1, copybookContents2), startOffset = 10)
+
+      val recordSize = reader.getRecordSize
+
+      assert(recordSize == 12)
     }
   }
 
@@ -113,6 +121,12 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
   "checkBinaryDataValidity()" should {
     "pass the check if everything is okay" in {
       val reader = getUseCase(Seq(copybookContents))
+
+      reader.checkBinaryDataValidity(fixedLengthDataExample)
+    }
+
+    "catch the record length is okay" in {
+      val reader = getUseCase(Seq(copybookContents), recordLength = Some(4))
 
       reader.checkBinaryDataValidity(fixedLengthDataExample)
     }
@@ -178,6 +192,7 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
 
     val reader = new FixedLenNestedReader[scala.Array[Any]](
       copybooks,
+      isEbcdic = true,
       ebcdicCodePage = new CodePageCommon,
       floatingPointFormat = FloatingPointFormat.IEEE754,
       startOffset = startOffset,
