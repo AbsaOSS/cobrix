@@ -299,15 +299,18 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
 - Run `sbt assembly` in the root directory of the repository specifying the Scala and Spark version you want to build for:
     ```sh
     # For Scala 2.11
-    sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
+    sbt -DSPARK_VERSION="2.4.8" ++2.11.12 assembly
   
     # For Scala 2.12
-    sbt ++2.12.17 assembly -DSPARK_VERSION=2.4.8
-    sbt ++2.12.17 assembly -DSPARK_VERSION=3.1.3
-    sbt ++2.12.17 assembly -DSPARK_VERSION=3.2.3
+    sbt -DSPARK_VERSION="2.4.8" ++2.12.17 assembly
+    sbt -DSPARK_VERSION="3.1.3" ++2.12.17 assembly
+    sbt -DSPARK_VERSION="3.2.3" ++2.12.17 assembly
+    sbt -DSPARK_VERSION="3.3.2" ++2.12.17 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.12.17 assembly
   
     # For Scala 2.13
-    sbt ++2.13.10 assembly -DSPARK_VERSION=3.3.2
+    sbt -DSPARK_VERSION="3.3.2" ++2.13.10 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.13.10 assembly
     ```
 
 You can collect the uber jar of `spark-cobol` either at
