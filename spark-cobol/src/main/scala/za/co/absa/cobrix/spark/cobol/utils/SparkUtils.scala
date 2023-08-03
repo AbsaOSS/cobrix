@@ -97,14 +97,14 @@ object SparkUtils extends Logging {
           case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
-            fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName)
+            fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName, structField.metadata)
             stringFields += s"""expr("$path`${structField.name}`[$i] AS `$newFieldName`")"""
         }
         i += 1
       }
     }
 
-    def flattenNestedArrays(path: String, fieldNamePrefix: String, arrayType: ArrayType): Unit = {
+    def flattenNestedArrays(path: String, fieldNamePrefix: String, arrayType: ArrayType, metadata: Metadata): Unit = {
       val maxInd = getMaxArraySize(path)
       var i = 0
       while (i < maxInd) {
@@ -114,12 +114,12 @@ object SparkUtils extends Logging {
             flattenGroup(s"$path[$i]", newFieldNamePrefix, st)
           case ar: ArrayType =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
-            flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar)
+            flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar, metadata)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
           case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
-            fields += expr(s"$path[$i]").as(newFieldName)
+            fields += expr(s"$path[$i]").as(newFieldName, metadata)
             stringFields += s"""expr("$path`[$i] AS `$newFieldName`")"""
         }
         i += 1
@@ -144,7 +144,7 @@ object SparkUtils extends Logging {
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
         case _: ArrayType =>
-          flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
+          flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType, structField.metadata)
         case _ =>
           flattenStructArray(path, fieldNamePrefix, structField, arrayType)
       }
@@ -164,7 +164,7 @@ object SparkUtils extends Logging {
             flattenArray(path, newFieldNamePrefix, field, arr)
           case _ =>
             val newFieldName = getNewFieldName(s"$fieldNamePrefix${field.name}")
-            fields += expr(s"$path`${field.name}`").as(newFieldName)
+            fields += expr(s"$path`${field.name}`").as(newFieldName, field.metadata)
             if (path.contains('['))
               stringFields += s"""expr("$path`${field.name}` AS `$newFieldName`")"""
             else
