@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import org.apache.spark.sql.types.{ArrayType, StructType}
+import org.apache.spark.sql.types.{ArrayType, LongType, MetadataBuilder, StringType, StructField, StructType}
 import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import org.slf4j.LoggerFactory
@@ -100,6 +100,34 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
 
     assertSchema(flatSchema, expectedFlatSchema)
     assertResults(flatData, expectedFlatData)
+  }
+
+  test("Test metadata is retained") {
+    val metadata1 = new MetadataBuilder().putLong("test_metadata1", 123).build()
+    val metadata2 = new MetadataBuilder().putLong("test_metadata2", 456).build()
+    val metadata3 = new MetadataBuilder().putLong("test_metadata3", 789).build()
+
+    val schema = StructType(Array(
+      StructField("id", LongType, nullable = true, metadata = metadata1),
+      StructField("legs", ArrayType(StructType(List(
+        StructField("conditions", ArrayType(StructType(List(
+          StructField("amount", LongType, nullable = true),
+          StructField("checks", ArrayType(StructType(List(
+            StructField("checkNums", ArrayType(StringType, containsNull = true), nullable = true, metadata = metadata3)
+          )), containsNull = true), nullable = true))), containsNull = true), nullable = true),
+        StructField("legid", LongType, nullable = true, metadata = metadata2))), containsNull = true), nullable = true)))
+
+    val df = spark.read.schema(schema).json(nestedSampleData.toDS)
+    val dfFlattened = SparkUtils.flattenSchema(df)
+
+    assert(dfFlattened.schema.fields(0).metadata.getLong("test_metadata1") == 123)
+    assert(dfFlattened.schema.fields.find(_.name == "id").get.metadata.getLong("test_metadata1") == 123)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_legid").get.metadata.getLong("test_metadata2") == 456)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_1").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_2").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_3").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_4").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_5").get.metadata.getLong("test_metadata3") == 789)
   }
 
   test("Test schema flattening when short names are used") {
