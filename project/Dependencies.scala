@@ -28,8 +28,8 @@ object Dependencies {
   private val mockitoVersion = "4.11.0"
 
   private val defaultSparkVersionForScala211 = "2.4.8"
-  private val defaultSparkVersionForScala212 = "3.2.3"
-  private val defaultSparkVersionForScala213 = "3.3.2"
+  private val defaultSparkVersionForScala212 = "3.4.1"
+  private val defaultSparkVersionForScala213 = "3.5.0"
 
   def sparkFallbackVersion(scalaVersion: String): String = {
     if (scalaVersion.startsWith("2.11.")) {
