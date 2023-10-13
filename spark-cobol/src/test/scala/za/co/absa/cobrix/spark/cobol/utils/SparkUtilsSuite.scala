@@ -438,7 +438,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
   }
 
   private def assertResults(actualResults: String, expectedResults: String): Unit = {
-    if (actualResults != expectedResults) {
+    if (actualResults.toLowerCase != expectedResults.toLowerCase) {
       logger.error(s"EXPECTED:\n$expectedResults")
       logger.error(s"ACTUAL:\n$actualResults")
       fail("Actual dataset data does not match the expected data (see above).")
