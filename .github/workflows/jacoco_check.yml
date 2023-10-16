@@ -37,9 +37,9 @@ jobs:
         # Scala 2.12 is chosen since it is supported by the most wide range of Spark versions and
         # vendor distributions.
         include:
-          - scala: 2.12.17
+          - scala: 2.12.18
             scalaShort: "2.12"
-            spark: 3.3.2
+            spark: 3.3.3
             overall: 0.0
             changed: 80.0
 
