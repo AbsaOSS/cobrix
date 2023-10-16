@@ -1643,6 +1643,10 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.8 released 16 October 2023.
+   - [#634](https://github.com/AbsaOSS/cobrix/issues/634) Retain metadata when flattening the schema in SparkUtils.
+   - [#644](https://github.com/AbsaOSS/cobrix/issues/644) Add support for Spark 3.5.0.
+
 - #### 2.6.8 released 1 June 2023.
    - [#624](https://github.com/AbsaOSS/cobrix/issues/624) Add support for binary fields that have `PIC X` and `USAGE COMP`.
 
