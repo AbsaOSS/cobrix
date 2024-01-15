@@ -17,9 +17,8 @@
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import java.nio.charset.StandardCharsets
-
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePageCommon
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage273, CodePageCommon}
 
 class StringDecodersSpec extends AnyWordSpec {
 
@@ -81,6 +80,30 @@ class StringDecodersSpec extends AnyWordSpec {
       assert(actual == asciiString)
     }
 
+    "EBCDIC with code pages" should {
+      "decode a CP273 string special characters" in {
+        val expected = " {Ä!~Ü^[ö§ß¢@ä¦ü}Ö\\] "
+        val bytes = Array(0x40, 0x43, 0x4A, 0x4F, 0x59, 0x5A, 0x5F, 0x63, 0x6A, 0x7C,
+          0xA1, 0xB0, 0xB5, 0xC0, 0xCC, 0xD0, 0xDC, 0xE0, 0xEC, 0xFC, 0x40).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage273, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
+      "decode a CP273 string example" in {
+        val expected = "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich"
+
+        val bytes = Array(0xE5, 0x89, 0x83, 0xA3, 0x96, 0x99, 0x40, 0x91, 0x81, 0x87, 0xA3, 0x40, 0xA9, 0xA6,
+          0x6A, 0x93, 0x86, 0x40, 0xC2, 0x96, 0xA7, 0x92, 0xC0, 0x94, 0x97, 0x86, 0x85, 0x99, 0x40, 0x98,
+          0xA4, 0x85, 0x99, 0x40, 0xD0, 0x82, 0x85, 0x99, 0x40, 0x84, 0x85, 0x95, 0x40, 0x87, 0x99, 0x96,
+          0xA1, 0x85, 0x95, 0x40, 0xE2, 0xA8, 0x93, 0xA3, 0x85, 0x99, 0x40, 0xC4, 0x85, 0x89, 0x83, 0x88).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage273, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+    }
   }
 
   "decodeAsciiString()" should {

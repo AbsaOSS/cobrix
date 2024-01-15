@@ -27,51 +27,11 @@ class CodePage037Ext extends SingleByteCodePage(CodePage037Ext.ebcdicToAsciiMapp
 
 object CodePage037Ext {
   val ebcdicToAsciiMapping: Array[Char] = {
+    import EbcdicNonPrintable._
+
     /* This is the EBCDIC Code Page 37 to ASCII conversion table with non-printable characters mapping
        from https://en.wikipedia.org/wiki/EBCDIC_037 */
     val ebcdic2ascii: Array[Char] = {
-      val clf = '\r'
-      val ccr = '\n'
-      val spc = ' '
-      val qts = '\''
-      val qtd = '\"'
-      val bsh = '\\'
-
-      val c00 = '\u0000'
-      val c01 = '\u0001'
-      val c02 = '\u0002'
-      val c03 = '\u0003'
-      val c04 = '\u0004'
-      val c05 = '\u0005'
-      val c06 = '\u0006'
-      val c07 = '\u0007'
-      val c08 = '\u0008'
-      val c09 = '\u0009'
-      val c0b = '\u000b'
-      val c0c = '\u000c'
-      val c0e = '\u000e'
-      val c0f = '\u000f'
-      val c10 = '\u0010'
-      val c11 = '\u0011'
-      val c12 = '\u0012'
-      val c13 = '\u0013'
-      val c14 = '\u0014'
-      val c15 = '\u0015'
-      val c16 = '\u0016'
-      val c17 = '\u0017'
-      val c18 = '\u0018'
-      val c19 = '\u0019'
-      val c1a = '\u001a'
-      val c1b = '\u001b'
-      val c1c = '\u001c'
-      val c1d = '\u001d'
-      val c1e = '\u001e'
-      val c1f = '\u001f'
-      val del = '\u007f'
-      val shy = '\u00ad'
-      val nel = '\u0085'
-      val rsp = '\u00a0'
-
       // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
       Array[Char](
         c00, c01, c02, c03, spc, c09, spc, del, spc, spc, spc, c0b, c0c, ccr, c0e, c0f, //   0 -  15
