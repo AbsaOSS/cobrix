@@ -1419,19 +1419,19 @@ You can have decimals when using COMP-3 as well.
 
 ##### Data parsing options
 
-| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                                       |
-|-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                                              |
-| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp300`, `cp838`, `cp870`, `cp875`, `cp1025`, `cp1047`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
-| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                                     |
-| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                                  |
-| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                                       |
-| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                                   |
-| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements.                 |
-| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                                             |
-| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                                |
-| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                             |
-| .option("binary_as_hex", "false")                         | By default fields that have `PIC X` and `USAGE COMP` are converted to `binary` Spark data type. If this option is set to `true`, such fields will be strings in HEX encoding.                                                                                                                     |
+| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                       |
+|-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                              |
+| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, and others (see "Currently supported EBCDIC code pages" section.                                                                         |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                     |
+| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                  |
+| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                       |
+| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                   |
+| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                             |
+| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                |
+| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                             |
+| .option("binary_as_hex", "false")                         | By default fields that have `PIC X` and `USAGE COMP` are converted to `binary` Spark data type. If this option is set to `true`, such fields will be strings in HEX encoding.                                                                                                     |
 
 ##### Modifier options
 
@@ -1512,6 +1512,28 @@ You can have decimals when using COMP-3 as well.
 | .option("field_code_page:cp825", "field1, field2") | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                   |
 | .option("minimum_record_length", 1)                | Specifies the minimum length a record is considered valid, will be skipped otherwise. It is used to skip ASCII lines that contains invalid records, an EOF character, for example. |
 | .option("maximum_record_length", 1000)             | Specifies the maximum length a record is considered valid, will be skipped otherwise.                                                                                              |
+
+##### Currently supported EBCDIC code pages
+
+| Option                                | Code page   | Description                                                                                                 |
+|:--------------------------------------|-------------|:------------------------------------------------------------------------------------------------------------|
+| .option("ebcdic_code_page", "common") | Common      | (Default) Only characters common across EBCDIC code pages are decoded.                                      |
+| .option("ebcdic_code_page", "cp037")  | EBCDIC 037  | Australia, Brazil, Canada, New Zealand, Portugal, South Africa, USA.                                        |
+| .option("ebcdic_code_page", "cp273")  | EBCDIC 273  | Germany, Austria.                                                                                           |
+| .option("ebcdic_code_page", "cp300")  | EBCDIC 300  | Double-byte code page with Japanese and Latin characters.                                                   |
+| .option("ebcdic_code_page", "cp500")  | EBCDIC 500  | Belgium, Canada, Switzerland, International.                                                                |
+| .option("ebcdic_code_page", "cp838")  | EBCDIC 838  | Double-byte code page with Thai and Latin characters.                                                       |
+| .option("ebcdic_code_page", "cp870")  | EBCDIC 870  | Albania, Bosnia and Herzegovina, Croatia, Czech Republic, Hungary, Poland, Romania, Slovakia, and Slovenia. |
+| .option("ebcdic_code_page", "cp875")  | EBCDIC 875  | A code page with Greek characters.                                                                          |
+| .option("ebcdic_code_page", "cp1025") | EBCDIC 1025 | A code page with Cyrillic alphabet.                                                                         |
+| .option("ebcdic_code_page", "cp1047") | EBCDIC 1047 | A code page containing all of the Latin-1/Open System characters.                                           |
+| .option("ebcdic_code_page", "cp1140") | EBCDIC 1140 | Same as code page 037 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1141") | EBCDIC 1141 | Same as code page 273 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1148") | EBCDIC 1148 | Same as code page 500 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1364") | EBCDIC 1364 | Double-byte code page CCSID-1364, Korean.                                                                   |
+| .option("ebcdic_code_page", "cp1388") | EBCDIC 1388 | Double-byte code page CCSID-1388, Simplified Chinese.                                                       |
+
+`common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
 ## Performance Analysis
 
@@ -1643,6 +1665,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.10 will be released soon.
+   - [#653](https://github.com/AbsaOSS/cobrix/issues/653) Add support for new EBCDIC code pages: 273, 500, 1140, 1141, 1148.
+
 - #### 2.6.9 released 16 October 2023.
    - [#634](https://github.com/AbsaOSS/cobrix/issues/634) Retain metadata when flattening the schema in SparkUtils.
    - [#644](https://github.com/AbsaOSS/cobrix/issues/644) Add support for Spark 3.5.0.
