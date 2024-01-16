@@ -89,6 +89,24 @@ class Test9CodePages extends AnyFunSuite with SparkTestBase {
         "string_trimming_policy" -> "none" :: Nil)
   }
 
+  test(s"Integration test on $exampleName code page CP1140") {
+    runTest("_cp1140",
+      "ebcdic_code_page" -> "cp1140" ::
+        "string_trimming_policy" -> "none" :: Nil)
+  }
+
+  test(s"Integration test on $exampleName code page CP1141") {
+    runTest("_cp1141",
+      "ebcdic_code_page" -> "cp1141" ::
+        "string_trimming_policy" -> "none" :: Nil)
+  }
+
+  test(s"Integration test on $exampleName code page CP1148") {
+    runTest("_cp1148",
+      "ebcdic_code_page" -> "cp1148" ::
+        "string_trimming_policy" -> "none" :: Nil)
+  }
+
   test(s"Integration test on $exampleName custom code page") {
     runTest("_cp_custom",
       "ebcdic_code_page_class" -> "za.co.absa.cobrix.spark.cobol.source.utils.CustomCodePage" ::

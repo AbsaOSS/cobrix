@@ -53,6 +53,9 @@ object CodePage extends Logging {
       case "cp875"           => new CodePage875
       case "cp1025"          => new CodePage1025
       case "cp1047"          => new CodePage1047
+      case "cp1140"          => new CodePage1140
+      case "cp1141"          => new CodePage1141
+      case "cp1148"          => new CodePage1148
       case "cp1364"          => new CodePage1364
       case "cp1388"          => new CodePage1388
       case codePage          => throw new IllegalArgumentException(s"The code page '$codePage' is not one of the builtin EBCDIC code pages.")
