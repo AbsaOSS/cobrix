@@ -77,9 +77,15 @@ class Test9CodePages extends AnyFunSuite with SparkTestBase {
         "string_trimming_policy" -> "none" :: Nil)
   }
 
-  test(s"Integration test on $exampleName code page CP273 extended") {
+  test(s"Integration test on $exampleName code page CP273") {
     runTest("_cp273",
       "ebcdic_code_page" -> "cp273" ::
+        "string_trimming_policy" -> "none" :: Nil)
+  }
+
+  test(s"Integration test on $exampleName code page CP500") {
+    runTest("_cp500",
+      "ebcdic_code_page" -> "cp500" ::
         "string_trimming_policy" -> "none" :: Nil)
   }
 
