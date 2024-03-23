@@ -492,7 +492,7 @@ object CobolParametersParser extends Logging {
         logger.warn(s"Option '$PARAM_BLOCK_LENGTH' is ignored for record format: VB")
       }
       if (recordFormat == FixedBlock && bdw.recordsPerBlock.nonEmpty) {
-        logger.warn(s"Option '$PARAM_RECORDS_PER_BLOCK' is ignored for record format: VB")
+        logger.warn(s"Option '$PARAM_RECORDS_PER_BLOCK' is ignored for record format: F")
       }
       Some(bdw)
     } else {
