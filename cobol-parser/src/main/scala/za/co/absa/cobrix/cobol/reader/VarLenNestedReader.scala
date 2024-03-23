@@ -17,16 +17,13 @@
 package za.co.absa.cobrix.cobol.reader
 
 import za.co.absa.cobrix.cobol.internal.Logging
-
-import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
-import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextFullRecordExtractor, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw._
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -37,6 +34,7 @@ import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
+import java.nio.charset.{Charset, StandardCharsets}
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -317,8 +315,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       }
     } else {
       // Fixed record length record parser
+      val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
       RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength,
-        cobolSchema.getRecordSize,
+        recordSize,
         readerProperties.fileStartOffset,
         readerProperties.fileEndOffset,
         0
