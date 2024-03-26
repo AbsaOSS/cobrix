@@ -28,8 +28,8 @@ object Dependencies {
   private val mockitoVersion = "4.11.0"
 
   private val defaultSparkVersionForScala211 = "2.4.8"
-  private val defaultSparkVersionForScala212 = "3.4.1"
-  private val defaultSparkVersionForScala213 = "3.5.0"
+  private val defaultSparkVersionForScala212 = "3.4.2"
+  private val defaultSparkVersionForScala213 = "3.5.1"
 
   def sparkFallbackVersion(scalaVersion: String): String = {
     if (scalaVersion.startsWith("2.11.")) {
@@ -44,6 +44,12 @@ object Dependencies {
   }
 
   def sparkVersion(scalaVersion: String): String = sys.props.getOrElse("SPARK_VERSION", sparkFallbackVersion(scalaVersion))
+
+  def sparkVersionShort(scalaVersion: String): String = {
+    val fullVersion = sparkVersion(scalaVersion)
+
+    fullVersion.split('.').take(2).mkString(".")
+  }
 
   def getScalaDependency(scalaVersion: String): ModuleID = "org.scala-lang" % "scala-library" % scalaVersion % Provided
 
