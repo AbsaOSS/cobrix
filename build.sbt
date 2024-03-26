@@ -20,8 +20,8 @@ import ScalacOptions._
 import com.github.sbt.jacoco.report.JacocoReportSettings
 
 lazy val scala211 = "2.11.12"
-lazy val scala212 = "2.12.18"
-lazy val scala213 = "2.13.12"
+lazy val scala212 = "2.12.19"
+lazy val scala213 = "2.13.13"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 
@@ -139,7 +139,7 @@ lazy val assemblySettings = Seq(
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),
-  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersion(scalaVersion.value)}-${version.value}-bundle.jar",
+  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersionShort(scalaVersion.value)}-${version.value}-bundle.jar",
   assembly / logLevel := Level.Info,
   assembly / test := {}
 )

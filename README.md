@@ -302,24 +302,24 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
     sbt -DSPARK_VERSION="2.4.8" ++2.11.12 assembly
   
     # For Scala 2.12
-    sbt -DSPARK_VERSION="2.4.8" ++2.12.17 assembly
-    sbt -DSPARK_VERSION="3.1.3" ++2.12.17 assembly
-    sbt -DSPARK_VERSION="3.2.3" ++2.12.17 assembly
-    sbt -DSPARK_VERSION="3.3.2" ++2.12.17 assembly
-    sbt -DSPARK_VERSION="3.4.0" ++2.12.17 assembly
+    sbt -DSPARK_VERSION="2.4.8" ++2.12.19 assembly
+    sbt -DSPARK_VERSION="3.1.3" ++2.12.19 assembly
+    sbt -DSPARK_VERSION="3.2.3" ++2.12.19 assembly
+    sbt -DSPARK_VERSION="3.3.2" ++2.12.19 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.12.19 assembly
   
     # For Scala 2.13
-    sbt -DSPARK_VERSION="3.3.2" ++2.13.10 assembly
-    sbt -DSPARK_VERSION="3.4.0" ++2.13.10 assembly
+    sbt -DSPARK_VERSION="3.3.2" ++2.13.13 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.13.13 assembly
     ```
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
-The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.5
+The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.10
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.11-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.6.11-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -330,8 +330,8 @@ $ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.11-SNAPSHOT-bundle.jar
 >   You can work around it by using default Spark version for a given Scala version:
 >   ```sh
 >   sbt ++2.11.12 assembly
->   sbt ++2.12.17 assembly
->   sbt ++2.13.10 assembly
+>   sbt ++2.12.19 assembly
+>   sbt ++2.13.13 assembly
 >   ```
 
 ## Other Features
