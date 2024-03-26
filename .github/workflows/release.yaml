@@ -1,0 +1,91 @@
+#
+# Copyright 2022 ABSA Group Limited
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+name: Release
+
+on:
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release-sbt:
+    runs-on: ubuntu-latest
+    name: Release Scala artifacts
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Setup JDK and sbt
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 8
+          cache: sbt
+
+      - name: Import GPG Key
+        run: |
+          echo "${{ secrets.ABSA_OSS_CI_CD_BOT_GPG_KEY }}" > gpg-secret-key.asc
+          gpg --import --batch gpg-secret-key.asc && rm -rf gpg-secret-key.asc
+          mkdir -p ~/.gnupg
+
+      - name: Setup SonaType config
+        run: |
+          mkdir -p ~/.sbt/1.0
+          echo "${{ secrets.SONATYPE_CONFIG }}" | base64 --decode > ~/.sbt/1.0/sonatype.sbt
+
+      - name: Checkout the release branch
+        run: |
+          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          git config --global user.email "absa_ci_cd_bot@absa.africa"
+          git config --global user.name "CI/CD bot"
+          git fetch origin release/$VERSION 
+          git checkout release/$VERSION
+
+      - name: Run the release plugin
+        run: sbt releaseNow
+
+  create-pr:
+    needs: [ "release-sbt" ]
+    runs-on: ubuntu-latest
+    name: Create Pull Request
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Checkout the release branch
+        id: release_branch3
+        run: |
+          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          git config --global user.email "absa_ci_cd_bot@absa.africa"
+          git config --global user.name "CI/CD bot"
+          git fetch origin release/$VERSION
+          git checkout release/$VERSION
+
+      - name: Create Pull Request
+        run: gh pr create -B master -H "release/$VERSION" --title "Release Cobrix v$VERSION" --body 'Created by Github action'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.release_branch3.outputs.VERSION }}
