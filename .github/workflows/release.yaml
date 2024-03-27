@@ -33,6 +33,14 @@ jobs:
         with:
           ref: ${{ github.head_ref || github.ref_name }}
 
+      - name: Prepare the release branch
+        run: |
+          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
+          git config --global user.email "absa_ci_cd_bot@absa.africa"
+          git config --global user.name "CI/CD bot"
+          git checkout -b release/$VERSION
+          git push --set-upstream origin release/$VERSION
+
       - name: Setup JDK and sbt
         uses: actions/setup-java@v4
         with:
@@ -54,9 +62,6 @@ jobs:
       - name: Checkout the release branch
         run: |
           VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          git config --global user.email "absa_ci_cd_bot@absa.africa"
-          git config --global user.name "CI/CD bot"
           git fetch origin release/$VERSION 
           git checkout release/$VERSION
 
