@@ -1665,6 +1665,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.6.11 released 8 April 2022.
+   - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
+
 - #### 2.6.10 released 17 January 2024.
    - [#653](https://github.com/AbsaOSS/cobrix/issues/653) Add support for new EBCDIC code pages: 273, 500, 1140, 1141, 1148.
 
@@ -1736,9 +1739,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 <details><summary>Older versions</summary>
 <p>
-
-- #### 2.4.11 released 8 April 2022.
-   - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
 
 - #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
