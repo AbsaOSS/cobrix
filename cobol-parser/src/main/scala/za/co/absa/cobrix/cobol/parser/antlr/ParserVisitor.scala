@@ -73,6 +73,11 @@ class ParserVisitor(enc: Encoding,
                                        + genericLengthRegex('9')
                                        + genericLengthRegex('P', optional = true)
                                        ).r
+  val numericSPicRegexScaledWithV: Regex = ("(S?)"
+                                            + genericLengthRegex('9')
+                                            + genericLengthRegex('P', optional = true)
+                                            + "V"
+                                            ).r
   val numericSPicRegexExplicitDot: Regex = ("(S?)"
                                             + genericLengthRegex('9', optional = true)
                                             + "."
@@ -680,13 +685,13 @@ class ParserVisitor(enc: Encoding,
   override def visitPrecision9Ss(ctx: copybookParser.Precision9SsContext): PicExpr = {
     ctx.getText match {
       case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
       )
       case numericSPicRegexScaled(z, nine, scale) => PicExpr(
-        fromNumericSPicRegexScaled(z, nine, scale)
+        fromNumericSPicRegexScaled(z, nine, scale).copy(originalPic = Some(ctx.getText))
       )
       case numericSPicRegexDecimalScaledLead(s, scale, nine) => PicExpr(
-        fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+        fromNumericSPicRegexDecimalScaledLead(s, scale, nine).copy(originalPic = Some(ctx.getText))
       )
       case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
@@ -695,14 +700,14 @@ class ParserVisitor(enc: Encoding,
   override def visitPrecision9Ps(ctx: copybookParser.Precision9PsContext): PicExpr = {
     val numericSPicRegexDecimalScaledLead(s, scale, nine) = ctx.getText
     PicExpr(
-      fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+      fromNumericSPicRegexDecimalScaledLead(s, scale, nine).copy(originalPic = Some(ctx.getText))
     )
   }
 
   override def visitPrecision9Vs(ctx: copybookParser.Precision9VsContext): PicExpr = {
     ctx.getText match {
       case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
       )
       case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
@@ -731,6 +736,13 @@ class ParserVisitor(enc: Encoding,
     val numericSPicRegexDecimalScaled(s, nine1, scale, nine2) = ctx.getText
     PicExpr(
       fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
+    )
+  }
+
+  override def visitPrecision9DecimalScaledWithV(ctx: copybookParser.Precision9DecimalScaledWithVContext): PicExpr = {
+    val numericSPicRegexScaledWithV(s, nine1, scale) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexScaled(s, nine1, scale).copy(originalPic = Some(ctx.getText))
     )
   }
 

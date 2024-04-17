@@ -70,7 +70,7 @@ public interface copybookParserVisitor<T> extends ParseTreeVisitor<T> {
 	T visitThru(copybookParser.ThruContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code values}
-	 * labeled alternative in {@link copybookParser#plusMinusplusMinusprecision9precision9precision9precision9precision9precision9precision9precision9precision9precision9precision9precision9signPrecision9signPrecision9}.
+	 * labeled alternative in {@link copybookParser#plusMinusplusMinusprecision9precision9precision9precision9precision9precision9precision9precision9precision9precision9precision9precision9precision9signPrecision9signPrecision9}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
@@ -246,6 +246,13 @@ public interface copybookParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitPrecision9DecimalScaled(copybookParser.Precision9DecimalScaledContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code precision9DecimalScaledWithV}
+	 * labeled alternative in {@link copybookParser#precision9}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitPrecision9DecimalScaledWithV(copybookParser.Precision9DecimalScaledWithVContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code precision9Scaled}
 	 * labeled alternative in {@link copybookParser#precision9}.
