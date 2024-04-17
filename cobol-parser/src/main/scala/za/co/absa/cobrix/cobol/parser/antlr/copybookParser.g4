@@ -161,6 +161,7 @@ precision9:
     | V_S                           #precision9Vs
     | PRECISION_9_EXPLICIT_DOT      #precision9ExplicitDot
     | PRECISION_9_DECIMAL_SCALED    #precision9DecimalScaled
+    | PRECISION_9_DECIMAL_WITH_V    #precision9DecimalScaledWithV
     | PRECISION_9_SCALED            #precision9Scaled
     | PRECISION_9_SCALED_LEAD       #precision9ScaledLead
     | PRECISION_Z_EXPLICIT_DOT      #precisionZExplicitDot
