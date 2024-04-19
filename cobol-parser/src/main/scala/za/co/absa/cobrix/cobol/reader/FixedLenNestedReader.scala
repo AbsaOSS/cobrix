@@ -16,44 +16,20 @@
 
 package za.co.absa.cobrix.cobol.reader
 
-import java.nio.charset.{Charset, StandardCharsets}
-import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
-import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{AsciiText, CobrixAsciiText, FixedLength}
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{AsciiText, FixedLength}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.iterator.FixedLenNestedRowIterator
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 
-import scala.collection.immutable.HashMap
 import scala.reflect.ClassTag
 
 /**
   * The Cobol data reader that produces nested structure schema
   *
   * @param copyBookContents      A copybook contents.
-  * @param startOffset           Specifies the number of bytes at the beginning of each record that can be ignored.
-  * @param endOffset             Specifies the number of bytes at the end of each record that can be ignored.
-  * @param schemaRetentionPolicy Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   */
 class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
-                                        isEbcdic: Boolean,
-                                        ebcdicCodePage: CodePage,
-                                        floatingPointFormat: FloatingPointFormat,
-                                        startOffset: Int,
-                                        endOffset: Int,
-                                        schemaRetentionPolicy: SchemaRetentionPolicy,
-                                        stringTrimmingPolicy: StringTrimmingPolicy,
-                                        dropGroupFillers: Boolean,
-                                        dropValueFillers: Boolean,
-                                        fillerNamingPolicy: FillerNamingPolicy,
-                                        nonTerminals: Seq[String],
-                                        occursMappings: Map[String, Map[String, Int]],
                                         readerProperties: ReaderParameters,
                                         handler: RecordHandler[T]) extends FixedLenReader with Serializable {
 
@@ -63,22 +39,22 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
 
   override def getRecordSize: Int = {
     val recordInternalsSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
-    recordInternalsSize + startOffset + endOffset
+    recordInternalsSize + readerProperties.startOffset + readerProperties.endOffset
   }
 
   @throws(classOf[Exception])
   override def getRecordIterator(binaryData: Array[Byte]): Iterator[Seq[Any]] = {
     checkBinaryDataValidity(binaryData)
     val singleRecordIterator = readerProperties.recordFormat == AsciiText || readerProperties.recordFormat == FixedLength
-    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, schemaRetentionPolicy, startOffset, endOffset, singleRecordIterator, handler)
+    new FixedLenNestedRowIterator(binaryData, cobolSchema, readerProperties, readerProperties.startOffset, readerProperties.endOffset, singleRecordIterator, handler)
   }
 
   def checkBinaryDataValidity(binaryData: Array[Byte]): Unit = {
-    if (startOffset < 0) {
-      throw new IllegalArgumentException(s"Invalid record start offset = $startOffset. A record start offset cannot be negative.")
+    if (readerProperties.startOffset < 0) {
+      throw new IllegalArgumentException(s"Invalid record start offset = ${readerProperties.startOffset}. A record start offset cannot be negative.")
     }
-    if (endOffset < 0) {
-      throw new IllegalArgumentException(s"Invalid record end offset = $endOffset. A record end offset cannot be negative.")
+    if (readerProperties.endOffset < 0) {
+      throw new IllegalArgumentException(s"Invalid record end offset = ${readerProperties.endOffset}. A record end offset cannot be negative.")
     }
     readerProperties.recordLength match {
       case Some(len) =>
@@ -96,7 +72,7 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
   }
 
   private def getExpectedLength: Int = {
-    cobolSchema.getRecordSize + startOffset + endOffset
+    cobolSchema.getRecordSize + readerProperties.startOffset + readerProperties.endOffset
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {

@@ -19,12 +19,7 @@ package za.co.absa.cobrix.spark.cobol.reader
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.{FixedLenNestedReader => ReaderFixedLenNestedReader}
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -33,31 +28,10 @@ import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
   *  The Cobol data reader that produces nested structure schema
   *
   * @param copyBookContents    A copybook contents.
-  * @param startOffset         Specifies the number of bytes at the beginning of each record that can be ignored.
-  * @param endOffset           Specifies the number of bytes at the end of each record that can be ignored.
-  * @param schemaRetentionPolicy              Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param readerProperties    Properties reflecting parsing copybooks and decoding data.
   */
-final class FixedLenNestedReader(copyBookContents: Seq[String],
-                                 isEbcdic: Boolean = true,
-                                 ebcdicCodePage: CodePage,
-                                 floatingPointFormat: FloatingPointFormat,
-                                 startOffset: Int = 0,
-                                 endOffset: Int = 0,
-                                 schemaRetentionPolicy: SchemaRetentionPolicy,
-                                 stringTrimmingPolicy: StringTrimmingPolicy,
-                                 dropGroupFillers: Boolean,
-                                 dropValueFillers: Boolean,
-                                 fillerNamingPolicy: FillerNamingPolicy,
-                                 nonTerminals: Seq[String],
-                                 occursMappings: Map[String, Map[String, Int]],
-                                 readerProperties: ReaderParameters
-                                 )
-  extends ReaderFixedLenNestedReader[GenericRow](
-    copyBookContents, isEbcdic, ebcdicCodePage, floatingPointFormat,
-    startOffset, endOffset, schemaRetentionPolicy, stringTrimmingPolicy,
-    dropGroupFillers, dropValueFillers, fillerNamingPolicy, nonTerminals, occursMappings, readerProperties,
-    new RowHandler()
-  ) with FixedLenReader with Serializable {
+final class FixedLenNestedReader(copyBookContents: Seq[String], readerProperties: ReaderParameters)
+  extends ReaderFixedLenNestedReader[GenericRow](copyBookContents, readerProperties, new RowHandler()) with FixedLenReader with Serializable {
 
   class RowIterator(iterator: Iterator[Seq[Any]]) extends Iterator[Row] {
     override def hasNext: Boolean = iterator.hasNext

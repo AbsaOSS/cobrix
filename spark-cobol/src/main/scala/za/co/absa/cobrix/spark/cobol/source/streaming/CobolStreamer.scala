@@ -39,19 +39,7 @@ object CobolStreamer {
   
   def getReader(implicit ssc: StreamingContext): FixedLenReader = {
     val copybooks = Seq(HDFSUtils.loadTextFileFromHadoop(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
-    new FixedLenNestedReader(copybooks,
-      isEbcdic = true,
-      CodePage.getCodePageByName("common"),
-      floatingPointFormat = FloatingPointFormat.IBM,
-      schemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
-      stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-      dropGroupFillers = true,
-      dropValueFillers = true,
-      fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
-      nonTerminals = Seq(),
-      occursMappings = Map(),
-      readerProperties = ReaderParameters()
-    )
+    new FixedLenNestedReader(copybooks, readerProperties = ReaderParameters())
   }
   
   implicit class Deserializer(@transient val ssc: StreamingContext) extends Serializable {

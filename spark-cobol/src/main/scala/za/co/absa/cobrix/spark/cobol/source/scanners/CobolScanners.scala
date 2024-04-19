@@ -104,7 +104,7 @@ private[source] object CobolScanners extends Logging {
                                             recordParser: (FixedLenTextReader, RDD[Array[Byte]]) => RDD[Row],
                                             sqlContext: SQLContext): RDD[Row] = {
     val utf8 = StandardCharsets.UTF_8
-    reader.asciiCharset
+    reader.getReaderProperties.asciiCharset
       .map(Charset.forName) match {
       case None                             => buildScanForUtf8TextFiles(reader, sourceDirs, recordParser, sqlContext)
       case Some(charset) if charset == utf8 => buildScanForUtf8TextFiles(reader, sourceDirs, recordParser, sqlContext)

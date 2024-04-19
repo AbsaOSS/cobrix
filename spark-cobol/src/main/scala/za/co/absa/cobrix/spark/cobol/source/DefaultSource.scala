@@ -20,9 +20,7 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.spark.cobol.reader._
@@ -84,23 +82,8 @@ class DefaultSource
     */
   private def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    val charsetOpt = if (parameters.asciiCharset.isEmpty) None else Option(parameters.asciiCharset)
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
-    new FixedLenTextReader(copybookContent,
-      parameters.isEbcdic,
-      CobolSchema.getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
-      charsetOpt,
-      parameters.floatingPointFormat,
-      parameters.recordStartOffset,
-      parameters.recordEndOffset,
-      parameters.schemaRetentionPolicy,
-      parameters.stringTrimmingPolicy,
-      parameters.dropGroupFillers,
-      parameters.dropValueFillers,
-      parameters.fillerNamingPolicy,
-      parameters.nonTerminals,
-      parameters.occursMappings,
-      getReaderProperties(parameters, defaultHdfsBlockSize)
+    new FixedLenTextReader(copybookContent,  getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
 
@@ -111,20 +94,7 @@ class DefaultSource
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
-    new FixedLenNestedReader(copybookContent,
-      parameters.isEbcdic,
-      CobolSchema.getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
-      parameters.floatingPointFormat,
-      parameters.recordStartOffset,
-      parameters.recordEndOffset,
-      parameters.schemaRetentionPolicy,
-      parameters.stringTrimmingPolicy,
-      parameters.dropGroupFillers,
-      parameters.dropValueFillers,
-      parameters.fillerNamingPolicy,
-      parameters.nonTerminals,
-      parameters.occursMappings,
-      getReaderProperties(parameters, defaultHdfsBlockSize)
+    new FixedLenNestedReader(copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
 

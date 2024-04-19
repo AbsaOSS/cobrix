@@ -77,7 +77,10 @@ object CobolSchema {
     val segmentRedefines = readerParameters.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
     val fieldParentMap = readerParameters.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
     val codePage = getCodePage(readerParameters.ebcdicCodePage, readerParameters.ebcdicCodePageClass)
-    val asciiCharset = if (readerParameters.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerParameters.asciiCharset)
+    val asciiCharset = readerParameters.asciiCharset match {
+      case Some(asciiCharset) => Charset.forName(asciiCharset)
+      case None               => StandardCharsets.UTF_8
+    }
 
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,

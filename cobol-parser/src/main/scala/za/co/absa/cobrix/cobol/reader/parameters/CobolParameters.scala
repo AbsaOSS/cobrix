@@ -71,7 +71,7 @@ case class CobolParameters(
                             isEbcdic:              Boolean,
                             ebcdicCodePage:        String,
                             ebcdicCodePageClass:   Option[String],
-                            asciiCharset:          String,
+                            asciiCharset:          Option[String],
                             fieldCodePage:         Map[String, String],
                             isUtf16BigEndian:      Boolean,
                             floatingPointFormat:   FloatingPointFormat,
