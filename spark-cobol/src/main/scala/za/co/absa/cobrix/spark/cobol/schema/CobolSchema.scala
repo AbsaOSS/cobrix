@@ -27,6 +27,8 @@ import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
+import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser.getReaderProperties
+import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -331,5 +333,12 @@ object CobolSchema {
       schema.segmentIdPrefix,
       schema.metadataPolicy
       )
+  }
+
+  def fromSparkOptions(copyBookContents: Seq[String], sparkReaderOptions: Map[String, String]): CobolSchema = {
+    val cobolParameters = CobolParametersParser.parse(new Parameters(sparkReaderOptions))
+    val readerParameters = getReaderProperties(cobolParameters, None)
+
+    CobolSchema.fromBaseReader(CobolReaderSchema.fromReaderParameters(copyBookContents, readerParameters))
   }
 }

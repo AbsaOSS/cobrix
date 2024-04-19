@@ -22,6 +22,7 @@ import org.apache.spark.sql.{SQLContext, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
+import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.spark.cobol.reader._
@@ -87,7 +88,7 @@ class DefaultSource
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
     new FixedLenTextReader(copybookContent,
       parameters.isEbcdic,
-      getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
+      CobolSchema.getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
       charsetOpt,
       parameters.floatingPointFormat,
       parameters.recordStartOffset,
@@ -112,7 +113,7 @@ class DefaultSource
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark)
     new FixedLenNestedReader(copybookContent,
       parameters.isEbcdic,
-      getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
+      CobolSchema.getCodePage(parameters.ebcdicCodePage, parameters.ebcdicCodePageClass),
       parameters.floatingPointFormat,
       parameters.recordStartOffset,
       parameters.recordEndOffset,
@@ -141,12 +142,4 @@ class DefaultSource
       copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
-
-  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
-    codePageClass match {
-      case Some(c) => CodePage.getCodePageByClass(c)
-      case None => CodePage.getCodePageByName(codePageName)
-    }
-  }
-
 }

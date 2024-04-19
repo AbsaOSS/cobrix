@@ -100,57 +100,6 @@ class FixedLenNestedReader[T: ClassTag](copyBookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (isEbcdic) EBCDIC else ASCII
-    val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
-    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerProperties.asciiCharset)
-
-    val schema = if (copyBookContents.size == 1)
-      CopybookParser.parseTree(encoding,
-        copyBookContents.head,
-        dropGroupFillers,
-        dropValueFillers,
-        fillerNamingPolicy,
-        segmentRedefines,
-        fieldParentMap,
-        stringTrimmingPolicy,
-        readerProperties.commentPolicy,
-        readerProperties.strictSignOverpunch,
-        readerProperties.improvedNullDetection,
-        readerProperties.decodeBinaryAsHex,
-        ebcdicCodePage,
-        asciiCharset,
-        readerProperties.isUtf16BigEndian,
-        floatingPointFormat,
-        nonTerminals,
-        occursMappings,
-        readerProperties.debugFieldsPolicy,
-        readerProperties.fieldCodePage)
-    else
-      Copybook.merge(
-        copyBookContents.map(
-          CopybookParser.parseTree(encoding,
-            _,
-            dropGroupFillers,
-            dropValueFillers,
-            fillerNamingPolicy,
-            segmentRedefines,
-            fieldParentMap,
-            stringTrimmingPolicy,
-            readerProperties.commentPolicy,
-            readerProperties.strictSignOverpunch,
-            readerProperties.improvedNullDetection,
-            readerProperties.decodeBinaryAsHex,
-            ebcdicCodePage,
-            asciiCharset,
-            readerProperties.isUtf16BigEndian,
-            floatingPointFormat,
-            nonTerminals,
-            occursMappings,
-            readerProperties.debugFieldsPolicy,
-            readerProperties.fieldCodePage)
-        )
-      )
-    new CobolSchema(schema, schemaRetentionPolicy, "", false, readerProperties.generateRecordBytes, metadataPolicy = readerProperties.metadataPolicy)
+    CobolSchema.fromReaderParameters(copyBookContents, readerProperties)
   }
 }

@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{IntegerType, StringType, StructType}
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -405,6 +405,29 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
 
     assert(metadataStr1.getLong("maxLength") == 10)
     assert(metadataStr2.getLong("maxLength") == 7)
+  }
+
+  "fromSparkOptions" should {
+    "return a schema for a copybook" in {
+      val copyBook: String =
+        """       01  RECORD.
+          |         05  STR1                  PIC X(10).
+          |         05  STR2                  PIC A(7).
+          |         05  NUM3                  PIC 9(7).
+          |""".stripMargin
+
+      val cobolSchema = CobolSchema.fromSparkOptions(Seq(copyBook), Map.empty)
+
+      val sparkSchema = cobolSchema.getSparkSchema
+
+      assert(sparkSchema.fields.length == 3)
+      assert(sparkSchema.fields.head.name == "STR1")
+      assert(sparkSchema.fields.head.dataType == StringType)
+      assert(sparkSchema.fields(1).name == "STR2")
+      assert(sparkSchema.fields(1).dataType == StringType)
+      assert(sparkSchema.fields(2).name == "NUM3")
+      assert(sparkSchema.fields(2).dataType == IntegerType)
+    }
   }
 
 }

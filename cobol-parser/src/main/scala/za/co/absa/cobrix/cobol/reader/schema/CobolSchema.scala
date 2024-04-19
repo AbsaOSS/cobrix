@@ -16,11 +16,18 @@
 
 package za.co.absa.cobrix.cobol.reader.schema
 
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+
+import java.nio.charset.{Charset, StandardCharsets}
+import scala.collection.immutable.HashMap
 
 
 /**
@@ -57,5 +64,74 @@ class CobolSchema(val copybook: Copybook,
     val timestampFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
     val now = ZonedDateTime.now()
     timestampFormat.format(now)
+  }
+}
+
+object CobolSchema {
+  def fromReaderParameters(copyBookContents: Seq[String], readerParameters: ReaderParameters): CobolSchema = {
+    if (copyBookContents.isEmpty) {
+      throw new IllegalArgumentException("At least one copybook must be specified.")
+    }
+
+    val encoding = if (readerParameters.isEbcdic) EBCDIC else ASCII
+    val segmentRedefines = readerParameters.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val fieldParentMap = readerParameters.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
+    val codePage = getCodePage(readerParameters.ebcdicCodePage, readerParameters.ebcdicCodePageClass)
+    val asciiCharset = if (readerParameters.asciiCharset.isEmpty) StandardCharsets.UTF_8 else Charset.forName(readerParameters.asciiCharset)
+
+    val schema = if (copyBookContents.size == 1)
+      CopybookParser.parseTree(encoding,
+        copyBookContents.head,
+        readerParameters.dropGroupFillers,
+        readerParameters.dropValueFillers,
+        readerParameters.fillerNamingPolicy,
+        segmentRedefines,
+        fieldParentMap,
+        readerParameters.stringTrimmingPolicy,
+        readerParameters.commentPolicy,
+        readerParameters.strictSignOverpunch,
+        readerParameters.improvedNullDetection,
+        readerParameters.decodeBinaryAsHex,
+        codePage,
+        asciiCharset,
+        readerParameters.isUtf16BigEndian,
+        readerParameters.floatingPointFormat,
+        readerParameters.nonTerminals,
+        readerParameters.occursMappings,
+        readerParameters.debugFieldsPolicy,
+        readerParameters.fieldCodePage)
+    else
+      Copybook.merge(copyBookContents.map(cpb =>
+        CopybookParser.parseTree(encoding,
+          cpb,
+          readerParameters.dropGroupFillers,
+          readerParameters.dropValueFillers,
+          readerParameters.fillerNamingPolicy,
+          segmentRedefines,
+          fieldParentMap,
+          readerParameters.stringTrimmingPolicy,
+          readerParameters.commentPolicy,
+          readerParameters.strictSignOverpunch,
+          readerParameters.improvedNullDetection,
+          readerParameters.decodeBinaryAsHex,
+          codePage,
+          asciiCharset,
+          readerParameters.isUtf16BigEndian,
+          readerParameters.floatingPointFormat,
+          nonTerminals = readerParameters.nonTerminals,
+          readerParameters.occursMappings,
+          readerParameters.debugFieldsPolicy,
+          readerParameters.fieldCodePage)
+      ))
+    val segIdFieldCount = readerParameters.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
+    val segmentIdPrefix = readerParameters.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
+    new CobolSchema(schema, readerParameters.schemaPolicy, readerParameters.inputFileNameColumn, readerParameters.generateRecordId, readerParameters.generateRecordBytes, segIdFieldCount, segmentIdPrefix, readerParameters.metadataPolicy)
+  }
+
+  def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
+    codePageClass match {
+      case Some(c) => CodePage.getCodePageByClass(c)
+      case None => CodePage.getCodePageByName(codePageName)
+    }
   }
 }
