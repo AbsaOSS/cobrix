@@ -199,59 +199,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (readerProperties.isEbcdic) EBCDIC else ASCII
-    val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
-    val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
-    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
-
-    val schema = if (copyBookContents.size == 1)
-      CopybookParser.parseTree(encoding,
-        copyBookContents.head,
-        readerProperties.dropGroupFillers,
-        readerProperties.dropValueFillers,
-        readerProperties.fillerNamingPolicy,
-        segmentRedefines,
-        fieldParentMap,
-        readerProperties.stringTrimmingPolicy,
-        readerProperties.commentPolicy,
-        readerProperties.strictSignOverpunch,
-        readerProperties.improvedNullDetection,
-        readerProperties.decodeBinaryAsHex,
-        codePage,
-        asciiCharset,
-        readerProperties.isUtf16BigEndian,
-        readerProperties.floatingPointFormat,
-        readerProperties.nonTerminals,
-        readerProperties.occursMappings,
-        readerProperties.debugFieldsPolicy,
-        readerProperties.fieldCodePage)
-    else
-      Copybook.merge(copyBookContents.map(cpb =>
-        CopybookParser.parseTree(encoding,
-          cpb,
-          readerProperties.dropGroupFillers,
-          readerProperties.dropValueFillers,
-          readerProperties.fillerNamingPolicy,
-          segmentRedefines,
-          fieldParentMap,
-          readerProperties.stringTrimmingPolicy,
-          readerProperties.commentPolicy,
-          readerProperties.strictSignOverpunch,
-          readerProperties.improvedNullDetection,
-          readerProperties.decodeBinaryAsHex,
-          codePage,
-          asciiCharset,
-          readerProperties.isUtf16BigEndian,
-          readerProperties.floatingPointFormat,
-          nonTerminals = readerProperties.nonTerminals,
-          readerProperties.occursMappings,
-          readerProperties.debugFieldsPolicy,
-          readerProperties.fieldCodePage)
-      ))
-    val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
-    val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
-    new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.inputFileNameColumn, readerProperties.generateRecordId, readerProperties.generateRecordBytes, segIdFieldCount, segmentIdPrefix)
+    CobolSchema.fromReaderParameters(copyBookContents, readerProperties)
   }
 
   private def checkInputArgumentsValidity(): Unit = {
@@ -268,13 +216,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       readerProperties.inputSplitSizeMB
     } else {
       readerProperties.hdfsDefaultBlockSize
-    }
-  }
-
-  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
-    codePageClass match {
-      case Some(c) => CodePage.getCodePageByClass(c)
-      case None => CodePage.getCodePageByName(codePageName)
     }
   }
 
