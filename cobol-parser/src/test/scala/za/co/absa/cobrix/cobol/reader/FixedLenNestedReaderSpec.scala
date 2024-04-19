@@ -117,7 +117,7 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
     }
 
     "return an iterator for single ASCII record" in {
-      val reader = getUseCase(Seq(copybookContents), recordFormat = RecordFormat.AsciiText, asciiCharset = "us-ascii")
+      val reader = getUseCase(Seq(copybookContents), recordFormat = RecordFormat.AsciiText, asciiCharset = Some("us-ascii"))
 
       val it = reader.getRecordIterator(fixedLengthDataExample)
 
@@ -206,9 +206,12 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
                  startOffset: Int = 0,
                  endOffset: Int = 0,
                  recordLength: Option[Int] = None,
-                 asciiCharset: String = ""
+                 asciiCharset: Option[String] = None
                 ): FixedLenNestedReader[scala.Array[Any]] = {
     val readerProperties = za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters(
+      isEbcdic = isEbcdic,
+      startOffset = startOffset,
+      endOffset = endOffset,
       recordFormat = recordFormat,
       recordLength = recordLength,
       asciiCharset = asciiCharset
@@ -216,18 +219,6 @@ class FixedLenNestedReaderSpec extends AnyWordSpec {
 
     val reader = new FixedLenNestedReader[scala.Array[Any]](
       copybooks,
-      isEbcdic = isEbcdic,
-      ebcdicCodePage = new CodePageCommon,
-      floatingPointFormat = FloatingPointFormat.IEEE754,
-      startOffset = startOffset,
-      endOffset = endOffset,
-      schemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
-      stringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
-      dropGroupFillers = false,
-      dropValueFillers = false,
-      fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
-      nonTerminals = Nil,
-      occursMappings = Map.empty,
       readerProperties = readerProperties,
       handler = new SimpleRecordHandler)
 

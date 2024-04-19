@@ -220,7 +220,7 @@ object CobolParametersParser extends Logging {
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
-    val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
+    val asciiCharset = params.get(PARAM_ASCII_CHARSET)
 
     val recordFormatDefined = getRecordFormat(params)
 
