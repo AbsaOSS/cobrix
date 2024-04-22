@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.apache.spark.sql.types.{ArrayType, IntegerType, StringType, StructType}
+import org.apache.spark.sql.types.{ArrayType, IntegerType, LongType, StringType, StructType}
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -483,8 +483,6 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
 
       val sparkSchema = cobolSchema.getSparkSchema
 
-      sparkSchema.printTreeString()
-
       assert(sparkSchema.fields.length == 3)
       assert(sparkSchema.fields.head.name == "HEADER")
       assert(sparkSchema.fields.head.dataType == StringType)
@@ -501,6 +499,54 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(seg1.fields(1).dataType.isInstanceOf[ArrayType])
       assert(seg1.fields(2).name == "SEG3")
       assert(seg1.fields(2).dataType.isInstanceOf[ArrayType])
+    }
+
+    "return a schema for a multi-segment copybook" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  HEADER                PIC X(5).
+          |         05  SEGMENT-ID            PIC X(2).
+          |         05  SEG1.
+          |           10  FIELD1              PIC 9(7).
+          |         05  SEG2 REDEFINES SEG1.
+          |           10  FIELD3              PIC X(7).
+          |         05  SEG3 REDEFINES SEG1.
+          |           10  FIELD4              PIC S9(7).
+          |""".stripMargin
+
+      val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook),
+        Map(
+          "segment_field" -> "SEGMENT-ID",
+          "redefine-segment-id-map:0" -> "SEG1 => 01",
+          "redefine-segment-id-map:1" -> "SEG2 => 02",
+          "redefine-segment-id-map:2" -> "SEG3 => 03",
+          "segment_field" -> "SEGMENT-ID",
+          "segment_id_level0" -> "TEST",
+          "generate_record_id" -> "true"
+        )
+      )
+
+      val sparkSchema = cobolSchema.getSparkSchema
+
+      assert(sparkSchema.fields.length == 9)
+      assert(sparkSchema.fields.head.name == "File_Id")
+      assert(sparkSchema.fields.head.dataType == IntegerType)
+      assert(sparkSchema.fields(1).name == "Record_Id")
+      assert(sparkSchema.fields(1).dataType == LongType)
+      assert(sparkSchema.fields(2).name == "Record_Byte_Length")
+      assert(sparkSchema.fields(2).dataType == IntegerType)
+      assert(sparkSchema.fields(3).name == "Seg_Id0")
+      assert(sparkSchema.fields(3).dataType == StringType)
+      assert(sparkSchema.fields(4).name == "HEADER")
+      assert(sparkSchema.fields(4).dataType == StringType)
+      assert(sparkSchema.fields(5).name == "SEGMENT_ID")
+      assert(sparkSchema.fields(5).dataType == StringType)
+      assert(sparkSchema.fields(6).name == "SEG1")
+      assert(sparkSchema.fields(6).dataType.isInstanceOf[StructType])
+      assert(sparkSchema.fields(7).name == "SEG2")
+      assert(sparkSchema.fields(7).dataType.isInstanceOf[StructType])
+      assert(sparkSchema.fields(8).name == "SEG3")
+      assert(sparkSchema.fields(8).dataType.isInstanceOf[StructType])
     }
   }
 

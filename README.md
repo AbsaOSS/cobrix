@@ -32,7 +32,7 @@ Among the motivations for this project, it is possible to highlight:
 
 - Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays)
 
-- Supports nested structures and arrays (including "flattened" nested names)
+- Supports nested structures and arrays
 
 - Supports HDFS as well as local file systems
 
@@ -350,8 +350,18 @@ Currently, specifying multiple paths in `load()` is not supported. Use the follo
 ### Spark SQL schema extraction
 This library also provides convenient methods to extract Spark SQL schemas and Cobol layouts from copybooks.  
 
-If you want to extract a Spark SQL schema from a copybook: 
+If you want to extract a Spark SQL schema from a copybook by providing same options you provide to Spark: 
+```scala
+// Same options that you use for spark.read.format("cobol").option()
+val options = Map("schema_retention_policy" -> "keep_original")
 
+val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook), options)
+val sparkSchema = cobolSchema.getSparkSchema.toString()
+
+println(sparkSchema)
+```
+
+If you want to extract a Spark SQL schema from a copybook using the Cobol parser directly:
 ```scala
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -1396,6 +1406,74 @@ When using `9` 8 refers to the number of digits the number has. Here, the size o
   10 NUM  PIC 9(6)V99 COMP-3U.
 ```
 You can have decimals when using COMP-3 as well.
+
+### Flattening schema with GROUPs and OCCURS
+Flattening could be helpful when migrating data from mainframe data with fields that have OCCURs (arrays) to a relational
+databases that do not support nested arrays.
+
+Cobrix has a method that can flatten the schema automatically given a DataFrame produced by `spark-cobol`.
+
+Spark Scala example:
+```scala
+val dfFlat = SparkUtils.flattenSchema(df, useShortFieldNames = false)
+```
+
+PySpark example
+```python
+from pyspark.sql import SparkSession, DataFrame, SQLContext
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
+from py4j.java_gateway import java_import
+
+schema = StructType([
+   StructField("id", IntegerType(), True),
+   StructField("name", StringType(), True),
+   StructField("subjects", ArrayType(StringType()), True)
+])
+
+# Sample data
+data = [
+   (1, "Alice", ["Math", "Science"]),
+   (2, "Bob", ["History", "Geography"]),
+   (3, "Charlie", ["English", "Math", "Physics"])
+]
+
+# Create a test DataFrame
+df = spark.createDataFrame(data, schema)
+
+# Show the Dataframe before flattening
+df.show()
+
+# Flatten the schema using Cobrix Scala 'SparkUtils.flattenSchema' method
+sc = spark.sparkContext
+java_import(sc._gateway.jvm, "za.co.absa.cobrix.spark.cobol.utils.SparkUtils")
+dfFlatJvm = spark._jvm.SparkUtils.flattenSchema(df._jdf, False)
+dfFlat = DataFrame(dfFlatJvm, SQLContext(sc))
+
+# Show the Dataframe after flattening
+dfFlat.show(truncate=False)
+dfFlat.printSchema()
+```
+
+The output looks like this:
+```
+# Before flattening
++---+-------+------------------------+
+|id |name   |subjects                |
++---+-------+------------------------+
+|1  |Alice  |[Math, Science]         |
+|2  |Bob    |[History, Geography]    |
+|3  |Charlie|[English, Math, Physics]|
++---+-------+------------------------+
+
+# After flattening
++---+-------+----------+----------+----------+
+|id |name   |subjects_0|subjects_1|subjects_2|
++---+-------+----------+----------+----------+
+|1  |Alice  |Math      |Science   |null      |
+|2  |Bob    |History   |Geography |null      |
+|3  |Charlie|English   |Math      |Physics   |
++---+-------+----------+----------+----------+
+```
 
 ## Summary of all available options
 
