@@ -203,7 +203,7 @@ class VRLRecordReaderSpec extends AnyWordSpec {
             lengthFieldExpression = Some("LEN"))
         }
 
-        assert(ex.getMessage == "The record length field LEN must be an integral type.")
+        assert(ex.getMessage == "The record length field LEN must be an integral type or a value mapping must be specified.")
       }
     }
 

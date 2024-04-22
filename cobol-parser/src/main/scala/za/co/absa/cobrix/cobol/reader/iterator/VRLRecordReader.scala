@@ -51,7 +51,9 @@ class VRLRecordReader(cobolSchema: Copybook,
   private var recordIndex = startRecordId - 1
 
   private val copyBookRecordSize = cobolSchema.getRecordSize
-  private val (lengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, cobolSchema)
+  private val (recordLengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, readerProperties.lengthFieldMap, cobolSchema)
+  private val lengthField = recordLengthField.map(_.field)
+  private val lengthMap = recordLengthField.map(_.valueMap).getOrElse(Map.empty)
   private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   private val recordLengthAdjustment = readerProperties.rdwAdjustment
   private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
@@ -130,12 +132,22 @@ class VRLRecordReader(cobolSchema: Copybook,
 
     val recordLength = lengthField match {
       case Some(lengthAST) =>
-        cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int => i + recordLengthAdjustment
-          case l: Long => l.toInt + recordLengthAdjustment
-          case s: String => s.toInt + recordLengthAdjustment
+        val length = cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
+          case i: Int => i
+          case l: Long => l.toInt
+          case s: String =>
+            if (lengthMap.isEmpty) {
+              s.toInt
+            } else {
+              lengthMap.get(s) match {
+                case Some(len) => len
+                case None => throw new IllegalStateException(s"Record length value '$s' is not mapped to a record length.")
+              }
+            }
+
           case _ => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
         }
+        length + recordLengthAdjustment
       case None => copyBookRecordSize
     }
 

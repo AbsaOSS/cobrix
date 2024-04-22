@@ -478,6 +478,13 @@ or
 .option("record_length_field", "FIELD1 * 10 + 200")
 ```
 
+If the record field contains a string that can be mapped to a record size, you can add the mapping as a JSON:
+```
+.option("record_format", "F")
+.option("record_length_field", "FIELD_STR")
+.option("record_length_map", """{"SEG1":100,"SEG2":200}""")  
+```
+
 ### Use cases for various variable length formats
 
 In order to understand the file format it is often sufficient to look at the first 4 bytes of the file (un case of RDW only files),
@@ -1547,7 +1554,7 @@ The output looks like this:
 | .option("bdw_adjustment", 0)                                | If there is a mismatch between BDW and record length this option can be used to adjust the difference.                                                                                                                                                                                  |
 | .option("re_additional_info", "")                           | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.                                                                                                                                                                                 |
 | .option("record_length_field", "RECORD-LEN")                | Specifies a record length field or expression to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. The `record_format` should be set to `F`. This option is incompatible with `is_record_sequence`. |
-| .option("record_length_map", """{"A":100}""")               | Specifies a mapping between record length field values and actual record lengths.                                                                                                                                                                                                       |
+| .option("record_length_map", """{"A":100,"B":50}""")        | Specifies a mapping between record length field values and actual record lengths.                                                                                                                                                                                                       |
 | .option("record_extractor", "com.example.record.extractor") | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.                                                                                                                |
 | .option("minimum_record_length", 1)                         | Specifies the minimum length a record is considered valid, will be skipped otherwise.                                                                                                                                                                                                   |
 | .option("maximum_record_length", 1000)                      | Specifies the maximum length a record is considered valid, will be skipped otherwise.                                                                                                                                                                                                   |
