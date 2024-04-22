@@ -99,7 +99,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   override def getRecordSize: Int = cobolSchema.copybook.getRecordSize
 
-  override def isIndexGenerationNeeded: Boolean = (readerProperties.lengthFieldExpression.isEmpty || readerProperties.isRecordSequence) && readerProperties.isIndexGenerationNeeded
+  override def isIndexGenerationNeeded: Boolean = readerProperties.isIndexGenerationNeeded
 
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
 
