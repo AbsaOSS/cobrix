@@ -29,6 +29,7 @@ package za.co.absa.cobrix.cobol.reader.parameters
   * @param rhpAdditionalInfo      An optional additional option string passed to a custom record header parser
   * @param reAdditionalInfo       An optional additional option string passed to a custom record extractor
   * @param recordLengthField      A field that stores record length
+  * @param recordLengthMap        A mapping between field value and record size.
   * @param fileStartOffset        A number of bytes to skip at the beginning of each file
   * @param fileEndOffset          A number of bytes to skip at the end of each file
   * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
@@ -50,6 +51,7 @@ case class VariableLengthParameters(
                                      rhpAdditionalInfo:     Option[String],
                                      reAdditionalInfo:      String,
                                      recordLengthField:     String,
+                                     recordLengthMap:       Map[String, Int],
                                      fileStartOffset:       Int,
                                      fileEndOffset:         Int,
                                      generateRecordId:      Boolean,
