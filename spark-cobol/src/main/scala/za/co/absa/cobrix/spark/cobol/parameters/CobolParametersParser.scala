@@ -32,6 +32,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.util.control.NonFatal
 
 /**
   * This class provides methods for parsing the parameters set as Spark options.
@@ -55,6 +56,7 @@ object CobolParametersParser extends Logging {
   val PARAM_MAXIMUM_RECORD_LENGTH     = "maximum_record_length"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
+  val PARAM_RECORD_LENGTH_MAP         = "record_length_map"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
@@ -348,6 +350,7 @@ object CobolParametersParser extends Logging {
                                  rhpAdditionalInfo = None,
                                  reAdditionalInfo = "",
                                  recordLengthField = "",
+                                 Map.empty,
                                  fileStartOffset = 0,
                                  fileEndOffset = 0,
                                  generateRecordId = false,
@@ -380,6 +383,7 @@ object CobolParametersParser extends Logging {
       minimumRecordLength = parameters.minimumRecordLength.getOrElse(1),
       maximumRecordLength = parameters.maximumRecordLength.getOrElse(Int.MaxValue),
       lengthFieldExpression = recordLengthField,
+      lengthFieldMap = varLenParams.recordLengthMap,
       isRecordSequence = varLenParams.isRecordSequence,
       bdw = varLenParams.bdw,
       isRdwBigEndian = varLenParams.isRdwBigEndian,
@@ -461,6 +465,7 @@ object CobolParametersParser extends Logging {
         params.get(PARAM_RHP_ADDITIONAL_INFO),
         params.get(PARAM_RE_ADDITIONAL_INFO).getOrElse(""),
         recordLengthFieldOpt.getOrElse(""),
+        getRecordLengthMappings(params.getOrElse(PARAM_RECORD_LENGTH_MAP, "{}")),
         fileStartOffset,
         fileEndOffset,
         isRecordIdGenerationEnabled,
@@ -910,6 +915,33 @@ object CobolParametersParser extends Logging {
         logger.error(msg)
       }
     }
+  }
+
+  /**
+    * Parses the options for the record length mappings.
+    *
+    * @param recordLengthMapJson Parameters provided by spark.read.option(...)
+    * @return Returns a mapping from the record length field values to the actual record length
+    */
+  @throws(classOf[IllegalArgumentException])
+  def getRecordLengthMappings(recordLengthMapJson: String): Map[String, Int] = {
+    val parser = new ParserJson()
+    parser.parseMap(recordLengthMapJson)
+      .toSeq // Converting to a non-lazy sequence first. If .mapValues() is used the map stays lazy and errors pop up later
+      .map { case (k, v) =>
+        val vInt = v match {
+          case num: Int => num
+          case num: Long => num.toInt
+          case str: String =>
+            try {
+              str.toInt
+            } catch {
+              case NonFatal(ex) => throw new IllegalArgumentException(s"Unsupported record length value: '$str'. Please, use numeric values only", ex)
+            }
+          case any => throw new IllegalArgumentException(s"Unsupported record length value: '$any'. Please, use numeric values only")
+        }
+        (k, vInt)
+      }.toMap[String, Int]
   }
 
   /**

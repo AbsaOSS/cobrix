@@ -42,6 +42,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param minimumRecordLength     Minium record length for which the record is considered valid.
   * @param maximumRecordLength     Maximum record length for which the record is considered valid.
   * @param lengthFieldExpression   A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param lengthFieldMap          Mapping between record length field values to actual length. The field name should be specified in lengthFieldExpression.
   * @param isRecordSequence        Does input files have 4 byte record length headers
   * @param bdw                     Block descriptor word (if specified), for FB and VB record formats
   * @param isRdwPartRecLength      Does RDW count itself as part of record length itself
@@ -88,6 +89,7 @@ case class ReaderParameters(
                              minimumRecordLength:     Int = 1,
                              maximumRecordLength:     Int = Int.MaxValue,
                              lengthFieldExpression:   Option[String] = None,
+                             lengthFieldMap:          Map[String, Int] = Map.empty,
                              isRecordSequence:        Boolean = false,
                              bdw:                     Option[Bdw] = None,
                              isRdwBigEndian:          Boolean = false,
