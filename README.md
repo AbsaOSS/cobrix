@@ -1751,7 +1751,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.6.11 released 8 April 2022.
+- #### 2.6.11 released 8 April 2024.
    - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
 
 - #### 2.6.10 released 17 January 2024.
