@@ -117,16 +117,22 @@ class ParametersParsingSpec extends AnyFunSuite {
     val ex = intercept[IllegalArgumentException] {
       CobolParametersParser.getRecordLengthMappings("""{"A": "ABC"}""")
     }
-    assert(ex.getMessage == "Unsupported record length value: 'ABC'. Please, use numeric values only")
+    assert(ex.getMessage == "Unsupported record length value: 'ABC'. Please, use numeric values only.")
 
     val ex2 = intercept[IllegalArgumentException] {
       CobolParametersParser.getRecordLengthMappings("""{"A": {"B": 12}}""")
     }
-    assert(ex2.getMessage == "Unsupported record length value: 'Map(B -> 12)'. Please, use numeric values only")
+    assert(ex2.getMessage == "Unsupported record length value: 'Map(B -> 12)'. Please, use numeric values only.")
 
-    assertThrows[IllegalArgumentException] {
+    val ex3 = intercept[IllegalArgumentException] {
       CobolParametersParser.getRecordLengthMappings("""{"A": {"B": 5000000000}}""")
     }
+    assert(ex3.getMessage == "Unsupported record length value: 'Map(B -> 5.0E9)'. Please, use numeric values only.")
+
+    val ex4 = intercept[IllegalArgumentException] {
+      CobolParametersParser.getRecordLengthMappings("""Hmm...""")
+    }
+    assert(ex4.getMessage == "Unable to parse record length mapping JSON.")
   }
 
 }

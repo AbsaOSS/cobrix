@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, MetadataPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies._
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
 import za.co.absa.cobrix.cobol.reader.parameters._
@@ -926,8 +926,13 @@ object CobolParametersParser extends Logging {
   @throws(classOf[IllegalArgumentException])
   def getRecordLengthMappings(recordLengthMapJson: String): Map[String, Int] = {
     val parser = new ParserJson()
-    parser.parseMap(recordLengthMapJson)
-      .toSeq // Converting to a non-lazy sequence first. If .mapValues() is used the map stays lazy and errors pop up later
+    val json = try {
+      parser.parseMap(recordLengthMapJson)
+    } catch {
+      case NonFatal(ex) => throw new IllegalArgumentException(s"Unable to parse record length mapping JSON.", ex)
+    }
+
+    json.toSeq // Converting to a non-lazy sequence first. If .mapValues() is used the map stays lazy and errors pop up later
       .map { case (k, v) =>
         val vInt = v match {
           case num: Int => num
@@ -936,9 +941,9 @@ object CobolParametersParser extends Logging {
             try {
               str.toInt
             } catch {
-              case NonFatal(ex) => throw new IllegalArgumentException(s"Unsupported record length value: '$str'. Please, use numeric values only", ex)
+              case NonFatal(ex) => throw new IllegalArgumentException(s"Unsupported record length value: '$str'. Please, use numeric values only.", ex)
             }
-          case any => throw new IllegalArgumentException(s"Unsupported record length value: '$any'. Please, use numeric values only")
+          case any => throw new IllegalArgumentException(s"Unsupported record length value: '$any'. Please, use numeric values only.")
         }
         (k, vInt)
       }.toMap[String, Int]
