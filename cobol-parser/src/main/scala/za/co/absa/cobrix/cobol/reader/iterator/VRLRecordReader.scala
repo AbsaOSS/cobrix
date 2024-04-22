@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
@@ -50,15 +51,16 @@ class VRLRecordReader(cobolSchema: Copybook,
   private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId - 1
 
-  private val copyBookRecordSize = cobolSchema.getRecordSize
-  private val (recordLengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, readerProperties.lengthFieldMap, cobolSchema)
-  private val lengthField = recordLengthField.map(_.field)
-  private val lengthMap = recordLengthField.map(_.valueMap).getOrElse(Map.empty)
-  private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
-  private val recordLengthAdjustment = readerProperties.rdwAdjustment
-  private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
-  private val minimumRecordLength = readerProperties.minimumRecordLength
-  private val maximumRecordLength = readerProperties.maximumRecordLength
+  final private val copyBookRecordSize = cobolSchema.getRecordSize
+  final private val (recordLengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, readerProperties.lengthFieldMap, cobolSchema)
+  final private val lengthField = recordLengthField.map(_.field)
+  final private val lengthMap = recordLengthField.map(_.valueMap).getOrElse(Map.empty)
+  final private val isLengthMapEmpty = lengthMap.isEmpty
+  final private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
+  final private val recordLengthAdjustment = readerProperties.rdwAdjustment
+  final private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
+  final private val minimumRecordLength = readerProperties.minimumRecordLength
+  final private val maximumRecordLength = readerProperties.maximumRecordLength
 
   fetchNext()
 
@@ -131,24 +133,8 @@ class VRLRecordReader(cobolSchema: Copybook,
     }
 
     val recordLength = lengthField match {
-      case Some(lengthAST) =>
-        val length = cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int => i
-          case l: Long => l.toInt
-          case s: String =>
-            if (lengthMap.isEmpty) {
-              s.toInt
-            } else {
-              lengthMap.get(s) match {
-                case Some(len) => len
-                case None => throw new IllegalStateException(s"Record length value '$s' is not mapped to a record length.")
-              }
-            }
-
-          case _ => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
-        }
-        length + recordLengthAdjustment
-      case None => copyBookRecordSize
+      case Some(lengthAST) => getRecordLengthFromField(lengthAST, binaryDataStart)
+      case None            => copyBookRecordSize
     }
 
     val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
@@ -160,6 +146,38 @@ class VRLRecordReader(cobolSchema: Copybook,
     } else {
       Some(binaryDataStart)
     }
+  }
+
+  final private def getRecordLengthFromField(lengthAST: Primitive, binaryDataStart: Array[Byte]): Int = {
+    val length = if (isLengthMapEmpty) {
+      cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
+        case i: Int    => i
+        case l: Long   => l.toInt
+        case s: String => s.toInt
+        case null      => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
+        case _         => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
+      }
+    } else {
+      cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
+        case i: Int    => getRecordLengthFromMapping(i.toString)
+        case l: Long   => getRecordLengthFromMapping(l.toString)
+        case s: String => getRecordLengthFromMapping(s)
+        case null      => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
+        case _         =>    throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
+      }
+    }
+    length + recordLengthAdjustment
+  }
+
+  final private def getRecordLengthFromMapping(v: String): Int = {
+    lengthMap.get(v) match {
+      case Some(len) => len
+      case None => throw new IllegalStateException(s"Record length value '$v' is not mapped to a record length.")
+    }
+  }
+
+  final private def getBytesAsHexString(bytes: Array[Byte]): String = {
+    bytes.map("%02X" format _).mkString
   }
 
   private def fetchRecordUsingRecordLengthFieldExpression(expr: RecordLengthExpression): Option[Array[Byte]] = {

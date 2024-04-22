@@ -69,11 +69,16 @@ private[source] object CobolScanners extends Logging {
           val fileSystem = path.getFileSystem(sconf.value)
 
           logger.info(s"Going to parse file: $filePath")
-          val dataStream = new FileStreamer(filePath, fileSystem)
-          val headerStream = new FileStreamer(filePath, fileSystem)
-          reader.getRowIterator(dataStream, headerStream, 0L, fileOrder, 0L)
-        }
-        )
+          val startFileOffset = reader.getReaderProperties.fileStartOffset
+          val maximumFileBytes = if (reader.getReaderProperties.fileEndOffset == 0) {
+            0
+          } else {
+            fileSystem.getFileStatus(path).getLen - reader.getReaderProperties.fileEndOffset - startFileOffset
+          }
+          val dataStream = new FileStreamer(filePath, fileSystem, startFileOffset, maximumFileBytes)
+          val headerStream = new FileStreamer(filePath, fileSystem, startFileOffset)
+          reader.getRowIterator(dataStream, headerStream, startFileOffset, fileOrder, 0L)
+        })
       })
   }
 
