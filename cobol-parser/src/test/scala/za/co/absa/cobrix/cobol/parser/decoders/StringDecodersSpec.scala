@@ -123,8 +123,6 @@ class StringDecodersSpec extends AnyWordSpec {
 
         val actual = decodeEbcdicString(bytes, KeepAll, new CodePage500, improvedNullDetection = false)
 
-        println(actual)
-
         assert(actual == expected)
       }
 
