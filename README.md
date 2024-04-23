@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.6.11</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.6.11</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.6.11</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.0</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.11
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.0
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.11
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.0
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.11
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.0
 ```
 
 ## Usage
@@ -238,17 +238,17 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.6.11.jar
-* cobol-parser_2.12-2.6.11.jar
+* spark-cobol_2.12-2.7.0.jar
+* cobol-parser_2.12-2.7.0.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 * antlr4-runtime-4.8.jar 
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.11
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.0
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.11.jar,cobol-parser_2.12-2.6.11.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.0.jar,cobol-parser_2.12-2.7.0.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -315,11 +315,11 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
-The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.11
+The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.7.0
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.7.0-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.7.1-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1751,6 +1751,33 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.7.0 released 8 April 2024.
+   - [#666](https://github.com/AbsaOSS/cobrix/issues/666) Added support for record length value mapping.
+     ```scala
+     .option("record_format", "F")
+     .option("record_length_field", "FIELD_STR")
+     .option("record_length_map", """{"SEG1":100,"SEG2":200}""")
+     ```
+   - [#669](https://github.com/AbsaOSS/cobrix/issues/669) Allow 'V' to be at the end of scaled PICs.
+     ```cobol
+          10  SCALED-DECIMAL-FIELD    PIC S9PPPV      DISPLAY.
+     ```
+   - [#672](https://github.com/AbsaOSS/cobrix/issues/672) Add the ability to parse copybooks with options normally passed to the `spark-cobol` Spark data source.
+     ```scala
+     // Same options that you use for spark.read.format("cobol").option()
+     val options = Map("schema_retention_policy" -> "keep_original")
+     
+     val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook), options)
+     val sparkSchema = cobolSchema.getSparkSchema.toString()
+     
+     println(sparkSchema)
+     ```
+   - [#674](https://github.com/AbsaOSS/cobrix/issues/674) Extended the usage of indexes for variable record length files with a record length field.
+     ```scala
+     .option("record_length_field", "RECORD-LENGTH")
+     .option("enable_indexes", "true") // true by default so can me omitted
+     ```
+
 - #### 2.6.11 released 8 April 2024.
    - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
 
@@ -1810,6 +1837,9 @@ A: Update hadoop dll to version 3.2.2 or newer.
    - [#521](https://github.com/AbsaOSS/cobrix/issues/521) Fixed index generation and improved performance of variable
      block length files processing (record_format='VB').
 
+<details><summary>Older versions</summary>
+<p>
+
 - #### 2.5.1 released 24 August 2022.
    - [#510](https://github.com/AbsaOSS/cobrix/issues/510) Fixed dropping of FILLER fields in Spack Schema if the FILLER has OCCURS of GROUPS.
 
@@ -1822,9 +1852,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
      allowed for unsigned fields.
    - [#501](https://github.com/AbsaOSS/cobrix/issues/501) Fixed decimal field null detection when 'improved_null_detection' is turned on.
    - [#502](https://github.com/AbsaOSS/cobrix/issues/502) Fixed parsing of scaled decimals that have a pattern similar to `SVP9(5)`.
-
-<details><summary>Older versions</summary>
-<p>
 
 - #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.
