@@ -1751,7 +1751,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.7.0 released 8 April 2024.
+- #### 2.7.0 released 23 April 2024.
    - [#666](https://github.com/AbsaOSS/cobrix/issues/666) Added support for record length value mapping.
      ```scala
      .option("record_format", "F")
