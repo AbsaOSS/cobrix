@@ -548,6 +548,24 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(8).name == "SEG3")
       assert(sparkSchema.fields(8).dataType.isInstanceOf[StructType])
     }
+
+    "fail on redundant options when pedantic mode is turned on" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  DATA                PIC X(5).
+          |""".stripMargin
+
+      val ex = intercept[IllegalArgumentException] {
+        CobolSchema.fromSparkOptions(Seq(copybook),
+          Map(
+            "pedantic" -> "true",
+            "dummy_option" -> "dummy_value"
+          )
+        )
+      }
+
+      assert(ex.getMessage == "Redundant or unrecognized option(s) to 'spark-cobol': dummy_option.")
+    }
   }
 
 }
