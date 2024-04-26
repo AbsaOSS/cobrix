@@ -549,6 +549,24 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(8).dataType.isInstanceOf[StructType])
     }
 
+    "work in the case insensitive way" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  STR1                  PIC X(10).
+          |""".stripMargin
+
+      val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook),
+        Map(
+          "pedantic" -> "true",
+          "generate_RECORD_id" -> "true"
+        )
+      )
+
+      val sparkSchema = cobolSchema.getSparkSchema
+
+      assert(sparkSchema.fields.length == 4)
+    }
+
     "fail on redundant options when pedantic mode is turned on" in {
       val copybook: String =
         """       01  RECORD.

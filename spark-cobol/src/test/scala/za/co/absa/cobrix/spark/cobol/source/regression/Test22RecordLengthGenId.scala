@@ -49,7 +49,7 @@ class Test22RecordLengthGenId extends AnyWordSpec with SparkTestBase with Binary
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "F")
-          .option("record_length", "4")
+          .option("record_LENGTH", "4")
           .option("pedantic", "true")
           .load(tmpFileName)
 

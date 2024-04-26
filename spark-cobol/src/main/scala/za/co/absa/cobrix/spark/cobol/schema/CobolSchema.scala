@@ -336,7 +336,8 @@ object CobolSchema {
   }
 
   def fromSparkOptions(copyBookContents: Seq[String], sparkReaderOptions: Map[String, String]): CobolSchema = {
-    val cobolParameters = CobolParametersParser.parse(new Parameters(sparkReaderOptions))
+    val lowercaseOptions = sparkReaderOptions.map { case (k, v) => (k.toLowerCase, v) }
+    val cobolParameters = CobolParametersParser.parse(new Parameters(lowercaseOptions))
     val readerParameters = getReaderProperties(cobolParameters, None)
 
     CobolSchema.fromBaseReader(CobolReaderSchema.fromReaderParameters(copyBookContents, readerParameters))
