@@ -113,6 +113,8 @@ object CobolParametersParser extends Logging {
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
   val PARAM_RE_ADDITIONAL_INFO        = "re_additional_info"
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
+  val PARAM_SEGMENT_REDEFINE_PREFIX   = "redefine_segment_id_map"
+  val PARAM_SEGMENT_REDEFINE_PREFIX_ALT = "redefine-segment-id-map"
 
   // Indexed multisegment file processing
   val PARAM_ENABLE_INDEXES            = "enable_indexes"
@@ -637,12 +639,12 @@ object CobolParametersParser extends Logging {
     params.getMap.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
-        if (keyNoCase.startsWith("redefine-segment-id-map") ||
-          keyNoCase.startsWith("redefine_segment_id_map")) {
+        if (keyNoCase.startsWith(PARAM_SEGMENT_REDEFINE_PREFIX) ||
+          keyNoCase.startsWith(PARAM_SEGMENT_REDEFINE_PREFIX_ALT)) {
           params.markUsed(k)
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) != 0) {
-            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id-map' option: '$v'.")
+            throw new IllegalArgumentException(s"Illegal argument for the '$PARAM_SEGMENT_REDEFINE_PREFIX_ALT' option: '$v'.")
           }
           val redefine = splitVal(0).trim
           val segmentIds = splitVal(1).split(',').map(_.trim)
