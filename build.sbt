@@ -92,7 +92,16 @@ lazy val sparkCobol = (project in file("spark-cobol"))
       log.info(s"Building with Spark ${sparkVersion(scalaVersion.value)}, Scala ${scalaVersion.value}")
       sparkVersion(scalaVersion.value)
     },
-    (Compile / compile) := ((Compile / compile) dependsOn printSparkVersion).value,
+    Compile / compile := ((Compile / compile) dependsOn printSparkVersion).value,
+    Compile / unmanagedSourceDirectories += {
+      val sourceDir = (Compile / sourceDirectory).value
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, n)) if n == 11 => sourceDir / "scala_2.11"
+        case Some((2, n)) if n == 12 => sourceDir / "scala_2.12"
+        case Some((2, n)) if n == 13 => sourceDir / "scala_2.13"
+        case _ => throw new RuntimeException("Unsupported Scala version")
+      }
+    },
     libraryDependencies ++= SparkCobolDependencies(scalaVersion.value) :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise

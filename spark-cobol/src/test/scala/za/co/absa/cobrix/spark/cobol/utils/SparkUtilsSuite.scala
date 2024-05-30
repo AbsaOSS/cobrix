@@ -16,17 +16,17 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import org.apache.spark.sql.types.{ArrayType, LongType, MetadataBuilder, StringType, StructField, StructType}
+import org.apache.spark.sql.types._
 import org.scalatest.funsuite.AnyFunSuite
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.TestUtils._
 
 import java.nio.charset.StandardCharsets
-import scala.collection.immutable
+import scala.util.Properties
 
-class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
+class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
 
   import spark.implicits._
 
@@ -377,7 +377,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     assert(dfFlattened.count() == 0)
   }
 
-  test("Schema with multiple OCCURS should properly determine array sized") {
+  test("Schema with multiple OCCURS should properly determine array sizes") {
     val copyBook: String =
       """       01 RECORD.
         |          02 COUNT PIC 9(1).
@@ -400,7 +400,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
         | |-- INNER_GROUP_2_FIELD1: string (nullable = true)
         |""".stripMargin.replace("\r\n", "\n")
 
-    withTempTextFile("fletten", "test", StandardCharsets.UTF_8, "") { filePath =>
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "") { filePath =>
       val df = spark.read
         .format("cobol")
         .option("copybook_contents", copyBook)
@@ -426,6 +426,48 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
 
       assertSchema(flatSchema1, expectedFlatSchema)
       assert(dfFlattened1.count() == 0)
+    }
+  }
+
+  test("Integral to decimal conversion for complex schema") {
+    val expectedSchema =
+      """|root
+         | |-- COUNT: decimal(1,0) (nullable = true)
+         | |-- GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = false)
+         | |    |    |-- INNER_COUNT: decimal(1,0) (nullable = true)
+         | |    |    |-- INNER_GROUP: array (nullable = true)
+         | |    |    |    |-- element: struct (containsNull = false)
+         | |    |    |    |    |-- FIELD: decimal(1,0) (nullable = true)
+         |""".stripMargin
+
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP OCCURS 2 TIMES.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |""".stripMargin
+
+    if (!Properties.versionNumberString.startsWith("2.11.")) {
+      println(Properties.versionNumberString)
+      withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "") { filePath =>
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copyBook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("metadata", "extended")
+          .load(filePath)
+
+
+        // This method only works with Scala 2.12+ and Spark 3.0+
+        val actualDf = SparkUtils.covertIntegralToDecimal(df)
+        val actualSchema = actualDf.schema.treeString
+
+        compareText(actualSchema, expectedSchema)
+      }
     }
   }
 

@@ -19,7 +19,8 @@ package za.co.absa.cobrix.spark.cobol.utils
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.fs.FileSystem
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{concat_ws, expr, max}
+import org.apache.spark.sql.functions.{array, col, expr, max, struct}
+import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
@@ -178,6 +179,48 @@ object SparkUtils extends Logging {
     df.select(fields.toSeq: _*)
   }
 
+  def mapPrimitives(df: DataFrame)(f: (StructField, Column) => Column): DataFrame = {
+    def mapField(column: Column, field: StructField): Column = {
+      field.dataType match {
+        case st: StructType =>
+          val columns = st.fields.map(f => mapField(column.getField(field.name), f))
+          struct(columns: _*).as(field.name)
+        case ar: ArrayType =>
+          mapArray(ar, column, field.name).as(field.name)
+        case _ =>
+          f(field, column).as(field.name)
+      }
+    }
+
+    def mapArray(arr: ArrayType, column: Column, columnName: String): Column = {
+      arr.elementType match {
+        case st: StructType =>
+          transform(column, c => {
+            val columns = st.fields.map(f => mapField(c.getField(f.name), f))
+            struct(columns: _*)
+          })
+        case ar: ArrayType =>
+          array(mapArray(ar, column, columnName))
+        case p =>
+          array(f(StructField(columnName, p), column))
+      }
+    }
+
+    val columns = df.schema.fields.map(f => mapField(col(f.name), f))
+    df.select(columns: _*)
+  }
+
+  def covertIntegralToDecimal(df: DataFrame): DataFrame = {
+    mapPrimitives(df) { (field, c) =>
+      val metadata = field.metadata
+      if (metadata.contains("precision") && (field.dataType == LongType || field.dataType == IntegerType || field.dataType == ShortType)) {
+        val precision = metadata.getLong("precision").toInt
+        c.cast(DecimalType(precision, 0)).as(field.name)
+      } else {
+        c
+      }
+    }
+  }
 
   /**
     * Given an instance of DataFrame returns a dataframe where all primitive fields are converted to String
