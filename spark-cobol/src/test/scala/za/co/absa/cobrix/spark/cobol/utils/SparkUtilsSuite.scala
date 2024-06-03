@@ -451,7 +451,6 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
         |""".stripMargin
 
     if (!Properties.versionNumberString.startsWith("2.11.")) {
-      println(Properties.versionNumberString)
       withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "") { filePath =>
         val df = spark.read
           .format("cobol")
@@ -461,10 +460,12 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
           .option("metadata", "extended")
           .load(filePath)
 
-
         // This method only works with Scala 2.12+ and Spark 3.0+
         val actualDf = SparkUtils.covertIntegralToDecimal(df)
         val actualSchema = actualDf.schema.treeString
+
+        assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
 
         compareText(actualSchema, expectedSchema)
       }

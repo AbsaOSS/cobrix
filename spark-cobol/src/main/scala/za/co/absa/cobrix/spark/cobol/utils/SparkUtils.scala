@@ -184,11 +184,11 @@ object SparkUtils extends Logging {
       field.dataType match {
         case st: StructType =>
           val columns = st.fields.map(f => mapField(column.getField(field.name), f))
-          struct(columns: _*).as(field.name)
+          struct(columns: _*).as(field.name, field.metadata)
         case ar: ArrayType =>
-          mapArray(ar, column, field.name).as(field.name)
+          mapArray(ar, column, field.name).as(field.name, field.metadata)
         case _ =>
-          f(field, column).as(field.name)
+          f(field, column).as(field.name, field.metadata)
       }
     }
 
