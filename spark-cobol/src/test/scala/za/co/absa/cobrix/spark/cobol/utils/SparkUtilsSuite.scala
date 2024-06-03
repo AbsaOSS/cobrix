@@ -466,6 +466,9 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
 
         assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
         assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
 
         compareText(actualSchema, expectedSchema)
       }
