@@ -180,7 +180,7 @@ If the input file is a text file (CRLF / LF are used to split records), use
 `.option("is_text", "true")`.
 
 Multisegment ASCII text files are supported using this option:
-`.option("record_format", "D)"`.
+`.option("record_format", "D")`.
 
 Cobrix has better handling of special characters and partial records using its extension format:
 `.option("record_format", "D2")`.
