@@ -61,19 +61,26 @@ lazy val cobrix = (project in file("."))
   .aggregate(cobolParser, cobolConverters, sparkCobol)
 
 lazy val cobolParser = (project in file("cobol-parser"))
+  .enablePlugins(ShadingPlugin)
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-parser",
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
+    shadedDependencies ++= CobolParserShadedDependencies,
+    shadingRules ++= Seq (
+      ShadingRule.moveUnder("org.antlr.v4.runtime", "za.co.absa.cobrix.cobol.parser.shaded")
+    ),
+    validNamespaces ++= Set("za"),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    assemblySettings
-  )
-  .settings(
+    assemblySettings,
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-parser Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
-  ).enablePlugins(AutomateHeaderPlugin)
+  )
 
 lazy val cobolConverters = (project in file("cobol-converters"))
+  .dependsOn(cobolParser)
   .disablePlugins(sbtassembly.AssemblyPlugin)
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-converters",
     libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
@@ -81,8 +88,7 @@ lazy val cobolConverters = (project in file("cobol-converters"))
     publishArtifact := false,
     publish := {},
     publishLocal := {}
-  ).dependsOn(cobolParser)
-  .enablePlugins(AutomateHeaderPlugin)
+  )
 
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
@@ -144,7 +150,11 @@ lazy val assemblySettings = Seq(
   assembly / assemblyOption:= (assembly / assemblyOption).value.copy(includeScala = false),
   assembly / assemblyShadeRules:= Seq(
     // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
-    ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.shaded.org.antlr.@1").inAll,
+    ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.cobol.parser.shaded.org.antlr.@1").inAll,
+    // Shading all 3rd party libraries used by 'spark-cobol' in order to avoid binary conflicts.
+    ShadeRule.rename("macrocompat.**" -> "za.co.absa.cobrix.spark.cobol.shaded.macrocompat.@1").inAll,
+    ShadeRule.rename("scodec.**" -> "za.co.absa.cobrix.spark.cobol.shaded.scodec.@1").inAll,
+    ShadeRule.rename("shapeless.**" -> "za.co.absa.cobrix.spark.cobol.shaded.shapeless.@1").inAll,
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),
