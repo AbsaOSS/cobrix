@@ -1751,11 +1751,11 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.7.1 released 23 April 2024.
+- #### 2.7.1 released 4 June 2024.
    - [#680](https://github.com/AbsaOSS/cobrix/issues/680) Shaded ANTLR runtime in 'cobol-parser' to avoid conflicts with various versions of Spark that uses ANTLR as well.
    - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Added an experimental method `SparkUtils.covertIntegralToDecimal()` for applying extended metadata to a DataFrame.
 
-- #### 2.7.0 released 4 June 2024.
+- #### 2.7.0 released 23 April 2024.
    - [#666](https://github.com/AbsaOSS/cobrix/issues/666) Added support for record length value mapping.
      ```scala
      .option("record_format", "F")
