@@ -72,7 +72,7 @@ object Dependencies {
 
   val CobolParserDependencies: Seq[ModuleID] = Seq(
     // compile
-    "org.scodec"   %% "scodec-core"    % scodecCoreVersion,
+    "org.scodec"   %% "scodec-core"    % scodecCoreVersion excludeAll(ExclusionRule(organization = "org.scala-lang")),
     "org.antlr"     % "antlr4-runtime" % antlrValue,
     "org.slf4j"     % "slf4j-api"      % slf4jVersion,
 
@@ -80,6 +80,10 @@ object Dependencies {
     "org.scalatest" %% "scalatest"      % scalatestVersion % Test,
     "org.mockito"    % "mockito-core"   % mockitoVersion   % Test,
     "org.slf4j"      % "slf4j-simple"   % slf4jVersion     % Test
+  )
+
+  val CobolParserShadedDependencies: Set[ModuleID] = Set(
+    "org.antlr"      % "antlr4-runtime" % slf4jVersion
   )
 
   val CobolConvertersDependencies: Seq[ModuleID] = Seq(
