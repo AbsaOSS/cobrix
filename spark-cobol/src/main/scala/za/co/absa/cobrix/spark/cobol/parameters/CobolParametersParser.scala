@@ -428,6 +428,7 @@ object CobolParametersParser extends Logging {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
     val isRecordSequence = Seq(FixedBlock, VariableLength, VariableBlock).contains(recordFormat)
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
+    val isSegmentIdGenerationEnabled = params.contains(PARAM_SEGMENT_ID_ROOT) || params.contains(s"${PARAM_SEGMENT_ID_LEVEL_PREFIX}0")
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
@@ -448,6 +449,7 @@ object CobolParametersParser extends Logging {
     if (recordLengthFieldOpt.isDefined ||
       isRecordSequence ||
       isRecordIdGenerationEnabled ||
+      isSegmentIdGenerationEnabled ||
       fileStartOffset > 0 ||
       fileEndOffset > 0 ||
       hasRecordExtractor ||
