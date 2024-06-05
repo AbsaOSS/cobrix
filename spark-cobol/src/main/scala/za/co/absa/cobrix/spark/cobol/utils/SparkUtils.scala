@@ -180,6 +180,67 @@ object SparkUtils extends Logging {
   }
 
   /**
+    * Removes all struct nesting when possible for a given schema.
+    */
+  def unstructSchema(schema: StructType, useShortFieldNames: Boolean = false): StructType = {
+    def mapFieldShort(field: StructField): Array[StructField] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields flatMap mapFieldShort
+        case _ =>
+          Array(field)
+      }
+    }
+
+    def mapFieldLong(field: StructField, path: String): Array[StructField] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldLong(f, s"$path${field.name}_"))
+        case _ =>
+          Array(field.copy(name = s"$path${field.name}"))
+      }
+    }
+
+    val fields = if (useShortFieldNames)
+      schema.fields flatMap mapFieldShort
+    else
+      schema.fields.flatMap(f => mapFieldLong(f, ""))
+
+    StructType(fields)
+  }
+
+  /**
+    * Removes all struct nesting when possible for a given dataframe.
+    *
+    * Similar to `flattenSchema()`, but does not flatten arrays.
+    */
+  def unstructDataFrame(df: DataFrame, useShortFieldNames: Boolean = false): DataFrame = {
+    def mapFieldShort(column: Column, field: StructField): Array[Column] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldShort(column.getField(f.name), f))
+        case _ =>
+          Array(column.as(field.name, field.metadata))
+      }
+    }
+
+    def mapFieldLong(column: Column, field: StructField, path: String): Array[Column] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldLong(column.getField(f.name), f, s"$path${field.name}_"))
+        case _ =>
+          Array(column.as(s"$path${field.name}", field.metadata))
+      }
+    }
+
+    val columns = if (useShortFieldNames)
+      df.schema.fields.flatMap(f => mapFieldShort(col(f.name), f))
+    else
+      df.schema.fields.flatMap(f => mapFieldLong(col(f.name), f, ""))
+    df.select(columns: _*)
+  }
+
+  /**
     * Copies metadata from one schema to another as long as names and data types are the same.
     *
     * @param schemaFrom Schema to copy metadata from.
@@ -237,7 +298,7 @@ object SparkUtils extends Logging {
     def mapField(column: Column, field: StructField): Column = {
       field.dataType match {
         case st: StructType =>
-          val columns = st.fields.map(f => mapField(column.getField(field.name), f))
+          val columns = st.fields.map(f => mapField(column.getField(f.name), f))
           struct(columns: _*).as(field.name, field.metadata)
         case ar: ArrayType =>
           mapArray(ar, column, field.name).as(field.name, field.metadata)
