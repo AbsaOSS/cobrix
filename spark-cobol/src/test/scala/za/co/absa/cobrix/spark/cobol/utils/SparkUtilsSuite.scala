@@ -429,6 +429,180 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     }
   }
 
+  test("unstructDataFrame() and unstructSchema() should flatten a schema and the dataframe with short names") {
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP1.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |          02 GROUP2.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-NUM   PIC 9 OCCURS 3 TIMES.
+        |""".stripMargin
+
+    val expectedSchema =
+      """|root
+         | |-- COUNT: integer (nullable = true)
+         | |-- INNER_COUNT: integer (nullable = true)
+         | |-- INNER_GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = true)
+         | |    |    |-- FIELD: integer (nullable = true)
+         | |-- INNER_COUNT: integer (nullable = true)
+         | |-- INNER_NUM: array (nullable = true)
+         | |    |-- element: integer (containsNull = true)
+         |""".stripMargin
+
+    val expectedData =
+      """[ {
+        |  "COUNT" : 2,
+        |  "INNER_COUNT" : 1,
+        |  "INNER_GROUP" : [ {
+        |    "FIELD" : 4
+        |  }, {
+        |    "FIELD" : 5
+        |  }, {
+        |    "FIELD" : 6
+        |  } ],
+        |  "INNER_NUM" : [ 7, 8, 9 ]
+        |}, {
+        |  "COUNT" : 3,
+        |  "INNER_COUNT" : 2,
+        |  "INNER_GROUP" : [ {
+        |    "FIELD" : 7
+        |  }, {
+        |    "FIELD" : 8
+        |  }, {
+        |    "FIELD" : 9
+        |  } ],
+        |  "INNER_NUM" : [ 4, 5, 6 ]
+        |} ]
+        |""".stripMargin
+
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "224561789\n347892456\n") { filePath =>
+      val df = spark.read
+        .format("cobol")
+        .option("copybook_contents", copyBook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("metadata", "extended")
+        .load(filePath)
+
+      val actualDf = SparkUtils.unstructDataFrame(df, useShortFieldNames = true)
+      val actualSchema = actualDf.schema.treeString
+      val actualSchemaOnly = SparkUtils.unstructSchema(df.schema, useShortFieldNames = true)
+      val actualSchema2 = actualSchemaOnly.treeString
+
+      compareText(actualSchema, expectedSchema)
+      compareText(actualSchema2, expectedSchema)
+
+      val actualData = SparkUtils.prettyJSON(actualDf.orderBy("COUNT").toJSON.collect().mkString("[", ", ", "]"))
+
+      compareText(actualData, expectedData)
+
+      assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(3).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(4).metadata.json.nonEmpty)
+
+      assert(actualSchemaOnly.fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(1).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(3).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(4).metadata.json.nonEmpty)
+    }
+  }
+
+  test("unstructDataFrame() and unstructSchema() should flatten a schema and the dataframe with long names") {
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP1.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |          02 GROUP2.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-NUM   PIC 9 OCCURS 3 TIMES.
+        |""".stripMargin
+
+    val expectedSchema =
+      """|root
+         | |-- COUNT: integer (nullable = true)
+         | |-- GROUP1_INNER_COUNT: integer (nullable = true)
+         | |-- GROUP1_INNER_GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = true)
+         | |    |    |-- FIELD: integer (nullable = true)
+         | |-- GROUP2_INNER_COUNT: integer (nullable = true)
+         | |-- GROUP2_INNER_NUM: array (nullable = true)
+         | |    |-- element: integer (containsNull = true)
+         |""".stripMargin
+
+    val expectedData =
+      """[ {
+        |  "COUNT" : 2,
+        |  "GROUP1_INNER_COUNT" : 2,
+        |  "GROUP1_INNER_GROUP" : [ {
+        |    "FIELD" : 4
+        |  }, {
+        |    "FIELD" : 5
+        |  }, {
+        |    "FIELD" : 6
+        |  } ],
+        |  "GROUP2_INNER_COUNT" : 1,
+        |  "GROUP2_INNER_NUM" : [ 7, 8, 9 ]
+        |}, {
+        |  "COUNT" : 3,
+        |  "GROUP1_INNER_COUNT" : 4,
+        |  "GROUP1_INNER_GROUP" : [ {
+        |    "FIELD" : 7
+        |  }, {
+        |    "FIELD" : 8
+        |  }, {
+        |    "FIELD" : 9
+        |  } ],
+        |  "GROUP2_INNER_COUNT" : 2,
+        |  "GROUP2_INNER_NUM" : [ 4, 5, 6 ]
+        |} ]
+        |""".stripMargin
+
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "224561789\n347892456\n") { filePath =>
+      val df = spark.read
+        .format("cobol")
+        .option("copybook_contents", copyBook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("metadata", "extended")
+        .load(filePath)
+
+      val actualDf = SparkUtils.unstructDataFrame(df)
+      val actualSchema = actualDf.schema.treeString
+      val actualSchemaOnly = SparkUtils.unstructSchema(df.schema)
+      val actualSchema2 = actualSchemaOnly.treeString
+
+      compareText(actualSchema, expectedSchema)
+      compareText(actualSchema2, expectedSchema)
+
+      val actualData = SparkUtils.prettyJSON(actualDf.orderBy("COUNT").toJSON.collect().mkString("[", ", ", "]"))
+
+      compareText(actualData, expectedData)
+
+      assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(3).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(4).metadata.json.nonEmpty)
+
+      assert(actualSchemaOnly.fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(1).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(3).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(4).metadata.json.nonEmpty)
+    }
+  }
+
   test("Integral to decimal conversion for complex schema") {
     val expectedSchema =
       """|root
