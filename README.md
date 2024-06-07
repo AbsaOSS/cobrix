@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.2</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.2
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.2
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.2
 ```
 
 ## Usage
@@ -238,8 +238,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.7.1.jar
-* cobol-parser_2.12-2.7.1.jar
+* spark-cobol_2.12-2.7.2.jar
+* cobol-parser_2.12-2.7.2.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 
@@ -247,9 +247,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.1
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.1.jar,cobol-parser_2.12-2.7.1.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.2.jar,cobol-parser_2.12-2.7.2.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -316,11 +316,11 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
-The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.7.1
+The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.7.2
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.7.2-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.7.3-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1752,6 +1752,15 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.7.2 released 7 June 2024.
+   - [#684](https://github.com/AbsaOSS/cobrix/issues/684) Fixed failing to read a data file in certain combination of options.
+   - [#685](https://github.com/AbsaOSS/cobrix/issues/685) Added methods to flatten schema of a dataframe more effective than `flattenSchema()`, but does not flatten arrays:
+     ```scala
+     // df - a DataFrame with nested structs
+     val flatDf = SparkUtils.unstructDataFrame(df)
+     // flatDf the same dataframe with all nested fields promoted to the top level.
+     ```
+
 - #### 2.7.1 released 4 June 2024.
    - [#680](https://github.com/AbsaOSS/cobrix/issues/680) Shaded ANTLR runtime in 'cobol-parser' to avoid conflicts with various versions of Spark that uses ANTLR as well.
    - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Added an experimental method `SparkUtils.covertIntegralToDecimal()` for applying extended metadata to a DataFrame.
