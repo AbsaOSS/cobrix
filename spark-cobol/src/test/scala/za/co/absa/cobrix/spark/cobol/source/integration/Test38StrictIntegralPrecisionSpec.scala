@@ -114,6 +114,47 @@ class Test38StrictIntegralPrecisionSpec extends AnyWordSpec with SparkTestBase w
       }
     }
 
+    "be decoded as decimals with record id generation" in {
+      withTempBinFile("strict_integral_precision", ".tmp", dataSimple) { tempFile =>
+        val expectedSchema =
+          """root
+            | |-- File_Id: integer (nullable = false)
+            | |-- Record_Id: long (nullable = false)
+            | |-- Record_Byte_Length: integer (nullable = false)
+            | |-- SEG_ID: string (nullable = true)
+            | |-- SEG1: struct (nullable = true)
+            | |    |-- NUM1: decimal(2,0) (nullable = true)
+            | |-- SEG2: struct (nullable = true)
+            | |    |-- NUM2: decimal(9,0) (nullable = true)
+            | |-- SEG3: struct (nullable = true)
+            | |    |-- NUM3: decimal(15,0) (nullable = true)""".stripMargin
+
+        val expectedData = """{"File_Id":0,"Record_Id":0,"Record_Byte_Length":4,"SEG_ID":"A","SEG1":{"NUM1":12}},{"File_Id":0,"Record_Id":1,"Record_Byte_Length":10,"SEG_ID":"B","SEG2":{"NUM2":123456789}},{"File_Id":0,"Record_Id":2,"Record_Byte_Length":16,"SEG_ID":"C","SEG3":{"NUM3":123456789012345}}""".stripMargin
+
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "SEG-ID")
+          .option("segment_field", "SEG-ID")
+          .option("input_split_records", "2")
+          .option("pedantic", "true")
+          .option("record_length_map", """{"A":4,"B":10,"C":16}""")
+          .option("redefine_segment_id_map:0", "SEG1 => A")
+          .option("redefine_segment_id_map:1", "SEG2 => B")
+          .option("redefine_segment_id_map:2", "SEG3 => C")
+          .option("generate_record_id", "true")
+          .option("strict_integral_precision", "true")
+          .load(tempFile)
+
+        val actualSchema = df.schema.treeString
+        val actualData = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
+
+        compareText(actualSchema, expectedSchema)
+        assert(actualData == expectedData)
+      }
+    }
+
     "be decoded as decimals for hierarchical files" in {
       withTempBinFile("strict_integral_precision", ".tmp", dataSimple) { tempFile =>
         val expectedSchema =
