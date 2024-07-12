@@ -40,6 +40,7 @@ class DataSizeSpec extends AnyFunSuite {
       floatingPointFormat = FloatingPointFormat.IBM,
       strictSignOverpunch = true,
       improvedNullDetection = false,
+      strictIntegralPrecision = false,
       decodeBinaryAsHex = false,
       fieldCodePageMap = Map.empty)
 

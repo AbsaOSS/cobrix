@@ -42,13 +42,15 @@ object DecoderSelector {
     * <li> Integral types are represented as boxed integers and longs. Larger integral numbers are represented as BigDecimal </li>
     * </ul>
     *
-    * @param dataType             A daatype of a copybook field
-    * @param stringTrimmingPolicy Specifies how the decoder should handle string types
-    * @param ebcdicCodePage       Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
-    * @param asciiCharset         A charset for ASCII encoded data
-    * @param isUtf16BigEndian     If true UTF-16 strings are considered big-endian.
-    * @param floatingPointFormat  Specifies a floating point format (IBM or IEEE754)
-    * @param strictSignOverpunch  if true, sign overpunching is not allowed for positive numbers.
+    * @param dataType                A datatype of a copybook field
+    * @param stringTrimmingPolicy    Specifies how the decoder should handle string types
+    * @param ebcdicCodePage          Specifies a code page to use for EBCDIC to ASCII/Unicode conversion
+    * @param asciiCharset            A charset for ASCII encoded data
+    * @param isUtf16BigEndian        If true UTF-16 strings are considered big-endian.
+    * @param floatingPointFormat     Specifies a floating point format (IBM or IEEE754)
+    * @param strictSignOverpunch     if true, sign overpunching is not allowed for positive numbers.
+    * @param improvedNullDetection   If true, string values that contain only zero bytes (0x0) will be considered null.
+    * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
     * @return A function that converts an array of bytes to the target data type.
     */
   def getDecoder(dataType: CobolType,
@@ -58,11 +60,12 @@ object DecoderSelector {
                  isUtf16BigEndian: Boolean = true,
                  floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                  strictSignOverpunch: Boolean = false,
-                 improvedNullDetection: Boolean = false): Decoder = {
+                 improvedNullDetection: Boolean = false,
+                 strictIntegralPrecision: Boolean = false): Decoder = {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, improvedNullDetection)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
-      case integralType: Integral => getIntegralDecoder(integralType, strictSignOverpunch, improvedNullDetection)
+      case integralType: Integral => getIntegralDecoder(integralType, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
     decoder
@@ -186,7 +189,8 @@ object DecoderSelector {
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
   private def getIntegralDecoder(integralType: Integral,
                                  strictSignOverpunch: Boolean,
-                                 improvedNullDetection: Boolean): Decoder = {
+                                 improvedNullDetection: Boolean,
+                                 strictIntegralPrecision: Boolean): Decoder = {
     val encoding = integralType.enc.getOrElse(EBCDIC)
 
     val isEbcidic = encoding match {
@@ -198,7 +202,12 @@ object DecoderSelector {
 
     integralType.compact match {
       case None =>
-        if (integralType.precision <= Constants.maxIntegerPrecision) {
+        if (strictIntegralPrecision) {
+          if (isEbcidic)
+            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+          else
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+        } else if (integralType.precision <= Constants.maxIntegerPrecision) {
           if (isEbcidic)
             StringDecoders.decodeEbcdicInt(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
           else
@@ -223,57 +232,60 @@ object DecoderSelector {
         throw new IllegalStateException("Unexpected error. COMP-2 (double) is incorrect for an integral number.")
       case Some(COMP3()) =>
         // COMP-3 aka BCD-encoded number
-        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = true)
+        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = true, strictIntegralPrecision)
       case Some(COMP3U()) =>
         // COMP-3U aka Unsigned BCD-encoded number aka Unsigned Packed
-        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = false)
+        getBCDIntegralDecoder(integralType.precision, mandatorySignNibble = false, strictIntegralPrecision)
       case Some(COMP4()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(COMP4()), integralType.precision, integralType.signPosition, isBigEndian = true)
+        getBinaryEncodedIntegralDecoder(Some(COMP4()), integralType.precision, integralType.signPosition, isBigEndian = true, strictIntegralPrecision)
       case Some(COMP5()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(COMP5()), integralType.precision, integralType.signPosition, isBigEndian = true)
+        getBinaryEncodedIntegralDecoder(Some(COMP5()), integralType.precision, integralType.signPosition, isBigEndian = true, strictIntegralPrecision)
       case Some(COMP9()) =>
         // COMP aka BINARY encoded number
-        getBinaryEncodedIntegralDecoder(Some(COMP9()), integralType.precision, integralType.signPosition, isBigEndian = false)
+        getBinaryEncodedIntegralDecoder(Some(COMP9()), integralType.precision, integralType.signPosition, isBigEndian = false, strictIntegralPrecision)
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (${integralType.compact.get}).")
     }
   }
 
   /** Gets a decoder function for a binary encoded integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getBinaryEncodedIntegralDecoder(compact: Option[Usage], precision: Int, signPosition: Option[Position] = None, isBigEndian: Boolean): Decoder = {
+  private def getBinaryEncodedIntegralDecoder(compact: Option[Usage], precision: Int, signPosition: Option[Position] = None, isBigEndian: Boolean, strictIntegralPrecision: Boolean): Decoder = {
     val isSigned = signPosition.nonEmpty
-    val isSignLeft = signPosition.forall(sp => if (sp == za.co.absa.cobrix.cobol.parser.position.Left) true else false)
 
     val numOfBytes = BinaryUtils.getBytesCount(compact, precision, isSigned, isExplicitDecimalPt = false, isSignSeparate = false)
-    val decoder = (isSigned, isBigEndian, numOfBytes) match {
-      case (true, true, 1) => BinaryNumberDecoders.decodeSignedByte _
-      case (true, true, 2) => BinaryNumberDecoders.decodeBinarySignedShortBigEndian _
-      case (true, true, 4) => BinaryNumberDecoders.decodeBinarySignedIntBigEndian _
-      case (true, true, 8) => BinaryNumberDecoders.decodeBinarySignedLongBigEndian _
-      case (true, false, 1) => BinaryNumberDecoders.decodeSignedByte _
-      case (true, false, 2) => BinaryNumberDecoders.decodeBinarySignedShortLittleEndian _
-      case (true, false, 4) => BinaryNumberDecoders.decodeBinarySignedIntLittleEndian _
-      case (true, false, 8) => BinaryNumberDecoders.decodeBinarySignedLongLittleEndian _
-      case (false, true, 1) => BinaryNumberDecoders.decodeUnsignedByte _
-      case (false, true, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortBigEndian _
-      case (false, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndian _
-      case (false, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndian _
-      case (false, false, 1) => BinaryNumberDecoders.decodeUnsignedByte _
-      case (false, false, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortLittleEndian _
-      case (false, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndian _
-      case (false, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndian _
-      case _ =>
-        (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
+    val decoder = if (strictIntegralPrecision) {
+      (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
+    } else {
+      (isSigned, isBigEndian, numOfBytes) match {
+        case (true, true, 1) => BinaryNumberDecoders.decodeSignedByte _
+        case (true, true, 2) => BinaryNumberDecoders.decodeBinarySignedShortBigEndian _
+        case (true, true, 4) => BinaryNumberDecoders.decodeBinarySignedIntBigEndian _
+        case (true, true, 8) => BinaryNumberDecoders.decodeBinarySignedLongBigEndian _
+        case (true, false, 1) => BinaryNumberDecoders.decodeSignedByte _
+        case (true, false, 2) => BinaryNumberDecoders.decodeBinarySignedShortLittleEndian _
+        case (true, false, 4) => BinaryNumberDecoders.decodeBinarySignedIntLittleEndian _
+        case (true, false, 8) => BinaryNumberDecoders.decodeBinarySignedLongLittleEndian _
+        case (false, true, 1) => BinaryNumberDecoders.decodeUnsignedByte _
+        case (false, true, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortBigEndian _
+        case (false, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndian _
+        case (false, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndian _
+        case (false, false, 1) => BinaryNumberDecoders.decodeUnsignedByte _
+        case (false, false, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortLittleEndian _
+        case (false, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndian _
+        case (false, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndian _
+        case _ =>
+          (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
+      }
     }
     decoder // 999 999 999
   }
 
   /** Gets a decoder function for a BCD-encoded integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getBCDIntegralDecoder(precision: Int, mandatorySignNibble: Boolean): Decoder = {
+  private def getBCDIntegralDecoder(precision: Int, mandatorySignNibble: Boolean, strictIntegralPrecision: Boolean): Decoder = {
     val decoder =
-      if (precision <= Constants.maxIntegerPrecision) {
+      if (precision <= Constants.maxIntegerPrecision && !strictIntegralPrecision) {
         a: Array[Byte] => {
           val num = BCDNumberDecoders.decodeBCDIntegralNumber(a, mandatorySignNibble)
           if (num != null) {
@@ -282,7 +294,7 @@ object DecoderSelector {
             null
           }
         }
-      } else if (precision <= Constants.maxLongPrecision) {
+      } else if (precision <= Constants.maxLongPrecision && !strictIntegralPrecision) {
         a: Array[Byte] => BCDNumberDecoders.decodeBCDIntegralNumber(a, mandatorySignNibble)
       } else {
         a: Array[Byte] =>

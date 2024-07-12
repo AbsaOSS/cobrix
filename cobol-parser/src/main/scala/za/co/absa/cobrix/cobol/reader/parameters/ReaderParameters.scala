@@ -63,6 +63,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param multisegment            Parameters specific to reading multisegment files
   * @param commentPolicy           A comment truncation policy
   * @param improvedNullDetection   If true, string values that contain only zero bytes (0x0) will be considered null.
+  * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param decodeBinaryAsHex       Decode binary fields as HEX strings
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param dropValueFillers        If true the parser will drop all value FILLER fields
@@ -112,6 +113,7 @@ case class ReaderParameters(
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              strictSignOverpunch:     Boolean = true,
                              improvedNullDetection:   Boolean = false,
+                             strictIntegralPrecision: Boolean = false,
                              decodeBinaryAsHex:       Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,

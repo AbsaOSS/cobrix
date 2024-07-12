@@ -71,6 +71,7 @@ object CobolParametersParser extends Logging {
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
   val PARAM_FILLER_NAMING_POLICY      = "filler_naming_policy"
+  val PARAM_STRICT_INTEGRAL_PRECISION = "strict_integral_precision"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -272,6 +273,7 @@ object CobolParametersParser extends Logging {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_STRICT_SIGN_OVERPUNCHING, "true").toBoolean,
       params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "true").toBoolean,
+      params.getOrElse(PARAM_STRICT_INTEGRAL_PRECISION, "false").toBoolean,
       params.getOrElse(PARAM_BINARY_AS_HEX, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
@@ -408,6 +410,7 @@ object CobolParametersParser extends Logging {
       parameters.commentPolicy,
       parameters.strictSignOverpunch,
       parameters.improvedNullDetection,
+      parameters.strictIntegralPrecision,
       parameters.decodeBinaryAsHex,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,

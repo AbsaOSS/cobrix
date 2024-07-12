@@ -40,6 +40,7 @@ class PicValidationSpec extends AnyFunSuite {
       FloatingPointFormat.IBM,
       strictSignOverpunch = true,
       improvedNullDetection = false,
+      strictIntegralPrecision = false,
       decodeBinaryAsHex = false,
       fieldCodePageMap = Map.empty)
 
