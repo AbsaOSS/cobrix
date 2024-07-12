@@ -65,6 +65,7 @@ class Test6TypeVarietySpec extends AnyFunSuite with SparkTestBase {
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IEEE754")
       .option("strict_sign_overpunching", "true")
+      .option("pedantic", "true")
       .load(inpudDataPath)
 
     // This is to print the actual output
@@ -93,7 +94,63 @@ class Test6TypeVarietySpec extends AnyFunSuite with SparkTestBase {
     Files.delete(Paths.get(actualResultsPathCrc))
     */
 
-    // Fill nulls with zeros so by lokking at json you can tell a field is missing. Otherwise json won't contain null fields.
+    // Fill nulls with zeros so by looking at json you can tell a field is missing. Otherwise json won't contain null fields.
+    val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
+    FileUtils.writeStringsToFile(actualDf, actualResultsPath)
+    val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+
+    // toList is used to convert the Java list to Scala list. If it is skipped the resulting type will be Array[AnyRef] instead of Array[String]
+    val expected = Files.readAllLines(Paths.get(expectedResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
+
+    if (!actual.sameElements(expected)) {
+      assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsPath to " +
+        s"$actualResultsPath for details.")
+    }
+    Files.delete(Paths.get(actualResultsPath))
+  }
+
+  test(s"Integration test on Test6(type variety with strict integral precision)") {
+
+    val expectedSchemaPath = "../data/test6_expected/test6a_schema.json"
+    val expectedLayoutPath = "../data/test6_expected/test6_layout.txt"
+    val actualSchemaPath = "../data/test6_expected/test6a_schema_actual.json"
+    val actualLayoutPath = "../data/test6_expected/test6a_layout_actual.txt"
+    val expectedResultsPath = "../data/test6_expected/test6.txt"
+    val actualResultsPath = "../data/test6_expected/test6a_actual.txt"
+
+    // Comparing layout
+    val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val cobolSchema = CopybookParser.parseTree(copybookContents)
+    val actualLayout = cobolSchema.generateRecordLayoutPositions()
+    val expectedLayout = Files.readAllLines(Paths.get(expectedLayoutPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+
+    if (actualLayout != expectedLayout) {
+      FileUtils.writeStringToFile(actualLayout, actualLayoutPath)
+      assert(false, s"The actual layout doesn't match what is expected for $exampleName example. Please compare contents of $expectedLayoutPath to " +
+        s"$actualLayoutPath for details.")
+    }
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("schema_retention_policy", "collapse_root")
+      .option("floating_point_format", "IEEE754")
+      .option("strict_sign_overpunching", "true")
+      .option("strict_integral_precision", "true")
+      .option("pedantic", "true")
+      .load(inpudDataPath)
+
+    val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+    val actualSchema = SparkUtils.prettyJSON(df.schema.json)
+
+    if (actualSchema != expectedSchema) {
+      FileUtils.writeStringToFile(actualSchema, actualSchemaPath)
+      assert(false, s"The actual schema doesn't match what is expected for $exampleName example. Please compare contents of $expectedSchemaPath to " +
+        s"$actualSchemaPath for details.")
+    }
+
+    // Fill nulls with zeros so by looking at json you can tell a field is missing. Otherwise json won't contain null fields.
     val actualDf = df.orderBy("ID").na.fill(0).toJSON.take(100)
     FileUtils.writeStringsToFile(actualDf, actualResultsPath)
     val actual = Files.readAllLines(Paths.get(actualResultsPath), StandardCharsets.ISO_8859_1).asScala.toArray
