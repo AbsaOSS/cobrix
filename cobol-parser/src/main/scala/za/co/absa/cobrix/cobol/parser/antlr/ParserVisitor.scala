@@ -47,6 +47,7 @@ class ParserVisitor(enc: Encoding,
                     floatingPointFormat: FloatingPointFormat,
                     strictSignOverpunch: Boolean,
                     improvedNullDetection: Boolean,
+                    strictIntegralPrecision: Boolean,
                     decodeBinaryAsHex: Boolean,
                     fieldCodePageMap: Map[String, String]) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
@@ -853,7 +854,7 @@ class ParserVisitor(enc: Encoding,
       Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
       ) (Some(parent))
 
     parent.children.append(prim)

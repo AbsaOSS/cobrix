@@ -39,7 +39,8 @@ import scala.collection.mutable.ArrayBuffer
   * provides the corresponding Spark schema and also other properties for the Spark data source.
   *
   * @param copybook                A parsed copybook.
-  * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param schemaRetentionPolicy   pecifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
@@ -48,15 +49,16 @@ import scala.collection.mutable.ArrayBuffer
   * @param metadataPolicy          Specifies a policy to generate metadata fields.
   */
 class CobolSchema(copybook: Copybook,
-                  policy: SchemaRetentionPolicy,
-                  inputFileNameField: String,
-                  generateRecordId: Boolean,
+                  schemaRetentionPolicy: SchemaRetentionPolicy,
+                  strictIntegralPrecision: Boolean = false,
+                  inputFileNameField: String = "",
+                  generateRecordId: Boolean = false,
                   generateRecordBytes: Boolean = false,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
                   metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
   extends CobolReaderSchema(
-    copybook, policy, inputFileNameField, generateRecordId, generateRecordBytes,
+    copybook, schemaRetentionPolicy, strictIntegralPrecision, inputFileNameField, generateRecordId, generateRecordBytes,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
     ) with Logging with Serializable {
 
@@ -90,7 +92,7 @@ class CobolSchema(copybook: Copybook,
       val redefines = copybook.getAllSegmentRedefines
       parseGroup(group, redefines)
     }
-    val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot || copybook.isFlatCopybook) {
+    val expandRecords = if (schemaRetentionPolicy == SchemaRetentionPolicy.CollapseRoot || copybook.isFlatCopybook) {
       // Expand root group fields
       records.toArray.flatMap(group => group.dataType.asInstanceOf[StructType].fields)
     } else {
@@ -181,7 +183,9 @@ class CobolSchema(copybook: Copybook,
           case Some(RAW) => BinaryType
           case _         => StringType
         }
-      case dt: Integral    =>
+      case dt: Integral  if strictIntegralPrecision  =>
+        DecimalType(precision = dt.precision, scale = 0)
+      case dt: Integral  =>
         if (dt.precision > Constants.maxLongPrecision) {
           DecimalType(precision = dt.precision, scale = 0)
         } else if (dt.precision > Constants.maxIntegerPrecision) {
@@ -326,6 +330,7 @@ object CobolSchema {
     new CobolSchema(
       schema.copybook,
       schema.policy,
+      schema.strictIntegralPrecision,
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateRecordBytes,

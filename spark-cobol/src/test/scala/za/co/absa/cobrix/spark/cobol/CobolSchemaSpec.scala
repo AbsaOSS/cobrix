@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol
 
-import org.apache.spark.sql.types.{ArrayType, IntegerType, LongType, StringType, StructType}
+import org.apache.spark.sql.types.{ArrayType, DecimalType, IntegerType, LongType, StringType, StructType}
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -54,7 +54,25 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBookContents)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, false)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
+
+      assertEqualsMultiline(actualSchema, expectedSchema)
+    }
+
+    "Derive integral strict precision Spark schema from a Copybook" in {
+      val expectedSchema =
+        """root
+          | |-- BIN_INT: decimal(4,0) (nullable = true)
+          | |-- STRUCT_FLD: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          | |-- DATA_STRUCT: struct (nullable = true)
+          | |    |-- EXAMPLE_INT_FLD: decimal(7,0) (nullable = true)
+          | |    |-- EXAMPLE_STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+
+      val parsedSchema = CopybookParser.parseTree(copyBookContents)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, true, "", false, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -75,7 +93,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBookContents)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", true, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -94,7 +112,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBookContents)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, true)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -116,7 +134,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBookContents)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, true)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", true, true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -144,7 +162,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", true, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -160,7 +178,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", false, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -177,7 +195,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", true, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -192,7 +210,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, true)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -210,7 +228,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, true)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", true, true)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -224,7 +242,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
 
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, false)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, false)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -253,7 +271,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, false, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", true, false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -271,7 +289,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, true, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", false, true, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -292,7 +310,28 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", true, true, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", true, true, 2)
+      val actualSchema = cobolSchema.getSparkSchema.treeString
+
+      assertEqualsMultiline(actualSchema, expectedSchema)
+    }
+
+    "multi-segment keep-original with record id and bytes generation and strict integral precision" in {
+      val expectedSchema =
+        """root
+          | |-- File_Id: integer (nullable = false)
+          | |-- Record_Id: long (nullable = false)
+          | |-- Record_Byte_Length: integer (nullable = false)
+          | |-- Record_Bytes: binary (nullable = false)
+          | |-- Seg_Id0: string (nullable = true)
+          | |-- Seg_Id1: string (nullable = true)
+          | |-- STRUCT1: struct (nullable = true)
+          | |    |-- IntValue: decimal(6,0) (nullable = true)
+          | |-- STRUCT2: struct (nullable = true)
+          | |    |-- STR_FLD: string (nullable = true)
+          |""".stripMargin.replaceAll("[\\r\\n]", "\n")
+      val parsedSchema = CopybookParser.parseTree(copyBook)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, true, "", true, true, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -309,7 +348,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, false, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", false, false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -327,7 +366,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", true, false, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", true, false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -342,7 +381,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |-- STR_FLD: string (nullable = true)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, false, 2)
+      val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, false, 2)
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -361,7 +400,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
 
     val parsedSchema = CopybookParser.parseTree(copyBook)
 
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, "", false, false)
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.KeepOriginal, false, "", false, false)
     val actualSparkSchema = cobolSchema1.getSparkSchema
 
     val rootField = actualSparkSchema.fields.head.dataType.asInstanceOf[StructType]
@@ -390,7 +429,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
 
     val parsedSchema = CopybookParser.parseTree(copyBook)
 
-    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, "", false, false)
+    val cobolSchema1 = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, "", false, false)
     val actualSparkSchema = cobolSchema1.getSparkSchema
 
     val metadataStr1 = actualSparkSchema.fields.head.metadata
@@ -427,6 +466,27 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(1).dataType == StringType)
       assert(sparkSchema.fields(2).name == "NUM3")
       assert(sparkSchema.fields(2).dataType == IntegerType)
+    }
+
+    "return a schema for a copybook with strict decimal" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  STR1                  PIC X(10).
+          |         05  NUM2                  PIC S9(12).
+          |         05  NUM3                  PIC 9(7).
+          |""".stripMargin
+
+      val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook), Map("strict_integral_precision" -> "true"))
+
+      val sparkSchema = cobolSchema.getSparkSchema
+
+      assert(sparkSchema.fields.length == 3)
+      assert(sparkSchema.fields.head.name == "STR1")
+      assert(sparkSchema.fields.head.dataType == StringType)
+      assert(sparkSchema.fields(1).name == "NUM2")
+      assert(sparkSchema.fields(1).dataType == DecimalType(12, 0))
+      assert(sparkSchema.fields(2).name == "NUM3")
+      assert(sparkSchema.fields(2).dataType == DecimalType(7, 0))
     }
 
     "return a schema for multiple copybooks" in {

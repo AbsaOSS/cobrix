@@ -52,7 +52,7 @@ class Test02TextFilesOldSchool extends AnyFunSuite with SparkTestBase with Binar
     withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
 
       val parsedCopybook = CopybookParser.parse(copybook, dataEncoding = ASCII, stringTrimmingPolicy = StringTrimmingPolicy.TrimNone)
-      val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, "", false)
+      val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, false, "", false)
       val sparkSchema = cobolSchema.getSparkSchema
 
       val rddText = spark.sparkContext
