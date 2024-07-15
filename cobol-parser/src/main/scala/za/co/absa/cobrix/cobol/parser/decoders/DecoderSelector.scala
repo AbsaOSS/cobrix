@@ -108,7 +108,7 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for a decimal data type. The input array of bytes is always converted to string and then to BigDecimal */
-  private def getDecimalDecoder(decimalType: Decimal,
+  private[parser] def getDecimalDecoder(decimalType: Decimal,
                                 floatingPointFormat: FloatingPointFormat,
                                 strictSignOverpunch: Boolean,
                                 improvedNullDetection: Boolean): Decoder = {
@@ -164,7 +164,7 @@ object DecoderSelector {
 
   }
 
-  private def getSinglePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+  private[parser] def getSinglePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
     import FloatingPointFormat._
     floatingPointFormat match {
       case IBM =>        FloatingPointDecoders.decodeIbmSingleBigEndian
@@ -175,7 +175,7 @@ object DecoderSelector {
     }
   }
 
-  private def getDoublePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
+  private[parser] def getDoublePrecisionFpDecoder(floatingPointFormat: FloatingPointFormat): Decoder = {
     import FloatingPointFormat._
     floatingPointFormat match {
       case IBM =>        FloatingPointDecoders.decodeIbmDoubleBigEndian
@@ -187,7 +187,7 @@ object DecoderSelector {
   }
 
   /** Gets a decoder function for an integral data type. A direct conversion from array of bytes to the target type is used where possible. */
-  private def getIntegralDecoder(integralType: Integral,
+  private[parser] def getIntegralDecoder(integralType: Integral,
                                  strictSignOverpunch: Boolean,
                                  improvedNullDetection: Boolean,
                                  strictIntegralPrecision: Boolean): Decoder = {
