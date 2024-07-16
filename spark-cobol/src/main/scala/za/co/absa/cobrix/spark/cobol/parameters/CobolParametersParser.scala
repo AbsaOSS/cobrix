@@ -551,15 +551,19 @@ object CobolParametersParser extends Logging {
   private def parseMultisegmentParameters(params: Parameters): Option[MultisegmentParameters] = {
     if (params.contains(PARAM_SEGMENT_FIELD)) {
       val levels = parseSegmentLevels(params)
-      Some(MultisegmentParameters
-      (
+      val multiseg = MultisegmentParameters(
         params(PARAM_SEGMENT_FIELD),
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
         getSegmentIdRedefineMapping(params),
         getSegmentRedefineParents(params)
-      ))
+      )
+
+      val segmentIds = ParameterParsingUtils.splitSegmentIds(multiseg.segmentLevelIds)
+      ParameterParsingUtils.validateSegmentIds(segmentIds)
+
+      Some(multiseg)
     }
     else {
       None

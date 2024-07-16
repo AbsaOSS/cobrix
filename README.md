@@ -1244,6 +1244,23 @@ val df = spark
   .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
+Sometimes, the leaf level has many segments. In this case, you can use `_` as the list of segment ids to specify
+'the rest of segment ids', like this:
+
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("record_format", "V")
+  .option("segment_field", "SEGMENT_ID")
+  .option("segment_id_level0", "C")
+  .option("segment_id_level1", "_")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The result of both above code snippets is the same.
+
 The resulting table will look like this:
 ```
 df.show(10)
