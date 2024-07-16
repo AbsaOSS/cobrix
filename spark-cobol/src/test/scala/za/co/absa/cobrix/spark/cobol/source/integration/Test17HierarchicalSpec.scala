@@ -113,6 +113,72 @@ class Test17HierarchicalSpec extends AnyWordSpec with SparkTestBase with CobolTe
 
         testData(actualDf, actualResultsPath, expectedResultsPath)
       }
+
+      "return a dataframe with ids generated when _ notation is used" in {
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook", inputCopybookPath)
+          .option("pedantic", "true")
+          .option("record_format", "V")
+          .option("generate_record_id", "true")
+          .option("schema_retention_policy", "collapse_root")
+          .option("segment_field", "SEGMENT_ID")
+          .option("segment_id_level0", "1")
+          .option("segment_id_level1", "2,5")
+          .option("segment_id_level2", "_")
+          .option("segment_id_prefix", "A")
+          .option("redefine_segment_id_map:1", "COMPANY => 1")
+          .option("redefine-segment-id-map:2", "DEPT => 2")
+          .option("redefine-segment-id-map:3", "EMPLOYEE => 3")
+          .option("redefine-segment-id-map:4", "OFFICE => 4")
+          .option("redefine-segment-id-map:5", "CUSTOMER => 5")
+          .option("redefine-segment-id-map:6", "CONTACT => 6")
+          .option("redefine-segment-id-map:7", "CONTRACT => 7")
+          .load(inputDataPath)
+
+        testSchema(df, actualSchemaPath, expectedSchemaPath)
+
+        val actualDf = df
+          .orderBy("File_Id", "Record_Id")
+          .toJSON
+          .take(300)
+
+        testData(actualDf, actualResultsPath, expectedResultsPath)
+      }
+
+      "return a dataframe with ids generated when * notation is used" in {
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook", inputCopybookPath)
+          .option("pedantic", "true")
+          .option("record_format", "V")
+          .option("generate_record_id", "true")
+          .option("schema_retention_policy", "collapse_root")
+          .option("segment_field", "SEGMENT_ID")
+          .option("segment_id_level0", "1")
+          .option("segment_id_level1", "2,5")
+          .option("segment_id_level2", "*")
+          .option("segment_id_prefix", "A")
+          .option("redefine_segment_id_map:1", "COMPANY => 1")
+          .option("redefine-segment-id-map:2", "DEPT => 2")
+          .option("redefine-segment-id-map:3", "EMPLOYEE => 3")
+          .option("redefine-segment-id-map:4", "OFFICE => 4")
+          .option("redefine-segment-id-map:5", "CUSTOMER => 5")
+          .option("redefine-segment-id-map:6", "CONTACT => 6")
+          .option("redefine-segment-id-map:7", "CONTRACT => 7")
+          .load(inputDataPath)
+
+        testSchema(df, actualSchemaPath, expectedSchemaPath)
+
+        val actualDf = df
+          .orderBy("File_Id", "Record_Id")
+          .toJSON
+          .take(300)
+
+        testData(actualDf, actualResultsPath, expectedResultsPath)
+      }
     }
 
     "read as a hierarchical file with parent child relationships defined" should {
