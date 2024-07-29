@@ -166,5 +166,26 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
         assert(ex.getMessage.contains("Null encountered as a record length field (offset: 1, raw value: 00)"))
       }
     }
+
+    "throw an exception if the a non-string value is encountered in the record length column" in {
+      withTempBinFile("record_length_mapping", ".tmp", dataSimple) { tempFile =>
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "SEG_ID + 1")
+          .option("input_split_records", "2")
+          .option("pedantic", "true")
+          .option("record_length_map", """{"A":4,"B":7,"C":8}""")
+
+          .load(tempFile)
+
+        val ex = intercept[SparkException] {
+          df.count()
+        }
+
+        assert(ex.getMessage.contains("Encountered an invalid value of the record length field. Cannot parse 'A' as an integer in: SEG_ID = 'A'."))
+      }
+    }
   }
 }

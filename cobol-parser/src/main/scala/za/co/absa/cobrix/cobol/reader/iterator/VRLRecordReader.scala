@@ -194,11 +194,17 @@ class VRLRecordReader(cobolSchema: Copybook,
 
     expr.fields.foreach{
       case (name, field) =>
-        cobolSchema.extractPrimitiveField(field, binaryDataStart, readerProperties.startOffset) match {
-          case i: Int    => evaluator.setValue(name, i)
-          case l: Long   => evaluator.setValue(name, l.toInt)
-          case s: String => evaluator.setValue(name, s.toInt)
-          case _         => throw new IllegalStateException(s"Record length value of the field ${field.name} must be an integral type.")
+        val obj = cobolSchema.extractPrimitiveField(field, binaryDataStart, readerProperties.startOffset)
+        try {
+           obj match {
+            case i: Int    => evaluator.setValue(name, i)
+            case l: Long   => evaluator.setValue(name, l.toInt)
+            case s: String => evaluator.setValue(name, s.toInt)
+            case _         => throw new IllegalStateException(s"Record length value of the field ${field.name} must be an integral type.")
+          }
+        } catch {
+          case ex: NumberFormatException =>
+            throw new IllegalStateException(s"Encountered an invalid value of the record length field. Cannot parse '$obj' as an integer in: ${field.name} = '$obj'.", ex)
         }
     }
 

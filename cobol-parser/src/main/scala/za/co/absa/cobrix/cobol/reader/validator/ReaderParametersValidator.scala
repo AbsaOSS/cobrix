@@ -29,9 +29,9 @@ object ReaderParametersValidator {
   def getEitherFieldAndExpression(fieldOrExpressionOpt: Option[String], recordLengthMap: Map[String, Int], cobolSchema: Copybook): (Option[RecordLengthField], Option[RecordLengthExpression]) = {
     fieldOrExpressionOpt match {
       case Some(fieldOrExpression) =>
-        val canBeExpression = fieldOrExpression.exists(c => "+-*/".contains(c))
+        val canBeExpression = fieldOrExpression.exists(c => "+-*/()".contains(c))
 
-        if (canBeExpression && Try(cobolSchema.getFieldByName(fieldOrExpression)).isSuccess) {
+        if (!canBeExpression || Try(cobolSchema.getFieldByName(fieldOrExpression)).isSuccess) {
           (getLengthField(fieldOrExpression, recordLengthMap, cobolSchema), None)
         } else {
           (None, getLengthFieldExpr(fieldOrExpression, recordLengthMap, cobolSchema))
