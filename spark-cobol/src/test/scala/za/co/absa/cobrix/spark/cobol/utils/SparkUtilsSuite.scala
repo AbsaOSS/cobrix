@@ -603,6 +603,24 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     }
   }
 
+  test("copyMetadata should copy metadata from one schema to another") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, df2.schema)
+
+    val newDf = spark.createDataFrame(df2.rdd, schemaWithMetadata)
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+  }
+
   test("Integral to decimal conversion for complex schema") {
     val expectedSchema =
       """|root
