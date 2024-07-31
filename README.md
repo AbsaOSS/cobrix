@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.4</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.4</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.4</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.4
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.4
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.4
 ```
 
 ## Usage
@@ -238,8 +238,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.7.3.jar
-* cobol-parser_2.12-2.7.3.jar
+* spark-cobol_2.12-2.7.4.jar
+* cobol-parser_2.12-2.7.4.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 
@@ -247,9 +247,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.3
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.4
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.3.jar,cobol-parser_2.12-2.7.3.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.4.jar,cobol-parser_2.12-2.7.4.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -320,7 +320,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.7.4-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.7.5-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1770,7 +1770,23 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.7.3 released 17 Jule 2024.
+- #### 2.7.4 released 31 July 2024.
+   - [#697](https://github.com/AbsaOSS/cobrix/issues/697) Improve metadata merging method in Spark Utils. Add conflict resolution and merge flags
+     ```scala
+     // Field metadata can be lost during various transformations.
+     // You can copy metadata from one schema to another directly
+     val df1 = ??? //  A dataframe with metadata
+     val df2 = ??? //  A dataframe without metadata
+     val mergedSchema = SparkUtils.copyMetadata(df1.schema, df2.schema)
+     
+     // Create the new dataframe based on the schema with merged metadata 
+     val newDf = spark.createDataFrame(df2.rdd, mergedSchema)
+     ```
+
+## What's Changed
+* #697 Improve metadata merging method in Spark Utils in https://github.com/AbsaOSS/cobrix/pull/698
+
+- #### 2.7.3 released 17 July 2024.
    - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Add the ability to generate Spark schema based on strict integral precision:
      ```scala
      // `decimal(n,0)` will be used instead of `integer` and `long`
