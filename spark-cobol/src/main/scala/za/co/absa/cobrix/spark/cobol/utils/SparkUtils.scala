@@ -243,17 +243,26 @@ object SparkUtils extends Logging {
   /**
     * Copies metadata from one schema to another as long as names and data types are the same.
     *
-    * @param schemaFrom Schema to copy metadata from.
-    * @param schemaTo   Schema to copy metadata to.
-    * @param overwrite  If true, the metadata of schemaTo is not retained
+    * @param schemaFrom      Schema to copy metadata from.
+    * @param schemaTo        Schema to copy metadata to.
+    * @param overwrite       If true, the metadata of schemaTo is not retained
+    * @param sourcePreferred If true, schemaFrom metadata is used on conflicts, schemaTo otherwise.
     * @return Same schema as schemaTo with metadata from schemaFrom.
     */
-  def copyMetadata(schemaFrom: StructType, schemaTo: StructType, overwrite: Boolean = false): StructType = {
+  def copyMetadata(schemaFrom: StructType,
+                   schemaTo: StructType,
+                   overwrite: Boolean = false,
+                   sourcePreferred: Boolean = false): StructType = {
     def joinMetadata(from: Metadata, to: Metadata): Metadata = {
       val newMetadataMerged = new MetadataBuilder
 
-      newMetadataMerged.withMetadata(from)
-      newMetadataMerged.withMetadata(to)
+      if (sourcePreferred) {
+        newMetadataMerged.withMetadata(to)
+        newMetadataMerged.withMetadata(from)
+      } else {
+        newMetadataMerged.withMetadata(from)
+        newMetadataMerged.withMetadata(to)
+      }
 
       newMetadataMerged.build()
     }
