@@ -1783,9 +1783,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
      val newDf = spark.createDataFrame(df2.rdd, mergedSchema)
      ```
 
-## What's Changed
-* #697 Improve metadata merging method in Spark Utils in https://github.com/AbsaOSS/cobrix/pull/698
-
 - #### 2.7.3 released 17 July 2024.
    - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Add the ability to generate Spark schema based on strict integral precision:
      ```scala
