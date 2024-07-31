@@ -245,9 +245,19 @@ object SparkUtils extends Logging {
     *
     * @param schemaFrom Schema to copy metadata from.
     * @param schemaTo   Schema to copy metadata to.
+    * @param overwrite  If true, the metadata of schemaTo is not retained
     * @return Same schema as schemaTo with metadata from schemaFrom.
     */
-  def copyMetadata(schemaFrom: StructType, schemaTo: StructType): StructType = {
+  def copyMetadata(schemaFrom: StructType, schemaTo: StructType, overwrite: Boolean = false): StructType = {
+    def joinMetadata(from: Metadata, to: Metadata): Metadata = {
+      val newMetadataMerged = new MetadataBuilder
+
+      newMetadataMerged.withMetadata(from)
+      newMetadataMerged.withMetadata(to)
+
+      newMetadataMerged.build()
+    }
+
     @tailrec
     def processArray(ar: ArrayType, fieldFrom: StructField, fieldTo: StructField): ArrayType = {
       ar.elementType match {
@@ -267,15 +277,21 @@ object SparkUtils extends Logging {
     val newFields: Array[StructField] = schemaTo.fields.map { fieldTo =>
       fieldsMap.get(fieldTo.name) match {
         case Some(fieldFrom) =>
+          val newMetadata = if (overwrite) {
+            fieldFrom.metadata
+          } else {
+            joinMetadata(fieldFrom.metadata, fieldTo.metadata)
+          }
+
           fieldTo.dataType match {
             case st: StructType if fieldFrom.dataType.isInstanceOf[StructType] =>
               val newDataType = StructType(copyMetadata(fieldFrom.dataType.asInstanceOf[StructType], st).fields)
-              fieldTo.copy(dataType = newDataType, metadata = fieldFrom.metadata)
+              fieldTo.copy(dataType = newDataType, metadata = newMetadata)
             case at: ArrayType =>
               val newType = processArray(at, fieldFrom, fieldTo)
-              fieldTo.copy(dataType = newType, metadata = fieldFrom.metadata)
+              fieldTo.copy(dataType = newType, metadata = newMetadata)
             case _ =>
-              fieldTo.copy(metadata = fieldFrom.metadata)
+              fieldTo.copy(metadata = newMetadata)
           }
         case None =>
           fieldTo
