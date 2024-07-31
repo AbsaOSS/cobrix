@@ -1770,7 +1770,23 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.7.3 released 17 Jule 2024.
+- #### 2.7.4 released 31 July 2024.
+   - [#697](https://github.com/AbsaOSS/cobrix/issues/697) Improve metadata merging method in Spark Utils. Add conflict resolution and merge flags
+     ```scala
+     // Field metadata can be lost during various transformations.
+     // You can copy metadata from one schema to another directly
+     val df1 = ??? //  A dataframe with metadata
+     val df2 = ??? //  A dataframe without metadata
+     val mergedSchema = SparkUtils.copyMetadata(df1.schema, df2.schema)
+     
+     // Create the new dataframe based on the schema with merged metadata 
+     val newDf = spark.createDataFrame(df2.rdd, mergedSchema)
+     ```
+
+## What's Changed
+* #697 Improve metadata merging method in Spark Utils in https://github.com/AbsaOSS/cobrix/pull/698
+
+- #### 2.7.3 released 17 July 2024.
    - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Add the ability to generate Spark schema based on strict integral precision:
      ```scala
      // `decimal(n,0)` will be used instead of `integer` and `long`
