@@ -24,6 +24,7 @@ import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
+import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.MAX_ELEMENTS
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -129,8 +130,8 @@ object SparkUtils extends Logging {
 
     def getMaxArraySize(path: String): Int = {
       getField(path, df.schema) match {
-        case Some(field) if field.metadata.contains("maxElements") =>
-          field.metadata.getLong("maxElements").toInt
+        case Some(field) if field.metadata.contains(MAX_ELEMENTS) =>
+          field.metadata.getLong(MAX_ELEMENTS).toInt
         case _ =>
           val collected = df.agg(max(expr(s"size($path)"))).collect()(0)(0)
           if (collected != null) {

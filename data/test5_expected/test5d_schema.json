@@ -19,12 +19,16 @@
     "name" : "Seg_Id0",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 51
+    }
   }, {
     "name" : "Seg_Id1",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 51
+    }
   }, {
     "name" : "RECORD_LENGTH",
     "type" : "integer",
