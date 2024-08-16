@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser.getReaderProperties
+import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.{MAX_ELEMENTS, MAX_LENGTH, MIN_ELEMENTS}
 import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.mutable
@@ -101,7 +102,14 @@ class CobolSchema(copybook: Copybook,
 
     val recordsWithSegmentFields = if (generateSegIdFieldsCnt > 0) {
       val newFields = for (level <- Range(0, generateSegIdFieldsCnt))
-        yield StructField(s"${Constants.segmentIdField}$level", StringType, nullable = true)
+        yield {
+          val maxPrefixLength = getMaximumSegmentIdLength(segmentIdProvidedPrefix)
+          val segFieldMetadata = new MetadataBuilder()
+          segFieldMetadata.putLong(MAX_LENGTH, maxPrefixLength.toLong)
+
+          StructField(s"${Constants.segmentIdField}$level", StringType, nullable = true, metadata = segFieldMetadata.build())
+        }
+
       newFields.toArray ++ expandRecords
     } else {
       expandRecords
@@ -128,6 +136,15 @@ class CobolSchema(copybook: Copybook,
     }
 
     StructType(recordsWithRecordId)
+  }
+
+  private [cobrix] def getMaximumSegmentIdLength(segmentIdProvidedPrefix: String): Int = {
+    val DATETIME_PREFIX_LENGTH = 15
+    val SEGMENT_ID_MAX_GENERATED_LENGTH = 50
+
+    val prefixLength = if (segmentIdProvidedPrefix.isEmpty) DATETIME_PREFIX_LENGTH else segmentIdProvidedPrefix.length
+
+    prefixLength + SEGMENT_ID_MAX_GENERATED_LENGTH
   }
 
   @throws(classOf[IllegalStateException])
@@ -210,12 +227,12 @@ class CobolSchema(copybook: Copybook,
   }
 
   private def addArrayMetadata(metadataBuilder: MetadataBuilder, st: Statement): MetadataBuilder = {
-    metadataBuilder.putLong("minElements", st.arrayMinSize)
-    metadataBuilder.putLong("maxElements", st.arrayMaxSize)
+    metadataBuilder.putLong(MIN_ELEMENTS, st.arrayMinSize)
+    metadataBuilder.putLong(MAX_ELEMENTS, st.arrayMaxSize)
   }
 
   private def addAlphaNumericMetadata(metadataBuilder: MetadataBuilder, a: AlphaNumeric): MetadataBuilder = {
-    metadataBuilder.putLong("maxLength", a.length)
+    metadataBuilder.putLong(MAX_LENGTH, a.length)
   }
 
   private def addExtendedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
