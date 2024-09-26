@@ -17,12 +17,10 @@
 package za.co.absa.cobrix.cobol.reader
 
 import za.co.absa.cobrix.cobol.internal.Logging
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
-import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, FixedLength, VariableBlock}
 import za.co.absa.cobrix.cobol.reader.extractors.raw._
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
@@ -34,8 +32,6 @@ import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
-import java.nio.charset.{Charset, StandardCharsets}
-import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -79,6 +75,8 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         Some(new TextRecordExtractor(reParams))
       case None if readerProperties.isText =>
         Some(new TextFullRecordExtractor(reParams))
+      case None if readerProperties.recordFormat == FixedLength && (readerProperties.lengthFieldExpression.nonEmpty || readerProperties.lengthFieldMap.nonEmpty) =>
+        Some(new FixedWithRecordLengthExprRawRecordExtractor(reParams, readerProperties))
       case None if readerProperties.recordFormat == FixedBlock =>
         val fbParams = FixedBlockParameters(readerProperties.recordLength, bdwOpt.get.blockLength, bdwOpt.get.recordsPerBlock)
         FixedBlockParameters.validate(fbParams)
