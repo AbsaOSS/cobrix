@@ -60,6 +60,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param nonTerminals            A list of non-terminals (GROUPS) to combine and parse as primitive fields
   * @param debugFieldsPolicy       Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
   * @param debugIgnoreFileSize     If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
+  * @param debugLayoutPositions    If true, layout positions for input files will be logged (false by default)
   * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
   */
 case class CobolParameters(
@@ -100,5 +101,6 @@ case class CobolParameters(
                             occursMappings:          Map[String, Map[String, Int]],
                             debugFieldsPolicy:       DebugFieldsPolicy,
                             debugIgnoreFileSize:     Boolean,
+                            debugLayoutPositions:    Boolean,
                             metadataPolicy:          MetadataPolicy
                           )
