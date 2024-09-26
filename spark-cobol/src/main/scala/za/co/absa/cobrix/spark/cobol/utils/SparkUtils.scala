@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions.{array, col, expr, max, struct}
 import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
@@ -464,13 +464,18 @@ object SparkUtils extends Logging {
     }.getOrElse(None)
   }
 
-  def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {
+  def getDefaultHdfsBlockSize(spark: SparkSession, pathOpt: Option[String]): Option[Int] = {
     val conf = spark.sparkContext.hadoopConfiguration
-    val fileSystem = FileSystem.get(conf)
+
+    val fileSystem  =pathOpt match {
+      case Some(pathStr) => new Path(pathStr).getFileSystem(conf)
+      case None => FileSystem.get(conf)
+    }
+
     val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
     hdfsBlockSize match {
-      case None => logger.info(s"Unable to get HDFS default block size.")
-      case Some(size) => logger.info(s"HDFS default block size = $size MB.")
+      case None => logger.info(s"Unable to get default block size for '${fileSystem.getScheme}://.")
+      case Some(size) => logger.info(s"Default block size for '${fileSystem.getScheme}://' is $size MB.")
     }
 
     hdfsBlockSize

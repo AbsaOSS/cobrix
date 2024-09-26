@@ -68,7 +68,6 @@ class CobolSchema(copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkFlatSchema = {
-    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
     val arraySchema = copybook.ast.children.toArray
     val records = arraySchema.flatMap(record => {
       parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
@@ -86,8 +85,6 @@ class CobolSchema(copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
-    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-
     val records = for (record <- copybook.getRootRecords) yield {
       val group = record.asInstanceOf[Group]
       val redefines = copybook.getAllSegmentRedefines
