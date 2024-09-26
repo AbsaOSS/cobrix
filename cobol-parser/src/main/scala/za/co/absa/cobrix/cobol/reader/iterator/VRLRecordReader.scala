@@ -51,14 +51,7 @@ class VRLRecordReader(cobolSchema: Copybook,
   private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId - 1
 
-  final private val copyBookRecordSize = cobolSchema.getRecordSize
-  final private val (recordLengthField, lengthFieldExpr) = ReaderParametersValidator.getEitherFieldAndExpression(readerProperties.lengthFieldExpression, readerProperties.lengthFieldMap, cobolSchema)
-  final private val lengthField = recordLengthField.map(_.field)
-  final private val lengthMap = recordLengthField.map(_.valueMap).getOrElse(Map.empty)
-  final private val isLengthMapEmpty = lengthMap.isEmpty
   final private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
-  final private val recordLengthAdjustment = readerProperties.rdwAdjustment
-  final private val useRdw = lengthField.isEmpty && lengthFieldExpr.isEmpty
   final private val minimumRecordLength = readerProperties.minimumRecordLength
   final private val maximumRecordLength = readerProperties.maximumRecordLength
 
@@ -90,13 +83,7 @@ class VRLRecordReader(cobolSchema: Copybook,
             None
           }
         case None =>
-          if (useRdw) {
-            fetchRecordUsingRdwHeaders()
-          } else if (lengthField.nonEmpty) {
-            fetchRecordUsingRecordLengthField()
-          } else {
-            fetchRecordUsingRecordLengthFieldExpression(lengthFieldExpr.get)
-          }
+          fetchRecordUsingRdwHeaders()
       }
 
       binaryData match {
@@ -116,110 +103,6 @@ class VRLRecordReader(cobolSchema: Copybook,
   }
 
   def getRecordIndex: Long = recordIndex
-
-  private def fetchRecordUsingRecordLengthField(): Option[Array[Byte]] = {
-    if (lengthField.isEmpty) {
-      throw new IllegalStateException(s"For variable length reader either RDW record headers or record length field should be provided.")
-    }
-
-    val lengthFieldBlock = lengthField.get.binaryProperties.offset + lengthField.get.binaryProperties.actualSize
-
-    val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
-
-    byteIndex += readerProperties.startOffset + lengthFieldBlock
-
-    if (binaryDataStart.length < readerProperties.startOffset + lengthFieldBlock) {
-      return None
-    }
-
-    val recordLength = lengthField match {
-      case Some(lengthAST) => getRecordLengthFromField(lengthAST, binaryDataStart)
-      case None            => copyBookRecordSize
-    }
-
-    val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
-
-    byteIndex += restOfDataLength
-
-    if (restOfDataLength > 0) {
-      Some(binaryDataStart ++ dataStream.next(restOfDataLength))
-    } else {
-      Some(binaryDataStart)
-    }
-  }
-
-  final private def getRecordLengthFromField(lengthAST: Primitive, binaryDataStart: Array[Byte]): Int = {
-    val length = if (isLengthMapEmpty) {
-      cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-        case i: Int    => i
-        case l: Long   => l.toInt
-        case s: String => s.toInt
-        case null      => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
-        case _         => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
-      }
-    } else {
-      cobolSchema.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
-        case i: Int    => getRecordLengthFromMapping(i.toString)
-        case l: Long   => getRecordLengthFromMapping(l.toString)
-        case s: String => getRecordLengthFromMapping(s)
-        case null      => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
-        case _         =>    throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
-      }
-    }
-    length + recordLengthAdjustment
-  }
-
-  final private def getRecordLengthFromMapping(v: String): Int = {
-    lengthMap.get(v) match {
-      case Some(len) => len
-      case None => throw new IllegalStateException(s"Record length value '$v' is not mapped to a record length.")
-    }
-  }
-
-  final private def getBytesAsHexString(bytes: Array[Byte]): String = {
-    bytes.map("%02X" format _).mkString
-  }
-
-  private def fetchRecordUsingRecordLengthFieldExpression(expr: RecordLengthExpression): Option[Array[Byte]] = {
-    val lengthFieldBlock = expr.requiredBytesToread
-    val evaluator = expr.evaluator
-
-    val binaryDataStart = dataStream.next(readerProperties.startOffset + lengthFieldBlock)
-
-    byteIndex += readerProperties.startOffset + lengthFieldBlock
-
-    if (binaryDataStart.length < readerProperties.startOffset + lengthFieldBlock) {
-      return None
-    }
-
-    expr.fields.foreach{
-      case (name, field) =>
-        val obj = cobolSchema.extractPrimitiveField(field, binaryDataStart, readerProperties.startOffset)
-        try {
-           obj match {
-            case i: Int    => evaluator.setValue(name, i)
-            case l: Long   => evaluator.setValue(name, l.toInt)
-            case s: String => evaluator.setValue(name, s.toInt)
-            case _         => throw new IllegalStateException(s"Record length value of the field ${field.name} must be an integral type.")
-          }
-        } catch {
-          case ex: NumberFormatException =>
-            throw new IllegalStateException(s"Encountered an invalid value of the record length field. Cannot parse '$obj' as an integer in: ${field.name} = '$obj'.", ex)
-        }
-    }
-
-    val recordLength = evaluator.eval()
-
-    val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
-
-    byteIndex += restOfDataLength
-
-    if (restOfDataLength > 0) {
-      Some(binaryDataStart ++ dataStream.next(restOfDataLength))
-    } else {
-      Some(binaryDataStart)
-    }
-  }
 
   private def fetchRecordUsingRdwHeaders(): Option[Array[Byte]] = {
     val rdwHeaderBlock = recordHeaderParser.getHeaderLength

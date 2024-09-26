@@ -56,7 +56,7 @@ class Test26FixLengthWithIdGeneration extends AnyWordSpec with SparkTestBase wit
     // A4
     0xC1.toByte, 0xF3.toByte, 0xF4.toByte,
     // A5
-    0xC1.toByte, 0xF3.toByte, 0xF5.toByte,
+    0xC1.toByte, 0xF3.toByte, 0xF5.toByte
   )
 
   val binFileContentsLengthExpr: Array[Byte] = Array[Byte](
@@ -77,7 +77,7 @@ class Test26FixLengthWithIdGeneration extends AnyWordSpec with SparkTestBase wit
     // A4
     0xC1.toByte, 0xF2.toByte, 0xF4.toByte,
     // A5
-    0xC1.toByte, 0xF2.toByte, 0xF5.toByte,
+    0xC1.toByte, 0xF2.toByte, 0xF5.toByte
   )
 
   val expected: String =
