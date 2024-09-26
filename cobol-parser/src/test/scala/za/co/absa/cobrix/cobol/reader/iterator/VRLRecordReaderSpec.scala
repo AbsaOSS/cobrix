@@ -20,7 +20,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.mock.{ByteStreamMock, RecordExtractorMock, RecordHeadersParserMock}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserRDW}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedWithRecordLengthExprRawRecordExtractor, RawRecordContext, RawRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.parameters.{MultisegmentParameters, ReaderParameters}
 
 class VRLRecordReaderSpec extends AnyWordSpec {
@@ -127,10 +127,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x07, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
+
         val reader = getUseCase(
           copybook = copybookWithFieldLength,
           records = records,
-          lengthFieldExpression = Some("LEN"))
+          lengthFieldExpression = Some("LEN"),
+          recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
         assert(reader.hasNext)
         val (segment1, record1) = reader.next()
@@ -163,10 +170,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF1, 0xF5, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
+
         val reader = getUseCase(
           copybook = copybookWithFieldLength,
           records = records,
-          lengthFieldExpression = Some("LEN"))
+          lengthFieldExpression = Some("LEN"),
+          recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
         assert(reader.hasNext)
         val (segment1, record1) = reader.next()
@@ -195,12 +209,18 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           """
 
         val records = Array[Byte](0x00)
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
 
         val ex = intercept[IllegalStateException] {
           getUseCase(
             copybook = copybookWithFieldLength,
             records = records,
-            lengthFieldExpression = Some("LEN"))
+            lengthFieldExpression = Some("LEN"),
+            recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
         }
 
         assert(ex.getMessage == "The record length field LEN must be an integral type or a value mapping must be specified.")
@@ -220,10 +240,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
         0x00, 0x08, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
         ).map(_.toByte)
 
+      val streamH = new ByteStreamMock(records)
+      val streamD = new ByteStreamMock(records)
+      val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+      val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN - 1"))
+
       val reader = getUseCase(
         copybook = copybookWithFieldLength,
         records = records,
-        lengthFieldExpression = Some("LEN - 1"))
+        lengthFieldExpression = Some("LEN - 1"),
+        recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
       assert(reader.hasNext)
       val (segment1, record1) = reader.next()
