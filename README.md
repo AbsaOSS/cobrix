@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.7.6</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.7.6</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.7.6</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.7.6
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.6
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.7.6
 ```
 
 ## Usage
@@ -238,8 +238,8 @@ to decode various binary formats.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.7.5.jar
-* cobol-parser_2.12-2.7.5.jar
+* spark-cobol_2.12-2.7.6.jar
+* cobol-parser_2.12-2.7.6.jar
 * scodec-core_2.12-1.10.3.jar
 * scodec-bits_2.12-1.1.4.jar
 
@@ -247,9 +247,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.5
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.6
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.5.jar,cobol-parser_2.12-2.7.5.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.6.jar,cobol-parser_2.12-2.7.6.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -320,7 +320,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.7.6-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.7.7-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1771,6 +1771,14 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.7.6 released 26 September 2024.
+   - [#710](https://github.com/AbsaOSS/cobrix/issues/710) Fix index generation for files with record length fields or expressions.
+   - [#712](https://github.com/AbsaOSS/cobrix/issues/712) Add an option for explicitly logging layout positions (`false` by default).
+     ```scala
+     // Enable logging of layout positions
+     .option("debug_layout_positions", "true")
+     ```
+
 - #### 2.7.5 released 19 August 2024.
    - [#703](https://github.com/AbsaOSS/cobrix/issues/703) Add maximum length for generated segment id fields, like `seg_id0`, `seg_id1`, etc. 
 
