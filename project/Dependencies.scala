@@ -29,7 +29,7 @@ object Dependencies {
 
   private val defaultSparkVersionForScala211 = "2.4.8"
   private val defaultSparkVersionForScala212 = "3.4.3"
-  private val defaultSparkVersionForScala213 = "3.5.1"
+  private val defaultSparkVersionForScala213 = "3.5.3"
 
   def sparkFallbackVersion(scalaVersion: String): String = {
     if (scalaVersion.startsWith("2.11.")) {

@@ -37,7 +37,7 @@ jobs:
         # Scala 2.12 is chosen since it is supported by the most wide range of Spark versions and
         # vendor distributions.
         include:
-          - scala: 2.12.19
+          - scala: 2.12.20
             scalaShort: "2.12"
             spark: 3.3.4
             overall: 0.0
@@ -60,7 +60,7 @@ jobs:
         run: sbt ++${{matrix.scala}} jacoco -DSPARK_VERSION=${{matrix.spark}}
       - name: Add coverage of 'cobol-parser' to PR
         id: jacocoParser
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.7.1
         with:
           paths: >
             ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
