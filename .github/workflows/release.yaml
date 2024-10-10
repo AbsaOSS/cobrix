@@ -42,7 +42,7 @@ jobs:
           git push --set-upstream origin release/$VERSION
 
       - name: Setup JDK and sbt
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4.2.2
         with:
           distribution: temurin
           java-version: 8
