@@ -95,8 +95,19 @@ private[source] object CobolScanners extends Logging {
     val recordSize = reader.getRecordSize
 
     sourceDirs.foreach(sourceDir => {
-      if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, conf, recordSize)) {
-        throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
+      if (!debugIgnoreFileSize) {
+        val nonDivisibleFiles = getNonDivisibleFiles(sourceDir, conf, recordSize)
+
+        if (nonDivisibleFiles.nonEmpty) {
+          nonDivisibleFiles.head match {
+            case (name, size) =>
+              if (nonDivisibleFiles.length > 1) {
+                throw new IllegalArgumentException(s"Multiple file sizes are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Example file: $name size ($size bytes).")
+              } else {
+                throw new IllegalArgumentException(s"File $name size ($size bytes) is NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record).")
+              }
+          }
+        }
       }
     })
 
@@ -164,15 +175,14 @@ private[source] object CobolScanners extends Logging {
     recordParser(reader, records)
   }
 
-  private def areThereNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Boolean = {
-
+  private def getNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Seq[(String, Long)] = {
     val fileSystem = new Path(sourceDir).getFileSystem(hadoopConfiguration)
 
     if (FileUtils.getNumberOfFilesInDir(sourceDir, fileSystem) < FileUtils.THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK) {
-      FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem) > 0
+      FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem)
     }
     else {
-      FileUtils.findAndLogFirstNonDivisibleFile(sourceDir, divisor, fileSystem)
+      FileUtils.findAndLogFirstNonDivisibleFile(sourceDir, divisor, fileSystem).toSeq
     }
   }
 }
