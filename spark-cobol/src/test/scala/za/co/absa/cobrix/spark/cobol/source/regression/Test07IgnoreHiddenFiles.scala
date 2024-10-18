@@ -30,17 +30,29 @@ class Test07IgnoreHiddenFiles extends AnyFunSuite with BinaryFileFixture with Sp
 
   test("Test findAndLogFirstNonDivisibleFile() finds a file") {
     withTempDirectory("testHidden1") { tmpDir =>
-      createFileSize1(Files.createFile(Paths.get(tmpDir, "a")))
-      assert(FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem))
-      assert(FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem) == 1)
+      createFileSize1(Files.createFile(Paths.get(tmpDir, "a-file.dat")))
+
+      val nonDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem)
+      val nonDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem)
+
+      assert(nonDivisibleFileOpt.isDefined)
+      assert(nonDivisibleFileOpt.get._1.endsWith("a-file.dat"))
+      assert(nonDivisibleFileOpt.get._2 == 1)
+
+      assert(nonDivisibleFiles.length == 1)
+      assert(nonDivisibleFiles.head._2 == 1)
+      assert(nonDivisibleFiles.head._1.endsWith("a-file.dat"))
     }
   }
 
   test("Test findAndLogFirstNonDivisibleFile() ignores a hidden file") {
     withTempDirectory("testHidden1") { tmpDir =>
       createFileSize1(Files.createFile(Paths.get(tmpDir, ".a")))
-      assert(!FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem))
-      assert(FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem) == 0)
+      val nonDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem)
+      val nonDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem)
+
+      assert(nonDivisibleFileOpt.isEmpty)
+      assert(nonDivisibleFiles.isEmpty)
     }
   }
 
@@ -48,8 +60,11 @@ class Test07IgnoreHiddenFiles extends AnyFunSuite with BinaryFileFixture with Sp
     withTempDirectory("testHidden3") { tmpDir =>
       Files.createDirectory(Paths.get(tmpDir, "dir1"))
       createFileSize1(Files.createFile(Paths.get(tmpDir, "dir1", ".b2")))
-      assert(!FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem))
-      assert(FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem) == 0)
+      val nonDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem)
+      val nonDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem)
+
+      assert(nonDivisibleFileOpt.isEmpty)
+      assert(nonDivisibleFiles.isEmpty)
     }
   }
 
@@ -57,16 +72,28 @@ class Test07IgnoreHiddenFiles extends AnyFunSuite with BinaryFileFixture with Sp
     withTempDirectory("testHidden4") { tmpDir =>
       Files.createDirectory(Paths.get(tmpDir, ".dir2"))
       createFileSize1(Files.createFile(Paths.get(tmpDir, ".dir2", "c1")))
-      assert(!FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem))
-      assert(FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem) == 0)
+      val nonDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem)
+      val nonDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem)
+
+      assert(nonDivisibleFileOpt.isEmpty)
+      assert(nonDivisibleFiles.isEmpty)
     }
   }
 
   test("Test findAndLogFirstNonDivisibleFile() works with globbing") {
     withTempDirectory("testHidden1") { tmpDir =>
-      createFileSize1(Files.createFile(Paths.get(tmpDir, "a")))
-      assert(FileUtils.findAndLogFirstNonDivisibleFile(s"$tmpDir/*", 2, fileSystem))
-      assert(FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem) == 1)
+      createFileSize1(Files.createFile(Paths.get(tmpDir, "a.dat")))
+
+      val nonDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(tmpDir, 2, fileSystem)
+      val nonDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(tmpDir, 2, fileSystem)
+
+      assert(nonDivisibleFileOpt.isDefined)
+      assert(nonDivisibleFileOpt.get._1.endsWith("a.dat"))
+      assert(nonDivisibleFileOpt.get._2 == 1)
+
+      assert(nonDivisibleFiles.length == 1)
+      assert(nonDivisibleFiles.head._1.endsWith("a.dat"))
+      assert(nonDivisibleFiles.head._2 == 1)
     }
   }
 
