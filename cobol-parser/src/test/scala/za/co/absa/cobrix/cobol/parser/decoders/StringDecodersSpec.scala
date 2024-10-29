@@ -128,6 +128,30 @@ class StringDecodersSpec extends AnyWordSpec {
         assert(actual == expected)
       }
 
+      "decode a CP278 string special characters" in {
+        val expected = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
+        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+          0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
+          0x71, 0x9F, 0x40).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage278, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
+      "decode a CP278 string example" in {
+        val expected = "Ångbåten är över sjön med färggranna blommor."
+
+        val bytes = Array(0x5B, 0x95, 0x87, 0x82, 0xD0, 0xA3, 0x85, 0x95, 0x40, 0xC0, 0x99, 0x40, 0x6A,
+          0xA5, 0x85, 0x99, 0x40, 0xA2, 0x91, 0x6A, 0x95, 0x40, 0x94, 0x85, 0x84, 0x40, 0x86, 0xC0,
+          0x99, 0x87, 0x87, 0x99, 0x81, 0x95, 0x95, 0x81, 0x40, 0x82, 0x93, 0x96, 0x94, 0x94, 0x96,
+          0x99, 0x4B).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage278, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
       "decode a CP500 string special characters" in {
         val expected = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ¤µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
         val bytes = Array(
