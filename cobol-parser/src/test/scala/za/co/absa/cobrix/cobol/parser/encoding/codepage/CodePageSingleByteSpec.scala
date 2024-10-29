@@ -42,6 +42,26 @@ class CodePageSingleByteSpec extends AnyFunSuite {
     assert(codePage.codePageShortName == "cp037_extended")
   }
 
+  test("Ensure codepage 'cp273' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp273")
+    assert(codePage.codePageShortName == "cp273")
+  }
+
+  test("Ensure codepage 'cp277' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp277")
+    assert(codePage.codePageShortName == "cp277")
+  }
+
+  test("Ensure codepage 'cp300' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp300")
+    assert(codePage.codePageShortName == "cp300")
+  }
+
+  test("Ensure codepage 'cp500' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp500")
+    assert(codePage.codePageShortName == "cp500")
+  }
+
   test("Ensure codepage 'cp838' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("cp838")
     assert(codePage.codePageShortName == "cp838")
@@ -65,6 +85,31 @@ class CodePageSingleByteSpec extends AnyFunSuite {
   test("Ensure codepage 'cp1047' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("cp1047")
     assert(codePage.codePageShortName == "cp1047")
+  }
+
+  test("Ensure codepage 'cp1140' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1140")
+    assert(codePage.codePageShortName == "cp1140")
+  }
+
+  test("Ensure codepage 'cp1141' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1141")
+    assert(codePage.codePageShortName == "cp1141")
+  }
+
+  test("Ensure codepage 'cp1148' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1148")
+    assert(codePage.codePageShortName == "cp1148")
+  }
+
+  test("Ensure codepage 'cp1364' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1364")
+    assert(codePage.codePageShortName == "cp1364")
+  }
+
+  test("Ensure codepage 'cp1388' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1388")
+    assert(codePage.codePageShortName == "cp1388")
   }
 
   test("Ensure an unknown codepage throws an IllegalArgumentException") {
