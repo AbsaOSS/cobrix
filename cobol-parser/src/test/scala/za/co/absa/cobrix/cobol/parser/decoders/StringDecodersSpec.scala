@@ -104,6 +104,17 @@ class StringDecodersSpec extends AnyWordSpec {
         assert(actual == expected)
       }
 
+      "decode a CP275 string special characters" in {
+        val expected = " æÄ!üÜ^Æö$ß¢§Øäéõø~åÖÕÃÅÉ\\¤] "
+        val bytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
+          0xB0, 0xB5, 0x80, 0x43, 0xD0, 0xC0, 0x70, 0xA1, 0x47, 0xEC, 0x7B, 0x7C, 0x67, 0x4A,
+          0xE0, 0x9F, 0x68, 0x40).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage275, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
       "decode a CP277 string special characters" in {
         val expected = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
         val bytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
