@@ -1626,6 +1626,7 @@ The output looks like this:
 | .option("ebcdic_code_page", "common") | Common      | (Default) Only characters common across EBCDIC code pages are decoded.                                      |
 | .option("ebcdic_code_page", "cp037")  | EBCDIC 037  | Australia, Brazil, Canada, New Zealand, Portugal, South Africa, USA.                                        |
 | .option("ebcdic_code_page", "cp273")  | EBCDIC 273  | Germany, Austria.                                                                                           |
+| .option("ebcdic_code_page", "cp275")  | EBCDIC 275  | Brazil.                                                                                                     |
 | .option("ebcdic_code_page", "cp277")  | EBCDIC 277  | Denmark and Norway.                                                                                         |
 | .option("ebcdic_code_page", "cp278")  | EBCDIC 278  | Finland and Sweden.                                                                                         |
 | .option("ebcdic_code_page", "cp300")  | EBCDIC 300  | Double-byte code page with Japanese and Latin characters.                                                   |
