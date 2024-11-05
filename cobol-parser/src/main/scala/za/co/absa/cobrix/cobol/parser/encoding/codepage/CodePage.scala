@@ -49,6 +49,7 @@ object CodePage extends Logging {
       case "cp275"           => new CodePage275
       case "cp277"           => new CodePage277
       case "cp278"           => new CodePage278
+      case "cp280"           => new CodePage280
       case "cp300"           => new CodePage300
       case "cp500"           => new CodePage500
       case "cp838"           => new CodePage838
