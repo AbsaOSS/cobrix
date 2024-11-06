@@ -1629,7 +1629,8 @@ The output looks like this:
 | .option("ebcdic_code_page", "cp275")  | EBCDIC 275  | Brazil.                                                                                                     |
 | .option("ebcdic_code_page", "cp277")  | EBCDIC 277  | Denmark and Norway.                                                                                         |
 | .option("ebcdic_code_page", "cp278")  | EBCDIC 278  | Finland and Sweden.                                                                                         |
-| .option("ebcdic_code_page", "cp278")  | EBCDIC 280  | Italy.                                                                                                      |
+| .option("ebcdic_code_page", "cp280")  | EBCDIC 280  | Italy.                                                                                                      |
+| .option("ebcdic_code_page", "cp284")  | EBCDIC 284  | Spain and Latin America.                                                                                    |
 | .option("ebcdic_code_page", "cp300")  | EBCDIC 300  | Double-byte code page with Japanese and Latin characters.                                                   |
 | .option("ebcdic_code_page", "cp500")  | EBCDIC 500  | Belgium, Canada, Switzerland, International.                                                                |
 | .option("ebcdic_code_page", "cp838")  | EBCDIC 838  | Double-byte code page with Thai and Latin characters.                                                       |
