@@ -196,6 +196,17 @@ class StringDecodersSpec extends AnyWordSpec {
         assert(actual == expected)
       }
 
+      "decode a CP297 string special characters" in {
+        val expected = " °$¨¢#¬¯ä£!üÜ^]ù§ß¢°Öéèæö¨åàÆØÅÄÉ¤ "
+        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+          0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
+          0x71, 0x9F, 0x40).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage297, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
       "decode a CP500 string special characters" in {
         val expected = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ¤µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
         val bytes = Array(
