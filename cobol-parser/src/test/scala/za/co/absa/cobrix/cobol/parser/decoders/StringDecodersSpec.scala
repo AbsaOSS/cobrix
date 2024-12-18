@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 
 import java.nio.charset.StandardCharsets
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.parser.encoding.codepage
 import za.co.absa.cobrix.cobol.parser.encoding.codepage._
 
 class StringDecodersSpec extends AnyWordSpec {
@@ -269,6 +270,17 @@ class StringDecodersSpec extends AnyWordSpec {
         ).map(_.toByte)
 
         val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1141, improvedNullDetection = false)
+
+        assert(actual == expected)
+      }
+
+      "decode a CP1145 string special characters" in {
+        val expected = " äÑ|üÜ¬§ñ]ß¢[Ö{}æö¨å@ÆØÅÄÉ€ "
+        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+          0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
+          0x71, 0x9F, 0x40).map(_.toByte)
+
+        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1145, improvedNullDetection = false)
 
         assert(actual == expected)
       }
