@@ -49,6 +49,21 @@ object SparkUtils extends Logging {
   }
 
   /**
+    * Returns true if Spark Data type is a primitive data type.
+    *
+    * @param dataType Stark data type
+    * @return true if the data type is primitive.
+    */
+  def isPrimitive(dataType: DataType): Boolean = {
+    dataType match {
+      case _: ArrayType => false
+      case _: StructType => false
+      case _: MapType => false
+      case _ => true
+    }
+  }
+
+  /**
     * Given an instance of DataFrame returns a dataframe with flattened schema.
     * All nested structures are flattened and arrays are projected as columns.
     *
@@ -248,12 +263,14 @@ object SparkUtils extends Logging {
     * @param schemaTo        Schema to copy metadata to.
     * @param overwrite       If true, the metadata of schemaTo is not retained
     * @param sourcePreferred If true, schemaFrom metadata is used on conflicts, schemaTo otherwise.
+    * @param copyDataType    If true, data type is copied as well. This is limited to primitive data types.
     * @return Same schema as schemaTo with metadata from schemaFrom.
     */
   def copyMetadata(schemaFrom: StructType,
                    schemaTo: StructType,
                    overwrite: Boolean = false,
-                   sourcePreferred: Boolean = false): StructType = {
+                   sourcePreferred: Boolean = false,
+                   copyDataType: Boolean = false): StructType = {
     def joinMetadata(from: Metadata, to: Metadata): Metadata = {
       val newMetadataMerged = new MetadataBuilder
 
@@ -273,12 +290,16 @@ object SparkUtils extends Logging {
       ar.elementType match {
         case st: StructType if fieldFrom.dataType.isInstanceOf[ArrayType] && fieldFrom.dataType.asInstanceOf[ArrayType].elementType.isInstanceOf[StructType] =>
           val innerStructFrom = fieldFrom.dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType]
-          val newDataType = StructType(copyMetadata(innerStructFrom, st).fields)
+          val newDataType = StructType(copyMetadata(innerStructFrom, st, overwrite, sourcePreferred, copyDataType).fields)
           ArrayType(newDataType, ar.containsNull)
         case at: ArrayType =>
           processArray(at, fieldFrom, fieldTo)
         case p =>
-          ArrayType(p, ar.containsNull)
+          if (copyDataType && fieldFrom.dataType.isInstanceOf[ArrayType] && isPrimitive(fieldFrom.dataType.asInstanceOf[ArrayType].elementType)) {
+            ArrayType(fieldFrom.dataType.asInstanceOf[ArrayType].elementType, ar.containsNull)
+          } else {
+            ArrayType(p, ar.containsNull)
+          }
       }
     }
 
@@ -295,13 +316,17 @@ object SparkUtils extends Logging {
 
           fieldTo.dataType match {
             case st: StructType if fieldFrom.dataType.isInstanceOf[StructType] =>
-              val newDataType = StructType(copyMetadata(fieldFrom.dataType.asInstanceOf[StructType], st).fields)
+              val newDataType = StructType(copyMetadata(fieldFrom.dataType.asInstanceOf[StructType], st, overwrite, sourcePreferred, copyDataType).fields)
               fieldTo.copy(dataType = newDataType, metadata = newMetadata)
             case at: ArrayType =>
               val newType = processArray(at, fieldFrom, fieldTo)
               fieldTo.copy(dataType = newType, metadata = newMetadata)
             case _ =>
-              fieldTo.copy(metadata = newMetadata)
+              if (copyDataType && isPrimitive(fieldFrom.dataType)) {
+                fieldTo.copy(dataType = fieldFrom.dataType, metadata = newMetadata)
+              } else {
+                fieldTo.copy(metadata = newMetadata)
+              }
           }
         case None =>
           fieldTo

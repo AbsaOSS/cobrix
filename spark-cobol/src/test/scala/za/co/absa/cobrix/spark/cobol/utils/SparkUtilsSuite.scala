@@ -39,6 +39,24 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
       """[{"id":4,"legs":[]}]""" ::
       """[{"id":5,"legs":null}]""" :: Nil
 
+  test("IsPrimitive should work as expected") {
+    assert(SparkUtils.isPrimitive(BooleanType))
+    assert(SparkUtils.isPrimitive(ByteType))
+    assert(SparkUtils.isPrimitive(ShortType))
+    assert(SparkUtils.isPrimitive(IntegerType))
+    assert(SparkUtils.isPrimitive(LongType))
+    assert(SparkUtils.isPrimitive(FloatType))
+    assert(SparkUtils.isPrimitive(DoubleType))
+    assert(SparkUtils.isPrimitive(DecimalType(10, 2)))
+    assert(SparkUtils.isPrimitive(StringType))
+    assert(SparkUtils.isPrimitive(BinaryType))
+    assert(SparkUtils.isPrimitive(DateType))
+    assert(SparkUtils.isPrimitive(TimestampType))
+    assert(!SparkUtils.isPrimitive(ArrayType(StringType)))
+    assert(!SparkUtils.isPrimitive(StructType(Seq(StructField("a", StringType)))))
+    assert(!SparkUtils.isPrimitive(MapType(StringType, StringType)))
+  }
+
   test("Test schema flattening of multiple nested structure") {
     val expectedOrigSchema =
       """root
@@ -624,6 +642,85 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
 
     assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
     assert(newDf.schema.fields.head.metadata.getLong("maxLength") == 120)
+  }
+
+  test("copyMetadata should copy primitive data types when it is enabled") {
+    val schemaFrom = StructType(
+      Seq(
+        StructField("int_field1", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test1").build()),
+        StructField("string_field", StringType, nullable = true, metadata = new MetadataBuilder().putLong("maxLength", 120).build()),
+        StructField("int_field2", StructType(
+          Seq(
+            StructField("int_field20", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test20").build())
+          )
+        ), nullable = true),
+        StructField("struct_field2", StructType(
+          Seq(
+            StructField("int_field3", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test3").build())
+          )
+        ), nullable = true),
+        StructField("array_string", ArrayType(StringType), nullable = true, metadata = new MetadataBuilder().putLong("maxLength", 60).build()),
+        StructField("array_struct", ArrayType(StructType(
+          Seq(
+            StructField("int_field4", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test4").build())
+          )
+        )), nullable = true)
+      )
+    )
+
+    val schemaTo = StructType(
+      Seq(
+        StructField("int_field1", BooleanType, nullable = true),
+        StructField("string_field", IntegerType, nullable = true),
+        StructField("int_field2", IntegerType, nullable = true),
+        StructField("struct_field2", StructType(
+          Seq(
+            StructField("int_field3", BooleanType, nullable = true)
+          )
+        ), nullable = true),
+        StructField("array_string", ArrayType(IntegerType), nullable = true),
+        StructField("array_struct", ArrayType(StructType(
+          Seq(
+            StructField("int_field4", StringType, nullable = true)
+          )
+        )), nullable = true)
+      )
+    )
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(schemaFrom, schemaTo, copyDataType = true)
+    val fields = schemaWithMetadata.fields
+
+    // Ensure data types are copied
+    // Expected schema:
+    // root
+    // |-- int_field1: boolean (nullable = true)
+    // |-- string_field: integer (nullable = true)
+    // |-- int_field2: integer (nullable = true)
+    // |-- struct_field2: struct (nullable = true)
+    // |    |-- int_field3: boolean (nullable = true)
+    // |-- array_string: array (nullable = true)
+    // |    |-- element: integer (containsNull = true)
+    // |-- array_struct: array (nullable = true)
+    // |    |-- element: struct (containsNull = true)
+    // |    |    |-- int_field4: string (nullable = true)
+    assert(fields.head.dataType == IntegerType)
+    assert(fields(1).dataType == StringType)
+    assert(fields(2).dataType == IntegerType)
+    assert(fields(3).dataType.isInstanceOf[StructType])
+    assert(fields(4).dataType.isInstanceOf[ArrayType])
+    assert(fields(5).dataType.isInstanceOf[ArrayType])
+
+    assert(fields(3).dataType.asInstanceOf[StructType].fields.head.dataType == IntegerType)
+    assert(fields(4).dataType.asInstanceOf[ArrayType].elementType == StringType)
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.isInstanceOf[StructType])
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.dataType == IntegerType)
+
+    // Ensure metadata is copied
+    assert(fields.head.metadata.getString("comment") == "Test1")
+    assert(fields(1).metadata.getLong("maxLength") == 120)
+    assert(fields(3).dataType.asInstanceOf[StructType].fields.head.metadata.getString("comment") == "Test3")
+    assert(fields(4).metadata.getLong("maxLength") == 60)
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.getString("comment") == "Test4")
   }
 
   test("copyMetadata should retain metadata on conflicts by default") {
