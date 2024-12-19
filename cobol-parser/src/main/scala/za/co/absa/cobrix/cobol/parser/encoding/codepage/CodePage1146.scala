@@ -17,19 +17,19 @@
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
 /**
-  * EBCDIC code page 1145 is used to represent characters of Spain and Latin America
+  * EBCDIC code page 1146 is used to represent characters of the United Kingdom
   * with € at the position of the international currency symbol ¤.
   */
-class CodePage1145 extends SingleByteCodePage(CodePage1145.ebcdicToAsciiMapping) {
-  override def codePageShortName: String = "cp1145"
+class CodePage1146 extends SingleByteCodePage(CodePage1146.ebcdicToAsciiMapping) {
+  override def codePageShortName: String = "cp1146"
 }
 
-object CodePage1145 {
+object CodePage1146 {
   val ebcdicToAsciiMapping: Array[Char] = {
     import EbcdicNonPrintable._
 
-    /* This is the EBCDIC Code Page 1145 which is the euro currency update of code page CCSID 284
-       from https://en.wikibooks.org/wiki/Character_Encodings/Code_Tables/EBCDIC/EBCDIC_284 */
+    /* This is the EBCDIC Code Page 1146 which is the euro currency update of code page CCSID 285
+       from https://en.wikibooks.org/wiki/Character_Encodings/Code_Tables/EBCDIC/EBCDIC_285 */
     val ebcdic2ascii: Array[Char] = {
       // Non-printable characters map used: http://www.pacsys.com/asciitab.htm
       Array[Char](
@@ -37,14 +37,14 @@ object CodePage1145 {
         c10, c11, c12, c13, spc, nel, c08, spc, c18, c19, spc, spc, c1c, c1d, c1e, c1f, //  16 -  31
         spc, spc, spc, spc, spc, clf, c17, c1b, spc, spc, spc, spc, spc, c05, c06, c07, //  32 -  47
         spc, spc, c16, spc, spc, spc, spc, c04, spc, spc, spc, spc, c14, c15, spc, c1a, //  48 -  63
-        ' ', rsp, 'â', 'ä', 'à', 'á', 'ã', 'å', 'ç', '¦', '[', '.', '<', '(', '+', '|', //  64 -  79
-        '&', 'é', 'ê', 'ë', 'è', 'í', 'î', 'ï', 'ì', 'ß', ']', '$', '*', ')', ';', '¬', //  80 -  95
-        '-', '/', 'Â', 'Ä', 'À', 'Á', 'Ã', 'Å', 'Ç', '#', 'ñ', ',', '%', '_', '>', '?', //  96 - 111
-        'ø', 'É', 'Ê', 'Ë', 'È', 'Í', 'Î', 'Ï', 'Ì', '`', ':', 'Ñ', '@', qts, '=', qtd, // 112 - 127
+        ' ', rsp, 'â', 'ä', 'à', 'á', 'ã', 'å', 'ç', 'ñ', '$', '.', '<', '(', '+', '|', //  64 -  79
+        '&', 'é', 'ê', 'ë', 'è', 'í', 'î', 'ï', 'ì', 'ß', '!', '£', '*', ')', ';', '¬', //  80 -  95
+        '-', '/', 'Â', 'Ä', 'À', 'Á', 'Ã', 'Å', 'Ç', 'Ñ', '¦', ',', '%', '_', '>', '?', //  96 - 111
+        'ø', 'É', 'Ê', 'Ë', 'È', 'Í', 'Î', 'Ï', 'Ì', '`', ':', '#', '@', qts, '=', qtd, // 112 - 127
         'Ø', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', '«', '»', 'ð', 'ý', 'þ', '±', // 128 - 143
         '°', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 'ª', 'º', 'æ', '¸', 'Æ', '€', // 144 - 159
-        'µ', '¨', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '¡', '¿', 'Ð', 'Ý', 'Þ', '®', // 160 - 175
-        '¢', '£', '¥', '·', '©', '§', '¶', '¼', '½', '¾', '^', '!', '¯', '~', '´', '×', // 176 - 191
+        'µ', '¯', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '¡', '¿', 'Ð', 'Ý', 'Þ', '®', // 160 - 175
+        '¢', '[', '¥', '·', '©', '§', '¶', '¼', '½', '¾', '^', ']', '~', '¨', '´', '×', // 176 - 191
         '{', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', shy, 'ô', 'ö', 'ò', 'ó', 'õ', // 192 - 207
         '}', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', '¹', 'û', 'ü', 'ù', 'ú', 'ÿ', // 208 - 223
         bsh, '÷', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '²', 'Ô', 'Ö', 'Ò', 'Ó', 'Õ', // 224 - 239
