@@ -51,7 +51,7 @@ object SparkUtils extends Logging {
   /**
     * Returns true if Spark Data type is a primitive data type.
     *
-    * @param dataType Stark data type
+    * @param dataType Spark data type
     * @return true if the data type is primitive.
     */
   def isPrimitive(dataType: DataType): Boolean = {
