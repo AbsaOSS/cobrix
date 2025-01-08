@@ -31,7 +31,7 @@
 		<scala.compat.version>2.12</scala.compat.version>
 		<scalatest.version>3.2.14</scalatest.version>
 		<spark.version>3.5.3</spark.version>
-		<spark.cobol.version>2.7.10</spark.cobol.version>
+		<spark.cobol.version>2.8.0</spark.cobol.version>
 	</properties>
 	
 	<dependencies>
