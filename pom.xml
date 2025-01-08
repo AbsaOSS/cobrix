@@ -117,8 +117,7 @@
         <jackson.version>2.13.1</jackson.version>
         <mockito.version>4.11.0</mockito.version>
         <scala_logging.version>3.7.2</scala_logging.version>
-        <scodec_bits.version>1.1.4</scodec_bits.version>
-        <scodec_core.version>1.10.3</scodec_core.version>
+        <scodec_core.version>1.11.10</scodec_core.version>
         <slf4j.version>1.7.25</slf4j.version>
     </properties>
 
@@ -229,13 +228,9 @@
             </dependency>
             <dependency>
                 <groupId>org.scodec</groupId>
-                <artifactId>scodec-bits_${scala.compat.version}</artifactId>
-                <version>${scodec_bits.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.scodec</groupId>
                 <artifactId>scodec-core_${scala.compat.version}</artifactId>
                 <version>${scodec_core.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- Test scope dependencies -->

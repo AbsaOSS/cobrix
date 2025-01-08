@@ -151,10 +151,6 @@ lazy val assemblySettings = Seq(
   assembly / assemblyShadeRules:= Seq(
     // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
     ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.cobol.parser.shaded.org.antlr.@1").inAll,
-    // Shading all 3rd party libraries used by 'spark-cobol' in order to avoid binary conflicts.
-    ShadeRule.rename("macrocompat.**" -> "za.co.absa.cobrix.spark.cobol.shaded.macrocompat.@1").inAll,
-    ShadeRule.rename("scodec.**" -> "za.co.absa.cobrix.spark.cobol.shaded.scodec.@1").inAll,
-    ShadeRule.rename("shapeless.**" -> "za.co.absa.cobrix.spark.cobol.shaded.shapeless.@1").inAll,
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),

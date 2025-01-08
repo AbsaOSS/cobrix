@@ -233,15 +233,14 @@ of the dependencies.
 
 #### Getting all Cobrix dependencies
 
-Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself and on `scodec` libraries
-to decode various binary formats.
+Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.7.10.jar
-* cobol-parser_2.12-2.7.10.jar
-* scodec-core_2.12-1.10.3.jar
-* scodec-bits_2.12-1.1.4.jar
+* spark-cobol_2.12-2.8.0.jar
+* cobol-parser_2.12-2.8.0.jar
+
+> Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
 > Versions older than 2.7.1 also need `antlr4-runtime-4.8.jar`.
 
@@ -249,7 +248,7 @@ After that you can specify these jars in `spark-shell` command line. Here is an 
 ```
 $ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.7.10
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.7.10.jar,cobol-parser_2.12-2.7.10.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.8.0.jar,cobol-parser_2.12-2.8.0.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).

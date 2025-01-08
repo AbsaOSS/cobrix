@@ -16,23 +16,72 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import scodec.Codec
-import scodec.bits.BitVector
-
+import java.nio.{ByteBuffer, ByteOrder}
 import scala.util.control.NonFatal
 
 object FloatingPointDecoders {
-  private val floatB: Codec[Float] = scodec.codecs.float
-  private val floatL: Codec[Float] = scodec.codecs.floatL
-  private val doubleB: Codec[Double] = scodec.codecs.double
-  private val doubleL: Codec[Double] = scodec.codecs.doubleL
-
   private val BIT_COUNT_MAGIC = 0x000055AFL
+
+  /**
+    * A decoder for IEEE-754 32 bit big endian floats
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed float
+    */
+  def decodeFloatB(bytes: Array[Byte]): Float = {
+    require(bytes.length == 4, "Input must be exactly 4 bytes for a 32-bit float")
+
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    byteBuffer.order(ByteOrder.BIG_ENDIAN)
+    byteBuffer.getFloat
+  }
+
+  /**
+    * A decoder for IEEE-754 32 bit little endian floats
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed float
+    */
+  def decodeFloatL(bytes: Array[Byte]): Float = {
+    require(bytes.length == 4, "Input must be exactly 4 bytes for a 32-bit float")
+
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+    byteBuffer.getFloat
+  }
+
+  /**
+    * A decoder for IEEE-754 64 bit big endian floats
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed float
+    */
+  def decodeDoubleB(bytes: Array[Byte]): Double = {
+    require(bytes.length == 8, "Input must be exactly 8 bytes for a 64-bit float")
+
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    byteBuffer.order(ByteOrder.BIG_ENDIAN)
+    byteBuffer.getDouble
+  }
+
+  /**
+    * A decoder for IEEE-754 64 bit little endian floats
+    *
+    * @param bytes A byte array that represents the binary data
+    * @return A boxed float
+    */
+  def decodeDoubleL(bytes: Array[Byte]): Double = {
+    require(bytes.length == 8, "Input must be exactly 8 bytes for a 64-bit float")
+
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    byteBuffer.order(ByteOrder.LITTLE_ENDIAN)
+    byteBuffer.getDouble
+  }
 
   /** Decode IEEE754 single precision big endian encoded number. */
   def decodeIeee754SingleBigEndian(bytes: Array[Byte]): java.lang.Float = {
     try {
-      floatB.decode(BitVector(bytes)).require.value
+      decodeFloatB(bytes)
     } catch {
       case NonFatal(_) => null
     }
@@ -41,7 +90,7 @@ object FloatingPointDecoders {
   /** Decode IEEE754 double precision big endian encoded number. */
   def decodeIeee754DoubleBigEndian(bytes: Array[Byte]): java.lang.Double = {
     try {
-      doubleB.decode(BitVector(bytes)).require.value
+      decodeDoubleB(bytes)
     } catch {
       case NonFatal(_) => null
     }
@@ -50,7 +99,7 @@ object FloatingPointDecoders {
   /** Decode IEEE754 single precision little endian encoded number. */
   def decodeIeee754SingleLittleEndian(bytes: Array[Byte]): java.lang.Float = {
     try {
-      floatL.decode(BitVector(bytes)).require.value
+      decodeFloatL(bytes)
     } catch {
       case NonFatal(_) => null
     }
@@ -59,7 +108,7 @@ object FloatingPointDecoders {
   /** Decode IEEE754 double precision little endian encoded number. */
   def decodeIeee754DoubleLittleEndian(bytes: Array[Byte]): java.lang.Double = {
     try {
-      doubleL.decode(BitVector(bytes)).require.value
+      decodeDoubleL(bytes)
     } catch {
       case NonFatal(_) => null
     }
