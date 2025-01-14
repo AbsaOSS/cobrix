@@ -1644,6 +1644,7 @@ The output looks like this:
 | .option("ebcdic_code_page", "cp1141") | EBCDIC 1141 | Same as code page 273 with € at the position of the international currency symbol ¤.                        |
 | .option("ebcdic_code_page", "cp1142") | EBCDIC 1142 | Same as code page 277 with € at the position of the international currency symbol ¤.                        |
 | .option("ebcdic_code_page", "cp1143") | EBCDIC 1143 | Same as code page 278 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1144") | EBCDIC 1144 | Same as code page 280 with € at the position of the international currency symbol ¤.                        |
 | .option("ebcdic_code_page", "cp1145") | EBCDIC 1145 | Same as code page 284 with € at the position of the international currency symbol ¤.                        |
 | .option("ebcdic_code_page", "cp1148") | EBCDIC 1148 | Same as code page 500 with € at the position of the international currency symbol ¤.                        |
 | .option("ebcdic_code_page", "cp1364") | EBCDIC 1364 | Double-byte code page CCSID-1364, Korean.                                                                   |
