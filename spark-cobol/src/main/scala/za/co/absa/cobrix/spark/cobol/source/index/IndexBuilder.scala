@@ -56,7 +56,6 @@ private[source] object IndexBuilder extends Logging {
         buildIndexForVarLenReader(filesList, reader, sqlContext)
       case _                                                                                                                       =>
         buildIndexForFullFiles(filesList, sqlContext)
-      case _                                                                                                                       => null
     }
   }
 
