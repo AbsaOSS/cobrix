@@ -167,6 +167,11 @@ class CodePageSingleByteSpec extends AnyFunSuite {
     assert(codePage.codePageShortName == "cp1148")
   }
 
+  test("Ensure codepage 'cp1160' gives the associated CodePage") {
+    val codePage = CodePage.getCodePageByName("cp1160")
+    assert(codePage.codePageShortName == "cp1160")
+  }
+
   test("Ensure codepage 'cp1364' gives the associated CodePage") {
     val codePage = CodePage.getCodePageByName("cp1364")
     assert(codePage.codePageShortName == "cp1364")
