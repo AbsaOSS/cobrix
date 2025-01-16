@@ -17,18 +17,19 @@
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
 /**
-  * EBCDIC code page with support for Thai script used in IBM mainframes
+  * EBCDIC code page 1160 with support for Thai script used in IBM mainframes which is same as 838
+  * with € at the position 0xFE.
   */
-class CodePage838 extends SingleByteCodePage(CodePage838.ebcdicToAsciiMapping) {
-  override def codePageShortName: String = "cp838"
+class CodePage1160 extends SingleByteCodePage(CodePage1160.ebcdicToAsciiMapping) {
+  override def codePageShortName: String = "cp1160"
 }
 
-object CodePage838 {
+object CodePage1160 {
   val ebcdicToAsciiMapping: Array[Char] = {
     import EbcdicNonPrintable._
 
-    /* This is the EBCDIC Code Page 838 to ASCII conversion table with non-printable characters mapping
-       from https://en.everybodywiki.com/EBCDIC_838 */
+    /* This is the EBCDIC Code Page 1160 to ASCII conversion table
+       from https://en.wikibooks.org/wiki/Character_Encodings/Code_Tables/EBCDIC/EBCDIC_838 */
     val ebcdic2ascii: Array[Char] = {
       val c01 = '\u0E48'
       val c02 = '\u0E4E'
@@ -46,7 +47,6 @@ object CodePage838 {
       val c14 = '\u0E49'
       val c15 = '\u0E4A'
       val c16 = '\u0E4B'
-      val c17 = '\u0E4C'
       val c18 = '\u0E4D'
 
       Array[Char](
@@ -65,7 +65,7 @@ object CodePage838 {
         '{', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', c05, c06, c07, c08, c09, c10, // 192 - 207
         '}', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', c11, 'เ', 'แ', 'โ', 'ใ', 'ไ', // 208 - 223
         bsh, c15, 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'ๅ', 'ๆ', c12, c13, c14, c15, // 224 - 239
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', c16, c17, c18, c16, c17, spc) // 240 - 255
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', c16, c17, c18, c16, '€', spc) // 240 - 255
     }
     ebcdic2ascii
   }
