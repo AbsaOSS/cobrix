@@ -460,10 +460,14 @@ class BinaryDecoderSpec extends AnyFunSuite {
     val decoderUnsignedShort = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 3, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderSignedInt = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderUnsignedIntBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntBeAsLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 9, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderUnsignedIntLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntLeAsLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 9, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderSignedLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderUnsignedLongBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongBeAsBig = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 18, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
     val decoderUnsignedLongLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongLeAsBig = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 18, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
 
     val num1 = decoderSignedByte(Array(0x10).map(_.toByte))
     assert(num1.isInstanceOf[Integer])
@@ -501,9 +505,17 @@ class BinaryDecoderSpec extends AnyFunSuite {
     assert(num9.isInstanceOf[Integer])
     assert(num9.asInstanceOf[Integer] == 9437184)
 
+    val num9a = decoderUnsignedIntBeAsLong(Array(0x00, 0x90, 0x00, 0x00).map(_.toByte))
+    assert(num9a.isInstanceOf[java.lang.Long])
+    assert(num9a.asInstanceOf[java.lang.Long] == 9437184L)
+
     val num10 = decoderUnsignedIntLe(Array(0x00, 0x00, 0x90, 0x00).map(_.toByte))
     assert(num10.isInstanceOf[Integer])
     assert(num10.asInstanceOf[Integer] == 9437184)
+
+    val num10a = decoderUnsignedIntLeAsLong(Array(0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num10a.isInstanceOf[java.lang.Long])
+    assert(num10a.asInstanceOf[java.lang.Long] == 9437184L)
 
     val num11 = decoderSignedLong(Array(0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
     assert(num11.isInstanceOf[Long])
@@ -517,9 +529,17 @@ class BinaryDecoderSpec extends AnyFunSuite {
     assert(num13.isInstanceOf[Long])
     assert(num13.asInstanceOf[Long] == 40532396646334464L)
 
+    val num13a = decoderUnsignedLongBeAsBig(Array(0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num13a.isInstanceOf[BigDecimal])
+    assert(num13a.asInstanceOf[BigDecimal] == BigDecimal("40532396646334464"))
+
     val num14 = decoderUnsignedLongLe(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00).map(_.toByte))
     assert(num14.isInstanceOf[Long])
     assert(num14.asInstanceOf[Long] == 40532396646334464L)
+
+    val num14a = decoderUnsignedLongLeAsBig(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num14a.isInstanceOf[BigDecimal])
+    assert(num14a.asInstanceOf[BigDecimal] == BigDecimal("40532396646334464"))
   }
 
   test("Test Binary strict integral precision numbers") {

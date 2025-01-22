@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.decoders
 import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.common.Constants
+import za.co.absa.cobrix.cobol.parser.common.Constants.{maxIntegerPrecision, maxLongPrecision}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
@@ -255,26 +256,32 @@ object DecoderSelector {
     val isSigned = signPosition.nonEmpty
 
     val numOfBytes = BinaryUtils.getBytesCount(compact, precision, isSigned, isExplicitDecimalPt = false, isSignSeparate = false)
+    val isMaxUnsignedPrecision = precision == maxIntegerPrecision || precision == maxLongPrecision
+
     val decoder = if (strictIntegralPrecision) {
       (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
     } else {
-      (isSigned, isBigEndian, numOfBytes) match {
-        case (true, true, 1) => BinaryNumberDecoders.decodeSignedByte _
-        case (true, true, 2) => BinaryNumberDecoders.decodeBinarySignedShortBigEndian _
-        case (true, true, 4) => BinaryNumberDecoders.decodeBinarySignedIntBigEndian _
-        case (true, true, 8) => BinaryNumberDecoders.decodeBinarySignedLongBigEndian _
-        case (true, false, 1) => BinaryNumberDecoders.decodeSignedByte _
-        case (true, false, 2) => BinaryNumberDecoders.decodeBinarySignedShortLittleEndian _
-        case (true, false, 4) => BinaryNumberDecoders.decodeBinarySignedIntLittleEndian _
-        case (true, false, 8) => BinaryNumberDecoders.decodeBinarySignedLongLittleEndian _
-        case (false, true, 1) => BinaryNumberDecoders.decodeUnsignedByte _
-        case (false, true, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortBigEndian _
-        case (false, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndian _
-        case (false, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndian _
-        case (false, false, 1) => BinaryNumberDecoders.decodeUnsignedByte _
-        case (false, false, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortLittleEndian _
-        case (false, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndian _
-        case (false, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndian _
+      (isSigned, isBigEndian, isMaxUnsignedPrecision, numOfBytes) match {
+        case (true, true, _, 1) => BinaryNumberDecoders.decodeSignedByte _
+        case (true, true, _, 2) => BinaryNumberDecoders.decodeBinarySignedShortBigEndian _
+        case (true, true, _, 4) => BinaryNumberDecoders.decodeBinarySignedIntBigEndian _
+        case (true, true, _, 8) => BinaryNumberDecoders.decodeBinarySignedLongBigEndian _
+        case (true, false, _, 1) => BinaryNumberDecoders.decodeSignedByte _
+        case (true, false, _, 2) => BinaryNumberDecoders.decodeBinarySignedShortLittleEndian _
+        case (true, false, _, 4) => BinaryNumberDecoders.decodeBinarySignedIntLittleEndian _
+        case (true, false, _, 8) => BinaryNumberDecoders.decodeBinarySignedLongLittleEndian _
+        case (false, true, _, 1) => BinaryNumberDecoders.decodeUnsignedByte _
+        case (false, true, _, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortBigEndian _
+        case (false, true, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndian _
+        case (false, true, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntBigEndianAsLong _
+        case (false, true, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndian _
+        case (false, true, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongBigEndianAsDecimal _
+        case (false, false, _, 1) => BinaryNumberDecoders.decodeUnsignedByte _
+        case (false, false, _, 2) => BinaryNumberDecoders.decodeBinaryUnsignedShortLittleEndian _
+        case (false, false, false, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndian _
+        case (false, false, true, 4) => BinaryNumberDecoders.decodeBinaryUnsignedIntLittleEndianAsLong _
+        case (false, false, false, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndian _
+        case (false, false, true, 8) => BinaryNumberDecoders.decodeBinaryUnsignedLongLittleEndianAsDecimal _
         case _ =>
           (a: Array[Byte]) => BinaryNumberDecoders.decodeBinaryAribtraryPrecision(a, isBigEndian, isSigned)
       }

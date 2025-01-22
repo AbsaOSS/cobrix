@@ -20,7 +20,7 @@ import org.apache.spark.sql.types._
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP4, COMP5, COMP9, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
@@ -66,21 +66,8 @@ class CobolSchema(copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()
 
-  @throws(classOf[IllegalStateException])
-  private[this] lazy val sparkFlatSchema = {
-    val arraySchema = copybook.ast.children.toArray
-    val records = arraySchema.flatMap(record => {
-      parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
-    })
-    StructType(records)
-  }
-
   def getSparkSchema: StructType = {
     sparkSchema
-  }
-
-  def getSparkFlatSchema: StructType = {
-    sparkFlatSchema
   }
 
   @throws(classOf[IllegalStateException])
@@ -200,12 +187,16 @@ class CobolSchema(copybook: Copybook,
       case dt: Integral  if strictIntegralPrecision  =>
         DecimalType(precision = dt.precision, scale = 0)
       case dt: Integral  =>
+        val isBinary = dt.compact.exists(c => c == COMP4() || c == COMP5() || c == COMP9())
         if (dt.precision > Constants.maxLongPrecision) {
           DecimalType(precision = dt.precision, scale = 0)
+        } else if (dt.precision == Constants.maxLongPrecision && isBinary && dt.signPosition.isEmpty) {  // promoting unsigned int to long to be able to fit any value
+          DecimalType(precision = dt.precision + 2, scale = 0)
         } else if (dt.precision > Constants.maxIntegerPrecision) {
           LongType
-        }
-        else {
+        } else if (dt.precision == Constants.maxIntegerPrecision && isBinary && dt.signPosition.isEmpty) { // promoting unsigned long to decimal(20) to be able to fit any value
+          LongType
+        } else {
           IntegerType
         }
       case _               => throw new IllegalStateException("Unknown AST object")
@@ -289,53 +280,6 @@ class CobolSchema(copybook: Copybook,
       })
     })
     childSegments
-  }
-
-  @throws(classOf[IllegalStateException])
-  private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
-    val fields = new ArrayBuffer[StructField]()
-    for (field <- group.children if !field.isFiller) {
-      field match {
-        case group: Group =>
-          if (group.isArray) {
-            for (i <- Range(1, group.arrayMaxSize + 1)) {
-              val path = s"$structPath${group.name}_${i}_"
-              fields ++= parseGroupFlat(group, path)
-            }
-          } else {
-            val path = s"$structPath${group.name}_"
-            fields ++= parseGroupFlat(group, path)
-          }
-        case s: Primitive =>
-          val dataType: DataType = s.dataType match {
-            case d: Decimal      =>
-              DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
-            case a: AlphaNumeric =>
-              a.enc match {
-                case Some(RAW) => BinaryType
-                case _         => StringType
-              }
-            case dt: Integral    =>
-              if (dt.precision > Constants.maxIntegerPrecision) {
-                LongType
-              }
-              else {
-                IntegerType
-              }
-            case _               => throw new IllegalStateException("Unknown AST object")
-          }
-          val path = s"$structPath" //${group.name}_"
-          if (s.isArray) {
-            for (i <- Range(1, s.arrayMaxSize + 1)) {
-              fields += StructField(s"$path{s.name}_$i", ArrayType(dataType), nullable = true)
-            }
-          } else {
-            fields += StructField(s"$path${s.name}", dataType, nullable = true)
-          }
-      }
-    }
-
-    fields
   }
 }
 
