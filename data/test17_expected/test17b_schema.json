@@ -61,7 +61,7 @@
         }
       }, {
         "name" : "TAXPAYER",
-        "type" : "integer",
+        "type" : "long",
         "nullable" : true,
         "metadata" : { }
       } ]

@@ -712,7 +712,7 @@
     }
   }, {
     "name" : "NUM_BIN_INT07",
-    "type" : "integer",
+    "type" : "long",
     "nullable" : true,
     "metadata" : { }
   }, {
@@ -760,7 +760,7 @@
     }
   }, {
     "name" : "NUM_BIN_INT11",
-    "type" : "long",
+    "type" : "decimal(20,0)",
     "nullable" : true,
     "metadata" : { }
   }, {
