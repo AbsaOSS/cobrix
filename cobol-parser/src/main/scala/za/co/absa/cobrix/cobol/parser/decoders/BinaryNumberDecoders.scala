@@ -86,8 +86,7 @@ object BinaryNumberDecoders {
     if (bytes.length < 4) {
       return null
     }
-    val v: Long = ((bytes(0) & 255L) << 24L) | ((bytes(1) & 255L) << 16L) | ((bytes(2) & 255L) << 8L) | (bytes(3) & 255L)
-    if (v<0) null else v
+    ((bytes(0) & 255L) << 24L) | ((bytes(1) & 255L) << 16L) | ((bytes(2) & 255L) << 8L) | (bytes(3) & 255L)
   }
 
   def decodeBinaryUnsignedIntLittleEndian(bytes: Array[Byte]): Integer = {
@@ -102,8 +101,7 @@ object BinaryNumberDecoders {
     if (bytes.length < 4) {
       return null
     }
-    val v: Long = ((bytes(3) & 255L) << 24L) | ((bytes(2) & 255L) << 16L) | ((bytes(1) & 255L) << 8L) | (bytes(0) & 255L)
-    if (v<0) null else v
+    ((bytes(3) & 255L) << 24L) | ((bytes(2) & 255L) << 16L) | ((bytes(1) & 255L) << 8L) | (bytes(0) & 255L)
   }
 
   def decodeBinarySignedLongBigEndian(bytes: Array[Byte]): java.lang.Long = {
