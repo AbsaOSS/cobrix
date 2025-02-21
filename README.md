@@ -485,6 +485,13 @@ If the record field contains a string that can be mapped to a record size, you c
 .option("record_length_map", """{"SEG1":100,"SEG2":200}""")  
 ```
 
+You can specify the default record size by defining the key "_":
+```
+.option("record_format", "F")
+.option("record_length_field", "FIELD_STR")
+.option("record_length_map", """{"SEG1":100,"SEG2":200,"_":100}""")  
+```
+
 ### Use cases for various variable length formats
 
 In order to understand the file format it is often sufficient to look at the first 4 bytes of the file (un case of RDW only files),
