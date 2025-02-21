@@ -32,6 +32,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
 
   final private val lengthField = recordLengthField.map(_.field)
   final private val lengthMap = recordLengthField.map(_.valueMap).getOrElse(Map.empty)
+  final private val defaultRecordLength = lengthMap.get("_")
   final private val isLengthMapEmpty = lengthMap.isEmpty
 
   type RawRecord = (String, Array[Byte])
@@ -131,8 +132,8 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
         case i: Int    => getRecordLengthFromMapping(i.toString)
         case l: Long   => getRecordLengthFromMapping(l.toString)
         case s: String => getRecordLengthFromMapping(s)
-        case null      => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
-        case _         =>    throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
+        case null      => defaultRecordLength.getOrElse(throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)})."))
+        case _         => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
       }
     }
     length + recordLengthAdjustment
@@ -141,7 +142,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
   final private def getRecordLengthFromMapping(v: String): Int = {
     lengthMap.get(v) match {
       case Some(len) => len
-      case None => throw new IllegalStateException(s"Record length value '$v' is not mapped to a record length.")
+      case None => defaultRecordLength.getOrElse(throw new IllegalStateException(s"Record length value '$v' is not mapped to a record length."))
     }
   }
 
