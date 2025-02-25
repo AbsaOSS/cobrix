@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.8.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.8.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.8.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.8.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.8.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.8.2</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.8.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.8.2
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.2
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.8.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.8.2
 ```
 
 ## Usage
@@ -237,8 +237,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.8.1.jar
-* cobol-parser_2.12-2.8.1.jar
+* spark-cobol_2.12-2.8.2.jar
+* cobol-parser_2.12-2.8.2.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -246,9 +246,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.1
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.8.1.jar,cobol-parser_2.12-2.8.1.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.8.2.jar,cobol-parser_2.12-2.8.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -319,7 +319,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.8.2-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.8.3-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1791,6 +1791,15 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.8.2 released 25 February 2025.
+   - [#744](https://github.com/AbsaOSS/cobrix/issues/744) Added the ability to specify default record length for the record length field mapping:
+     The default record length can be specified by assigning a value to the underscore key `"_"`. For example:
+     ```scala
+     .option("record_format", "F")
+     .option("record_length_field", "RECORD_TYPE")
+     .option("record_length_map", """{"A":100,"B":200,"_":500}""")
+     ```
+
 - #### 2.8.1 released 27 January 2025.
    - [#730](https://github.com/AbsaOSS/cobrix/issues/730) Added more code pages with euro character in https://github.com/AbsaOSS/cobrix/pull/741.
    - [#740](https://github.com/AbsaOSS/cobrix/issues/740) Extended binary type support to make sure unsigned binary fields can fit Spark data types in https://github.com/AbsaOSS/cobrix/pull/742.
