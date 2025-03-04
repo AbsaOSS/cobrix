@@ -108,9 +108,9 @@
         <maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
 
         <!-- Frameworks and libraries -->
-        <scala.version>2.12.17</scala.version>
+        <scala.version>2.12.20</scala.version>
         <scala.compat.version>2.12</scala.compat.version>
-        <spark.version>3.2.3</spark.version>
+        <spark.version>3.4.4</spark.version>
         <scalatest.version>3.2.14</scalatest.version>
         <specs.version>2.4.16</specs.version>
         <guava.version>15.0</guava.version>

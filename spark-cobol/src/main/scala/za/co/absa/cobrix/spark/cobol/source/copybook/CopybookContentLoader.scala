@@ -18,7 +18,8 @@ package za.co.absa.cobrix.spark.cobol.source.copybook
 
 import org.apache.hadoop.conf.Configuration
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, HDFSUtils}
+import za.co.absa.cobrix.spark.cobol.utils.FsType.LocalFs
+import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType, HDFSUtils, ResourceUtils}
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
@@ -33,28 +34,27 @@ object CopybookContentLoader {
     (copyBookContents, copyBookPathFileName) match {
       case (Some(contents), _) => Seq(contents)
       case (None, Some(_)) =>
-        val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(copyBookPathFileName.get)
-        Seq(
-          if (isLocalFS) {
-            loadCopybookFromLocalFS(copyBookFileName)
-          } else {
-            HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
-          }
-        )
-      case (None, None) => parameters.multiCopybookPath.map(
-        fileName => {
-          val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)
-          if (isLocalFS) {
-            loadCopybookFromLocalFS(copyBookFileName)
-          } else {
-            HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
-          }
-        }
-      )
+        val copybookContent = loadCopybook(copyBookPathFileName.get, hadoopConf)
+        Seq(copybookContent)
+      case (None, None) =>
+        parameters.multiCopybookPath.map(fileName => loadCopybook(fileName, hadoopConf))
+    }
+  }
+
+  private def loadCopybook(pathToCopybook: String, hadoopConf: Configuration): String = {
+    val (fsType, copyBookFileName) = FileNameUtils.getCopyBookFileName(pathToCopybook)
+    fsType match {
+      case FsType.LocalFs  => loadCopybookFromLocalFS(copyBookFileName)
+      case FsType.JarFs    => loadCopybookFromJarResources(copyBookFileName)
+      case FsType.HadoopFs => HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
     }
   }
 
   private def loadCopybookFromLocalFS(copyBookLocalPath: String): String = {
     Files.readAllLines(Paths.get(copyBookLocalPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
+  }
+
+  private def loadCopybookFromJarResources(copyBookJarPath: String): String = {
+    ResourceUtils.readResourceAsString(copyBookJarPath)
   }
 }

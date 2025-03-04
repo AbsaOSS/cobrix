@@ -18,14 +18,20 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 object FileNameUtils {
   private val LOCALFS_PREFIX = "file://"
+  private val JAR_PREFIX = "jar://"
 
-  def getCopyBookFileName(fileNameURI: String):(Boolean, String) = {
+  def getCopyBookFileName(fileNameURI: String): (FsType, String) = {
     val isLocalFS = fileNameURI.toLowerCase.startsWith(LOCALFS_PREFIX)
-    val copyBookFileName = if (isLocalFS)
-      fileNameURI.drop(LOCALFS_PREFIX.length)
+    val isJar = fileNameURI.toLowerCase.startsWith(JAR_PREFIX)
+    if (isLocalFS)
+      (FsType.LocalFs, fileNameURI.drop(LOCALFS_PREFIX.length))
+    else if (isJar) {
+      val fileCandidate = fileNameURI.drop(JAR_PREFIX.length)
+      val filePath = if (fileCandidate.startsWith("/")) fileCandidate else s"/$fileCandidate"
+      (FsType.JarFs, filePath)
+    }
     else
-      fileNameURI
-    (isLocalFS, copyBookFileName)
+      (FsType.HadoopFs, fileNameURI)
   }
 
 }
