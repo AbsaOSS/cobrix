@@ -17,11 +17,12 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import java.nio.file.Paths
-
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+
+import java.io.FileNotFoundException
 
 class Test11NoCopybookErrMsg extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
 
@@ -43,6 +44,32 @@ class Test11NoCopybookErrMsg extends AnyFunSuite with SparkTestBase with BinaryF
         .read
         .format("cobol")
         .option("copybook_contents", copybook)
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      assert(df.count == 1)
+    }
+  }
+
+  test("Test a file loads normally when the copybook is a JAR resource") {
+    withTempBinFile("bin_file2", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook", "jar:///test/copybook.cpy")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tmpFileName)
+
+      assert(df.count == 1)
+    }
+  }
+
+  test("Test a file loads normally when the copybook is a JAR resource short") {
+    withTempBinFile("bin_file2", ".dat", binFileContents) { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook", "jar://test/copybook.cpy")
         .option("schema_retention_policy", "collapse_root")
         .load(tmpFileName)
 
@@ -132,4 +159,15 @@ class Test11NoCopybookErrMsg extends AnyFunSuite with SparkTestBase with BinaryF
     }
   }
 
+  test("Test the error message of the copybook is not in the JAr resource") {
+    val ex = intercept[FileNotFoundException] {
+      spark
+        .read
+        .format("cobol")
+        .option("copybook", "jar://test/copybook_non_existent.cpy")
+        .load("/tmp/doesnt/matter")
+    }
+
+    assert(ex.getMessage == "Copybook not found at the JAR resource path: /test/copybook_non_existent.cpy")
+  }
 }

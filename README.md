@@ -15,28 +15,28 @@ Add mainframe as a source to your data engineering strategy.
 
 Among the motivations for this project, it is possible to highlight:
 
-- Lack of expertise in the Cobol ecosystem, which makes it hard to integrate mainframes into data engineering strategies
+- Lack of expertise in the Cobol ecosystem, which makes it hard to integrate mainframes into data engineering strategies.
 
-- Lack of support from the open-source community to initiatives in this field
+- Lack of support from the open-source community to initiatives in this field.
 
-- The overwhelming majority (if not all) of tools to cope with this domain are proprietary
+- The overwhelming majority (if not all) of tools to cope with this domain are proprietary.
 
-- Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management
+- Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management.
 
-- Mainframe data can only take part in data science activities through very expensive investments
+- Mainframe data can only take part in data science activities through very expensive investments.
 
 
 ## Features
 
-- Supports primitive types (although some are "Cobol compiler specific")
+- Supports primitive types (although some are "Cobol compiler specific").
 
-- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays)
+- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays).
 
-- Supports nested structures and arrays
+- Supports nested structures and arrays.
 
-- Supports HDFS as well as local file systems
+- Supports Hadoop (HDFS, S3, ...) as well as local file system.
 
-- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines
+- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines.
 
 ## Videos
 
@@ -135,18 +135,20 @@ Code coverage will be generated on path:
 {project-root}/cobrix/{module}/target/scala-{scala_version}/jacoco/report/html
 ```
 
-### Reading Cobol binary files from HDFS/local and querying them 
+### Reading Cobol binary files from Hadoop/local and querying them 
 
 1. Create a Spark ```SQLContext```
 
 2. Start a ```sqlContext.read``` operation specifying ```za.co.absa.cobrix.spark.cobol.source``` as the format
 
-3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. By default the copybook
-   is expected to be in HDFS. You can specify that a copybook is located in the local file system by adding `file://` prefix. For example, you
-   can specify a local file like this `.option("copybook", "file:///home/user/data/compybook.cpy")`. Alternatively, instead of providing a path
-   to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
+3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. 
+   - By default the copybook is expected to be in the default Hadoop filesystem (HDFS, S3, etc). 
+   - You can specify that a copybook is located in the local file system by adding `file://` prefix. 
+   - For example, you can specify a local file like this `.option("copybook", "file:///home/user/data/copybook.cpy")`.
+   - Alternatively, instead of providing a path to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
+   - You can store the copybook in the JAR itself at resources section in this case use `jar://` prefix, e.g.: `.option("copybook", "jar:///copybooks/copybook.cpy")`.
 
-4. Inform the path to the HDFS directory containing the files: ```... .load("path_to_directory_containing_the_binary_files")``` 
+4. Inform the path to the Hadoop directory containing the files: ```... .load("s3a://path_to_directory_containing_the_binary_files")``` 
 
 5. Inform the query you would like to run on the Cobol Dataframe
 
@@ -208,7 +210,7 @@ val spark = SparkSession
   .master("local[2]")
   .config("duration", 2)
   .config("copybook", "path_to_the_copybook")
-  .config("path", "path_to_source_directory") // could be both, local or HDFS
+  .config("path", "path_to_source_directory") // could be both, local or Hadoop (s3://, hdfs://, etc)
   .getOrCreate()          
       
 val streamingContext = new StreamingContext(spark.sparkContext, Seconds(3))         
@@ -607,7 +609,7 @@ records parsing.
 
 However effective, this strategy may also suffer from excessive shuffling, since indexes may be sent to executors far from the actual data.
 
-The latter issue is overcome by extracting the preferred locations for each index directly from HDFS, and then passing those locations to
+The latter issue is overcome by extracting the preferred locations for each index directly from HDFS/S3/..., and then passing those locations to
 Spark during the creation of the RDD that distributes the indexes.
 
 When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is
@@ -617,6 +619,8 @@ enabled by default, but can be disabled by the configuration below:
 ```
 
 ### Workload optimization for variable-length records parsing
+
+This feature works only for HDFS, not for any other of Hadoop filesystems.
 
 When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse
 each record, i.e. the nodes where the record resides.

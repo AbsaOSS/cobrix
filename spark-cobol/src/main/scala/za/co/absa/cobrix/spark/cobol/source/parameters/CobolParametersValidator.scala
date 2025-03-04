@@ -18,13 +18,13 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import java.io.FileNotFoundException
 import java.nio.file.{Files, Paths}
-
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
 import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.utils.FileNameUtils
+import za.co.absa.cobrix.spark.cobol.utils.ResourceUtils.getClass
+import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType}
 
 /**
   * This class provides methods for checking the Spark job options after parsed.
@@ -66,8 +66,8 @@ object CobolParametersValidator {
     }
 
     def validatePath(fileName: String): Unit = {
-      val (isLocalFS, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)
-      if (isLocalFS) {
+      val (fsType, copyBookFileName) = FileNameUtils.getCopyBookFileName(fileName)
+      if (fsType == FsType.LocalFs) {
         if (!Files.exists(Paths.get(copyBookFileName))) {
           throw new FileNotFoundException(s"Copybook not found at $copyBookFileName")
         }
@@ -76,6 +76,12 @@ object CobolParametersValidator {
         }
         if (!Files.isReadable(Paths.get(copyBookFileName))) {
           throw new IllegalArgumentException(s"The copybook path '$copyBookFileName' is not readable.")
+        }
+      } else if (fsType == FsType.JarFs) {
+        if (getClass.getResourceAsStream(copyBookFileName) == null) {
+          if (!Files.exists(Paths.get(copyBookFileName))) {
+            throw new FileNotFoundException(s"Copybook not found at the JAR resource path: $copyBookFileName")
+          }
         }
       } else {
         val fs = new Path(fileName).getFileSystem(hadoopConf)
