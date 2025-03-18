@@ -30,20 +30,20 @@ object RecordExtractors {
   /**
     * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
     *
-    * @param ast                    The parsed copybook.
-    * @param data                   The data bits containing the record.
-    * @param offsetBytes            The offset to the beginning of the record (in bits).
-    * @param policy                 A schema retention policy to be applied to the extracted record.
-    * @param variableLengthOccurs   If true, OCCURS DEPENDING ON data size will depend on the number of elements.
-    * @param generateRecordId       If true, a record id field will be added as the first field of the record.
-    * @param generateRecordBytes    If true, a record bytes field will be added at the beginning of each record.
-    * @param segmentLevelIds        Segment ids to put to the extracted record if id generation it turned on.
-    * @param fileId                 A file id to be put to the extractor record if generateRecordId == true.
-    * @param recordId               The record id to be saved to the record id field.
-    * @param activeSegmentRedefine  An active segment redefine (the one that will be parsed).
-    *                               All other segment redefines will be skipped.
-    * @param generateInputFileField if true, a field containing input file name will be generated
-    * @param inputFileName          An input file name to put if its generation is needed
+    * @param ast                     The parsed copybook.
+    * @param data                    The data bits containing the record.
+    * @param offsetBytes             The offset to the beginning of the record (in bits).
+    * @param policy                  A schema retention policy to be applied to the extracted record.
+    * @param variableLengthOccurs    If true, OCCURS DEPENDING ON data size will depend on the number of elements.
+    * @param generateRecordId        If true, a record id field will be added as the first field of the record.
+    * @param generateRecordBytes     If true, a record bytes field will be added at the beginning of each record.
+    * @param segmentLevelIds         Segment ids to put to the extracted record if id generation it turned on.
+    * @param fileId                  A file id to be put to the extractor record if generateRecordId == true.
+    * @param recordId                The record id to be saved to the record id field.
+    * @param activeSegmentRedefine   An active segment redefine (the one that will be parsed).
+    *                                All other segment redefines will be skipped.
+    * @param generateInputFileField  if true, a field containing input file name will be generated
+    * @param inputFileName           An input file name to put if its generation is needed
     * @return An Array[Any] object corresponding to the record schema.
     */
   @throws(classOf[IllegalStateException])
@@ -132,7 +132,7 @@ object RecordExtractors {
               case v: Int => Left(v)
               case v: Number => Left(v.intValue())
               case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
+              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
             }
             dependFields += st.name -> intStringVal
           }
@@ -309,7 +309,7 @@ object RecordExtractors {
               case v: Int => Left(v)
               case v: Number => Left(v.intValue())
               case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral, found ${v.getClass}.")
+              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
             }
             dependFields += st.name -> intStringVal
           }

@@ -16,17 +16,17 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import org.apache.spark.sql.types.{ArrayType, StructType}
+import org.apache.spark.sql.types._
 import org.scalatest.funsuite.AnyFunSuite
-import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
+import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.TestUtils._
 
 import java.nio.charset.StandardCharsets
-import scala.collection.immutable
+import scala.util.Properties
 
-class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixture {
+class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
 
   import spark.implicits._
 
@@ -38,6 +38,24 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
       """[{"id":3,"legs":[{"legid":300,"conditions":[{"checks":[{"checkNums":["6","7","8b","9","0c","1"]}],"amount":300}]}]}]""" ::
       """[{"id":4,"legs":[]}]""" ::
       """[{"id":5,"legs":null}]""" :: Nil
+
+  test("IsPrimitive should work as expected") {
+    assert(SparkUtils.isPrimitive(BooleanType))
+    assert(SparkUtils.isPrimitive(ByteType))
+    assert(SparkUtils.isPrimitive(ShortType))
+    assert(SparkUtils.isPrimitive(IntegerType))
+    assert(SparkUtils.isPrimitive(LongType))
+    assert(SparkUtils.isPrimitive(FloatType))
+    assert(SparkUtils.isPrimitive(DoubleType))
+    assert(SparkUtils.isPrimitive(DecimalType(10, 2)))
+    assert(SparkUtils.isPrimitive(StringType))
+    assert(SparkUtils.isPrimitive(BinaryType))
+    assert(SparkUtils.isPrimitive(DateType))
+    assert(SparkUtils.isPrimitive(TimestampType))
+    assert(!SparkUtils.isPrimitive(ArrayType(StringType)))
+    assert(!SparkUtils.isPrimitive(StructType(Seq(StructField("a", StringType)))))
+    assert(!SparkUtils.isPrimitive(MapType(StringType, StringType)))
+  }
 
   test("Test schema flattening of multiple nested structure") {
     val expectedOrigSchema =
@@ -100,6 +118,34 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
 
     assertSchema(flatSchema, expectedFlatSchema)
     assertResults(flatData, expectedFlatData)
+  }
+
+  test("Test metadata is retained") {
+    val metadata1 = new MetadataBuilder().putLong("test_metadata1", 123).build()
+    val metadata2 = new MetadataBuilder().putLong("test_metadata2", 456).build()
+    val metadata3 = new MetadataBuilder().putLong("test_metadata3", 789).build()
+
+    val schema = StructType(Array(
+      StructField("id", LongType, nullable = true, metadata = metadata1),
+      StructField("legs", ArrayType(StructType(List(
+        StructField("conditions", ArrayType(StructType(List(
+          StructField("amount", LongType, nullable = true),
+          StructField("checks", ArrayType(StructType(List(
+            StructField("checkNums", ArrayType(StringType, containsNull = true), nullable = true, metadata = metadata3)
+          )), containsNull = true), nullable = true))), containsNull = true), nullable = true),
+        StructField("legid", LongType, nullable = true, metadata = metadata2))), containsNull = true), nullable = true)))
+
+    val df = spark.read.schema(schema).json(nestedSampleData.toDS)
+    val dfFlattened = SparkUtils.flattenSchema(df)
+
+    assert(dfFlattened.schema.fields(0).metadata.getLong("test_metadata1") == 123)
+    assert(dfFlattened.schema.fields.find(_.name == "id").get.metadata.getLong("test_metadata1") == 123)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_legid").get.metadata.getLong("test_metadata2") == 456)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_1").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_2").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_3").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_4").get.metadata.getLong("test_metadata3") == 789)
+    assert(dfFlattened.schema.fields.find(_.name == "legs_0_conditions_0_checks_0_checkNums_5").get.metadata.getLong("test_metadata3") == 789)
   }
 
   test("Test schema flattening when short names are used") {
@@ -349,7 +395,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     assert(dfFlattened.count() == 0)
   }
 
-  test("Schema with multiple OCCURS should properly determine array sized") {
+  test("Schema with multiple OCCURS should properly determine array sizes") {
     val copyBook: String =
       """       01 RECORD.
         |          02 COUNT PIC 9(1).
@@ -372,7 +418,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
         | |-- INNER_GROUP_2_FIELD1: string (nullable = true)
         |""".stripMargin.replace("\r\n", "\n")
 
-    withTempTextFile("fletten", "test", StandardCharsets.UTF_8, "") { filePath =>
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "") { filePath =>
       val df = spark.read
         .format("cobol")
         .option("copybook_contents", copyBook)
@@ -401,6 +447,426 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     }
   }
 
+  test("unstructDataFrame() and unstructSchema() should flatten a schema and the dataframe with short names") {
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP1.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |          02 GROUP2.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-NUM   PIC 9 OCCURS 3 TIMES.
+        |""".stripMargin
+
+    val expectedSchema =
+      """|root
+         | |-- COUNT: integer (nullable = true)
+         | |-- INNER_COUNT: integer (nullable = true)
+         | |-- INNER_GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = true)
+         | |    |    |-- FIELD: integer (nullable = true)
+         | |-- INNER_COUNT: integer (nullable = true)
+         | |-- INNER_NUM: array (nullable = true)
+         | |    |-- element: integer (containsNull = true)
+         |""".stripMargin
+
+    val expectedData =
+      """[ {
+        |  "COUNT" : 2,
+        |  "INNER_COUNT" : 1,
+        |  "INNER_GROUP" : [ {
+        |    "FIELD" : 4
+        |  }, {
+        |    "FIELD" : 5
+        |  }, {
+        |    "FIELD" : 6
+        |  } ],
+        |  "INNER_NUM" : [ 7, 8, 9 ]
+        |}, {
+        |  "COUNT" : 3,
+        |  "INNER_COUNT" : 2,
+        |  "INNER_GROUP" : [ {
+        |    "FIELD" : 7
+        |  }, {
+        |    "FIELD" : 8
+        |  }, {
+        |    "FIELD" : 9
+        |  } ],
+        |  "INNER_NUM" : [ 4, 5, 6 ]
+        |} ]
+        |""".stripMargin
+
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "224561789\n347892456\n") { filePath =>
+      val df = spark.read
+        .format("cobol")
+        .option("copybook_contents", copyBook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("metadata", "extended")
+        .load(filePath)
+
+      val actualDf = SparkUtils.unstructDataFrame(df, useShortFieldNames = true)
+      val actualSchema = actualDf.schema.treeString
+      val actualSchemaOnly = SparkUtils.unstructSchema(df.schema, useShortFieldNames = true)
+      val actualSchema2 = actualSchemaOnly.treeString
+
+      compareText(actualSchema, expectedSchema)
+      compareText(actualSchema2, expectedSchema)
+
+      val actualData = SparkUtils.prettyJSON(actualDf.orderBy("COUNT").toJSON.collect().mkString("[", ", ", "]"))
+
+      compareText(actualData, expectedData)
+
+      assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(3).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(4).metadata.json.nonEmpty)
+
+      assert(actualSchemaOnly.fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(1).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(3).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(4).metadata.json.nonEmpty)
+    }
+  }
+
+  test("unstructDataFrame() and unstructSchema() should flatten a schema and the dataframe with long names") {
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP1.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |          02 GROUP2.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-NUM   PIC 9 OCCURS 3 TIMES.
+        |""".stripMargin
+
+    val expectedSchema =
+      """|root
+         | |-- COUNT: integer (nullable = true)
+         | |-- GROUP1_INNER_COUNT: integer (nullable = true)
+         | |-- GROUP1_INNER_GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = true)
+         | |    |    |-- FIELD: integer (nullable = true)
+         | |-- GROUP2_INNER_COUNT: integer (nullable = true)
+         | |-- GROUP2_INNER_NUM: array (nullable = true)
+         | |    |-- element: integer (containsNull = true)
+         |""".stripMargin
+
+    val expectedData =
+      """[ {
+        |  "COUNT" : 2,
+        |  "GROUP1_INNER_COUNT" : 2,
+        |  "GROUP1_INNER_GROUP" : [ {
+        |    "FIELD" : 4
+        |  }, {
+        |    "FIELD" : 5
+        |  }, {
+        |    "FIELD" : 6
+        |  } ],
+        |  "GROUP2_INNER_COUNT" : 1,
+        |  "GROUP2_INNER_NUM" : [ 7, 8, 9 ]
+        |}, {
+        |  "COUNT" : 3,
+        |  "GROUP1_INNER_COUNT" : 4,
+        |  "GROUP1_INNER_GROUP" : [ {
+        |    "FIELD" : 7
+        |  }, {
+        |    "FIELD" : 8
+        |  }, {
+        |    "FIELD" : 9
+        |  } ],
+        |  "GROUP2_INNER_COUNT" : 2,
+        |  "GROUP2_INNER_NUM" : [ 4, 5, 6 ]
+        |} ]
+        |""".stripMargin
+
+    withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "224561789\n347892456\n") { filePath =>
+      val df = spark.read
+        .format("cobol")
+        .option("copybook_contents", copyBook)
+        .option("pedantic", "true")
+        .option("record_format", "D")
+        .option("metadata", "extended")
+        .load(filePath)
+
+      val actualDf = SparkUtils.unstructDataFrame(df)
+      val actualSchema = actualDf.schema.treeString
+      val actualSchemaOnly = SparkUtils.unstructSchema(df.schema)
+      val actualSchema2 = actualSchemaOnly.treeString
+
+      compareText(actualSchema, expectedSchema)
+      compareText(actualSchema2, expectedSchema)
+
+      val actualData = SparkUtils.prettyJSON(actualDf.orderBy("COUNT").toJSON.collect().mkString("[", ", ", "]"))
+
+      compareText(actualData, expectedData)
+
+      assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(3).metadata.json.nonEmpty)
+      assert(actualDf.schema.fields(4).metadata.json.nonEmpty)
+
+      assert(actualSchemaOnly.fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(1).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(2).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(3).metadata.json.nonEmpty)
+      assert(actualSchemaOnly.fields(4).metadata.json.nonEmpty)
+    }
+  }
+
+  test("copyMetadata should copy metadata from one schema to another when overwrite = false") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+
+    val metadata2 = new MetadataBuilder()
+    metadata2.putLong("maxLength", 120)
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+    val schema2WithMetadata = StructType(Seq(df2.schema.fields.head.copy(metadata = metadata2.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, schema2WithMetadata)
+
+    val newDf = spark.createDataFrame(df2.rdd, schemaWithMetadata)
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+    assert(newDf.schema.fields.head.metadata.getLong("maxLength") == 120)
+  }
+
+  test("copyMetadata should copy primitive data types when it is enabled") {
+    val schemaFrom = StructType(
+      Seq(
+        StructField("int_field1", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test1").build()),
+        StructField("string_field", StringType, nullable = true, metadata = new MetadataBuilder().putLong("maxLength", 120).build()),
+        StructField("int_field2", StructType(
+          Seq(
+            StructField("int_field20", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test20").build())
+          )
+        ), nullable = true),
+        StructField("struct_field2", StructType(
+          Seq(
+            StructField("int_field3", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test3").build())
+          )
+        ), nullable = true),
+        StructField("array_string", ArrayType(StringType), nullable = true, metadata = new MetadataBuilder().putLong("maxLength", 60).build()),
+        StructField("array_struct", ArrayType(StructType(
+          Seq(
+            StructField("int_field4", IntegerType, nullable = true, metadata = new MetadataBuilder().putString("comment", "Test4").build())
+          )
+        )), nullable = true)
+      )
+    )
+
+    val schemaTo = StructType(
+      Seq(
+        StructField("int_field1", BooleanType, nullable = true),
+        StructField("string_field", IntegerType, nullable = true),
+        StructField("int_field2", IntegerType, nullable = true),
+        StructField("struct_field2", StructType(
+          Seq(
+            StructField("int_field3", BooleanType, nullable = true)
+          )
+        ), nullable = true),
+        StructField("array_string", ArrayType(IntegerType), nullable = true),
+        StructField("array_struct", ArrayType(StructType(
+          Seq(
+            StructField("int_field4", StringType, nullable = true)
+          )
+        )), nullable = true)
+      )
+    )
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(schemaFrom, schemaTo, copyDataType = true)
+    val fields = schemaWithMetadata.fields
+
+    // Ensure data types are copied
+    // Expected schema:
+    // root
+    // |-- int_field1: boolean (nullable = true)
+    // |-- string_field: integer (nullable = true)
+    // |-- int_field2: integer (nullable = true)
+    // |-- struct_field2: struct (nullable = true)
+    // |    |-- int_field3: boolean (nullable = true)
+    // |-- array_string: array (nullable = true)
+    // |    |-- element: integer (containsNull = true)
+    // |-- array_struct: array (nullable = true)
+    // |    |-- element: struct (containsNull = true)
+    // |    |    |-- int_field4: string (nullable = true)
+    assert(fields.head.dataType == IntegerType)
+    assert(fields(1).dataType == StringType)
+    assert(fields(2).dataType == IntegerType)
+    assert(fields(3).dataType.isInstanceOf[StructType])
+    assert(fields(4).dataType.isInstanceOf[ArrayType])
+    assert(fields(5).dataType.isInstanceOf[ArrayType])
+
+    assert(fields(3).dataType.asInstanceOf[StructType].fields.head.dataType == IntegerType)
+    assert(fields(4).dataType.asInstanceOf[ArrayType].elementType == StringType)
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.isInstanceOf[StructType])
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.dataType == IntegerType)
+
+    // Ensure metadata is copied
+    assert(fields.head.metadata.getString("comment") == "Test1")
+    assert(fields(1).metadata.getLong("maxLength") == 120)
+    assert(fields(3).dataType.asInstanceOf[StructType].fields.head.metadata.getString("comment") == "Test3")
+    assert(fields(4).metadata.getLong("maxLength") == 60)
+    assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.getString("comment") == "Test4")
+  }
+
+  test("copyMetadata should retain metadata on conflicts by default") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+    metadata1.putLong("maxLength", 100)
+
+    val metadata2 = new MetadataBuilder()
+    metadata2.putLong("maxLength", 120)
+    metadata2.putLong("newMetadata", 180)
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+    val schema2WithMetadata = StructType(Seq(df2.schema.fields.head.copy(metadata = metadata2.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, schema2WithMetadata)
+
+    val newDf = spark.createDataFrame(df2.rdd, schemaWithMetadata)
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+    assert(newDf.schema.fields.head.metadata.getLong("maxLength") == 120)
+    assert(newDf.schema.fields.head.metadata.getLong("newMetadata") == 180)
+  }
+
+  test("copyMetadata should overwrite metadata on conflicts when sourcePreferred=true") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+    metadata1.putLong("maxLength", 100)
+
+    val metadata2 = new MetadataBuilder()
+    metadata2.putLong("maxLength", 120)
+    metadata2.putLong("newMetadata", 180)
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+    val schema2WithMetadata = StructType(Seq(df2.schema.fields.head.copy(metadata = metadata2.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, schema2WithMetadata, sourcePreferred = true)
+
+    val newDf = spark.createDataFrame(df2.rdd, schemaWithMetadata)
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+    assert(newDf.schema.fields.head.metadata.getLong("maxLength") == 100)
+    assert(newDf.schema.fields.head.metadata.getLong("newMetadata") == 180)
+  }
+
+  test("copyMetadata should not retain original metadata when overwrite = true") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+
+    val metadata2 = new MetadataBuilder()
+    metadata2.putLong("maxLength", 120)
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+    val schema2WithMetadata = StructType(Seq(df2.schema.fields.head.copy(metadata = metadata2.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, schema2WithMetadata, overwrite = true)
+
+    val newDf = spark.createDataFrame(df2.rdd, schemaWithMetadata)
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+    assert(!newDf.schema.fields.head.metadata.contains("maxLength"))
+  }
+
+  test("Make sure flattenning does not remove metadata") {
+    val df1 = List(1, 2, 3).toDF("col1")
+    val df2 = List(1, 2, 3).toDF("col1")
+
+    val metadata1 = new MetadataBuilder()
+    metadata1.putString("comment", "Test")
+
+    val metadata2 = new MetadataBuilder()
+    metadata2.putLong("maxLength", 120)
+
+    val schema1WithMetadata = StructType(Seq(df1.schema.fields.head.copy(metadata = metadata1.build())))
+    val schema2WithMetadata = StructType(Seq(df2.schema.fields.head.copy(metadata = metadata2.build())))
+
+    val df1WithMetadata = spark.createDataFrame(df2.rdd, schema1WithMetadata)
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(df1WithMetadata.schema, schema2WithMetadata)
+
+    val newDf = SparkUtils.unstructDataFrame(spark.createDataFrame(df2.rdd, schemaWithMetadata))
+
+    assert(newDf.schema.fields.head.metadata.getString("comment") == "Test")
+    assert(newDf.schema.fields.head.metadata.getLong("maxLength") == 120)
+  }
+
+  test("Integral to decimal conversion for complex schema") {
+    val expectedSchema =
+      """|root
+         | |-- COUNT: decimal(1,0) (nullable = true)
+         | |-- GROUP: array (nullable = true)
+         | |    |-- element: struct (containsNull = false)
+         | |    |    |-- INNER_COUNT: decimal(1,0) (nullable = true)
+         | |    |    |-- INNER_GROUP: array (nullable = true)
+         | |    |    |    |-- element: struct (containsNull = false)
+         | |    |    |    |    |-- FIELD: decimal(1,0) (nullable = true)
+         |""".stripMargin
+
+    val copyBook: String =
+      """       01 RECORD.
+        |          02 COUNT PIC 9(1).
+        |          02 GROUP OCCURS 2 TIMES.
+        |             03 INNER-COUNT PIC S9(1).
+        |             03 INNER-GROUP OCCURS 3 TIMES.
+        |                04 FIELD PIC 9.
+        |""".stripMargin
+
+    if (!Properties.versionNumberString.startsWith("2.11.")) {
+      withTempTextFile("flatten", "test", StandardCharsets.UTF_8, "") { filePath =>
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copyBook)
+          .option("pedantic", "true")
+          .option("record_format", "D")
+          .option("metadata", "extended")
+          .load(filePath)
+
+        // This method only works with Scala 2.12+ and Spark 3.0+
+        val actualDf = SparkUtils.covertIntegralToDecimal(df)
+        val actualSchema = actualDf.schema.treeString
+
+        assert(actualDf.schema.fields.head.metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).metadata.json.nonEmpty)
+        assert(actualDf.schema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.json.nonEmpty)
+
+        compareText(actualSchema, expectedSchema)
+      }
+    }
+  }
+
   private def assertSchema(actualSchema: String, expectedSchema: String): Unit = {
     if (actualSchema != expectedSchema) {
       logger.error(s"EXPECTED:\n$expectedSchema")
@@ -410,7 +876,7 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
   }
 
   private def assertResults(actualResults: String, expectedResults: String): Unit = {
-    if (actualResults != expectedResults) {
+    if (actualResults.toLowerCase != expectedResults.toLowerCase) {
       logger.error(s"EXPECTED:\n$expectedResults")
       logger.error(s"ACTUAL:\n$actualResults")
       fail("Actual dataset data does not match the expected data (see above).")

@@ -30,6 +30,8 @@ import java.util
   * Hopefully, comments will help anyone reading this.
   */
 class TextFullRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val recordSize = ctx.copybook.getRecordSize
 
   // Maximum possible record size is the size of the copybook record + maximum size of the delimiter (2 characters for CRLF).

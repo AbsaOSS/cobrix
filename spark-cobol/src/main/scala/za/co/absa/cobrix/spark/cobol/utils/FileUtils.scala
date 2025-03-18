@@ -186,7 +186,7 @@ object FileUtils extends Logging {
   /**
     * Finds the first file that is non-divisible by a given divisor and logs its name.
     */
-  def findAndLogFirstNonDivisibleFile(sourceDir: String, divisor: Long, fileSystem: FileSystem): Boolean = {
+  def findAndLogFirstNonDivisibleFile(sourceDir: String, divisor: Long, fileSystem: FileSystem): Option[(String, Long)] = {
 
     val allFiles = expandDirectories(fileSystem, fileSystem.globStatus(new Path(sourceDir), hiddenFileFilter))
 
@@ -197,13 +197,13 @@ object FileUtils extends Logging {
       logger.error(s"File ${firstNonDivisibleFile.get.getPath} size (${firstNonDivisibleFile.get.getLen}) IS NOT divisible by $divisor.")
     }
 
-    firstNonDivisibleFile.isDefined
+    firstNonDivisibleFile.map(status => (status.getPath.toString, status.getLen))
   }
 
   /**
     * Finds all the files the are not divisible by a given divisor and logs their names.
     */
-  def findAndLogAllNonDivisibleFiles(sourceDir: String, divisor: Long, fileSystem: FileSystem): Long = {
+  def findAndLogAllNonDivisibleFiles(sourceDir: String, divisor: Long, fileSystem: FileSystem): Seq[(String, Long)] = {
 
     val allFiles = expandDirectories(fileSystem, fileSystem.globStatus(new Path(sourceDir), hiddenFileFilter))
 
@@ -213,7 +213,7 @@ object FileUtils extends Logging {
       allNonDivisibleFiles.foreach(file => logger.error(s"File ${file.getPath} size (${file.getLen}) IS NOT divisible by $divisor."))
     }
 
-    allNonDivisibleFiles.length
+    allNonDivisibleFiles.map(status => (status.getPath.toString, status.getLen))
   }
 
   private def isNonDivisible(fileStatus: FileStatus, divisor: Long) = fileStatus.getLen % divisor != 0

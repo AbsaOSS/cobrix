@@ -17,16 +17,11 @@
 package za.co.absa.cobrix.cobol.reader
 
 import za.co.absa.cobrix.cobol.internal.Logging
-
-import java.nio.charset.{Charset, StandardCharsets}
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
-import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
-import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, VariableBlock}
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedBlockParameters, FixedBlockRawRecordExtractor, RawRecordContext, RawRecordExtractor, RawRecordExtractorFactory, TextFullRecordExtractor, TextRecordExtractor, VarOccursRecordExtractor, VariableBlockVariableRecordExtractor}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, FixedLength, VariableBlock, VariableLength}
+import za.co.absa.cobrix.cobol.reader.extractors.raw._
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
 import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
@@ -37,7 +32,6 @@ import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
-import scala.collection.immutable.HashMap
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -53,16 +47,17 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
-  protected val recordHeaderParser: RecordHeaderParser = {
+  val recordHeaderParser: RecordHeaderParser = {
     getRecordHeaderParser
   }
 
   checkInputArgumentsValidity()
 
-  protected def recordExtractor(startingRecordNumber: Long,
-                                binaryData: SimpleStream,
-                                copybook: Copybook
-                               ): Option[RawRecordExtractor] = {
+  def recordExtractor(startingRecordNumber: Long,
+                      dataStream: SimpleStream,
+                      headerStream: SimpleStream,
+                      copybook: Copybook
+                     ): Option[RawRecordExtractor] = {
     val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
 
     val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
@@ -71,7 +66,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
     val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
 
-    val reParams = RawRecordContext(startingRecordNumber, binaryData, copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
+    val reParams = RawRecordContext(startingRecordNumber, dataStream, headerStream, copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
@@ -80,6 +75,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         Some(new TextRecordExtractor(reParams))
       case None if readerProperties.isText =>
         Some(new TextFullRecordExtractor(reParams))
+      case None if readerProperties.recordFormat == FixedLength && (readerProperties.lengthFieldExpression.nonEmpty || readerProperties.lengthFieldMap.nonEmpty) =>
+        Some(new FixedWithRecordLengthExprRawRecordExtractor(reParams, readerProperties))
+      case None if readerProperties.recordFormat == VariableLength && (readerProperties.lengthFieldExpression.nonEmpty || readerProperties.lengthFieldMap.nonEmpty) =>
+        Some(new FixedWithRecordLengthExprRawRecordExtractor(reParams, readerProperties))
       case None if readerProperties.recordFormat == FixedBlock =>
         val fbParams = FixedBlockParameters(readerProperties.recordLength, bdwOpt.get.blockLength, bdwOpt.get.recordsPerBlock)
         FixedBlockParameters.validate(fbParams)
@@ -100,30 +99,31 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   override def getRecordSize: Int = cobolSchema.copybook.getRecordSize
 
-  override def isIndexGenerationNeeded: Boolean = (readerProperties.lengthFieldExpression.isEmpty || readerProperties.isRecordSequence) && readerProperties.isIndexGenerationNeeded
+  override def isIndexGenerationNeeded: Boolean = readerProperties.isIndexGenerationNeeded
 
   override def isRdwBigEndian: Boolean = readerProperties.isRdwBigEndian
 
-  override def getRecordIterator(binaryData: SimpleStream,
+  override def getRecordIterator(dataStream: SimpleStream,
+                                 headerStream: SimpleStream,
                                  startingFileOffset: Long,
                                  fileNumber: Int,
                                  startingRecordIndex: Long): Iterator[Seq[Any]] =
     if (cobolSchema.copybook.isHierarchical) {
       new VarLenHierarchicalIterator(cobolSchema.copybook,
-        binaryData,
+        dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
+        recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
         handler)
     } else {
       new VarLenNestedIterator(cobolSchema.copybook,
-        binaryData,
+        dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, binaryData, cobolSchema.copybook),
+        recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -135,15 +135,16 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     * Traverses the data sequentially as fast as possible to generate record index.
     * This index will be used to distribute workload of the conversion.
     *
-    * @param binaryData A stream of input binary data
-    * @param fileNumber A file number uniquely identified a particular file of the data set
+    * @param dataStream   A stream of input binary data
+    * @param headerStream A stream pointing to the beginning of the file, even if inputStream is pointing
+    *                     to a record in the middle.
+    * @param fileNumber   A file number uniquely identified a particular file of the data set
     * @return An index of the file
-    *
     */
-  override def generateIndex(binaryData: SimpleStream,
+  override def generateIndex(dataStream: SimpleStream,
+                             headerStream: SimpleStream,
                              fileNumber: Int,
                              isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
-    var recordSize = cobolSchema.getRecordSize
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
     val inputSplitSizeMB: Option[Int] = getSplitSizeMB
 
@@ -174,10 +175,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber,
-        binaryData,
-        isRdwBigEndian,
+        dataStream,
+        readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, binaryData, copybook),
+        recordExtractor(0L, dataStream, headerStream, copybook),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         Some(copybook),
@@ -185,10 +186,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         isHierarchical,
         segmentIdValue)
       case None => IndexGenerator.sparseIndexGenerator(fileNumber,
-        binaryData,
-        isRdwBigEndian,
+        dataStream,
+        readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, binaryData, copybook),
+        recordExtractor(0L, dataStream, headerStream, copybook),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         None,
@@ -198,57 +199,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
   }
 
   private def loadCopyBook(copyBookContents: Seq[String]): CobolSchema = {
-    val encoding = if (readerProperties.isEbcdic) EBCDIC else ASCII
-    val segmentRedefines = readerProperties.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
-    val fieldParentMap = readerProperties.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
-    val codePage = getCodePage(readerProperties.ebcdicCodePage, readerProperties.ebcdicCodePageClass)
-    val asciiCharset = if (readerProperties.asciiCharset.isEmpty) StandardCharsets.US_ASCII else Charset.forName(readerProperties.asciiCharset)
-
-    val schema = if (copyBookContents.size == 1)
-      CopybookParser.parseTree(encoding,
-        copyBookContents.head,
-        readerProperties.dropGroupFillers,
-        readerProperties.dropValueFillers,
-        readerProperties.fillerNamingPolicy,
-        segmentRedefines,
-        fieldParentMap,
-        readerProperties.stringTrimmingPolicy,
-        readerProperties.commentPolicy,
-        readerProperties.strictSignOverpunch,
-        readerProperties.improvedNullDetection,
-        codePage,
-        asciiCharset,
-        readerProperties.isUtf16BigEndian,
-        readerProperties.floatingPointFormat,
-        readerProperties.nonTerminals,
-        readerProperties.occursMappings,
-        readerProperties.debugFieldsPolicy,
-        readerProperties.fieldCodePage)
-    else
-      Copybook.merge(copyBookContents.map(cpb =>
-        CopybookParser.parseTree(encoding,
-          cpb,
-          readerProperties.dropGroupFillers,
-          readerProperties.dropValueFillers,
-          readerProperties.fillerNamingPolicy,
-          segmentRedefines,
-          fieldParentMap,
-          readerProperties.stringTrimmingPolicy,
-          readerProperties.commentPolicy,
-          readerProperties.strictSignOverpunch,
-          readerProperties.improvedNullDetection,
-          codePage,
-          asciiCharset,
-          readerProperties.isUtf16BigEndian,
-          readerProperties.floatingPointFormat,
-          nonTerminals = readerProperties.nonTerminals,
-          readerProperties.occursMappings,
-          readerProperties.debugFieldsPolicy,
-          readerProperties.fieldCodePage)
-      ))
-    val segIdFieldCount = readerProperties.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
-    val segmentIdPrefix = readerProperties.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
-    new CobolSchema(schema, readerProperties.schemaPolicy, readerProperties.inputFileNameColumn, readerProperties.generateRecordId, readerProperties.generateRecordBytes, segIdFieldCount, segmentIdPrefix)
+    CobolSchema.fromReaderParameters(copyBookContents, readerProperties)
   }
 
   private def checkInputArgumentsValidity(): Unit = {
@@ -265,13 +216,6 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       readerProperties.inputSplitSizeMB
     } else {
       readerProperties.hdfsDefaultBlockSize
-    }
-  }
-
-  private def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
-    codePageClass match {
-      case Some(c) => CodePage.getCodePageByClass(c)
-      case None => CodePage.getCodePageByName(codePageName)
     }
   }
 
@@ -312,8 +256,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       }
     } else {
       // Fixed record length record parser
+      val recordSize = readerProperties.recordLength.getOrElse(cobolSchema.getRecordSize)
       RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength,
-        cobolSchema.getRecordSize,
+        recordSize,
         readerProperties.fileStartOffset,
         readerProperties.fileEndOffset,
         0

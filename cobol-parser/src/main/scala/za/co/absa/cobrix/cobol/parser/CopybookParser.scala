@@ -87,12 +87,14 @@ object CopybookParser extends Logging {
                   dropGroupFillers: Boolean = false,
                   dropValueFillers: Boolean = true,
                   commentPolicy: CommentPolicy = CommentPolicy(),
-                  dropFillersFromAst: Boolean = false
+                  dropFillersFromAst: Boolean = false,
+                  strictIntegralPrecision: Boolean = false
                  ): Copybook = {
     val copybook = parse(copyBookContents = copyBookContents,
       dropGroupFillers = dropGroupFillers,
       dropValueFillers = dropValueFillers,
-      commentPolicy = commentPolicy)
+      commentPolicy = commentPolicy,
+      strictIntegralPrecision = strictIntegralPrecision)
 
     if (dropFillersFromAst && (dropGroupFillers || dropValueFillers)) {
       copybook.dropFillers(dropGroupFillers, dropValueFillers)
@@ -135,6 +137,8 @@ object CopybookParser extends Logging {
             commentPolicy: CommentPolicy = CommentPolicy(),
             strictSignOverpunch: Boolean = true,
             improvedNullDetection: Boolean = false,
+            strictIntegralPrecision: Boolean = false,
+            decodeBinaryAsHex: Boolean = false,
             ebcdicCodePage: CodePage = new CodePageCommon,
             asciiCharset: Charset = StandardCharsets.US_ASCII,
             isUtf16BigEndian: Boolean = true,
@@ -154,6 +158,8 @@ object CopybookParser extends Logging {
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
+      strictIntegralPrecision,
+      decodeBinaryAsHex,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -195,6 +201,8 @@ object CopybookParser extends Logging {
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 strictSignOverpunch: Boolean = true,
                 improvedNullDetection: Boolean = false,
+                strictIntegralPrecision: Boolean = false,
+                decodeBinaryAsHex: Boolean = false,
                 ebcdicCodePage: CodePage = new CodePageCommon,
                 asciiCharset: Charset = StandardCharsets.US_ASCII,
                 isUtf16BigEndian: Boolean = true,
@@ -214,6 +222,8 @@ object CopybookParser extends Logging {
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
+      strictIntegralPrecision,
+      decodeBinaryAsHex,
       ebcdicCodePage,
       asciiCharset,
       isUtf16BigEndian,
@@ -258,6 +268,8 @@ object CopybookParser extends Logging {
                 commentPolicy: CommentPolicy,
                 strictSignOverpunch: Boolean,
                 improvedNullDetection: Boolean,
+                strictIntegralPrecision: Boolean,
+                decodeBinaryAsHex: Boolean,
                 ebcdicCodePage: CodePage,
                 asciiCharset: Charset,
                 isUtf16BigEndian: Boolean,
@@ -267,7 +279,7 @@ object CopybookParser extends Logging {
                 debugFieldsPolicy: DebugFieldsPolicy,
                 fieldCodePageMap: Map[String, String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)

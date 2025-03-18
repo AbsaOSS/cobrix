@@ -19,6 +19,8 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import scala.collection.mutable
 
 class FixedBlockRawRecordExtractor(ctx: RawRecordContext, fbParams: FixedBlockParameters) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val recordQueue = new mutable.Queue[Array[Byte]]
 
   private val recordSize = fbParams.recordLength.getOrElse(ctx.copybook.getRecordSize)

@@ -17,7 +17,9 @@
 package za.co.absa.cobrix.cobol.parser.decoders
 
 import org.scalatest.funsuite.AnyFunSuite
+import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
+import za.co.absa.cobrix.cobol.parser.position
 
 class BinaryDecoderSpec extends AnyFunSuite {
   import BinaryUtils.{addDecimalPoint, decodeBinaryNumber}
@@ -319,5 +321,296 @@ class BinaryDecoderSpec extends AnyFunSuite {
       bigEndian = false, signed = false) == "11394853559121320169713422235901188200315818")
   }
 
+  test("Test EBCDIC not strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, None, Some(EBCDIC), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 14, isSignSeparate = false), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+
+    val num1 = decoderInt(Array(0xF1, 0xF2, 0xF3).map(_.toByte))
+    assert(num1.isInstanceOf[Integer])
+    assert(num1.asInstanceOf[Integer] == 123)
+
+    val num2 = decoderInt(Array(0x60, 0xF2, 0xF3).map(_.toByte))
+    assert(num2.isInstanceOf[Integer])
+    assert(num2.asInstanceOf[Integer] == -23)
+
+    val num3 = decoderLong(Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xF0, 0xF1, 0xF2, 0xF3).map(_.toByte))
+    assert(num3.isInstanceOf[Long])
+    assert(num3.asInstanceOf[Long] == 1234567890123L)
+
+    val num4 = decoderLong(Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xF0, 0xF1, 0xF2, 0xD3).map(_.toByte))
+    assert(num4.isInstanceOf[Long])
+    assert(num4.asInstanceOf[Long] == -1234567890123L)
+  }
+
+  test("Test EBCDIC strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, None, Some(EBCDIC), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 14, isSignSeparate = false), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+
+    val num1 = decoderInt(Array(0xF1, 0xF2, 0xF3).map(_.toByte))
+    assert(num1.isInstanceOf[BigDecimal])
+    assert(num1.asInstanceOf[BigDecimal] == 123)
+
+    val num2 = decoderInt(Array(0x60, 0xF2, 0xF3).map(_.toByte))
+    assert(num2.isInstanceOf[BigDecimal])
+    assert(num2.asInstanceOf[BigDecimal] == -23)
+
+    val num3 = decoderLong(Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xF0, 0xF1, 0xF2, 0xF3).map(_.toByte))
+    assert(num3.isInstanceOf[BigDecimal])
+    assert(num3.asInstanceOf[BigDecimal] == 1234567890123L)
+
+    val num4 = decoderLong(Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xF0, 0xF1, 0xF2, 0xD3).map(_.toByte))
+    assert(num4.isInstanceOf[BigDecimal])
+    assert(num4.asInstanceOf[BigDecimal] == -1234567890123L)
+  }
+
+  test("Test ASCII not strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, None, Some(ASCII), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 14, isSignSeparate = false), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+
+    val num1 = decoderInt("123".getBytes)
+    assert(num1.isInstanceOf[Integer])
+    assert(num1.asInstanceOf[Integer] == 123)
+
+    val num2 = decoderInt("-23".getBytes)
+    assert(num2.isInstanceOf[Integer])
+    assert(num2.asInstanceOf[Integer] == -23)
+
+    val num3 = decoderLong("1234567890123".getBytes)
+    assert(num3.isInstanceOf[Long])
+    assert(num3.asInstanceOf[Long] == 1234567890123L)
+
+    val num4 = decoderLong("123456789012L".getBytes)
+    assert(num4.isInstanceOf[Long])
+    assert(num4.asInstanceOf[Long] == -1234567890123L)
+  }
+
+  test("Test ASCII strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, None, Some(ASCII), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 14, isSignSeparate = false), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+
+    val num1 = decoderInt("123".getBytes)
+    assert(num1.isInstanceOf[BigDecimal])
+    assert(num1.asInstanceOf[BigDecimal] == 123)
+
+    val num2 = decoderInt("-23".getBytes)
+    assert(num2.isInstanceOf[BigDecimal])
+    assert(num2.asInstanceOf[BigDecimal] == -23)
+
+    val num3 = decoderLong("1234567890123".getBytes)
+    assert(num3.isInstanceOf[BigDecimal])
+    assert(num3.asInstanceOf[BigDecimal] == 1234567890123L)
+
+    val num4 = decoderLong("123456789012L".getBytes)
+    assert(num4.isInstanceOf[BigDecimal])
+    assert(num4.asInstanceOf[BigDecimal] == -1234567890123L)
+  }
+
+  test("Test BCD not strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("S99999", 6, Some(position.Right), isSignSeparate = false, None, Some(COMP3()), Some(EBCDIC), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 13, compact = Some(COMP3U())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+
+    val num1 = decoderInt(Array(0x12, 0x34, 0x5C).map(_.toByte))
+    assert(num1.isInstanceOf[Integer])
+    assert(num1.asInstanceOf[Integer] == 12345)
+
+    val num2 = decoderInt(Array(0x12, 0x34, 0x5D).map(_.toByte))
+    assert(num2.isInstanceOf[Integer])
+    assert(num2.asInstanceOf[Integer] == -12345)
+
+    val num3 = decoderLong(Array(0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x30).map(_.toByte))
+    assert(num3.isInstanceOf[Long])
+    assert(num3.asInstanceOf[Long] == 12345678901230L)
+  }
+
+  test("Test BCD strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("S99999", 6, Some(position.Right), isSignSeparate = false, None, Some(COMP3()), Some(EBCDIC), None)
+
+    val decoderInt = DecoderSelector.getIntegralDecoder(integralType, strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 13, compact = Some(COMP3U())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+
+    val num1 = decoderInt(Array(0x12, 0x34, 0x5C).map(_.toByte))
+    assert(num1.isInstanceOf[BigDecimal])
+    assert(num1.asInstanceOf[BigDecimal] == 12345)
+
+    val num2 = decoderInt(Array(0x12, 0x34, 0x5D).map(_.toByte))
+    assert(num2.isInstanceOf[BigDecimal])
+    assert(num2.asInstanceOf[BigDecimal] == -12345)
+
+    val num3 = decoderLong(Array(0x12, 0x34, 0x56, 0x78, 0x90, 0x12, 0x30).map(_.toByte))
+    assert(num3.isInstanceOf[BigDecimal])
+    assert(num3.asInstanceOf[BigDecimal] == 12345678901230L)
+  }
+
+  test("Test Binary not strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, Some(COMP4()), Some(EBCDIC), None)
+
+    val decoderSignedByte = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 1, compact = Some(COMP9())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedByte = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 1, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderSignedShort = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 3, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedShort = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 3, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderSignedInt = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntBeAsLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 9, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedIntLeAsLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 9, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderSignedLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongBeAsBig = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 18, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+    val decoderUnsignedLongLeAsBig = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 18, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = false)
+
+    val num1 = decoderSignedByte(Array(0x10).map(_.toByte))
+    assert(num1.isInstanceOf[Integer])
+    assert(num1.asInstanceOf[Integer] == 16)
+
+    val num2 = decoderSignedByte(Array(0x90).map(_.toByte))
+    assert(num2.isInstanceOf[Integer])
+    assert(num2.asInstanceOf[Integer] == -112)
+
+    val num3 = decoderUnsignedByte(Array(0x90).map(_.toByte))
+    assert(num3.isInstanceOf[Integer])
+    assert(num3.asInstanceOf[Integer] == 144)
+
+    val num4 = decoderSignedShort(Array(0x10, 0x01).map(_.toByte))
+    assert(num4.isInstanceOf[Integer])
+    assert(num4.asInstanceOf[Integer] == 4097)
+
+    val num5 = decoderSignedShort(Array(0x90, 0x00).map(_.toByte))
+    assert(num5.isInstanceOf[Integer])
+    assert(num5.asInstanceOf[Integer] == -28672)
+
+    val num6 = decoderUnsignedShort(Array(0x90, 0x00).map(_.toByte))
+    assert(num6.isInstanceOf[Integer])
+    assert(num6.asInstanceOf[Integer] == 36864)
+
+    val num7 = decoderSignedInt(Array(0x01, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num7.isInstanceOf[Integer])
+    assert(num7.asInstanceOf[Integer] == 16777216)
+
+    val num8 = decoderSignedInt(Array(0x90, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num8.isInstanceOf[Integer])
+    assert(num8.asInstanceOf[Integer] == -1879048192)
+
+    val num9 = decoderUnsignedIntBe(Array(0x00, 0x90, 0x00, 0x00).map(_.toByte))
+    assert(num9.isInstanceOf[Integer])
+    assert(num9.asInstanceOf[Integer] == 9437184)
+
+    val num9a = decoderUnsignedIntBeAsLong(Array(0x00, 0x90, 0x00, 0x00).map(_.toByte))
+    assert(num9a.isInstanceOf[java.lang.Long])
+    assert(num9a.asInstanceOf[java.lang.Long] == 9437184L)
+
+    val num10 = decoderUnsignedIntLe(Array(0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num10.isInstanceOf[Integer])
+    assert(num10.asInstanceOf[Integer] == 9437184)
+
+    val num10a = decoderUnsignedIntLeAsLong(Array(0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num10a.isInstanceOf[java.lang.Long])
+    assert(num10a.asInstanceOf[java.lang.Long] == 9437184L)
+
+    val num11 = decoderSignedLong(Array(0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num11.isInstanceOf[Long])
+    assert(num11.asInstanceOf[Long] == 72057594037927936L)
+
+    val num12 = decoderSignedLong(Array(0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num12.isInstanceOf[Long])
+    assert(num12.asInstanceOf[Long] == -8070450532247928832L)
+
+    val num13 = decoderUnsignedLongBe(Array(0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num13.isInstanceOf[Long])
+    assert(num13.asInstanceOf[Long] == 40532396646334464L)
+
+    val num13a = decoderUnsignedLongBeAsBig(Array(0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num13a.isInstanceOf[BigDecimal])
+    assert(num13a.asInstanceOf[BigDecimal] == BigDecimal("40532396646334464"))
+
+    val num14 = decoderUnsignedLongLe(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num14.isInstanceOf[Long])
+    assert(num14.asInstanceOf[Long] == 40532396646334464L)
+
+    val num14a = decoderUnsignedLongLeAsBig(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num14a.isInstanceOf[BigDecimal])
+    assert(num14a.asInstanceOf[BigDecimal] == BigDecimal("40532396646334464"))
+  }
+
+  test("Test Binary strict integral precision numbers") {
+    val integralType = za.co.absa.cobrix.cobol.parser.ast.datatype.Integral("999", 3, Some(position.Left), isSignSeparate = true, None, Some(COMP4()), Some(EBCDIC), None)
+
+    val decoderSignedByte = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 1, compact = Some(COMP9())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedByte = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 1, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderSignedShort = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 3, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedShort = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 3, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderSignedInt = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedIntBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedIntLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 8, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderSignedLong = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP4())), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedLongBe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP5()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+    val decoderUnsignedLongLe = DecoderSelector.getIntegralDecoder(integralType.copy(precision = 15, compact = Some(COMP9()), signPosition = None), strictSignOverpunch = false, improvedNullDetection = false, strictIntegralPrecision = true)
+
+    val num1 = decoderSignedByte(Array(0x10).map(_.toByte))
+    assert(num1.isInstanceOf[BigDecimal])
+    assert(num1.asInstanceOf[BigDecimal] == 16)
+
+    val num2 = decoderSignedByte(Array(0x90).map(_.toByte))
+    assert(num2.isInstanceOf[BigDecimal])
+    assert(num2.asInstanceOf[BigDecimal] == -112)
+
+    val num3 = decoderUnsignedByte(Array(0x90).map(_.toByte))
+    assert(num3.isInstanceOf[BigDecimal])
+    assert(num3.asInstanceOf[BigDecimal] == 144)
+
+    val num4 = decoderSignedShort(Array(0x10, 0x01).map(_.toByte))
+    assert(num4.isInstanceOf[BigDecimal])
+    assert(num4.asInstanceOf[BigDecimal] == 4097)
+
+    val num5 = decoderSignedShort(Array(0x90, 0x00).map(_.toByte))
+    assert(num5.isInstanceOf[BigDecimal])
+    assert(num5.asInstanceOf[BigDecimal] == -28672)
+
+    val num6 = decoderUnsignedShort(Array(0x90, 0x00).map(_.toByte))
+    assert(num6.isInstanceOf[BigDecimal])
+    assert(num6.asInstanceOf[BigDecimal] == 36864)
+
+    val num7 = decoderSignedInt(Array(0x01, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num7.isInstanceOf[BigDecimal])
+    assert(num7.asInstanceOf[BigDecimal] == 16777216)
+
+    val num8 = decoderSignedInt(Array(0x90, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num8.isInstanceOf[BigDecimal])
+    assert(num8.asInstanceOf[BigDecimal] == -1879048192)
+
+    val num9 = decoderUnsignedIntBe(Array(0x00, 0x90, 0x00, 0x00).map(_.toByte))
+    assert(num9.isInstanceOf[BigDecimal])
+    assert(num9.asInstanceOf[BigDecimal] == 9437184)
+
+    val num10 = decoderUnsignedIntLe(Array(0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num10.isInstanceOf[BigDecimal])
+    assert(num10.asInstanceOf[BigDecimal] == 9437184)
+
+    val num11 = decoderSignedLong(Array(0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num11.isInstanceOf[BigDecimal])
+    assert(num11.asInstanceOf[BigDecimal] == 72057594037927936L)
+
+    val num12 = decoderSignedLong(Array(0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num12.isInstanceOf[BigDecimal])
+    assert(num12.asInstanceOf[BigDecimal] == -8070450532247928832L)
+
+    val num13 = decoderUnsignedLongBe(Array(0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte))
+    assert(num13.isInstanceOf[BigDecimal])
+    assert(num13.asInstanceOf[BigDecimal] == 40532396646334464L)
+
+    val num14 = decoderUnsignedLongLe(Array(0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x90, 0x00).map(_.toByte))
+    assert(num14.isInstanceOf[BigDecimal])
+    assert(num14.asInstanceOf[BigDecimal] == 40532396646334464L)
+  }
 
 }

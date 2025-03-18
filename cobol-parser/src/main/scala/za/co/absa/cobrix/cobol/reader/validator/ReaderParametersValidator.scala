@@ -19,22 +19,22 @@ package za.co.absa.cobrix.cobol.reader.validator
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
-import za.co.absa.cobrix.cobol.reader.iterator.RecordLengthExpression
+import za.co.absa.cobrix.cobol.reader.iterator.{RecordLengthExpression, RecordLengthField}
 import za.co.absa.cobrix.cobol.reader.parameters.MultisegmentParameters
 
 import scala.util.Try
 
 object ReaderParametersValidator {
 
-  def getEitherFieldAndExpression(fieldOrExpressionOpt: Option[String], cobolSchema: Copybook): (Option[Primitive], Option[RecordLengthExpression]) = {
+  def getEitherFieldAndExpression(fieldOrExpressionOpt: Option[String], recordLengthMap: Map[String, Int], cobolSchema: Copybook): (Option[RecordLengthField], Option[RecordLengthExpression]) = {
     fieldOrExpressionOpt match {
       case Some(fieldOrExpression) =>
-        val canBeExpression = fieldOrExpression.exists(c => "+-*/".contains(c))
+        val canBeExpression = fieldOrExpression.exists(c => "+-*/()".contains(c))
 
-        if (canBeExpression && Try(cobolSchema.getFieldByName(fieldOrExpression)).isSuccess) {
-          (getLengthField(fieldOrExpression, cobolSchema), None)
+        if (!canBeExpression || Try(cobolSchema.getFieldByName(fieldOrExpression)).isSuccess) {
+          (getLengthField(fieldOrExpression, recordLengthMap, cobolSchema), None)
         } else {
-          (None, getLengthFieldExpr(fieldOrExpression, cobolSchema))
+          (None, getLengthFieldExpr(fieldOrExpression, recordLengthMap, cobolSchema))
         }
       case None =>
         (None, None)
@@ -43,13 +43,13 @@ object ReaderParametersValidator {
   }
 
   @throws(classOf[IllegalStateException])
-  def getLengthField(recordLengthFieldName: String, cobolSchema: Copybook): Option[Primitive] = {
+  def getLengthField(recordLengthFieldName: String, recordLengthMap: Map[String, Int], cobolSchema: Copybook): Option[RecordLengthField] = {
     val field = cobolSchema.getFieldByName(recordLengthFieldName)
 
     val astNode = field match {
       case s: Primitive =>
-        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral]) {
-          throw new IllegalStateException(s"The record length field $recordLengthFieldName must be an integral type.")
+        if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral] && recordLengthMap.isEmpty) {
+          throw new IllegalStateException(s"The record length field $recordLengthFieldName must be an integral type or a value mapping must be specified.")
         }
         if (s.occurs.isDefined && s.occurs.get > 1) {
           throw new IllegalStateException(s"The record length field '$recordLengthFieldName' cannot be an array.")
@@ -58,17 +58,17 @@ object ReaderParametersValidator {
       case _            =>
         throw new IllegalStateException(s"The record length field $recordLengthFieldName must have an primitive integral type.")
     }
-    Some(astNode)
+    Some(RecordLengthField(astNode, recordLengthMap))
   }
 
   @throws(classOf[IllegalStateException])
-  def getLengthFieldExpr(recordLengthFieldExpr: String, cobolSchema: Copybook): Option[RecordLengthExpression] = {
+  def getLengthFieldExpr(recordLengthFieldExpr: String, recordLengthMap: Map[String, Int], cobolSchema: Copybook): Option[RecordLengthExpression] = {
     val evaluator = new NumberExprEvaluator(recordLengthFieldExpr)
     val vars = evaluator.getVariables
     val fields = vars.map { field =>
-      val primitive = getLengthField(field, cobolSchema)
+      val primitive = getLengthField(field, recordLengthMap, cobolSchema)
         .getOrElse(throw new IllegalArgumentException(s"The record length expression '$recordLengthFieldExpr' contains an unknown field '$field'."))
-      (field, primitive)
+      (field, primitive.field)
     }
     val requiredBytesToRead = if (fields.nonEmpty) {
       fields.map { case (_, field) =>

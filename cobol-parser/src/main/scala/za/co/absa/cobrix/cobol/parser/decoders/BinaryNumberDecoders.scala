@@ -82,12 +82,26 @@ object BinaryNumberDecoders {
     if (v<0) null else v
   }
 
+  def decodeBinaryUnsignedIntBigEndianAsLong(bytes: Array[Byte]): java.lang.Long = {
+    if (bytes.length < 4) {
+      return null
+    }
+    ((bytes(0) & 255L) << 24L) | ((bytes(1) & 255L) << 16L) | ((bytes(2) & 255L) << 8L) | (bytes(3) & 255L)
+  }
+
   def decodeBinaryUnsignedIntLittleEndian(bytes: Array[Byte]): Integer = {
     if (bytes.length < 4) {
       return null
     }
     val v: Int = (((bytes(3) & 255L) << 24L) | ((bytes(2) & 255L) << 16L) | ((bytes(1) & 255L) << 8L) | (bytes(0) & 255L)).toInt
     if (v<0) null else v
+  }
+
+  def decodeBinaryUnsignedIntLittleEndianAsLong(bytes: Array[Byte]): java.lang.Long = {
+    if (bytes.length < 4) {
+      return null
+    }
+    ((bytes(3) & 255L) << 24L) | ((bytes(2) & 255L) << 16L) | ((bytes(1) & 255L) << 8L) | (bytes(0) & 255L)
   }
 
   def decodeBinarySignedLongBigEndian(bytes: Array[Byte]): java.lang.Long = {
@@ -112,12 +126,26 @@ object BinaryNumberDecoders {
     if (v < 0L) null else v
   }
 
+  def decodeBinaryUnsignedLongBigEndianAsDecimal(bytes: Array[Byte]): BigDecimal = {
+    if (bytes.length < 8) {
+      return null
+    }
+    BigDecimal(BigInt(1, bytes).toString())
+  }
+
   def decodeBinaryUnsignedLongLittleEndian(bytes: Array[Byte]): java.lang.Long = {
     if (bytes.length < 8) {
       return null
     }
     val v = ((bytes(7) & 255L) << 56) | ((bytes(6) & 255L) << 48) | ((bytes(5) & 255L) << 40) | ((bytes(4) & 255L) << 32) | ((bytes(3) & 255L) << 24) | ((bytes(2) & 255L) << 16) | ((bytes(1) & 255L) << 8) | (bytes(0) & 255L)
     if (v < 0L) null else v
+  }
+
+  def decodeBinaryUnsignedLongLittleEndianAsDecimal(bytes: Array[Byte]): BigDecimal = {
+    if (bytes.length < 8) {
+      return null
+    }
+    BigDecimal(BigInt(1, bytes.reverse).toString())
   }
 
   def decodeBinaryAribtraryPrecision(bytes: Array[Byte], isBigEndian: Boolean, isSigned: Boolean): BigDecimal = {

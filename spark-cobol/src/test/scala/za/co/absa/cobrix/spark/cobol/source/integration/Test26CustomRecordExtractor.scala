@@ -22,7 +22,6 @@ import za.co.absa.cobrix.spark.cobol.mocks.CustomRecordExtractorMock
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
-//noinspection NameBooleanParameters
 class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
 
   private val exampleName = "Test26 (custom record extractor)"
@@ -44,6 +43,7 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
       }
     }
 
@@ -57,6 +57,7 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
       }
     }
 
@@ -70,6 +71,28 @@ class Test26CustomRecordExtractor extends AnyWordSpec with SparkTestBase with Bi
 
         assert(actual == expected)
         assert(CustomRecordExtractorMock.additionalInfo == "re info")
+        assert(CustomRecordExtractorMock.catchContext.headerStream != CustomRecordExtractorMock.catchContext.inputStream)
+      }
+    }
+
+    "support file headers" in {
+      val expected = """[{"A":"012"},{"A":"345"},{"A":"6"}]"""
+
+      val binData = Array(0x03, 0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6).map(_.toByte)
+
+      withTempBinFile("custom_re", ".dat", binData) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("file_start_offset", 1)
+          .option("record_extractor", "za.co.absa.cobrix.spark.cobol.mocks.CustomRecordExtractorWithFileHeaderMock")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+        assert(actual == expected)
       }
     }
   }

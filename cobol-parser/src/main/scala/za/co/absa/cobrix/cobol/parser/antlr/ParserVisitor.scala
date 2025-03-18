@@ -18,7 +18,6 @@ package za.co.absa.cobrix.cobol.parser.antlr
 
 import java.nio.charset.Charset
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
-import sun.nio.cs.StandardCharsets
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
@@ -27,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding, UTF16}
+import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
@@ -48,6 +47,8 @@ class ParserVisitor(enc: Encoding,
                     floatingPointFormat: FloatingPointFormat,
                     strictSignOverpunch: Boolean,
                     improvedNullDetection: Boolean,
+                    strictIntegralPrecision: Boolean,
+                    decodeBinaryAsHex: Boolean,
                     fieldCodePageMap: Map[String, String]) extends copybookParserBaseVisitor[Expr] {
   /* expressions */
   case class IdentifierExpr(value: String, originalValue: String) extends Expr
@@ -73,6 +74,11 @@ class ParserVisitor(enc: Encoding,
                                        + genericLengthRegex('9')
                                        + genericLengthRegex('P', optional = true)
                                        ).r
+  val numericSPicRegexScaledWithV: Regex = ("(S?)"
+                                            + genericLengthRegex('9')
+                                            + genericLengthRegex('P', optional = true)
+                                            + "V"
+                                            ).r
   val numericSPicRegexExplicitDot: Regex = ("(S?)"
                                             + genericLengthRegex('9', optional = true)
                                             + "."
@@ -149,20 +155,20 @@ class ParserVisitor(enc: Encoding,
       case Some(usageVal) =>
         PicExpr(
           pic.value match {
-            case x: Decimal =>
-              val dec = x.asInstanceOf[Decimal]
+            case dec: Decimal =>
               if (dec.compact.isDefined && !dec.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${dec.compact.get}) doesn't match group's USAGE ($usageVal).")
               dec.copy(compact=usage)
-            case x: Integral =>
-              val int = x.asInstanceOf[Integral]
+            case int: Integral =>
               if (int.compact.isDefined && !int.compact.contains(usageVal))
                 throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
               int.copy(compact=usage)
             case x: AlphaNumeric if usageVal == COMP3U() =>
-              val num = x.asInstanceOf[AlphaNumeric]
-              Integral(num.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
-            case x =>
+              Integral(x.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
+            case x: AlphaNumeric if usageVal == COMP1() || usageVal == COMP4() =>
+              val enc = if (decodeBinaryAsHex) HEX else RAW
+              x.copy(compact=usage, enc=Some(enc))
+            case x: AlphaNumeric =>
               throw new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
           }
         )
@@ -622,19 +628,19 @@ class ParserVisitor(enc: Encoding,
   override def visitAlphaX(ctx: copybookParser.AlphaXContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len, None, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitAlphaN(ctx: copybookParser.AlphaNContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, Some(UTF16), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len * 2, None, None, Some(UTF16), Some(ctx.getText)))
   }
 
   override def visitAlphaA(ctx: copybookParser.AlphaAContext): PicExpr = {
     val text = ctx.getText
     val (char, len) = length(text)
-    PicExpr(AlphaNumeric(s"$char($len)", len, None, Some(enc), Some(ctx.getText)))
+    PicExpr(AlphaNumeric(s"$char($len)", len, None, None, Some(enc), Some(ctx.getText)))
   }
 
   override def visitTrailingSign(ctx: copybookParser.TrailingSignContext): PicExpr = {
@@ -680,13 +686,13 @@ class ParserVisitor(enc: Encoding,
   override def visitPrecision9Ss(ctx: copybookParser.Precision9SsContext): PicExpr = {
     ctx.getText match {
       case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
       )
       case numericSPicRegexScaled(z, nine, scale) => PicExpr(
-        fromNumericSPicRegexScaled(z, nine, scale)
+        fromNumericSPicRegexScaled(z, nine, scale).copy(originalPic = Some(ctx.getText))
       )
       case numericSPicRegexDecimalScaledLead(s, scale, nine) => PicExpr(
-        fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+        fromNumericSPicRegexDecimalScaledLead(s, scale, nine).copy(originalPic = Some(ctx.getText))
       )
       case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
@@ -695,14 +701,14 @@ class ParserVisitor(enc: Encoding,
   override def visitPrecision9Ps(ctx: copybookParser.Precision9PsContext): PicExpr = {
     val numericSPicRegexDecimalScaledLead(s, scale, nine) = ctx.getText
     PicExpr(
-      fromNumericSPicRegexDecimalScaledLead(s, scale, nine)
+      fromNumericSPicRegexDecimalScaledLead(s, scale, nine).copy(originalPic = Some(ctx.getText))
     )
   }
 
   override def visitPrecision9Vs(ctx: copybookParser.Precision9VsContext): PicExpr = {
     ctx.getText match {
       case numericSPicRegexDecimalScaled(s, nine1, scale, nine2) => PicExpr(
-        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2)
+        fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
       )
       case _ => throw new RuntimeException("Error reading PIC " + ctx.getText)
     }
@@ -731,6 +737,13 @@ class ParserVisitor(enc: Encoding,
     val numericSPicRegexDecimalScaled(s, nine1, scale, nine2) = ctx.getText
     PicExpr(
       fromNumericSPicRegexDecimalScaled(s, nine1, scale, nine2).copy(originalPic = Some(ctx.getText))
+    )
+  }
+
+  override def visitPrecision9DecimalScaledWithV(ctx: copybookParser.Precision9DecimalScaledWithVContext): PicExpr = {
+    val numericSPicRegexScaledWithV(s, nine1, scale) = ctx.getText
+    PicExpr(
+      fromNumericSPicRegexScaled(s, nine1, scale).copy(originalPic = Some(ctx.getText))
     )
   }
 
@@ -841,7 +854,7 @@ class ParserVisitor(enc: Encoding,
       Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
       ) (Some(parent))
 
     parent.children.append(prim)

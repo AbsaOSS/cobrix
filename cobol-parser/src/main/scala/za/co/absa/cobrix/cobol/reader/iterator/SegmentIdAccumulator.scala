@@ -16,8 +16,11 @@
 
 package za.co.absa.cobrix.cobol.reader.iterator
 
+import za.co.absa.cobrix.cobol.reader.parameters.ParameterParsingUtils
+
 final class SegmentIdAccumulator (segmentIds: scala.collection.Seq[String], segmentIdPrefix: String, val fileId: Int) {
-  private val segmentIdsArr = segmentIds.toArray.map(_.split(","))
+  private val segmentIdsArr = ParameterParsingUtils.splitSegmentIds(segmentIds)
+
   private val segmentIdCount = segmentIds.size
   private val segmentIdAccumulator = new Array[Long](segmentIdCount + 1)
   private var currentLevel = -1
@@ -77,7 +80,7 @@ final class SegmentIdAccumulator (segmentIds: scala.collection.Seq[String], segm
     var level: Option[Int] = None
     var i = 0
     while (level.isEmpty && i<segmentIdCount) {
-      if (segmentIdsArr(i).contains(id))
+      if (segmentIdsArr(i).contains(id) || segmentIdsArr(i).contains("_"))
         level = Some(i)
       i += 1
     }

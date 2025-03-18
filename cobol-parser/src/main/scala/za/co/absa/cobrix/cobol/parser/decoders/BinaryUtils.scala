@@ -16,23 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import scodec.Codec
-import scodec.bits.BitVector
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 
-import scala.util.control.NonFatal
-
 /** Utilites for decoding Cobol binary data files **/
 //noinspection RedundantBlock
 object BinaryUtils {
-
-  lazy val floatB: Codec[Float] = scodec.codecs.float
-  lazy val floatL: Codec[Float] = scodec.codecs.floatL
-  lazy val doubleB: Codec[Double] = scodec.codecs.double
-  lazy val doubleL: Codec[Double] = scodec.codecs.doubleL
-
   /**
     * This is the EBCDIC to ASCII conversion table. This is an "invariant" subset of EBCDIC code pages.
     * For full EBCDIC code pages support please use [[za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage]]
@@ -104,25 +94,6 @@ object BinaryUtils {
 
   /** Convert an ASCII character to EBCDIC */
   def asciiToEbcdic(char: Char): Byte = ascii2ebcdic(char.toByte)
-
-  /** Get the bit count of a cobol data type
-    *
-    * @param codec     EBCDIC / ASCII
-    * @param comp      A type of compact stirage
-    * @param precision The precision (the number of digits) of the type
-    * @return
-    */
-  def getBitCount(codec: Codec[_ <: AnyVal], comp: Option[Int], precision: Int): Int = {
-    comp match {
-      case Some(value) =>
-        value match {
-          case compact if compact == 3 =>
-            (precision + 1) * codec.sizeBound.lowerBound.toInt //bcd
-          case _ => codec.sizeBound.lowerBound.toInt // bin/float/floatL
-        }
-      case None => precision * codec.sizeBound.lowerBound.toInt
-    }
-  }
 
   def getBytesCount(compression: Option[Usage], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
     import Constants._
@@ -272,33 +243,5 @@ object BinaryUtils {
         bigInt
     }
     addDecimalPoint(value.toString, scale, scaleFactor)
-  }
-
-  /**
-    * A decoder for IEEE-754 big endian floats
-    *
-    * @param bytes A byte array that represents the binary data
-    * @return A boxed float
-    */
-  def decodeFloat(bytes: Array[Byte]): java.lang.Float = {
-    try {
-      floatB.decode(BitVector(bytes)).require.value
-    } catch {
-      case NonFatal(_) => null
-    }
-  }
-
-  /**
-    * A decoder for IEEE-754 big endian doubles
-    *
-    * @param bytes A byte array that represents the binary data
-    * @return A boxed double
-    */
-  def decodeDouble(bytes: Array[Byte]): java.lang.Double = {
-    try {
-      doubleB.decode(BitVector(bytes)).require.value
-    } catch {
-      case NonFatal(_) => null
-    }
   }
 }

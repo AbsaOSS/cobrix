@@ -52,6 +52,7 @@ class Test25OccursMappings extends AnyFunSuite with SparkTestBase {
 
   test("Test Occurs Mappings on VarOccursRecordExtractor") {
     val inputStream = new FSStream(s"$inputDataPath/data.dat")
+    val headerStream = new FSStream(s"$inputDataPath/data.dat")
     val copybookContents = Files.readAllLines(Paths.get("../data/test25_copybook.cob"), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
 
     val occursMapping: Map[String, Map[String, Int]] = Map(
@@ -66,7 +67,7 @@ class Test25OccursMappings extends AnyFunSuite with SparkTestBase {
     )
     val copybook = CopybookParser.parse(copybookContents, ASCII, occursHandlers = occursMapping)
 
-    val recordExtractor = new VarOccursRecordExtractor(RawRecordContext(0L, inputStream, copybook, null, null, ""))
+    val recordExtractor = new VarOccursRecordExtractor(RawRecordContext(0L, inputStream, headerStream, copybook, null, null, ""))
 
     val expectedRecords = ListBuffer(
       "1AX".getBytes,

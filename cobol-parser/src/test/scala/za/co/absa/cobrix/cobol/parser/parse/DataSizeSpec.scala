@@ -40,6 +40,8 @@ class DataSizeSpec extends AnyFunSuite {
       floatingPointFormat = FloatingPointFormat.IBM,
       strictSignOverpunch = true,
       improvedNullDetection = false,
+      strictIntegralPrecision = false,
+      decodeBinaryAsHex = false,
       fieldCodePageMap = Map.empty)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")
@@ -114,6 +116,11 @@ class DataSizeSpec extends AnyFunSuite {
     assert(decimalLength("ZZZ99(5)") == (9, 0, 0))
     assert(decimalLength("ZZZ999") == (6, 0, 0))
     assert(decimalLength("ZZZ999PPP") == (6, 0, 3))
+    assert(decimalLength("9(7)PPP") == (7, 0, 3))
+    assert(decimalLength("9(7)VPPP999") == (7, 3, -3))
+    assert(decimalLength("9(7)PPPV") == (7, 0, 3))
+    assert(decimalLength("S9(7)PPP") == (7, 0, 3))
+    assert(decimalLength("S9(7)PPPV") == (7, 0, 3))
     assert(decimalLength("ZZZ999V99") == (6, 2, 0))
     assert(decimalLength("ZZZ999VPP99") == (6, 2, -2))
     assert(decimalLength("ZZZ999.99") == (6, 2, 0))

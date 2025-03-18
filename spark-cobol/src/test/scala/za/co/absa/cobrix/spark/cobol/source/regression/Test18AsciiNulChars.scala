@@ -77,6 +77,7 @@ class Test18AsciiNulChars extends AnyWordSpec with SparkTestBase with BinaryFile
           .option("pedantic", "true")
           .option("record_format", "D2")
           .option("encoding", "ascii")
+          .option("ascii_charset", "US-ASCII")
           .option("string_trimming_policy", "keep_all")
           .load(tmpFileName)
 

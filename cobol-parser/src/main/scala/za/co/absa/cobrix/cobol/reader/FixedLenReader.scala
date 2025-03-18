@@ -18,5 +18,5 @@ package za.co.absa.cobrix.cobol.reader
 
 /** The abstract class for Cobol block (fixed length records) data readers from various sources */
 trait FixedLenReader extends Reader with Serializable {
-  protected def getRecordIterator(binaryData: Array[Byte]): Iterator[scala.collection.Seq[Any]]
+  def getRecordIterator(binaryData: Array[Byte]): Iterator[scala.collection.Seq[Any]]
 }

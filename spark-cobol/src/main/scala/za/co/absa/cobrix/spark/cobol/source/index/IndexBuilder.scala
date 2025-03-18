@@ -43,23 +43,19 @@ import scala.collection.mutable.ArrayBuffer
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
 private[source] object IndexBuilder extends Logging {
-
-  def buildIndex(filesList: Array[FileWithOrder], cobolReader: Reader, sqlContext: SQLContext)(localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
+  def buildIndex(filesList: Array[FileWithOrder],
+                 cobolReader: Reader,
+                 sqlContext: SQLContext)
+                (localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     val fs = new Path(filesList.head.filePath).getFileSystem(sqlContext.sparkSession.sparkContext.hadoopConfiguration)
-    val isIndexSupported = isFileRandomAccessSupported(fs)
 
     cobolReader match {
-      case reader: VarLenReader if isIndexSupported => {
-        if (reader.isIndexGenerationNeeded && localityParams.improveLocality && isDataLocalitySupported(fs)) {
-          buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext)(localityParams.optimizeAllocation)
-        }
-        else {
-          buildIndexForVarLenReader(filesList, reader, sqlContext)
-        }
-      }
-      case reader: VarLenReader =>
-        buildIndexForFullFiles(filesList, reader, sqlContext)
-      case _ => null
+      case reader: VarLenReader if reader.isIndexGenerationNeeded && localityParams.improveLocality && isDataLocalitySupported(fs) =>
+        buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext, localityParams.optimizeAllocation)
+      case reader: VarLenReader                                                                                                    =>
+        buildIndexForVarLenReader(filesList, reader, sqlContext)
+      case _                                                                                                                       =>
+        buildIndexForFullFiles(filesList, sqlContext)
     }
   }
 
@@ -67,31 +63,28 @@ private[source] object IndexBuilder extends Logging {
     * Builds the indexes by querying HDFS about the records locations and then asking Spark to assign local executors
     * to those records in those locations.
     */
-  private def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext)
-                                                       (optimizeAllocation: Boolean): RDD[SparseIndexEntry] = {
-
+  private[cobol] def buildIndexForVarLenReaderWithFullLocality(filesList: Array[FileWithOrder],
+                                                               reader: VarLenReader,
+                                                               sqlContext: SQLContext,
+                                                               optimizeAllocation: Boolean): RDD[SparseIndexEntry] = {
     val conf = sqlContext.sparkContext.hadoopConfiguration
-
     val filesRDD = toRDDWithLocality(filesList, conf, sqlContext)
-
     val sconf = new SerializableConfiguration(conf)
 
-    val indexes = filesRDD.mapPartitions(
-      partition => {
-        partition.flatMap(row => {
-          val index = generateIndexEntry(row, sconf.value, reader)
+    val indexes = filesRDD.mapPartitions { partition =>
+      partition.flatMap { row =>
+        val index = generateIndexEntry(row, sconf.value, reader)
 
-          val filePath = row.filePath
-          val fileSystem = new Path(filePath).getFileSystem(sconf.value)
+        val filePath = row.filePath
+        val fileSystem = new Path(filePath).getFileSystem(sconf.value)
 
-          index.map(entry => {
-            val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
-            val length = getBlockLengthByIndexEntry(entry)
-            (entry, HDFSUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
-          })
+        index.map { entry =>
+          val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
+          val length = getBlockLengthByIndexEntry(entry)
+          (entry, HDFSUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
         }
-        )
-      })
+      }
+    }
 
     logger.info("Going to collect located indexes into driver.")
     val offsetsLocations: Seq[(SparseIndexEntry, Seq[String])] = if (optimizeAllocation) {
@@ -103,10 +96,8 @@ private[source] object IndexBuilder extends Logging {
 
     logger.info(s"Creating RDD for ${offsetsLocations.length} located indexes.")
 
-    if (logger.isDebugEnabled) {
-      logger.debug("Preferred locations per index entry")
-      offsetsLocations.foreach(allocation => logger.debug(allocation.toString()))
-    }
+    logDebug("Preferred locations per index entry")
+    offsetsLocations.foreach(allocation => logDebug(allocation.toString()))
 
     val indexRDD = sqlContext.sparkContext.makeRDD(offsetsLocations)
 
@@ -114,9 +105,12 @@ private[source] object IndexBuilder extends Logging {
   }
 
   /**
-    * Builds records indexes. Does not take locality into account. Might be removed in further releases.
+    * Builds records indexes. Does not take locality into account. Used for file systems that
+    * do not support data locality (local, S3, etc).
     */
-  def buildIndexForVarLenReader(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SparseIndexEntry] = {
+  private[cobol] def buildIndexForVarLenReader(filesList: Array[FileWithOrder],
+                                               reader: VarLenReader,
+                                               sqlContext: SQLContext): RDD[SparseIndexEntry] = {
     val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
@@ -134,7 +128,8 @@ private[source] object IndexBuilder extends Logging {
   /**
     * Builds records indexes for filesystems that do not support fetching from the middle.
     */
-  def buildIndexForFullFiles(filesList: Array[FileWithOrder], reader: VarLenReader, sqlContext: SQLContext): RDD[SparseIndexEntry] = {
+  private[cobol] def buildIndexForFullFiles(filesList: Array[FileWithOrder],
+                                            sqlContext: SQLContext): RDD[SparseIndexEntry] = {
     val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
 
     val indexRDD = filesRDD.mapPartitions(
@@ -150,7 +145,9 @@ private[source] object IndexBuilder extends Logging {
     repartitionIndexes(indexRDD)
   }
 
-  private def generateIndexEntry(fileWithOrder: FileWithOrder, config: Configuration, reader: VarLenReader): ArrayBuffer[SparseIndexEntry] = {
+  private[cobol] def generateIndexEntry(fileWithOrder: FileWithOrder,
+                                        config: Configuration,
+                                        reader: VarLenReader): ArrayBuffer[SparseIndexEntry] = {
     val filePath = fileWithOrder.filePath
     val path = new Path(filePath)
     val fileOrder = fileWithOrder.order
@@ -168,7 +165,9 @@ private[source] object IndexBuilder extends Logging {
     }
 
     logger.info(s"Going to generate index for the file: $filePath")
-    val index = reader.generateIndex(new FileStreamer(filePath, fileSystem, startOffset, maximumBytes),
+    val inputStream = new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+    val headerStream = new FileStreamer(filePath, fileSystem)
+    val index = reader.generateIndex(inputStream, headerStream,
                                      fileOrder, reader.isRdwBigEndian)
 
     val indexWithEndOffset = if (maximumBytes > 0 ){
@@ -181,8 +180,11 @@ private[source] object IndexBuilder extends Logging {
   }
 
 
-  private def getBlockLengthByIndexEntry(entry: SparseIndexEntry): Long = {
-    val indexedLength = if (entry.offsetTo > 0) entry.offsetTo else Long.MaxValue
+  private[cobol] def getBlockLengthByIndexEntry(entry: SparseIndexEntry): Long = {
+    val indexedLength = if (entry.offsetTo - entry.offsetFrom > 0)
+      entry.offsetTo - entry.offsetFrom
+    else
+      Constants.megabyte
 
     // Each entry of a sparse index can be slightly bigger than the default HDFS block size.
     // The exact size depends on record size and root level boundaries between records.
@@ -203,7 +205,8 @@ private[source] object IndexBuilder extends Logging {
   /**
     * Tries to balance the allocation among unused executors.
     */
-  private def optimizeDistribution(allocation: Seq[(SparseIndexEntry, Seq[String])], sc: SparkContext): Seq[(SparseIndexEntry, Seq[String])] = {
+  private[cobol] def optimizeDistribution(allocation: Seq[(SparseIndexEntry, Seq[String])],
+                                          sc: SparkContext): Seq[(SparseIndexEntry, Seq[String])] = {
     val availableExecutors = SparkUtils.currentActiveExecutors(sc)
     logger.info(s"Trying to balance ${allocation.size} partitions among all available executors ($availableExecutors)")
     LocationBalancer.balance(allocation, availableExecutors)
@@ -212,46 +215,28 @@ private[source] object IndexBuilder extends Logging {
   /**
     * Converts the list of files into an RDD with preferred locations for the partitions.
     */
-  private def toRDDWithLocality(filesList: Array[FileWithOrder], conf: Configuration, sqlContext: SQLContext): RDD[FileWithOrder] = {
+  private[cobol] def toRDDWithLocality(filesList: Array[FileWithOrder],
+                                       conf: Configuration,
+                                       sqlContext: SQLContext): RDD[FileWithOrder] = {
     val fileSystem = FileSystem.get(conf)
 
     val filesWithPreferredLocations = filesList.map(file => {
       (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
     }).toSeq
 
-    if (logger.isDebugEnabled()) {
-      filesWithPreferredLocations.foreach(a => logger.debug(a.toString()))
-    }
+    filesWithPreferredLocations.foreach(a => logDebug(a.toString()))
 
     sqlContext.sparkContext.makeRDD(filesWithPreferredLocations)
+  }
+
+  private[cobol] def isDataLocalitySupported(fs: FileSystem): Boolean = {
+    fs.isInstanceOf[DistributedFileSystem]
   }
 
   private def repartitionIndexes(indexRDD: RDD[SparseIndexEntry]): RDD[SparseIndexEntry] = {
     val indexCount = indexRDD.count()
     val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
-    logger.warn(s"Index elements count: $indexCount, number of partitions = $numPartitions")
+    logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexRDD.repartition(numPartitions).cache()
   }
-
-  def isFileRandomAccessSupported(fs: FileSystem): Boolean = {
-    import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-
-    val isSupportedFx =
-    fs.isInstanceOf[DistributedFileSystem] ||
-      fs.isInstanceOf[RawLocalFileSystem] ||
-      fs.isInstanceOf[FilterFileSystem] ||
-      fs.isInstanceOf[LocalFileSystem] ||
-      fs.isInstanceOf[ChecksumFileSystem]
-    if (!isSupportedFx) {
-      val q = "\""
-      logger.warn(s"Filesystem '${fs.getScheme}://' might not support random file access. Please, disable indexes if the job fails. " +
-      s" You can do this using '.option($q$PARAM_ENABLE_INDEXES$q, false)' ")
-    }
-    true
-  }
-
-  def isDataLocalitySupported(fs: FileSystem): Boolean = {
-    fs.isInstanceOf[DistributedFileSystem]
-  }
-
 }

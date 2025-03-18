@@ -19,6 +19,8 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import scala.collection.mutable
 
 class VariableBlockVariableRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val recordQueue = new mutable.Queue[Array[Byte]]
   private var canSplitAtCurrentOffset = true
   private var recordOffset: Long = ctx.inputStream.offset

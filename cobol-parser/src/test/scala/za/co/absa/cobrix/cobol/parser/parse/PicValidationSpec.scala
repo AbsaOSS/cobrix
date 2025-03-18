@@ -40,6 +40,8 @@ class PicValidationSpec extends AnyFunSuite {
       FloatingPointFormat.IBM,
       strictSignOverpunch = true,
       improvedNullDetection = false,
+      strictIntegralPrecision = false,
+      decodeBinaryAsHex = false,
       fieldCodePageMap = Map.empty)
 
     val charStream = CharStreams.fromString("01 RECORD.\n 05 ABC PIC " + pic + ".")

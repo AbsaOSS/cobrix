@@ -78,7 +78,7 @@ class Test27RecordLengthSpec extends AnyWordSpec with SparkTestBase with BinaryF
         val ex = intercept[IllegalArgumentException] {
           getDataFrame(tmpFileName, Map("record_length" -> "7")).collect()
         }
-        assert(ex.getMessage.contains("are NOT DIVISIBLE by the RECORD SIZE"))
+        assert(ex.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
       }
     }
   }

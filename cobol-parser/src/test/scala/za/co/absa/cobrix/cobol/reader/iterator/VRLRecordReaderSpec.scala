@@ -20,7 +20,7 @@ import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.mock.{ByteStreamMock, RecordExtractorMock, RecordHeadersParserMock}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserRDW}
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedWithRecordLengthExprRawRecordExtractor, RawRecordContext, RawRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.parameters.{MultisegmentParameters, ReaderParameters}
 
 class VRLRecordReaderSpec extends AnyWordSpec {
@@ -63,9 +63,11 @@ class VRLRecordReaderSpec extends AnyWordSpec {
     }
 
     "work for custom header parser" in {
+      val recordHeaderParser = new RecordHeadersParserMock
+      recordHeaderParser.isHeaderDefinedInCopybook = true
       val reader = getUseCase(
         records = customHeaderRecords,
-        recordHeaderParserOpt = Some(new RecordHeadersParserMock(true)))
+        recordHeaderParserOpt = Some(recordHeaderParser))
 
       assert(reader.hasNext)
       val (segment1, record1) = reader.next()
@@ -86,7 +88,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
     }
 
     "work for custom record extractor" in {
-      val context = RawRecordContext(0, new ByteStreamMock(customHeaderRecords), null, null, null, "")
+      val stream = new ByteStreamMock(customHeaderRecords)
+      val context = RawRecordContext(0, stream, stream, null, null, null, "")
 
       val reader = getUseCase(
         records = customHeaderRecords,
@@ -124,10 +127,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x07, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
+
         val reader = getUseCase(
           copybook = copybookWithFieldLength,
           records = records,
-          lengthFieldExpression = Some("LEN"))
+          lengthFieldExpression = Some("LEN"),
+          recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
         assert(reader.hasNext)
         val (segment1, record1) = reader.next()
@@ -160,10 +170,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF1, 0xF5, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
+
         val reader = getUseCase(
           copybook = copybookWithFieldLength,
           records = records,
-          lengthFieldExpression = Some("LEN"))
+          lengthFieldExpression = Some("LEN"),
+          recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
         assert(reader.hasNext)
         val (segment1, record1) = reader.next()
@@ -192,15 +209,73 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           """
 
         val records = Array[Byte](0x00)
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
 
         val ex = intercept[IllegalStateException] {
           getUseCase(
             copybook = copybookWithFieldLength,
             records = records,
-            lengthFieldExpression = Some("LEN"))
+            lengthFieldExpression = Some("LEN"),
+            recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
         }
 
-        assert(ex.getMessage == "The record length field LEN must be an integral type.")
+        assert(ex.getMessage == "The record length field LEN must be an integral type or a value mapping must be specified.")
+      }
+
+      "the length mapping with default record length" in {
+        val copybookWithLenbgthMap =
+          """       01  RECORD.
+            05  LEN_SPEC     PIC X(1).
+            05  N            PIC 9(2).
+            05  A            PIC X(3).
+          """
+
+        val records = Array(
+          0xC1, 0xF1, 0xF2, 0xC1,
+          0xC2, 0xF3, 0xF4, 0xC2, 0xC3,
+          0xC3, 0xF5, 0xF6, 0xC4, 0xC5, 0xC6
+        ).map(_.toByte)
+
+        val streamH = new ByteStreamMock(records)
+        val streamD = new ByteStreamMock(records)
+        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithLenbgthMap), null, null, "")
+
+        val readerParameters = ReaderParameters(
+          lengthFieldExpression = Some("LEN_SPEC"),
+          lengthFieldMap = Map("A" -> 4, "B" -> 5, "_" -> 6))
+
+        val reader = getUseCase(
+          copybook = copybookWithLenbgthMap,
+          records = records,
+          lengthFieldExpression = Some("LEN_SPEC"),
+          recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
+
+        assert(reader.hasNext)
+        val (segment1, record1) = reader.next()
+        assert(reader.hasNext)
+        val (segment2, record2) = reader.next()
+        assert(reader.hasNext)
+        val (segment3, record3) = reader.next()
+        assert(!reader.hasNext)
+
+        assert(segment1.isEmpty)
+        assert(segment2.isEmpty)
+        assert(segment3.isEmpty)
+        assert(record1.length == 4)
+        assert(record2.length == 5)
+        assert(record3.length == 6)
+        assert(record1(0) == 0xC1.toByte)
+        assert(record1(1) == 0xF1.toByte)
+        assert(record1(2) == 0xF2.toByte)
+        assert(record1(3) == 0xC1.toByte)
+        assert(record2(0) == 0xC2.toByte)
+        assert(record2(1) == 0xF3.toByte)
+        assert(record3(0) == 0xC3.toByte)
+        assert(record3(1) == 0xF5.toByte)
       }
     }
 
@@ -217,10 +292,17 @@ class VRLRecordReaderSpec extends AnyWordSpec {
         0x00, 0x08, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
         ).map(_.toByte)
 
+      val streamH = new ByteStreamMock(records)
+      val streamD = new ByteStreamMock(records)
+      val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+
+      val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN - 1"))
+
       val reader = getUseCase(
         copybook = copybookWithFieldLength,
         records = records,
-        lengthFieldExpression = Some("LEN - 1"))
+        lengthFieldExpression = Some("LEN - 1"),
+        recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
 
       assert(reader.hasNext)
       val (segment1, record1) = reader.next()

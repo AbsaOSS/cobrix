@@ -28,6 +28,8 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
   * determined neither from the copybook nor from record headers.
   */
 class VarOccursRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+  ctx.headerStream.close()
+
   private val maxRecordSize = ctx.copybook.getRecordSize
   private val ast = ctx.copybook.ast
   private val hasVarSizeOccurs = copybookHasVarSizedOccurs

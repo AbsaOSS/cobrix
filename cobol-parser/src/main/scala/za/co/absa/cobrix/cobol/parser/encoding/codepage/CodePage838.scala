@@ -25,15 +25,11 @@ class CodePage838 extends SingleByteCodePage(CodePage838.ebcdicToAsciiMapping) {
 
 object CodePage838 {
   val ebcdicToAsciiMapping: Array[Char] = {
+    import EbcdicNonPrintable._
+
     /* This is the EBCDIC Code Page 838 to ASCII conversion table with non-printable characters mapping
        from https://en.everybodywiki.com/EBCDIC_838 */
     val ebcdic2ascii: Array[Char] = {
-      val clf = '\r'
-      val ccr = '\n'
-      val spc = ' '
-      val qts = '\''
-      val qtd = '\"'
-      val bsh = '\\'
       val c01 = '\u0E48'
       val c02 = '\u0E4E'
       val c03 = '\u0E31'

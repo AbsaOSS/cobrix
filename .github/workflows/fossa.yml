@@ -11,14 +11,14 @@ on:
       - '**.svg'
 
 jobs:
-  build:
+  fossa:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Run FOSSA scan and upload build data
-        uses: fossa-contrib/fossa-action@v1
+        uses: fossa-contrib/fossa-action@v2
         with:
-          fossa-api-key: ab616dfa5101a6039259372543d60ccb
+          fossa-api-key: ${{secrets.FOSSA_API_KEY}}

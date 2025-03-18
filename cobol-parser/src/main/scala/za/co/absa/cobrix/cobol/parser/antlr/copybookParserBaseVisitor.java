@@ -278,6 +278,13 @@ public class copybookParserBaseVisitor<T> extends AbstractParseTreeVisitor<T> im
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
+	@Override public T visitPrecision9DecimalScaledWithV(copybookParser.Precision9DecimalScaledWithVContext ctx) { return visitChildren(ctx); }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation returns the result of calling
+	 * {@link #visitChildren} on {@code ctx}.</p>
+	 */
 	@Override public T visitPrecision9Scaled(copybookParser.Precision9ScaledContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}

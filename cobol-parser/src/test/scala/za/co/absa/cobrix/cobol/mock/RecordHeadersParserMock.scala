@@ -18,12 +18,14 @@ package za.co.absa.cobrix.cobol.mock
 
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordMetadata}
 
-class RecordHeadersParserMock(val isHeaderDefinedInCopybook: Boolean = false) extends RecordHeaderParser {
+class RecordHeadersParserMock extends RecordHeaderParser {
+  var isHeaderDefinedInCopybook: Boolean = false
+
   override def getHeaderLength: Int = 2
 
   override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
     if (header.length == 2) {
-      RecordMetadata(header.head + header(1) * 256, isValid = true)
+      RecordMetadata((header.head + 256) % 256 + ((header(1) + 256) % 256)* 256, isValid = true)
     } else {
       RecordMetadata(0, isValid = false)
     }

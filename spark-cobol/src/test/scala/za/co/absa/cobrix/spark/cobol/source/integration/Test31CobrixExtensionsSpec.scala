@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.types.{DecimalType, IntegerType}
+import org.apache.spark.sql.types.{BinaryType, DecimalType, IntegerType, StringType}
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -191,11 +191,66 @@ class Test31CobrixExtensionsSpec extends AnyWordSpec with SparkTestBase with Bin
     }
   }
 
-  def getDf(copybook: String, fileName: String): DataFrame = {
+  "COMP with a alpha-numeric field" should {
+    "be a interpreted as bytes with PIC X" when {
+      val copybook =
+        """      01  R.
+                    03 A        PIC X(4) COMP.
+        """
+
+      val data = Array(0x12.toByte, 0x34.toByte, 0x56.toByte, 0x78.toByte)
+
+      withTempBinFile("compstring", ".bin", data) { fileName =>
+        val df = getDf(copybook, fileName)
+
+        "schema as expected" in {
+          val field = df.schema.fields.head
+
+          assert(field.name == "A")
+          assert(field.dataType == BinaryType)
+        }
+
+        val actual = df.select("A").collect().map(_.get(0).asInstanceOf[Array[Byte]]).head
+
+        "data as expected" in {
+          assert(actual sameElements data)
+        }
+      }
+    }
+
+    "be a interpreted as HEX with PIC X" when {
+      val copybook =
+        """      01  R.
+                03 A        PIC X(4) COMP.
+    """
+
+      val data = Array(0x12.toByte, 0x34.toByte, 0x56.toByte, 0x7A.toByte)
+
+      withTempBinFile("compstring", ".bin", data) { fileName =>
+        val df = getDf(copybook, fileName, options = Map[String, String]("binary_as_hex" -> "true"))
+
+        "schema as expected" in {
+          val field = df.schema.fields.head
+
+          assert(field.name == "A")
+          assert(field.dataType == StringType)
+        }
+
+        val actual = df.select("A").collect().map(_.getString(0)).head
+
+        "data as expected" in {
+          assert(actual == "1234567A")
+        }
+      }
+    }
+  }
+
+    def getDf(copybook: String, fileName: String, options: Map[String, String] = Map.empty): DataFrame = {
     spark.read
       .format("cobol")
       .option("copybook_contents", copybook)
       .option("record_format", "F")
+      .options(options)
       .load(fileName)
   }
 

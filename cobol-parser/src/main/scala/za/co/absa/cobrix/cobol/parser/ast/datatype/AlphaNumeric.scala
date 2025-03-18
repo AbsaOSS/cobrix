@@ -29,6 +29,7 @@ case class AlphaNumeric(
                          pic: String,
                          length: Int,
                          wordAligned: Option[Position] = None,
+                         compact: Option[Usage] = None,
                          enc: Option[Encoding] = None,
                          originalPic: Option[String] = None
                        )

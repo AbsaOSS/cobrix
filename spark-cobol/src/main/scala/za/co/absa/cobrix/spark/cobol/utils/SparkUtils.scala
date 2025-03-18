@@ -17,12 +17,14 @@
 package za.co.absa.cobrix.spark.cobol.utils
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{concat_ws, expr, max}
+import org.apache.spark.sql.functions.{array, col, expr, max, struct}
+import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
+import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.MAX_ELEMENTS
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -44,6 +46,21 @@ object SparkUtils extends Logging {
     logger.info(s"Going to filter driver from available executors: Driver host: $driverHost, Available executors: $allExecutors")
 
     allExecutors.filter(!_.equals(driverHost)).toList.distinct
+  }
+
+  /**
+    * Returns true if Spark Data type is a primitive data type.
+    *
+    * @param dataType Spark data type
+    * @return true if the data type is primitive.
+    */
+  def isPrimitive(dataType: DataType): Boolean = {
+    dataType match {
+      case _: ArrayType => false
+      case _: StructType => false
+      case _: MapType => false
+      case _ => true
+    }
   }
 
   /**
@@ -97,14 +114,14 @@ object SparkUtils extends Logging {
           case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
-            fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName)
+            fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName, structField.metadata)
             stringFields += s"""expr("$path`${structField.name}`[$i] AS `$newFieldName`")"""
         }
         i += 1
       }
     }
 
-    def flattenNestedArrays(path: String, fieldNamePrefix: String, arrayType: ArrayType): Unit = {
+    def flattenNestedArrays(path: String, fieldNamePrefix: String, arrayType: ArrayType, metadata: Metadata): Unit = {
       val maxInd = getMaxArraySize(path)
       var i = 0
       while (i < maxInd) {
@@ -114,12 +131,12 @@ object SparkUtils extends Logging {
             flattenGroup(s"$path[$i]", newFieldNamePrefix, st)
           case ar: ArrayType =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}_"
-            flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar)
+            flattenNestedArrays(s"$path[$i]", newFieldNamePrefix, ar, metadata)
           // AtomicType is protected on package 'sql' level so have to enumerate all subtypes :(
           case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
-            fields += expr(s"$path[$i]").as(newFieldName)
+            fields += expr(s"$path[$i]").as(newFieldName, metadata)
             stringFields += s"""expr("$path`[$i] AS `$newFieldName`")"""
         }
         i += 1
@@ -128,8 +145,8 @@ object SparkUtils extends Logging {
 
     def getMaxArraySize(path: String): Int = {
       getField(path, df.schema) match {
-        case Some(field) if field.metadata.contains("maxElements") =>
-          field.metadata.getLong("maxElements").toInt
+        case Some(field) if field.metadata.contains(MAX_ELEMENTS) =>
+          field.metadata.getLong(MAX_ELEMENTS).toInt
         case _ =>
           val collected = df.agg(max(expr(s"size($path)"))).collect()(0)(0)
           if (collected != null) {
@@ -144,7 +161,7 @@ object SparkUtils extends Logging {
     def flattenArray(path: String, fieldNamePrefix: String, structField: StructField, arrayType: ArrayType): Unit = {
       arrayType.elementType match {
         case _: ArrayType =>
-          flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType)
+          flattenNestedArrays(s"$path${structField.name}", fieldNamePrefix, arrayType, structField.metadata)
         case _ =>
           flattenStructArray(path, fieldNamePrefix, structField, arrayType)
       }
@@ -164,7 +181,7 @@ object SparkUtils extends Logging {
             flattenArray(path, newFieldNamePrefix, field, arr)
           case _ =>
             val newFieldName = getNewFieldName(s"$fieldNamePrefix${field.name}")
-            fields += expr(s"$path`${field.name}`").as(newFieldName)
+            fields += expr(s"$path`${field.name}`").as(newFieldName, field.metadata)
             if (path.contains('['))
               stringFields += s"""expr("$path`${field.name}` AS `$newFieldName`")"""
             else
@@ -178,6 +195,201 @@ object SparkUtils extends Logging {
     df.select(fields.toSeq: _*)
   }
 
+  /**
+    * Removes all struct nesting when possible for a given schema.
+    */
+  def unstructSchema(schema: StructType, useShortFieldNames: Boolean = false): StructType = {
+    def mapFieldShort(field: StructField): Array[StructField] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields flatMap mapFieldShort
+        case _ =>
+          Array(field)
+      }
+    }
+
+    def mapFieldLong(field: StructField, path: String): Array[StructField] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldLong(f, s"$path${field.name}_"))
+        case _ =>
+          Array(field.copy(name = s"$path${field.name}"))
+      }
+    }
+
+    val fields = if (useShortFieldNames)
+      schema.fields flatMap mapFieldShort
+    else
+      schema.fields.flatMap(f => mapFieldLong(f, ""))
+
+    StructType(fields)
+  }
+
+  /**
+    * Removes all struct nesting when possible for a given dataframe.
+    *
+    * Similar to `flattenSchema()`, but does not flatten arrays.
+    */
+  def unstructDataFrame(df: DataFrame, useShortFieldNames: Boolean = false): DataFrame = {
+    def mapFieldShort(column: Column, field: StructField): Array[Column] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldShort(column.getField(f.name), f))
+        case _ =>
+          Array(column.as(field.name, field.metadata))
+      }
+    }
+
+    def mapFieldLong(column: Column, field: StructField, path: String): Array[Column] = {
+      field.dataType match {
+        case st: StructType =>
+          st.fields.flatMap(f => mapFieldLong(column.getField(f.name), f, s"$path${field.name}_"))
+        case _ =>
+          Array(column.as(s"$path${field.name}", field.metadata))
+      }
+    }
+
+    val columns = if (useShortFieldNames)
+      df.schema.fields.flatMap(f => mapFieldShort(col(f.name), f))
+    else
+      df.schema.fields.flatMap(f => mapFieldLong(col(f.name), f, ""))
+    df.select(columns: _*)
+  }
+
+  /**
+    * Copies metadata from one schema to another as long as names and data types are the same.
+    *
+    * @param schemaFrom      Schema to copy metadata from.
+    * @param schemaTo        Schema to copy metadata to.
+    * @param overwrite       If true, the metadata of schemaTo is not retained
+    * @param sourcePreferred If true, schemaFrom metadata is used on conflicts, schemaTo otherwise.
+    * @param copyDataType    If true, data type is copied as well. This is limited to primitive data types.
+    * @return Same schema as schemaTo with metadata from schemaFrom.
+    */
+  def copyMetadata(schemaFrom: StructType,
+                   schemaTo: StructType,
+                   overwrite: Boolean = false,
+                   sourcePreferred: Boolean = false,
+                   copyDataType: Boolean = false): StructType = {
+    def joinMetadata(from: Metadata, to: Metadata): Metadata = {
+      val newMetadataMerged = new MetadataBuilder
+
+      if (sourcePreferred) {
+        newMetadataMerged.withMetadata(to)
+        newMetadataMerged.withMetadata(from)
+      } else {
+        newMetadataMerged.withMetadata(from)
+        newMetadataMerged.withMetadata(to)
+      }
+
+      newMetadataMerged.build()
+    }
+
+    @tailrec
+    def processArray(ar: ArrayType, fieldFrom: StructField, fieldTo: StructField): ArrayType = {
+      ar.elementType match {
+        case st: StructType if fieldFrom.dataType.isInstanceOf[ArrayType] && fieldFrom.dataType.asInstanceOf[ArrayType].elementType.isInstanceOf[StructType] =>
+          val innerStructFrom = fieldFrom.dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType]
+          val newDataType = StructType(copyMetadata(innerStructFrom, st, overwrite, sourcePreferred, copyDataType).fields)
+          ArrayType(newDataType, ar.containsNull)
+        case at: ArrayType =>
+          processArray(at, fieldFrom, fieldTo)
+        case p =>
+          if (copyDataType && fieldFrom.dataType.isInstanceOf[ArrayType] && isPrimitive(fieldFrom.dataType.asInstanceOf[ArrayType].elementType)) {
+            ArrayType(fieldFrom.dataType.asInstanceOf[ArrayType].elementType, ar.containsNull)
+          } else {
+            ArrayType(p, ar.containsNull)
+          }
+      }
+    }
+
+    val fieldsMap = schemaFrom.fields.map(f => (f.name, f)).toMap
+
+    val newFields: Array[StructField] = schemaTo.fields.map { fieldTo =>
+      fieldsMap.get(fieldTo.name) match {
+        case Some(fieldFrom) =>
+          val newMetadata = if (overwrite) {
+            fieldFrom.metadata
+          } else {
+            joinMetadata(fieldFrom.metadata, fieldTo.metadata)
+          }
+
+          fieldTo.dataType match {
+            case st: StructType if fieldFrom.dataType.isInstanceOf[StructType] =>
+              val newDataType = StructType(copyMetadata(fieldFrom.dataType.asInstanceOf[StructType], st, overwrite, sourcePreferred, copyDataType).fields)
+              fieldTo.copy(dataType = newDataType, metadata = newMetadata)
+            case at: ArrayType =>
+              val newType = processArray(at, fieldFrom, fieldTo)
+              fieldTo.copy(dataType = newType, metadata = newMetadata)
+            case _ =>
+              if (copyDataType && isPrimitive(fieldFrom.dataType)) {
+                fieldTo.copy(dataType = fieldFrom.dataType, metadata = newMetadata)
+              } else {
+                fieldTo.copy(metadata = newMetadata)
+              }
+          }
+        case None =>
+          fieldTo
+      }
+    }
+
+    StructType(newFields)
+  }
+
+  /**
+    * Allows mapping every primitive field in a dataframe with a Spark expression.
+    *
+    * The metadata of the original schema is retained.
+    *
+    * @param df The dataframe to map.
+    * @param f  The function to apply to each primitive field.
+    * @return The new dataframe with the mapping applied.
+    */
+  def mapPrimitives(df: DataFrame)(f: (StructField, Column) => Column): DataFrame = {
+    def mapField(column: Column, field: StructField): Column = {
+      field.dataType match {
+        case st: StructType =>
+          val columns = st.fields.map(f => mapField(column.getField(f.name), f))
+          struct(columns: _*).as(field.name, field.metadata)
+        case ar: ArrayType =>
+          mapArray(ar, column, field.name).as(field.name, field.metadata)
+        case _ =>
+          f(field, column).as(field.name, field.metadata)
+      }
+    }
+
+    def mapArray(arr: ArrayType, column: Column, columnName: String): Column = {
+      arr.elementType match {
+        case st: StructType =>
+          transform(column, c => {
+            val columns = st.fields.map(f => mapField(c.getField(f.name), f))
+            struct(columns: _*)
+          })
+        case ar: ArrayType =>
+          array(mapArray(ar, column, columnName))
+        case p =>
+          array(f(StructField(columnName, p), column))
+      }
+    }
+
+    val columns = df.schema.fields.map(f => mapField(col(f.name), f))
+    val newDf = df.select(columns: _*)
+    val newSchema = copyMetadata(df.schema, newDf.schema)
+
+    df.sparkSession.createDataFrame(newDf.rdd, newSchema)
+  }
+
+  def covertIntegralToDecimal(df: DataFrame): DataFrame = {
+    mapPrimitives(df) { (field, c) =>
+      val metadata = field.metadata
+      if (metadata.contains("precision") && (field.dataType == LongType || field.dataType == IntegerType || field.dataType == ShortType)) {
+        val precision = metadata.getLong("precision").toInt
+        c.cast(DecimalType(precision, 0)).as(field.name)
+      } else {
+        c
+      }
+    }
+  }
 
   /**
     * Given an instance of DataFrame returns a dataframe where all primitive fields are converted to String
@@ -277,13 +489,18 @@ object SparkUtils extends Logging {
     }.getOrElse(None)
   }
 
-  def getDefaultHdfsBlockSize(spark: SparkSession): Option[Int] = {
+  def getDefaultHdfsBlockSize(spark: SparkSession, pathOpt: Option[String]): Option[Int] = {
     val conf = spark.sparkContext.hadoopConfiguration
-    val fileSystem = FileSystem.get(conf)
+
+    val fileSystem  =pathOpt match {
+      case Some(pathStr) => new Path(pathStr).getFileSystem(conf)
+      case None => FileSystem.get(conf)
+    }
+
     val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
     hdfsBlockSize match {
-      case None       => logger.info(s"Unable to get HDFS default block size.")
-      case Some(size) => logger.info(s"HDFS default block size = $size MB.")
+      case None => logger.info(s"Unable to get default block size for '${fileSystem.getScheme}://.")
+      case Some(size) => logger.info(s"Default block size for '${fileSystem.getScheme}://' is $size MB.")
     }
 
     hdfsBlockSize

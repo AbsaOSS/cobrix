@@ -16,11 +16,18 @@
 
 package za.co.absa.cobrix.cobol.reader.schema
 
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
+
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+
+import java.nio.charset.{Charset, StandardCharsets}
+import scala.collection.immutable.HashMap
 
 
 /**
@@ -29,6 +36,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   *
   * @param copybook                A parsed copybook.
   * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
@@ -38,6 +46,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   */
 class CobolSchema(val copybook: Copybook,
                   val policy: SchemaRetentionPolicy,
+                  val strictIntegralPrecision: Boolean,
                   val inputFileNameField: String,
                   val generateRecordId: Boolean,
                   val generateRecordBytes: Boolean,
@@ -57,5 +66,79 @@ class CobolSchema(val copybook: Copybook,
     val timestampFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss")
     val now = ZonedDateTime.now()
     timestampFormat.format(now)
+  }
+}
+
+object CobolSchema {
+  def fromReaderParameters(copyBookContents: Seq[String], readerParameters: ReaderParameters): CobolSchema = {
+    if (copyBookContents.isEmpty) {
+      throw new IllegalArgumentException("At least one copybook must be specified.")
+    }
+
+    val encoding = if (readerParameters.isEbcdic) EBCDIC else ASCII
+    val segmentRedefines = readerParameters.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val fieldParentMap = readerParameters.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
+    val codePage = getCodePage(readerParameters.ebcdicCodePage, readerParameters.ebcdicCodePageClass)
+    val asciiCharset = readerParameters.asciiCharset match {
+      case Some(asciiCharset) => Charset.forName(asciiCharset)
+      case None               => StandardCharsets.UTF_8
+    }
+
+    val schema = if (copyBookContents.size == 1)
+      CopybookParser.parseTree(encoding,
+        copyBookContents.head,
+        readerParameters.dropGroupFillers,
+        readerParameters.dropValueFillers,
+        readerParameters.fillerNamingPolicy,
+        segmentRedefines,
+        fieldParentMap,
+        readerParameters.stringTrimmingPolicy,
+        readerParameters.commentPolicy,
+        readerParameters.strictSignOverpunch,
+        readerParameters.improvedNullDetection,
+        readerParameters.strictIntegralPrecision,
+        readerParameters.decodeBinaryAsHex,
+        codePage,
+        asciiCharset,
+        readerParameters.isUtf16BigEndian,
+        readerParameters.floatingPointFormat,
+        readerParameters.nonTerminals,
+        readerParameters.occursMappings,
+        readerParameters.debugFieldsPolicy,
+        readerParameters.fieldCodePage)
+    else
+      Copybook.merge(copyBookContents.map(cpb =>
+        CopybookParser.parseTree(encoding,
+          cpb,
+          readerParameters.dropGroupFillers,
+          readerParameters.dropValueFillers,
+          readerParameters.fillerNamingPolicy,
+          segmentRedefines,
+          fieldParentMap,
+          readerParameters.stringTrimmingPolicy,
+          readerParameters.commentPolicy,
+          readerParameters.strictSignOverpunch,
+          readerParameters.improvedNullDetection,
+          readerParameters.strictIntegralPrecision,
+          readerParameters.decodeBinaryAsHex,
+          codePage,
+          asciiCharset,
+          readerParameters.isUtf16BigEndian,
+          readerParameters.floatingPointFormat,
+          nonTerminals = readerParameters.nonTerminals,
+          readerParameters.occursMappings,
+          readerParameters.debugFieldsPolicy,
+          readerParameters.fieldCodePage)
+      ))
+    val segIdFieldCount = readerParameters.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
+    val segmentIdPrefix = readerParameters.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
+    new CobolSchema(schema, readerParameters.schemaPolicy, readerParameters.strictIntegralPrecision, readerParameters.inputFileNameColumn, readerParameters.generateRecordId, readerParameters.generateRecordBytes, segIdFieldCount, segmentIdPrefix, readerParameters.metadataPolicy)
+  }
+
+  def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {
+    codePageClass match {
+      case Some(c) => CodePage.getCodePageByClass(c)
+      case None => CodePage.getCodePageByName(codePageName)
+    }
   }
 }

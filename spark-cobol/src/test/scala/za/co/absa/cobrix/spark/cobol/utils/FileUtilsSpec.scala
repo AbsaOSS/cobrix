@@ -127,7 +127,6 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
   }
 
   it should "return the number of files inside a directory" in {
-
     val length = 10
     val numFiles = 5
 
@@ -137,12 +136,10 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
   }
 
   it should "return 0 if there are no files inside a directory" in {
-
     assertResult(0)(FileUtils.getNumberOfFilesInDir(controlledLengthFilesDir.getAbsolutePath, fileSystem))
   }
 
   it should "return 1 if there source is actually a file" in {
-
     val aFile = getRandomFileToBeWritten
     produceFileOfLength(aFile, 10)
 
@@ -150,27 +147,30 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
   }
 
   it should "return the file itself if non-divisible and if asked for first file" in {
-
     val aFile = getRandomFileToBeWritten
 
     val divisor = 10
     produceFileOfLength(aFile, divisor + 1)
 
-    assertResult(true)(FileUtils.findAndLogFirstNonDivisibleFile(aFile.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(aFile.getAbsolutePath, divisor, fileSystem)
+
+    assert(notDivisibleFileOpt.isDefined)
+    assert(notDivisibleFileOpt.get._2 == 11)
   }
 
   it should "return the file itself if non-divisible and if asked for multiple files" in {
-
     val aFile = getRandomFileToBeWritten
 
     val divisor = 10
     produceFileOfLength(aFile, divisor + 1)
 
-    assertResult(1)(FileUtils.findAndLogAllNonDivisibleFiles(aFile.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(aFile.getAbsolutePath, divisor, fileSystem)
+
+    assert(notDivisibleFiles.length == 1)
+    assert(notDivisibleFiles.head._2 == 11)
   }
 
   it should "return true if found first non-divisible file" in {
-
     val divisor = 10
 
     produceFileOfLength(getRandomFileToBeWritten, divisor)
@@ -178,11 +178,12 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
     produceFileOfLength(getRandomFileToBeWritten, divisor + 1) // non-divisible
 
-    assertResult(true)(FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem)
+
+    assert(notDivisibleFileOpt.isDefined)
   }
 
   it should "return number of non-divisible files" in {
-
     val divisor = 10
 
     produceFileOfLength(getRandomFileToBeWritten, divisor)
@@ -191,11 +192,12 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     produceFileOfLength(getRandomFileToBeWritten, divisor * 4 + 1) // non-divisible
     produceFileOfLength(getRandomFileToBeWritten, divisor * 5 + 1) // non-divisible
 
-    assertResult(2)(FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem)
+
+    assert(notDivisibleFiles.length == 2)
   }
 
   it should "return false if no files are non-divisible by expected divisor" in {
-
     val divisor = 10
 
     produceFileOfLength(getRandomFileToBeWritten, divisor)
@@ -203,12 +205,12 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     produceFileOfLength(getRandomFileToBeWritten, divisor * 3)
     produceFileOfLength(getRandomFileToBeWritten, divisor * 4)
 
-    assertResult(false)(FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFileOpt = FileUtils.findAndLogFirstNonDivisibleFile(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem)
 
+    assert(notDivisibleFileOpt.isEmpty)
   }
 
   it should "return 0 if no files are non-divisible by expected divisor" in {
-
     val divisor = 10
 
     produceFileOfLength(getRandomFileToBeWritten, divisor)
@@ -217,7 +219,9 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     produceFileOfLength(getRandomFileToBeWritten, divisor * 4) // non-divisible
     produceFileOfLength(getRandomFileToBeWritten, divisor * 5) // non-divisible
 
-    assertResult(0)(FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem))
+    val notDivisibleFiles = FileUtils.findAndLogAllNonDivisibleFiles(controlledLengthFilesDir.getAbsolutePath, divisor, fileSystem)
+
+    assert(notDivisibleFiles.isEmpty)
   }
 
   private def getRandomFileToBeWritten: File = new File(controlledLengthFilesDir, UUID.randomUUID().toString)

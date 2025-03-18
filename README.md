@@ -1,7 +1,9 @@
 # Cobrix - COBOL Data Source for Apache Spark
 
-[![Build Scala 2.12 Spark 3.0](https://github.com/AbsaOSS/cobrix/workflows/Build/badge.svg)](https://github.com/AbsaOSS/cobrix/actions)
+[![License: Apache v2](https://img.shields.io/badge/license-Apache%202-blue)](https://directory.fsf.org/wiki/License:Apache-2.0)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix.svg?type=shield)](https://app.fossa.com/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix)
+[![Build](https://github.com/AbsaOSS/cobrix/workflows/Build/badge.svg)](https://github.com/AbsaOSS/cobrix/actions)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13)
 
 Pain free Spark/Cobol files integration.
 
@@ -13,28 +15,28 @@ Add mainframe as a source to your data engineering strategy.
 
 Among the motivations for this project, it is possible to highlight:
 
-- Lack of expertise in the Cobol ecosystem, which makes it hard to integrate mainframes into data engineering strategies
+- Lack of expertise in the Cobol ecosystem, which makes it hard to integrate mainframes into data engineering strategies.
 
-- Lack of support from the open-source community to initiatives in this field
+- Lack of support from the open-source community to initiatives in this field.
 
-- The overwhelming majority (if not all) of tools to cope with this domain are proprietary
+- The overwhelming majority (if not all) of tools to cope with this domain are proprietary.
 
-- Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management
+- Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management.
 
-- Mainframe data can only take part in data science activities through very expensive investments
+- Mainframe data can only take part in data science activities through very expensive investments.
 
 
 ## Features
 
-- Supports primitive types (although some are "Cobol compiler specific")
+- Supports primitive types (although some are "Cobol compiler specific").
 
-- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays)
+- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays).
 
-- Supports nested structures and arrays (including "flattened" nested names)
+- Supports nested structures and arrays.
 
-- Supports HDFS as well as local file systems
+- Supports Hadoop (HDFS, S3, ...) as well as local file system.
 
-- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines
+- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines.
 
 ## Videos
 
@@ -72,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.6.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.8.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.6.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.8.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.6.5</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.8.2</pre>
 </td>
 </tr>
 </table>
@@ -89,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.6.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.8.2
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.2
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.6.5
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.8.2
 ```
 
 ## Usage
@@ -133,18 +135,20 @@ Code coverage will be generated on path:
 {project-root}/cobrix/{module}/target/scala-{scala_version}/jacoco/report/html
 ```
 
-### Reading Cobol binary files from HDFS/local and querying them 
+### Reading Cobol binary files from Hadoop/local and querying them 
 
 1. Create a Spark ```SQLContext```
 
 2. Start a ```sqlContext.read``` operation specifying ```za.co.absa.cobrix.spark.cobol.source``` as the format
 
-3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. By default the copybook
-   is expected to be in HDFS. You can specify that a copybook is located in the local file system by adding `file://` prefix. For example, you
-   can specify a local file like this `.option("copybook", "file:///home/user/data/compybook.cpy")`. Alternatively, instead of providing a path
-   to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
+3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. 
+   - By default the copybook is expected to be in the default Hadoop filesystem (HDFS, S3, etc). 
+   - You can specify that a copybook is located in the local file system by adding `file://` prefix. 
+   - For example, you can specify a local file like this `.option("copybook", "file:///home/user/data/copybook.cpy")`.
+   - Alternatively, instead of providing a path to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
+   - You can store the copybook in the JAR itself at resources section in this case use `jar://` prefix, e.g.: `.option("copybook", "jar:///copybooks/copybook.cpy")`.
 
-4. Inform the path to the HDFS directory containing the files: ```... .load("path_to_directory_containing_the_binary_files")``` 
+4. Inform the path to the Hadoop directory containing the files: ```... .load("s3a://path_to_directory_containing_the_binary_files")``` 
 
 5. Inform the query you would like to run on the Cobol Dataframe
 
@@ -178,7 +182,7 @@ If the input file is a text file (CRLF / LF are used to split records), use
 `.option("is_text", "true")`.
 
 Multisegment ASCII text files are supported using this option:
-`.option("record_format", "D)"`.
+`.option("record_format", "D")`.
 
 Cobrix has better handling of special characters and partial records using its extension format:
 `.option("record_format", "D2")`.
@@ -206,7 +210,7 @@ val spark = SparkSession
   .master("local[2]")
   .config("duration", 2)
   .config("copybook", "path_to_the_copybook")
-  .config("path", "path_to_source_directory") // could be both, local or HDFS
+  .config("path", "path_to_source_directory") // could be both, local or Hadoop (s3://, hdfs://, etc)
   .getOrCreate()          
       
 val streamingContext = new StreamingContext(spark.sparkContext, Seconds(3))         
@@ -231,22 +235,22 @@ of the dependencies.
 
 #### Getting all Cobrix dependencies
 
-Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself and on `scodec` libraries
-to decode various binary formats.
+Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself.
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.6.5.jar
-* cobol-parser_2.12-2.6.5.jar
-* scodec-core_2.12-1.10.3.jar
-* scodec-bits_2.12-1.1.4.jar
-* antlr4-runtime-4.8.jar 
+* spark-cobol_2.12-2.8.2.jar
+* cobol-parser_2.12-2.8.2.jar
+
+> Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
+
+> Versions older than 2.7.1 also need `antlr4-runtime-4.8.jar`.
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.6.5
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.6.5.jar,cobol-parser_2.12-2.6.5.jar,scodec-core_2.12-1.10.3.jar,scodec-bits_2.12-1.1.4.jar,antlr4-runtime-4.8.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.8.2.jar,cobol-parser_2.12-2.8.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -297,24 +301,27 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
 - Run `sbt assembly` in the root directory of the repository specifying the Scala and Spark version you want to build for:
     ```sh
     # For Scala 2.11
-    sbt ++2.11.12 assembly -DSPARK_VERSION=2.4.8
+    sbt -DSPARK_VERSION="2.4.8" ++2.11.12 assembly
   
     # For Scala 2.12
-    sbt ++2.12.17 assembly -DSPARK_VERSION=2.4.8
-    sbt ++2.12.17 assembly -DSPARK_VERSION=3.1.3
-    sbt ++2.12.17 assembly -DSPARK_VERSION=3.2.3
+    sbt -DSPARK_VERSION="2.4.8" ++2.12.20 assembly
+    sbt -DSPARK_VERSION="3.1.3" ++2.12.20 assembly
+    sbt -DSPARK_VERSION="3.2.3" ++2.12.20 assembly
+    sbt -DSPARK_VERSION="3.3.2" ++2.12.20 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.12.20 assembly
   
     # For Scala 2.13
-    sbt ++2.13.10 assembly -DSPARK_VERSION=3.3.2
+    sbt -DSPARK_VERSION="3.3.2" ++2.13.15 assembly
+    sbt -DSPARK_VERSION="3.4.0" ++2.13.15 assembly
     ```
 
 You can collect the uber jar of `spark-cobol` either at
 `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
-The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.6.5
+The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.7.3
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.6-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.8.3-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -325,8 +332,8 @@ $ spark-shell --jars spark-cobol_2.12_3.3.2-2.6.6-SNAPSHOT-bundle.jar
 >   You can work around it by using default Spark version for a given Scala version:
 >   ```sh
 >   sbt ++2.11.12 assembly
->   sbt ++2.12.17 assembly
->   sbt ++2.13.10 assembly
+>   sbt ++2.12.20 assembly
+>   sbt ++2.13.15 assembly
 >   ```
 
 ## Other Features
@@ -345,8 +352,18 @@ Currently, specifying multiple paths in `load()` is not supported. Use the follo
 ### Spark SQL schema extraction
 This library also provides convenient methods to extract Spark SQL schemas and Cobol layouts from copybooks.  
 
-If you want to extract a Spark SQL schema from a copybook: 
+If you want to extract a Spark SQL schema from a copybook by providing same options you provide to Spark: 
+```scala
+// Same options that you use for spark.read.format("cobol").option()
+val options = Map("schema_retention_policy" -> "keep_original")
 
+val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook), options)
+val sparkSchema = cobolSchema.getSparkSchema.toString()
+
+println(sparkSchema)
+```
+
+If you want to extract a Spark SQL schema from a copybook using the Cobol parser directly:
 ```scala
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -461,6 +478,20 @@ or
 ```
 .option("record_format", "F")
 .option("record_length_field", "FIELD1 * 10 + 200")
+```
+
+If the record field contains a string that can be mapped to a record size, you can add the mapping as a JSON:
+```
+.option("record_format", "F")
+.option("record_length_field", "FIELD_STR")
+.option("record_length_map", """{"SEG1":100,"SEG2":200}""")  
+```
+
+You can specify the default record size by defining the key "_":
+```
+.option("record_format", "F")
+.option("record_length_field", "FIELD_STR")
+.option("record_length_map", """{"SEG1":100,"SEG2":200,"_":100}""")  
 ```
 
 ### Use cases for various variable length formats
@@ -578,7 +609,7 @@ records parsing.
 
 However effective, this strategy may also suffer from excessive shuffling, since indexes may be sent to executors far from the actual data.
 
-The latter issue is overcome by extracting the preferred locations for each index directly from HDFS, and then passing those locations to
+The latter issue is overcome by extracting the preferred locations for each index directly from HDFS/S3/..., and then passing those locations to
 Spark during the creation of the RDD that distributes the indexes.
 
 When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is
@@ -588,6 +619,8 @@ enabled by default, but can be disabled by the configuration below:
 ```
 
 ### Workload optimization for variable-length records parsing
+
+This feature works only for HDFS, not for any other of Hadoop filesystems.
 
 When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse
 each record, i.e. the nodes where the record resides.
@@ -1221,6 +1254,23 @@ val df = spark
   .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
+Sometimes, the leaf level has many segments. In this case, you can use `_` as the list of segment ids to specify
+'the rest of segment ids', like this:
+
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("record_format", "V")
+  .option("segment_field", "SEGMENT_ID")
+  .option("segment_id_level0", "C")
+  .option("segment_id_level1", "_")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The result of both above code snippets is the same.
+
 The resulting table will look like this:
 ```
 df.show(10)
@@ -1392,6 +1442,74 @@ When using `9` 8 refers to the number of digits the number has. Here, the size o
 ```
 You can have decimals when using COMP-3 as well.
 
+### Flattening schema with GROUPs and OCCURS
+Flattening could be helpful when migrating data from mainframe data with fields that have OCCURs (arrays) to a relational
+databases that do not support nested arrays.
+
+Cobrix has a method that can flatten the schema automatically given a DataFrame produced by `spark-cobol`.
+
+Spark Scala example:
+```scala
+val dfFlat = SparkUtils.flattenSchema(df, useShortFieldNames = false)
+```
+
+PySpark example
+```python
+from pyspark.sql import SparkSession, DataFrame, SQLContext
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, ArrayType
+from py4j.java_gateway import java_import
+
+schema = StructType([
+   StructField("id", IntegerType(), True),
+   StructField("name", StringType(), True),
+   StructField("subjects", ArrayType(StringType()), True)
+])
+
+# Sample data
+data = [
+   (1, "Alice", ["Math", "Science"]),
+   (2, "Bob", ["History", "Geography"]),
+   (3, "Charlie", ["English", "Math", "Physics"])
+]
+
+# Create a test DataFrame
+df = spark.createDataFrame(data, schema)
+
+# Show the Dataframe before flattening
+df.show()
+
+# Flatten the schema using Cobrix Scala 'SparkUtils.flattenSchema' method
+sc = spark.sparkContext
+java_import(sc._gateway.jvm, "za.co.absa.cobrix.spark.cobol.utils.SparkUtils")
+dfFlatJvm = spark._jvm.SparkUtils.flattenSchema(df._jdf, False)
+dfFlat = DataFrame(dfFlatJvm, SQLContext(sc))
+
+# Show the Dataframe after flattening
+dfFlat.show(truncate=False)
+dfFlat.printSchema()
+```
+
+The output looks like this:
+```
+# Before flattening
++---+-------+------------------------+
+|id |name   |subjects                |
++---+-------+------------------------+
+|1  |Alice  |[Math, Science]         |
+|2  |Bob    |[History, Geography]    |
+|3  |Charlie|[English, Math, Physics]|
++---+-------+------------------------+
+
+# After flattening
++---+-------+----------+----------+----------+
+|id |name   |subjects_0|subjects_1|subjects_2|
++---+-------+----------+----------+----------+
+|1  |Alice  |Math      |Science   |null      |
+|2  |Bob    |History   |Geography |null      |
+|3  |Charlie|English   |Math      |Physics   |
++---+-------+----------+----------+----------+
+```
+
 ## Summary of all available options
 
 ##### File reading options
@@ -1414,18 +1532,20 @@ You can have decimals when using COMP-3 as well.
 
 ##### Data parsing options
 
-| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                                       |
-|-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                                              |
-| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, `cp300`, `cp838`, `cp870`, `cp875`, `cp1025`, `cp1047`. `*_extended` code pages supports non-printable characters that converts to ASCII codes below 32. |
-| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                                     |
-| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                                  |
-| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                                       |
-| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                                   |
-| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements.                 |
-| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                                             |
-| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                                |
-| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                             |
+| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                       |
+|-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                              |
+| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, and others (see "Currently supported EBCDIC code pages" section.                                                                         |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                     |
+| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                  |
+| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                       |
+| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                   |
+| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                             |
+| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                |
+| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                             |
+| .option("strict_integral_precision", "true")              | If `true`, Cobrix will not generate `short`/`integer`/`long` Spark data types, and always use `decimal(n)` with the exact precision that matches the copybook.                                                                                                                    |
+| .option("binary_as_hex", "false")                         | By default fields that have `PIC X` and `USAGE COMP` are converted to `binary` Spark data type. If this option is set to `true`, such fields will be strings in HEX encoding.                                                                                                     |
 
 ##### Modifier options
 
@@ -1463,6 +1583,7 @@ You can have decimals when using COMP-3 as well.
 | .option("bdw_adjustment", 0)                                | If there is a mismatch between BDW and record length this option can be used to adjust the difference.                                                                                                                                                                                  |
 | .option("re_additional_info", "")                           | Passes a string as an additional info parameter passed to a custom record extractor to its constructor.                                                                                                                                                                                 |
 | .option("record_length_field", "RECORD-LEN")                | Specifies a record length field or expression to use instead of RDW. Use `rdw_adjustment` option if the record length field differs from the actual length by a fixed amount of bytes. The `record_format` should be set to `F`. This option is incompatible with `is_record_sequence`. |
+| .option("record_length_map", """{"A":100,"B":50}""")        | Specifies a mapping between record length field values and actual record lengths.                                                                                                                                                                                                       |
 | .option("record_extractor", "com.example.record.extractor") | Specifies a class for parsing record in a custom way. The class must inherit `RawRecordExtractor` and `Serializable` traits. See the chapter on record extractors above.                                                                                                                |
 | .option("minimum_record_length", 1)                         | Specifies the minimum length a record is considered valid, will be skipped otherwise.                                                                                                                                                                                                   |
 | .option("maximum_record_length", 1000)                      | Specifies the maximum length a record is considered valid, will be skipped otherwise.                                                                                                                                                                                                   |
@@ -1501,11 +1622,48 @@ You can have decimals when using COMP-3 as well.
 | Option (usage example)                             | Description                                                                                                                                                                        |
 |----------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("pedantic", "false")                       | If 'true' Cobrix will throw an exception is an unknown option is encountered. If 'false' (default), unknown options will be logged as an error without failing Spark Application.  |
+| .option("debug_layout_positions", "true")          | If 'true' Cobrix will generate and log layout positions table when reading data.                                                                                                   |
 | .option("debug_ignore_file_size", "true")          | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file.                                      |
 | .option("ascii_charset", "US-ASCII")               | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                   |
 | .option("field_code_page:cp825", "field1, field2") | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                   |
 | .option("minimum_record_length", 1)                | Specifies the minimum length a record is considered valid, will be skipped otherwise. It is used to skip ASCII lines that contains invalid records, an EOF character, for example. |
 | .option("maximum_record_length", 1000)             | Specifies the maximum length a record is considered valid, will be skipped otherwise.                                                                                              |
+
+##### Currently supported EBCDIC code pages
+
+| Option                                | Code page   | Description                                                                                                 |
+|:--------------------------------------|-------------|:------------------------------------------------------------------------------------------------------------|
+| .option("ebcdic_code_page", "common") | Common      | (Default) Only characters common across EBCDIC code pages are decoded.                                      |
+| .option("ebcdic_code_page", "cp037")  | EBCDIC 037  | Australia, Brazil, Canada, New Zealand, Portugal, South Africa, USA.                                        |
+| .option("ebcdic_code_page", "cp273")  | EBCDIC 273  | Germany, Austria.                                                                                           |
+| .option("ebcdic_code_page", "cp274")  | EBCDIC 274  | Belgium.                                                                                                    |
+| .option("ebcdic_code_page", "cp275")  | EBCDIC 275  | Brazil.                                                                                                     |
+| .option("ebcdic_code_page", "cp277")  | EBCDIC 277  | Denmark and Norway.                                                                                         |
+| .option("ebcdic_code_page", "cp278")  | EBCDIC 278  | Finland and Sweden.                                                                                         |
+| .option("ebcdic_code_page", "cp280")  | EBCDIC 280  | Italy.                                                                                                      |
+| .option("ebcdic_code_page", "cp284")  | EBCDIC 284  | Spain and Latin America.                                                                                    |
+| .option("ebcdic_code_page", "cp285")  | EBCDIC 285  | United Kingdom.                                                                                             |
+| .option("ebcdic_code_page", "cp297")  | EBCDIC 297  | France.                                                                                                     |
+| .option("ebcdic_code_page", "cp300")  | EBCDIC 300  | Double-byte code page with Japanese and Latin characters.                                                   |
+| .option("ebcdic_code_page", "cp500")  | EBCDIC 500  | Belgium, Canada, Switzerland, International.                                                                |
+| .option("ebcdic_code_page", "cp838")  | EBCDIC 838  | Double-byte code page with Thai and Latin characters.                                                       |
+| .option("ebcdic_code_page", "cp870")  | EBCDIC 870  | Albania, Bosnia and Herzegovina, Croatia, Czech Republic, Hungary, Poland, Romania, Slovakia, and Slovenia. |
+| .option("ebcdic_code_page", "cp875")  | EBCDIC 875  | A code page with Greek characters.                                                                          |
+| .option("ebcdic_code_page", "cp1025") | EBCDIC 1025 | A code page with Cyrillic alphabet.                                                                         |
+| .option("ebcdic_code_page", "cp1047") | EBCDIC 1047 | A code page containing all of the Latin-1/Open System characters.                                           |
+| .option("ebcdic_code_page", "cp1140") | EBCDIC 1140 | Same as code page 037 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1141") | EBCDIC 1141 | Same as code page 273 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1142") | EBCDIC 1142 | Same as code page 277 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1143") | EBCDIC 1143 | Same as code page 278 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1144") | EBCDIC 1144 | Same as code page 280 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1145") | EBCDIC 1145 | Same as code page 284 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1147") | EBCDIC 1147 | Same as code page 297 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1148") | EBCDIC 1148 | Same as code page 500 with € at the position of the international currency symbol ¤.                        |
+| .option("ebcdic_code_page", "cp1160") | EBCDIC 1160 | Same as code page 838 with € at the position 0xFE.                                                          |
+| .option("ebcdic_code_page", "cp1364") | EBCDIC 1364 | Double-byte code page CCSID-1364, Korean.                                                                   |
+| .option("ebcdic_code_page", "cp1388") | EBCDIC 1388 | Double-byte code page CCSID-1388, Simplified Chinese.                                                       |
+
+`common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
 ## Performance Analysis
 
@@ -1637,14 +1795,145 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.6.6 will be released soon.
+- #### 2.8.2 released 25 February 2025.
+   - [#744](https://github.com/AbsaOSS/cobrix/issues/744) Added the ability to specify default record length for the record length field mapping:
+     The default record length can be specified by assigning a value to the underscore key `"_"`. For example:
+     ```scala
+     .option("record_format", "F")
+     .option("record_length_field", "RECORD_TYPE")
+     .option("record_length_map", """{"A":100,"B":200,"_":500}""")
+     ```
+
+- #### 2.8.1 released 27 January 2025.
+   - [#730](https://github.com/AbsaOSS/cobrix/issues/730) Added more code pages with euro character in https://github.com/AbsaOSS/cobrix/pull/741.
+   - [#740](https://github.com/AbsaOSS/cobrix/issues/740) Extended binary type support to make sure unsigned binary fields can fit Spark data types in https://github.com/AbsaOSS/cobrix/pull/742.
+
+- #### 2.8.0 released 8 January 2025.
+   - [#258](https://github.com/AbsaOSS/cobrix/issues/258) Removed dependency on `scodec` so that it doesn't cause conflicts with Spark distributions and other libraries.
+
+- #### 2.7.10 released 19 December 2024.
+   - [#728](https://github.com/AbsaOSS/cobrix/issues/728) Added CP1145 code page (Spain and Latin America).
+   - [#731](https://github.com/AbsaOSS/cobrix/issues/731) Added an option to copy data type when copying metadata.
+     ```scala
+     SparkUtils.copyMetadata(schemaFrom, schemaTo, copyDataType = true)
+     ```
+
+- #### 2.7.9 released 8 November 2024.
+   - [#722](https://github.com/AbsaOSS/cobrix/issues/722) Added more EBCDIC code pages (mostly European).
+
+- #### 2.7.8 released 21 October 2024.
+   - [#719](https://github.com/AbsaOSS/cobrix/issues/719) Improve error message for fixed record length files when the record size does not divide file size.
+
+- #### 2.7.7 released 10 October 2024.
+   - [#702](https://github.com/AbsaOSS/cobrix/issues/702) Fix a race condition for fixed record length file processing.
+     Thanks @vinodkc for the fix and @pinakigit for testing!
+   - [#715](https://github.com/AbsaOSS/cobrix/issues/715) Fix Jacoco report and update Scala versions.
+
+- #### 2.7.6 released 26 September 2024.
+   - [#710](https://github.com/AbsaOSS/cobrix/issues/710) Fix index generation for files with record length fields or expressions.
+   - [#712](https://github.com/AbsaOSS/cobrix/issues/712) Add an option for explicitly logging layout positions (`false` by default).
+     ```scala
+     // Enable logging of layout positions
+     .option("debug_layout_positions", "true")
+     ```
+
+- #### 2.7.5 released 19 August 2024.
+   - [#703](https://github.com/AbsaOSS/cobrix/issues/703) Add maximum length for generated segment id fields, like `seg_id0`, `seg_id1`, etc. 
+
+- #### 2.7.4 released 31 July 2024.
+   - [#697](https://github.com/AbsaOSS/cobrix/issues/697) Improve metadata merging method in Spark Utils. Add conflict resolution and merge flags
+     ```scala
+     // Field metadata can be lost during various transformations.
+     // You can copy metadata from one schema to another directly
+     val df1 = ??? //  A dataframe with metadata
+     val df2 = ??? //  A dataframe without metadata
+     val mergedSchema = SparkUtils.copyMetadata(df1.schema, df2.schema)
+     
+     // Create the new dataframe based on the schema with merged metadata 
+     val newDf = spark.createDataFrame(df2.rdd, mergedSchema)
+     ```
+
+- #### 2.7.3 released 17 July 2024.
+   - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Add the ability to generate Spark schema based on strict integral precision:
+     ```scala
+     // `decimal(n,0)` will be used instead of `integer` and `long`
+     .option("strict_integral_precision", "true")
+     ```
+   - [#689](https://github.com/AbsaOSS/cobrix/issues/689) Add support for '_' for hierarchical key generation at leaf level:
+     ```scala
+     .option("segment_id_level0", "SEG0") // Root segment
+     .option("segment_id_level1", "_")    // Leaf segment (use 'all other' segment IDs)
+     ```
+
+- #### 2.7.2 released 7 June 2024.
+   - [#684](https://github.com/AbsaOSS/cobrix/issues/684) Fixed failing to read a data file in certain combination of options.
+   - [#685](https://github.com/AbsaOSS/cobrix/issues/685) Added methods to flatten schema of a dataframe more effective than `flattenSchema()`, but does not flatten arrays:
+     ```scala
+     // df - a DataFrame with nested structs
+     val flatDf = SparkUtils.unstructDataFrame(df)
+     // flatDf the same dataframe with all nested fields promoted to the top level.
+     ```
+
+- #### 2.7.1 released 4 June 2024.
+   - [#680](https://github.com/AbsaOSS/cobrix/issues/680) Shaded ANTLR runtime in 'cobol-parser' to avoid conflicts with various versions of Spark that uses ANTLR as well.
+   - [#678](https://github.com/AbsaOSS/cobrix/issues/678) Added an experimental method `SparkUtils.covertIntegralToDecimal()` for applying extended metadata to a DataFrame.
+
+- #### 2.7.0 released 23 April 2024.
+   - [#666](https://github.com/AbsaOSS/cobrix/issues/666) Added support for record length value mapping.
+     ```scala
+     .option("record_format", "F")
+     .option("record_length_field", "FIELD_STR")
+     .option("record_length_map", """{"SEG1":100,"SEG2":200}""")
+     ```
+   - [#669](https://github.com/AbsaOSS/cobrix/issues/669) Allow 'V' to be at the end of scaled PICs.
+     ```cobol
+          10  SCALED-DECIMAL-FIELD    PIC S9PPPV      DISPLAY.
+     ```
+   - [#672](https://github.com/AbsaOSS/cobrix/issues/672) Add the ability to parse copybooks with options normally passed to the `spark-cobol` Spark data source.
+     ```scala
+     // Same options that you use for spark.read.format("cobol").option()
+     val options = Map("schema_retention_policy" -> "keep_original")
+     
+     val cobolSchema = CobolSchema.fromSparkOptions(Seq(copybook), options)
+     val sparkSchema = cobolSchema.getSparkSchema.toString()
+     
+     println(sparkSchema)
+     ```
+   - [#674](https://github.com/AbsaOSS/cobrix/issues/674) Extended the usage of indexes for variable record length files with a record length field.
+     ```scala
+     .option("record_length_field", "RECORD-LENGTH")
+     .option("enable_indexes", "true") // true by default so can me omitted
+     ```
+
+<details><summary>Older versions</summary>
+<p>
+
+- #### 2.6.11 released 8 April 2024.
+   - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
+
+- #### 2.6.10 released 17 January 2024.
+   - [#653](https://github.com/AbsaOSS/cobrix/issues/653) Add support for new EBCDIC code pages: 273, 500, 1140, 1141, 1148.
+
+- #### 2.6.9 released 16 October 2023.
+   - [#634](https://github.com/AbsaOSS/cobrix/issues/634) Retain metadata when flattening the schema in SparkUtils.
+   - [#644](https://github.com/AbsaOSS/cobrix/issues/644) Add support for Spark 3.5.0.
+
+- #### 2.6.8 released 1 June 2023.
+   - [#624](https://github.com/AbsaOSS/cobrix/issues/624) Add support for binary fields that have `PIC X` and `USAGE COMP`.
+
+- #### 2.6.7 released 6 May 2023.
+   - [#620](https://github.com/AbsaOSS/cobrix/issues/620) Fixed a regression bug that made a breaking change to custom record extractors. The source code compatibility has been restored.
+
+- #### 2.6.6 released 5 May 2023.
    - [#601](https://github.com/AbsaOSS/cobrix/issues/601) Fixed `file_start_offset` and `file_end_offset` options for VB record format (BDW+RDW).
-   - [#607](https://github.com/AbsaOSS/cobrix/issues/607) Add `minimum_record_length` and `maximum_record_length` options.
+   - [#614](https://github.com/AbsaOSS/cobrix/issues/614) Fixed catching a state when a custom record extractor does not conform to the contract.
+   - [#613](https://github.com/AbsaOSS/cobrix/issues/613) Added the ability of custom record extractors to get header stream pointing to teh beginning of the file.
+   - [#607](https://github.com/AbsaOSS/cobrix/issues/607) Added `minimum_record_length` and `maximum_record_length` options.
 
 - #### 2.6.5 released 5 April 2023.
    - [#539](https://github.com/AbsaOSS/cobrix/issues/539) Fixed 'cp300', and added experimental support for 'cp1364' and 'cp1388' code pages (thanks [@BenceBenedek](https://github.com/BenceBenedek)).
    - [#590](https://github.com/AbsaOSS/cobrix/issues/590) Changed from `.option("extended_metadata", true)` to `.option("metadata", "extended")` allowing other modes like 'basic' (default) and 'false' (disable metadata).
-   - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Add option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
+   - [#593](https://github.com/AbsaOSS/cobrix/issues/593) Added option `.option("generate_record_bytes", true)` that adds a field containing raw bytes of each record decoded.
 
 - #### 2.6.4 released 3 March 2023.
    - [#576](https://github.com/AbsaOSS/cobrix/issues/576) Added the ability to create DataFrames from RDDs plus a copybook using `.Cobrix.fromRdd()` extension (look for 'Cobrix.fromRdd' for examples).
@@ -1690,9 +1979,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
      allowed for unsigned fields.
    - [#501](https://github.com/AbsaOSS/cobrix/issues/501) Fixed decimal field null detection when 'improved_null_detection' is turned on.
    - [#502](https://github.com/AbsaOSS/cobrix/issues/502) Fixed parsing of scaled decimals that have a pattern similar to `SVP9(5)`.
-
-<details><summary>Older versions</summary>
-<p>
 
 - #### 2.4.10 released 8 April 2022.
    - [#481](https://github.com/AbsaOSS/cobrix/issues/481) ASCII control characters are now ignored instead of being replaced with spaces.

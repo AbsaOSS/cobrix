@@ -25,6 +25,7 @@ import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecor
   */
 class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   CustomRecordExtractorMock.additionalInfo = ctx.additionalInfo
+  CustomRecordExtractorMock.catchContext = ctx
 
   private var recordNumber = ctx.startingRecordNumber
 
@@ -52,4 +53,5 @@ class CustomRecordExtractorMock(ctx: RawRecordContext) extends Serializable with
 
 object CustomRecordExtractorMock {
   var additionalInfo: String = ""
+  var catchContext: RawRecordContext = _
 }

@@ -19,17 +19,23 @@
     "name" : "Seg_Id0",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 51
+    }
   }, {
     "name" : "Seg_Id1",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 51
+    }
   }, {
     "name" : "Seg_Id2",
     "type" : "string",
     "nullable" : true,
-    "metadata" : { }
+    "metadata" : {
+      "maxLength" : 51
+    }
   }, {
     "name" : "SEGMENT_ID",
     "type" : "integer",
@@ -55,7 +61,7 @@
         }
       }, {
         "name" : "TAXPAYER",
-        "type" : "integer",
+        "type" : "long",
         "nullable" : true,
         "metadata" : { }
       } ]

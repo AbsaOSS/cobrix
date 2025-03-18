@@ -30,6 +30,37 @@ trait RawRecordExtractor extends Iterator[Array[Byte]] {
     * The offset should point to the absolute beginning of the record, e.g. including headers,
     * so that if a record extractor is started from this offset it would be able to extract the record
     * by invoking .next().
+    *
+    * IMPORTANT. The offset points to the next record to be fetched by .next(). If this invariant is not held,
+    * the reader might get inconsistent record ids, or can fail in certain circumstances.
+    *
+    * If you want to prefetch a record, use this pattern:
+    * {{{
+    * class ExampleRecordExtractor(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+    *
+    *   private var currentOffset = ctx.inputStream.offset
+    *
+    *   var record: Option[Array[Byte]] = fetchRecord()
+    *
+    *   override def offset: Long = currentOffset
+    *
+    *   override def hasNext: Boolean = record.isDefined
+    *
+    *   override def next(): Array[Byte] = {
+    *     if (record.isEmpty)
+    *         throw new NoSuchElementException("next on empty iterator")
+    *
+    *     currentOffset = ctx.inputStream.offset
+    *     val result = record.get
+    *     record = fetchRecord()
+    *     result
+    *   }
+    *
+    *   def fetchRecord(): Option[Array[Byte]] = {
+    *     // fetch the record from the stream if any
+    *   }
+    * }
+    * }}}
     */
   def offset: Long
 

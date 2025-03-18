@@ -31,37 +31,47 @@ object IndexGenerator extends Logging {
 
   def sparseIndexGenerator(fileId: Int,
                            dataStream: SimpleStream,
-                           isRdwBigEndian: Boolean,
+                           fileStartOffset: Long,
                            recordHeaderParser: RecordHeaderParser,
                            recordExtractor: Option[RawRecordExtractor],
-                           recordsPerIndexEntry: Option[Int] = None,
-                           sizePerIndexEntryMB: Option[Int] = None,
-                           copybook: Option[Copybook] = None,
-                           segmentField: Option[Primitive] = None,
+                           recordsPerIndexEntry: Option[Int],
+                           sizePerIndexEntryMB: Option[Int],
+                           copybook: Option[Copybook],
+                           segmentField: Option[Primitive],
                            isHierarchical: Boolean,
                            rootSegmentId: String = ""): ArrayBuffer[SparseIndexEntry] = {
-    val rootSegmentIds = rootSegmentId.split(',').toList
-    var byteIndex = 0L
-    val index = new ArrayBuffer[SparseIndexEntry]
-    var rootRecordId: String = ""
-    var recordsInChunk = 0
-    var bytesInChunk = 0L
+
+
+    var byteIndex = fileStartOffset
+    var bytesInChunk = fileStartOffset
     var recordIndex = 0
+    var recordsInChunk = 0
+
+    val rootSegmentIds = rootSegmentId.split(',').toList
+    var rootRecordId: String = ""
     val isReallyHierarchical = copybook.nonEmpty && segmentField.nonEmpty && isHierarchical
     val isSplitBySize = recordsPerIndexEntry.isEmpty && sizePerIndexEntryMB.nonEmpty
-
     val needSplit = getSplitCondition(recordsPerIndexEntry, sizePerIndexEntryMB)
 
     // Add the first mandatory index entry
-    val indexEntry = SparseIndexEntry(dataStream.offset, -1, fileId, recordIndex)
+    val index = new ArrayBuffer[SparseIndexEntry]
+    val indexEntry = SparseIndexEntry(fileStartOffset, -1, fileId, recordIndex)
     index += indexEntry
+
+    recordExtractor.foreach(extractor => {
+      if (extractor.offset != fileStartOffset) {
+        throw new IllegalStateException("The record extractor has returned the offset that is not the beginning of the file. " +
+          s"Expected: $fileStartOffset. Got: ${extractor.offset}. File: ${dataStream.inputFileName}. " +
+          "Make sure 'offset()' points to the record that is going to be returned with next().")
+      }
+    })
 
     var endOfFileReached = false
     while (!endOfFileReached) {
       var record: Array[Byte] = null
       val (recordSize: Long, isValid, hasMoreRecords, canSplit) = recordExtractor match {
         case Some(extractor) =>
-          val offset0 = extractor.offset
+          val offset0 = byteIndex
           val canSplit = extractor.canSplitHere
           val isValid = if (extractor.hasNext) {
             record = extractor.next()

@@ -42,6 +42,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param minimumRecordLength     Minium record length for which the record is considered valid.
   * @param maximumRecordLength     Maximum record length for which the record is considered valid.
   * @param lengthFieldExpression   A name of a field that contains record length. Optional. If not set the copybook record length will be used.
+  * @param lengthFieldMap          Mapping between record length field values to actual length. The field name should be specified in lengthFieldExpression.
   * @param isRecordSequence        Does input files have 4 byte record length headers
   * @param bdw                     Block descriptor word (if specified), for FB and VB record formats
   * @param isRdwPartRecLength      Does RDW count itself as part of record length itself
@@ -62,6 +63,8 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param multisegment            Parameters specific to reading multisegment files
   * @param commentPolicy           A comment truncation policy
   * @param improvedNullDetection   If true, string values that contain only zero bytes (0x0) will be considered null.
+  * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
+  * @param decodeBinaryAsHex       Decode binary fields as HEX strings
   * @param dropGroupFillers        If true the parser will drop all FILLER fields, even GROUP FILLERS that have non-FILLER nested fields
   * @param dropValueFillers        If true the parser will drop all value FILLER fields
   * @param fillerNamingPolicy      Specifies the strategy of renaming FILLER names to make them unique
@@ -78,7 +81,7 @@ case class ReaderParameters(
                              isText:                  Boolean = false,
                              ebcdicCodePage:          String = "common",
                              ebcdicCodePageClass:     Option[String] = None,
-                             asciiCharset:            String = "",
+                             asciiCharset:            Option[String] = None,
                              fieldCodePage:           Map[String, String] = Map.empty[String, String],
                              isUtf16BigEndian:        Boolean = true,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
@@ -87,6 +90,7 @@ case class ReaderParameters(
                              minimumRecordLength:     Int = 1,
                              maximumRecordLength:     Int = Int.MaxValue,
                              lengthFieldExpression:   Option[String] = None,
+                             lengthFieldMap:          Map[String, Int] = Map.empty,
                              isRecordSequence:        Boolean = false,
                              bdw:                     Option[Bdw] = None,
                              isRdwBigEndian:          Boolean = false,
@@ -102,13 +106,15 @@ case class ReaderParameters(
                              fileEndOffset:           Int = 0,
                              generateRecordId:        Boolean = false,
                              generateRecordBytes:     Boolean = false,
-                             schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                             schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              allowPartialRecords:     Boolean = false,
                              multisegment:            Option[MultisegmentParameters] = None,
                              commentPolicy:           CommentPolicy = CommentPolicy(),
                              strictSignOverpunch:     Boolean = true,
                              improvedNullDetection:   Boolean = false,
+                             strictIntegralPrecision: Boolean = false,
+                             decodeBinaryAsHex:       Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,
                              fillerNamingPolicy:      FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,

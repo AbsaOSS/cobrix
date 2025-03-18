@@ -19,8 +19,8 @@ ThisBuild / name         := "spark-cobol-app"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.12.17"
 
-val sparkVersion = "3.3.2"
-val sparkCobolVersion = "2.6.5"
+val sparkVersion = "3.5.3"
+val sparkCobolVersion = "2.8.2"
 val scalatestVersion = "3.2.14"
 
 ThisBuild / libraryDependencies ++= Seq(
@@ -30,17 +30,17 @@ ThisBuild / libraryDependencies ++= Seq(
 )
 
 // Do not run tests in parallel
-parallelExecution in Test := false
+Test / parallelExecution := false
 
 // Do not run tests on assembly
-test in assembly := {}
+assembly / test := {}
 
 // Do not include Scala in the fat jar
-assemblyOption in assembly := (assemblyOption in assembly).value.copy(includeScala = false)
+assembly / assemblyOption := (assemblyOption in assembly).value.copy(includeScala = false)
 
 // This merge strategy retains service entries for all services in manifest.
 // It allows custom Spark data sources to be used together, e.g. 'spark-xml' and 'spark-cobol'.
-assemblyMergeStrategy in assembly := {
+assembly / assemblyMergeStrategy := {
   case PathList("META-INF", xs @ _*) =>
     xs map {_.toLowerCase} match {
       case "manifest.mf" :: Nil =>

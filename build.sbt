@@ -20,8 +20,8 @@ import ScalacOptions._
 import com.github.sbt.jacoco.report.JacocoReportSettings
 
 lazy val scala211 = "2.11.12"
-lazy val scala212 = "2.12.17"
-lazy val scala213 = "2.13.10"
+lazy val scala212 = "2.12.20"
+lazy val scala213 = "2.13.15"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 
@@ -44,8 +44,8 @@ lazy val commonJacocoReportSettings: JacocoReportSettings = JacocoReportSettings
 )
 
 lazy val commonJacocoExcludes: Seq[String] = Seq(
-  "za.co.absa.cobrix.cobol.reader.parameters.*" // case classes only
-//  "za.co.absa.cobrix.spark.cobol.reader.RowHandler" // class only
+  "za.co.absa.cobrix.cobol.reader.parameters.*",                     // case classes only
+  "za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordContext*"  // a case class
 )
 
 lazy val cobrix = (project in file("."))
@@ -61,19 +61,26 @@ lazy val cobrix = (project in file("."))
   .aggregate(cobolParser, cobolConverters, sparkCobol)
 
 lazy val cobolParser = (project in file("cobol-parser"))
+  .enablePlugins(ShadingPlugin)
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-parser",
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
+    shadedDependencies ++= CobolParserShadedDependencies,
+    shadingRules ++= Seq (
+      ShadingRule.moveUnder("org.antlr.v4.runtime", "za.co.absa.cobrix.cobol.parser.shaded")
+    ),
+    validNamespaces ++= Set("za"),
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,
-    assemblySettings
-  )
-  .settings(
+    assemblySettings,
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-parser Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
-  ).enablePlugins(AutomateHeaderPlugin)
+  )
 
 lazy val cobolConverters = (project in file("cobol-converters"))
+  .dependsOn(cobolParser)
   .disablePlugins(sbtassembly.AssemblyPlugin)
+  .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-converters",
     libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
@@ -81,8 +88,7 @@ lazy val cobolConverters = (project in file("cobol-converters"))
     publishArtifact := false,
     publish := {},
     publishLocal := {}
-  ).dependsOn(cobolParser)
-  .enablePlugins(AutomateHeaderPlugin)
+  )
 
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
@@ -92,7 +98,16 @@ lazy val sparkCobol = (project in file("spark-cobol"))
       log.info(s"Building with Spark ${sparkVersion(scalaVersion.value)}, Scala ${scalaVersion.value}")
       sparkVersion(scalaVersion.value)
     },
-    (Compile / compile) := ((Compile / compile) dependsOn printSparkVersion).value,
+    Compile / compile := ((Compile / compile) dependsOn printSparkVersion).value,
+    Compile / unmanagedSourceDirectories += {
+      val sourceDir = (Compile / sourceDirectory).value
+      CrossVersion.partialVersion(scalaVersion.value) match {
+        case Some((2, n)) if n == 11 => sourceDir / "scala_2.11"
+        case Some((2, n)) if n == 12 => sourceDir / "scala_2.12"
+        case Some((2, n)) if n == 13 => sourceDir / "scala_2.13"
+        case _ => throw new RuntimeException("Unsupported Scala version")
+      }
+    },
     libraryDependencies ++= SparkCobolDependencies(scalaVersion.value) :+ getScalaDependency(scalaVersion.value),
     dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
@@ -135,11 +150,11 @@ lazy val assemblySettings = Seq(
   assembly / assemblyOption:= (assembly / assemblyOption).value.copy(includeScala = false),
   assembly / assemblyShadeRules:= Seq(
     // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
-    ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.shaded.org.antlr.@1").inAll,
+    ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.cobol.parser.shaded.org.antlr.@1").inAll,
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),
-  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersion(scalaVersion.value)}-${version.value}-bundle.jar",
+  assembly / assemblyJarName := s"${name.value}_${scalaBinaryVersion.value}_${sparkVersionShort(scalaVersion.value)}-${version.value}-bundle.jar",
   assembly / logLevel := Level.Info,
   assembly / test := {}
 )

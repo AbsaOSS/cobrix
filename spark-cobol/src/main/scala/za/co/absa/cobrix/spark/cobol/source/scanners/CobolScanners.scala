@@ -50,7 +50,8 @@ private[source] object CobolScanners extends Logging {
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
       val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
-      reader.getRowIterator(dataStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
+      val headerStream = new FileStreamer(filePathName, fileSystem)
+      reader.getRowIterator(dataStream, headerStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }
 
@@ -68,9 +69,16 @@ private[source] object CobolScanners extends Logging {
           val fileSystem = path.getFileSystem(sconf.value)
 
           logger.info(s"Going to parse file: $filePath")
-          reader.getRowIterator(new FileStreamer(filePath, fileSystem), 0L, fileOrder, 0L)
-        }
-        )
+          val startFileOffset = reader.getReaderProperties.fileStartOffset
+          val maximumFileBytes = if (reader.getReaderProperties.fileEndOffset == 0) {
+            0
+          } else {
+            fileSystem.getFileStatus(path).getLen - reader.getReaderProperties.fileEndOffset - startFileOffset
+          }
+          val dataStream = new FileStreamer(filePath, fileSystem, startFileOffset, maximumFileBytes)
+          val headerStream = new FileStreamer(filePath, fileSystem, startFileOffset)
+          reader.getRowIterator(dataStream, headerStream, startFileOffset, fileOrder, 0L)
+        })
       })
   }
 
@@ -82,16 +90,28 @@ private[source] object CobolScanners extends Logging {
     // binaryRecords() for fixed size records
     // binaryFiles() for varying size records
     // https://spark.apache.org/docs/2.1.1/api/java/org/apache/spark/SparkContext.html#binaryFiles(java.lang.String,%20int)
-
+    // Take a deep copy of Configuration for conf isolation
+    val conf = new Configuration(sqlContext.sparkContext.hadoopConfiguration)
     val recordSize = reader.getRecordSize
 
     sourceDirs.foreach(sourceDir => {
-      if (!debugIgnoreFileSize && areThereNonDivisibleFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, recordSize)) {
-        throw new IllegalArgumentException(s"There are some files in $sourceDir that are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Check the logs for the names of the files.")
+      if (!debugIgnoreFileSize) {
+        val nonDivisibleFiles = getNonDivisibleFiles(sourceDir, conf, recordSize)
+
+        if (nonDivisibleFiles.nonEmpty) {
+          nonDivisibleFiles.head match {
+            case (name, size) =>
+              if (nonDivisibleFiles.length > 1) {
+                throw new IllegalArgumentException(s"Multiple file sizes are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Example file: $name size ($size bytes).")
+              } else {
+                throw new IllegalArgumentException(s"File $name size ($size bytes) is NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record).")
+              }
+          }
+        }
       }
     })
 
-    val records = sourceDirs.map(sourceDir => sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, sqlContext.sparkContext.hadoopConfiguration))
+    val records = sourceDirs.map(sourceDir => sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, conf))
       .reduce((a ,b) => a.union(b))
     recordParser(reader, records)
   }
@@ -101,7 +121,7 @@ private[source] object CobolScanners extends Logging {
                                             recordParser: (FixedLenTextReader, RDD[Array[Byte]]) => RDD[Row],
                                             sqlContext: SQLContext): RDD[Row] = {
     val utf8 = StandardCharsets.UTF_8
-    reader.asciiCharset
+    reader.getReaderProperties.asciiCharset
       .map(Charset.forName) match {
       case None                             => buildScanForUtf8TextFiles(reader, sourceDirs, recordParser, sqlContext)
       case Some(charset) if charset == utf8 => buildScanForUtf8TextFiles(reader, sourceDirs, recordParser, sqlContext)
@@ -155,15 +175,14 @@ private[source] object CobolScanners extends Logging {
     recordParser(reader, records)
   }
 
-  private def areThereNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Boolean = {
-
+  private def getNonDivisibleFiles(sourceDir: String, hadoopConfiguration: Configuration, divisor: Int): Seq[(String, Long)] = {
     val fileSystem = new Path(sourceDir).getFileSystem(hadoopConfiguration)
 
     if (FileUtils.getNumberOfFilesInDir(sourceDir, fileSystem) < FileUtils.THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK) {
-      FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem) > 0
+      FileUtils.findAndLogAllNonDivisibleFiles(sourceDir, divisor, fileSystem)
     }
     else {
-      FileUtils.findAndLogFirstNonDivisibleFile(sourceDir, divisor, fileSystem)
+      FileUtils.findAndLogFirstNonDivisibleFile(sourceDir, divisor, fileSystem).toSeq
     }
   }
 }

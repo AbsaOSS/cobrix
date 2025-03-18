@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, MetadataPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies._
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
 import za.co.absa.cobrix.cobol.reader.parameters._
@@ -32,6 +32,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
+import scala.util.control.NonFatal
 
 /**
   * This class provides methods for parsing the parameters set as Spark options.
@@ -55,6 +56,7 @@ object CobolParametersParser extends Logging {
   val PARAM_MAXIMUM_RECORD_LENGTH     = "maximum_record_length"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
+  val PARAM_RECORD_LENGTH_MAP         = "record_length_map"
   val PARAM_RECORD_START_OFFSET       = "record_start_offset"
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
@@ -69,6 +71,7 @@ object CobolParametersParser extends Logging {
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
   val PARAM_FILLER_NAMING_POLICY      = "filler_naming_policy"
+  val PARAM_STRICT_INTEGRAL_PRECISION = "strict_integral_precision"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -90,6 +93,7 @@ object CobolParametersParser extends Logging {
   val PARAM_VARIABLE_SIZE_OCCURS      = "variable_size_occurs"
   val PARAM_STRICT_SIGN_OVERPUNCHING  = "strict_sign_overpunching"
   val PARAM_IMPROVED_NULL_DETECTION   = "improved_null_detection"
+  val PARAM_BINARY_AS_HEX             = "binary_as_hex"
   val PARAM_ALLOW_PARTIAL_RECORDS     = "allow_partial_records"
   val PARAM_FIELD_CODE_PAGE_PREFIX    = "field_code_page:"
 
@@ -110,6 +114,8 @@ object CobolParametersParser extends Logging {
   val PARAM_RHP_ADDITIONAL_INFO       = "rhp_additional_info"
   val PARAM_RE_ADDITIONAL_INFO        = "re_additional_info"
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
+  val PARAM_SEGMENT_REDEFINE_PREFIX   = "redefine_segment_id_map"
+  val PARAM_SEGMENT_REDEFINE_PREFIX_ALT = "redefine-segment-id-map"
 
   // Indexed multisegment file processing
   val PARAM_ENABLE_INDEXES            = "enable_indexes"
@@ -120,6 +126,7 @@ object CobolParametersParser extends Logging {
   val PARAM_IMPROVE_LOCALITY          = "improve_locality"
 
   // Parameters for debugging
+  val PARAM_DEBUG_LAYOUT_POSITIONS    = "debug_layout_positions"
   val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
 
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
@@ -219,7 +226,7 @@ object CobolParametersParser extends Logging {
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
-    val asciiCharset = params.getOrElse(PARAM_ASCII_CHARSET, "")
+    val asciiCharset = params.get(PARAM_ASCII_CHARSET)
 
     val recordFormatDefined = getRecordFormat(params)
 
@@ -267,6 +274,8 @@ object CobolParametersParser extends Logging {
       parseCommentTruncationPolicy(params),
       params.getOrElse(PARAM_STRICT_SIGN_OVERPUNCHING, "true").toBoolean,
       params.getOrElse(PARAM_IMPROVED_NULL_DETECTION, "true").toBoolean,
+      params.getOrElse(PARAM_STRICT_INTEGRAL_PRECISION, "false").toBoolean,
+      params.getOrElse(PARAM_BINARY_AS_HEX, "false").toBoolean,
       params.getOrElse(PARAM_GROUP_FILLERS, "false").toBoolean,
       params.getOrElse(PARAM_VALUE_FILLERS, "true").toBoolean,
       FillerNamingPolicy(params.getOrElse(PARAM_FILLER_NAMING_POLICY, "sequence_numbers")),
@@ -274,6 +283,7 @@ object CobolParametersParser extends Logging {
       getOccursMappings(params.getOrElse(PARAM_OCCURS_MAPPINGS, "{}")),
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
+      params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic"))
       )
     validateSparkCobolOptions(params, recordFormat)
@@ -346,6 +356,7 @@ object CobolParametersParser extends Logging {
                                  rhpAdditionalInfo = None,
                                  reAdditionalInfo = "",
                                  recordLengthField = "",
+                                 Map.empty,
                                  fileStartOffset = 0,
                                  fileEndOffset = 0,
                                  generateRecordId = false,
@@ -378,6 +389,7 @@ object CobolParametersParser extends Logging {
       minimumRecordLength = parameters.minimumRecordLength.getOrElse(1),
       maximumRecordLength = parameters.maximumRecordLength.getOrElse(Int.MaxValue),
       lengthFieldExpression = recordLengthField,
+      lengthFieldMap = varLenParams.recordLengthMap,
       isRecordSequence = varLenParams.isRecordSequence,
       bdw = varLenParams.bdw,
       isRdwBigEndian = varLenParams.isRdwBigEndian,
@@ -400,6 +412,8 @@ object CobolParametersParser extends Logging {
       parameters.commentPolicy,
       parameters.strictSignOverpunch,
       parameters.improvedNullDetection,
+      parameters.strictIntegralPrecision,
+      parameters.decodeBinaryAsHex,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
       parameters.fillerNamingPolicy,
@@ -419,6 +433,7 @@ object CobolParametersParser extends Logging {
     val recordLengthFieldOpt = params.get(PARAM_RECORD_LENGTH_FIELD)
     val isRecordSequence = Seq(FixedBlock, VariableLength, VariableBlock).contains(recordFormat)
     val isRecordIdGenerationEnabled = params.getOrElse(PARAM_GENERATE_RECORD_ID, "false").toBoolean
+    val isSegmentIdGenerationEnabled = params.contains(PARAM_SEGMENT_ID_ROOT) || params.contains(s"${PARAM_SEGMENT_ID_LEVEL_PREFIX}0")
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
     val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
@@ -439,6 +454,7 @@ object CobolParametersParser extends Logging {
     if (recordLengthFieldOpt.isDefined ||
       isRecordSequence ||
       isRecordIdGenerationEnabled ||
+      isSegmentIdGenerationEnabled ||
       fileStartOffset > 0 ||
       fileEndOffset > 0 ||
       hasRecordExtractor ||
@@ -458,6 +474,7 @@ object CobolParametersParser extends Logging {
         params.get(PARAM_RHP_ADDITIONAL_INFO),
         params.get(PARAM_RE_ADDITIONAL_INFO).getOrElse(""),
         recordLengthFieldOpt.getOrElse(""),
+        getRecordLengthMappings(params.getOrElse(PARAM_RECORD_LENGTH_MAP, "{}")),
         fileStartOffset,
         fileEndOffset,
         isRecordIdGenerationEnabled,
@@ -489,7 +506,7 @@ object CobolParametersParser extends Logging {
         logger.warn(s"Option '$PARAM_BLOCK_LENGTH' is ignored for record format: VB")
       }
       if (recordFormat == FixedBlock && bdw.recordsPerBlock.nonEmpty) {
-        logger.warn(s"Option '$PARAM_RECORDS_PER_BLOCK' is ignored for record format: VB")
+        logger.warn(s"Option '$PARAM_RECORDS_PER_BLOCK' is ignored for record format: F")
       }
       Some(bdw)
     } else {
@@ -536,15 +553,19 @@ object CobolParametersParser extends Logging {
   private def parseMultisegmentParameters(params: Parameters): Option[MultisegmentParameters] = {
     if (params.contains(PARAM_SEGMENT_FIELD)) {
       val levels = parseSegmentLevels(params)
-      Some(MultisegmentParameters
-      (
+      val multiseg = MultisegmentParameters(
         params(PARAM_SEGMENT_FIELD),
         params.get(PARAM_SEGMENT_FILTER).map(_.split(',')),
         levels,
         params.getOrElse(PARAM_SEGMENT_ID_PREFIX, ""),
         getSegmentIdRedefineMapping(params),
         getSegmentRedefineParents(params)
-      ))
+      )
+
+      val segmentIds = ParameterParsingUtils.splitSegmentIds(multiseg.segmentLevelIds)
+      ParameterParsingUtils.validateSegmentIds(segmentIds)
+
+      Some(multiseg)
     }
     else {
       None
@@ -629,12 +650,12 @@ object CobolParametersParser extends Logging {
     params.getMap.flatMap {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
-        if (keyNoCase.startsWith("redefine-segment-id-map") ||
-          keyNoCase.startsWith("redefine_segment_id_map")) {
+        if (keyNoCase.startsWith(PARAM_SEGMENT_REDEFINE_PREFIX) ||
+          keyNoCase.startsWith(PARAM_SEGMENT_REDEFINE_PREFIX_ALT)) {
           params.markUsed(k)
           val splitVal = v.split("\\=\\>")
           if (splitVal.lengthCompare(2) != 0) {
-            throw new IllegalArgumentException(s"Illegal argument for the 'redefine-segment-id-map' option: '$v'.")
+            throw new IllegalArgumentException(s"Illegal argument for the '$PARAM_SEGMENT_REDEFINE_PREFIX_ALT' option: '$v'.")
           }
           val redefine = splitVal(0).trim
           val segmentIds = splitVal(1).split(',').map(_.trim)
@@ -907,6 +928,38 @@ object CobolParametersParser extends Logging {
         logger.error(msg)
       }
     }
+  }
+
+  /**
+    * Parses the options for the record length mappings.
+    *
+    * @param recordLengthMapJson Parameters provided by spark.read.option(...)
+    * @return Returns a mapping from the record length field values to the actual record length
+    */
+  @throws(classOf[IllegalArgumentException])
+  def getRecordLengthMappings(recordLengthMapJson: String): Map[String, Int] = {
+    val parser = new ParserJson()
+    val json = try {
+      parser.parseMap(recordLengthMapJson)
+    } catch {
+      case NonFatal(ex) => throw new IllegalArgumentException(s"Unable to parse record length mapping JSON.", ex)
+    }
+
+    json.toSeq // Converting to a non-lazy sequence first. If .mapValues() is used the map stays lazy and errors pop up later
+      .map { case (k, v) =>
+        val vInt = v match {
+          case num: Int => num
+          case num: Long => num.toInt
+          case str: String =>
+            try {
+              str.toInt
+            } catch {
+              case NonFatal(ex) => throw new IllegalArgumentException(s"Unsupported record length value: '$str'. Please, use numeric values only.", ex)
+            }
+          case any => throw new IllegalArgumentException(s"Unsupported record length value: '$any'. Please, use numeric values only.")
+        }
+        (k, vInt)
+      }.toMap[String, Int]
   }
 
   /**

@@ -38,7 +38,7 @@ class CustomRecordHeadersParser extends Serializable with RecordHeaderParser {
     * @param recordNum A sequential record number
     * @return A parsed record metadata
     */
-  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
+  override def getRecordMetadata(header: Array[Byte], fileOffset: Long, maxOffset: Long, fileSize: Long, recordNum: Long): RecordMetadata = {
     val rdwHeaderBlock = getHeaderLength
     if (header.length < rdwHeaderBlock) {
       RecordMetadata(-1, isValid = false)
@@ -52,7 +52,10 @@ class CustomRecordHeadersParser extends Serializable with RecordHeaderParser {
           val rdwHeaders = header.map(_ & 0xFF).mkString(",")
           throw new IllegalStateException(s"Custom RDW headers too big (length = $recordLength > ${Constants.maxRdWRecordSize}). Headers = $rdwHeaders at $fileOffset.")
         }
-        RecordMetadata(recordLength, isValid)
+        if (maxOffset - fileOffset >= recordLength)
+          RecordMetadata(recordLength, isValid)
+        else
+          RecordMetadata(-1, isValid = false)
       } else {
         val rdwHeaders = header.map(_ & 0xFF).mkString(",")
         throw new IllegalStateException(s"Custom RDW headers should never be zero ($rdwHeaders). Found zero size record at $fileOffset.")

@@ -5,6 +5,13 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+    paths:
+      - "cobol-parser/**"
+      - "cobol-converters/**"
+      - "spark-cobol/**"
+      - "project/**"
+      - "build.sbt"
+      - ".github/workflows/build.yml"
 
 jobs:
   build-sbt:
@@ -12,21 +19,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scala: [ 2.11.12, 2.12.17, 2.13.10 ]
-        spark: [ 2.4.8, 3.3.2 ]
+        scala: [ 2.11.12, 2.12.20, 2.13.15 ]
+        spark: [ 2.4.8, 3.4.3, 3.5.3 ]
         exclude:
           - scala: 2.11.12
-            spark: 3.3.2
-          - scala: 2.13.10
+            spark: 3.4.3
+          - scala: 2.11.12
+            spark: 3.5.3
+          - scala: 2.12.20
+            spark: 2.4.8
+          - scala: 2.13.15
             spark: 2.4.8
     name: Spark ${{matrix.spark}} on Scala ${{matrix.scala}}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - uses: coursier/cache-action@v5
-      - name: Setup Scala
-        uses: olafurpg/setup-scala@v10
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          java-version: "adopt@1.8"
+          distribution: temurin
+          java-version: 8
+          cache: sbt
+      - name: Install sbt
+        run: | 
+          sudo apt-get update
+          sudo apt-get install apt-transport-https curl gnupg -yqq
+          echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
+          echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list
+          curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo -H gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
+          sudo chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+          sudo apt-get update
+          sudo apt-get install sbt
+
       - name: Build and run tests
         run: sbt ++${{matrix.scala}} test -DSPARK_VERSION=${{matrix.spark}}

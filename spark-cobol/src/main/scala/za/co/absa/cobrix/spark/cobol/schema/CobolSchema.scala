@@ -20,13 +20,16 @@ import org.apache.spark.sql.types._
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast._
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP4, COMP5, COMP9, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
+import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser.getReaderProperties
+import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.{MAX_ELEMENTS, MAX_LENGTH, MIN_ELEMENTS}
+import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -37,7 +40,8 @@ import scala.collection.mutable.ArrayBuffer
   * provides the corresponding Spark schema and also other properties for the Spark data source.
   *
   * @param copybook                A parsed copybook.
-  * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param schemaRetentionPolicy   pecifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
@@ -46,49 +50,34 @@ import scala.collection.mutable.ArrayBuffer
   * @param metadataPolicy          Specifies a policy to generate metadata fields.
   */
 class CobolSchema(copybook: Copybook,
-                  policy: SchemaRetentionPolicy,
-                  inputFileNameField: String,
-                  generateRecordId: Boolean,
+                  schemaRetentionPolicy: SchemaRetentionPolicy,
+                  strictIntegralPrecision: Boolean = false,
+                  inputFileNameField: String = "",
+                  generateRecordId: Boolean = false,
                   generateRecordBytes: Boolean = false,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
                   metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
   extends CobolReaderSchema(
-    copybook, policy, inputFileNameField, generateRecordId, generateRecordBytes,
+    copybook, schemaRetentionPolicy, strictIntegralPrecision, inputFileNameField, generateRecordId, generateRecordBytes,
     generateSegIdFieldsCnt, segmentIdProvidedPrefix
     ) with Logging with Serializable {
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()
 
-  @throws(classOf[IllegalStateException])
-  private[this] lazy val sparkFlatSchema = {
-    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-    val arraySchema = copybook.ast.children.toArray
-    val records = arraySchema.flatMap(record => {
-      parseGroupFlat(record.asInstanceOf[Group], s"${record.name}_")
-    })
-    StructType(records)
-  }
-
   def getSparkSchema: StructType = {
     sparkSchema
   }
 
-  def getSparkFlatSchema: StructType = {
-    sparkFlatSchema
-  }
-
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
-    logger.info("Layout positions:\n" + copybook.generateRecordLayoutPositions())
-
     val records = for (record <- copybook.getRootRecords) yield {
       val group = record.asInstanceOf[Group]
       val redefines = copybook.getAllSegmentRedefines
       parseGroup(group, redefines)
     }
-    val expandRecords = if (policy == SchemaRetentionPolicy.CollapseRoot || copybook.isFlatCopybook) {
+    val expandRecords = if (schemaRetentionPolicy == SchemaRetentionPolicy.CollapseRoot || copybook.isFlatCopybook) {
       // Expand root group fields
       records.toArray.flatMap(group => group.dataType.asInstanceOf[StructType].fields)
     } else {
@@ -97,7 +86,14 @@ class CobolSchema(copybook: Copybook,
 
     val recordsWithSegmentFields = if (generateSegIdFieldsCnt > 0) {
       val newFields = for (level <- Range(0, generateSegIdFieldsCnt))
-        yield StructField(s"${Constants.segmentIdField}$level", StringType, nullable = true)
+        yield {
+          val maxPrefixLength = getMaximumSegmentIdLength(segmentIdProvidedPrefix)
+          val segFieldMetadata = new MetadataBuilder()
+          segFieldMetadata.putLong(MAX_LENGTH, maxPrefixLength.toLong)
+
+          StructField(s"${Constants.segmentIdField}$level", StringType, nullable = true, metadata = segFieldMetadata.build())
+        }
+
       newFields.toArray ++ expandRecords
     } else {
       expandRecords
@@ -124,6 +120,15 @@ class CobolSchema(copybook: Copybook,
     }
 
     StructType(recordsWithRecordId)
+  }
+
+  private [cobrix] def getMaximumSegmentIdLength(segmentIdProvidedPrefix: String): Int = {
+    val DATETIME_PREFIX_LENGTH = 15
+    val SEGMENT_ID_MAX_GENERATED_LENGTH = 50
+
+    val prefixLength = if (segmentIdProvidedPrefix.isEmpty) DATETIME_PREFIX_LENGTH else segmentIdProvidedPrefix.length
+
+    prefixLength + SEGMENT_ID_MAX_GENERATED_LENGTH
   }
 
   @throws(classOf[IllegalStateException])
@@ -179,13 +184,19 @@ class CobolSchema(copybook: Copybook,
           case Some(RAW) => BinaryType
           case _         => StringType
         }
-      case dt: Integral    =>
+      case dt: Integral  if strictIntegralPrecision  =>
+        DecimalType(precision = dt.precision, scale = 0)
+      case dt: Integral  =>
+        val isBinary = dt.compact.exists(c => c == COMP4() || c == COMP5() || c == COMP9())
         if (dt.precision > Constants.maxLongPrecision) {
           DecimalType(precision = dt.precision, scale = 0)
+        } else if (dt.precision == Constants.maxLongPrecision && isBinary && dt.signPosition.isEmpty) {  // promoting unsigned int to long to be able to fit any value
+          DecimalType(precision = dt.precision + 2, scale = 0)
         } else if (dt.precision > Constants.maxIntegerPrecision) {
           LongType
-        }
-        else {
+        } else if (dt.precision == Constants.maxIntegerPrecision && isBinary && dt.signPosition.isEmpty) { // promoting unsigned long to decimal(20) to be able to fit any value
+          LongType
+        } else {
           IntegerType
         }
       case _               => throw new IllegalStateException("Unknown AST object")
@@ -204,12 +215,12 @@ class CobolSchema(copybook: Copybook,
   }
 
   private def addArrayMetadata(metadataBuilder: MetadataBuilder, st: Statement): MetadataBuilder = {
-    metadataBuilder.putLong("minElements", st.arrayMinSize)
-    metadataBuilder.putLong("maxElements", st.arrayMaxSize)
+    metadataBuilder.putLong(MIN_ELEMENTS, st.arrayMinSize)
+    metadataBuilder.putLong(MAX_ELEMENTS, st.arrayMaxSize)
   }
 
   private def addAlphaNumericMetadata(metadataBuilder: MetadataBuilder, a: AlphaNumeric): MetadataBuilder = {
-    metadataBuilder.putLong("maxLength", a.length)
+    metadataBuilder.putLong(MAX_LENGTH, a.length)
   }
 
   private def addExtendedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {
@@ -270,53 +281,6 @@ class CobolSchema(copybook: Copybook,
     })
     childSegments
   }
-
-  @throws(classOf[IllegalStateException])
-  private def parseGroupFlat(group: Group, structPath: String = ""): ArrayBuffer[StructField] = {
-    val fields = new ArrayBuffer[StructField]()
-    for (field <- group.children if !field.isFiller) {
-      field match {
-        case group: Group =>
-          if (group.isArray) {
-            for (i <- Range(1, group.arrayMaxSize + 1)) {
-              val path = s"$structPath${group.name}_${i}_"
-              fields ++= parseGroupFlat(group, path)
-            }
-          } else {
-            val path = s"$structPath${group.name}_"
-            fields ++= parseGroupFlat(group, path)
-          }
-        case s: Primitive =>
-          val dataType: DataType = s.dataType match {
-            case d: Decimal      =>
-              DecimalType(d.getEffectivePrecision, d.getEffectiveScale)
-            case a: AlphaNumeric =>
-              a.enc match {
-                case Some(RAW) => BinaryType
-                case _         => StringType
-              }
-            case dt: Integral    =>
-              if (dt.precision > Constants.maxIntegerPrecision) {
-                LongType
-              }
-              else {
-                IntegerType
-              }
-            case _               => throw new IllegalStateException("Unknown AST object")
-          }
-          val path = s"$structPath" //${group.name}_"
-          if (s.isArray) {
-            for (i <- Range(1, s.arrayMaxSize + 1)) {
-              fields += StructField(s"$path{s.name}_$i", ArrayType(dataType), nullable = true)
-            }
-          } else {
-            fields += StructField(s"$path${s.name}", dataType, nullable = true)
-          }
-      }
-    }
-
-    fields
-  }
 }
 
 object CobolSchema {
@@ -324,6 +288,7 @@ object CobolSchema {
     new CobolSchema(
       schema.copybook,
       schema.policy,
+      schema.strictIntegralPrecision,
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateRecordBytes,
@@ -331,5 +296,13 @@ object CobolSchema {
       schema.segmentIdPrefix,
       schema.metadataPolicy
       )
+  }
+
+  def fromSparkOptions(copyBookContents: Seq[String], sparkReaderOptions: Map[String, String]): CobolSchema = {
+    val lowercaseOptions = sparkReaderOptions.map { case (k, v) => (k.toLowerCase, v) }
+    val cobolParameters = CobolParametersParser.parse(new Parameters(lowercaseOptions))
+    val readerParameters = getReaderProperties(cobolParameters, None)
+
+    CobolSchema.fromBaseReader(CobolReaderSchema.fromReaderParameters(copyBookContents, readerParameters))
   }
 }
