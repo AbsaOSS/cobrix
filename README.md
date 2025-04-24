@@ -1587,10 +1587,13 @@ The output looks like this:
 
 ##### ASCII files options (for record_format = D or D2)
 
-| Option (usage example)                                      | Description                                                                                                                                                                                                                                                                                 |
-|-------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("record_format", "D")                               | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                            |
-| .option("is_text", "true")                                  | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
+| Option (usage example)                             | Description                                                                                                                                                                                                                                                                                 |
+|----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("record_format", "D")                      | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                            |
+| .option("is_text", "true")                         | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
+| .option("ascii_charset", "US-ASCII")               | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                                                                                                                            |
+| .option("field_code_page:cp825", "field1, field2") | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                            |
+| .option("minimum_record_length", 1)                | Specifies the minimum length a record is considered valid, will be skipped otherwise. It is used to skip ASCII lines that contains invalid records, an EOF character, for example.                                                                                                          |
 
 ##### Multisegment files options
 
@@ -1621,10 +1624,7 @@ The output looks like this:
 | .option("pedantic", "false")                       | If 'true' Cobrix will throw an exception is an unknown option is encountered. If 'false' (default), unknown options will be logged as an error without failing Spark Application.  |
 | .option("debug_layout_positions", "true")          | If 'true' Cobrix will generate and log layout positions table when reading data.                                                                                                   |
 | .option("debug_ignore_file_size", "true")          | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file.                                      |
-| .option("ascii_charset", "US-ASCII")               | Specifies a charset to use to decode ASCII data. The value can be any charset supported by `java.nio.charset`: `US-ASCII` (default), `UTF-8`, `ISO-8859-1`, etc.                   |
-| .option("field_code_page:cp825", "field1, field2") | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                   |
-| .option("minimum_record_length", 1)                | Specifies the minimum length a record is considered valid, will be skipped otherwise. It is used to skip ASCII lines that contains invalid records, an EOF character, for example. |
-| .option("maximum_record_length", 1000)             | Specifies the maximum length a record is considered valid, will be skipped otherwise.                                                                                              |
+| .option("enable_self_checks", "true")              | If 'true' (default) Cobrix will run self-checks that might slightly slow performance. The only check implemented so far is custom record extractor indexing compatibility check.   |
 
 ##### Currently supported EBCDIC code pages
 

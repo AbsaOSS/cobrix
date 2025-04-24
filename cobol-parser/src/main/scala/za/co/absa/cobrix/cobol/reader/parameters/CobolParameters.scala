@@ -102,5 +102,6 @@ case class CobolParameters(
                             debugFieldsPolicy:       DebugFieldsPolicy,
                             debugIgnoreFileSize:     Boolean,
                             debugLayoutPositions:    Boolean,
+                            enableSelfChecks:        Boolean,
                             metadataPolicy:          MetadataPolicy
                           )
