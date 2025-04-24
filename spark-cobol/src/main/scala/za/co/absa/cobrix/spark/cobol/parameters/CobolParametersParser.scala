@@ -128,6 +128,7 @@ object CobolParametersParser extends Logging {
   // Parameters for debugging
   val PARAM_DEBUG_LAYOUT_POSITIONS    = "debug_layout_positions"
   val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
+  val PARAM_ENABLE_SELF_CHECKS        = "enable_self_checks"
 
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "collapse_root")
@@ -284,6 +285,7 @@ object CobolParametersParser extends Logging {
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
+      params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "true").toBoolean,
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic"))
       )
     validateSparkCobolOptions(params, recordFormat)
