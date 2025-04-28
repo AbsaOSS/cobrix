@@ -25,6 +25,8 @@ import org.apache.spark.sql.SQLContext
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.cobol.reader.{VarLenNestedReader => ReaderVarLenNestedReader}
 import za.co.absa.cobrix.spark.cobol.reader.{Reader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
@@ -111,9 +113,14 @@ private[source] object IndexBuilder extends Logging {
   private[cobol] def buildIndexForVarLenReader(filesList: Array[FileWithOrder],
                                                reader: VarLenReader,
                                                sqlContext: SQLContext): RDD[SparseIndexEntry] = {
-    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
+
+    if (reader.getReaderProperties.enableSelfChecks && filesList.nonEmpty) {
+      selfCheckForIndexCompatibility(reader, filesList.head.filePath, conf)
+    }
+
+    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
 
     val indexRDD = filesRDD.mapPartitions(
       partition => {
@@ -149,26 +156,14 @@ private[source] object IndexBuilder extends Logging {
                                         config: Configuration,
                                         reader: VarLenReader): ArrayBuffer[SparseIndexEntry] = {
     val filePath = fileWithOrder.filePath
-    val path = new Path(filePath)
     val fileOrder = fileWithOrder.order
-    val fileSystem = path.getFileSystem(config)
-
     val startOffset = reader.getReaderProperties.fileStartOffset
-    val maximumBytes = if (reader.getReaderProperties.fileEndOffset == 0) {
-      0
-    } else {
-      val bytesToRead = fileSystem.getContentSummary(path).getLength - reader.getReaderProperties.fileEndOffset - startOffset
-      if (bytesToRead < 0)
-        0
-      else
-        bytesToRead
-    }
+    val endOffset = reader.getReaderProperties.fileEndOffset
 
     logger.info(s"Going to generate index for the file: $filePath")
-    val inputStream = new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
-    val headerStream = new FileStreamer(filePath, fileSystem)
-    val index = reader.generateIndex(inputStream, headerStream,
-                                     fileOrder, reader.isRdwBigEndian)
+
+    val (inputStream, headerStream, maximumBytes) = getStreams(filePath, startOffset, endOffset, config)
+    val index = reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
 
     val indexWithEndOffset = if (maximumBytes > 0 ){
       index.map(entry => if (entry.offsetTo == -1) entry.copy(offsetTo = startOffset + maximumBytes) else entry)
@@ -179,6 +174,95 @@ private[source] object IndexBuilder extends Logging {
     indexWithEndOffset
   }
 
+  private[cobol] def getStreams(filePath: String,
+                                fileStartOffset: Long,
+                                fileEndOffset: Long,
+                                config: Configuration): (SimpleStream, SimpleStream, Long) = {
+    val path = new Path(filePath)
+    val fileSystem = path.getFileSystem(config)
+
+    val startOffset = fileStartOffset
+    val maximumBytes = if (fileEndOffset == 0) {
+      0
+    } else {
+      val bytesToRead = fileSystem.getContentSummary(path).getLength - fileEndOffset - startOffset
+      if (bytesToRead < 0)
+        0
+      else
+        bytesToRead
+    }
+
+    val inputStream = new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+    val headerStream = new FileStreamer(filePath, fileSystem)
+
+    (inputStream, headerStream, maximumBytes)
+  }
+
+  private[cobol] def selfCheckForIndexCompatibility(reader: VarLenReader, filePath: String, config: Configuration): Unit = {
+    if (!reader.isInstanceOf[ReaderVarLenNestedReader[_]])
+      return
+
+    val readerProperties = reader.getReaderProperties
+
+    val startOffset = readerProperties.fileStartOffset
+    val endOffset = readerProperties.fileEndOffset
+
+    readerProperties.recordExtractor.foreach { recordExtractorClass =>
+      val (dataStream, headerStream, _) = getStreams(filePath, startOffset, endOffset, config)
+
+      val extractorOpt = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(0, dataStream, headerStream)
+
+      var offset = -1L
+      var record = Array[Byte]()
+
+      extractorOpt.foreach { extractor =>
+        if (extractor.hasNext) {
+          // Getting the first record, if available
+          extractor.next()
+          offset = extractor.offset // Saving offset to jump to later
+
+          if (extractor.hasNext) {
+            // Getting the second record, if available
+            record = extractor.next() // Saving the record to check later
+
+            dataStream.close()
+            headerStream.close()
+
+            // Getting new streams and record extractor that points directly to the second record
+            val (dataStream2, headerStream2, _) = getStreams(filePath, offset, endOffset, config)
+            val extractorOpt2 = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(1, dataStream2, headerStream2)
+
+            extractorOpt2.foreach { extractor2 =>
+              if (!extractor2.hasNext) {
+                // If the extractor refuses to return the second record, it is obviously faulty in terms of indexing support.
+                throw new RuntimeException(
+                  s"Record extractor self-check failed. When reading from a non-zero offset the extractor returned hasNext()=false. " +
+                    "Please, use 'enable_indexes = false'. " +
+                    s"File: $filePath, offset: $offset"
+                )
+              }
+
+              // Getting the second record from the extractor pointing to the second record offset at the start.
+              val expectedRecord = extractor2.next()
+
+              if (!expectedRecord.sameElements(record)) {
+                // Records should match. If they don't, the record extractor is faulty in terms of indexing support..
+                throw new RuntimeException(
+                  s"Record extractor self-check failed. The record extractor returned wrong record when started from non-zero offset. " +
+                    "Please, use 'enable_indexes = false'. " +
+                    s"File: $filePath, offset: $offset"
+                )
+              } else {
+                logger.info(s"Record extractor self-check passed. File: $filePath, offset: $offset")
+              }
+              dataStream2.close()
+              headerStream2.close()
+            }
+          }
+        }
+      }
+    }
+  }
 
   private[cobol] def getBlockLengthByIndexEntry(entry: SparseIndexEntry): Long = {
     val indexedLength = if (entry.offsetTo - entry.offsetFrom > 0)

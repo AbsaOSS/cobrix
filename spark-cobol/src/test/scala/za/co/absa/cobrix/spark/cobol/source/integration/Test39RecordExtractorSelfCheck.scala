@@ -35,6 +35,7 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
 
       withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
         val df = getDataFrame(tmpFileName, Map(
+          "enable_self_checks" -> "true",
           "record_extractor" -> "za.co.absa.cobrix.spark.cobol.mocks.FixedRecordExtractor",
           "input_split_records" -> "2")
         )
@@ -47,9 +48,10 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
   }
 
   "Record extractor not supporting indexes" should {
-    "should fail self checks" ignore /* Not implemented yet */ {
+    "should fail self checks when offsets are not properly handled" in {
       withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
         val df = getDataFrame(tmpFileName, Map(
+          "enable_self_checks" -> "true",
           "record_extractor" -> "za.co.absa.cobrix.spark.cobol.mocks.FixedRecordExtractorNoIndex",
           "input_split_records" -> "2")
         )
@@ -59,7 +61,26 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
           df.count()
         }
 
-        assert(ex.getMessage == "")
+        assert(ex.getMessage.contains("Record extractor self-check failed. The record extractor returned wrong record when started from non-zero offset"))
+        assert(ex.getMessage.contains("offset: 4"))
+      }
+    }
+
+    "should fail self checks when the extractor returns hasNext=false unexpectedly" in {
+      withTempBinFile("custom_re", ".dat", data.getBytes) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map(
+          "enable_self_checks" -> "true",
+          "record_extractor" -> "za.co.absa.cobrix.spark.cobol.mocks.FixedRecordExtractorBroken",
+          "input_split_records" -> "2")
+        )
+
+        val ex = intercept[RuntimeException] {
+          df.show(false)
+          df.count()
+        }
+
+        assert(ex.getMessage.contains("Record extractor self-check failed. When reading from a non-zero offset the extractor returned hasNext()=false"))
+        assert(ex.getMessage.contains("offset: 2"))
       }
     }
 
@@ -73,6 +94,17 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
 
         // No guarantees regarding the correct record count at this point
         assert(df.count() > 4)
+      }
+    }
+
+    "should still work if there is just one record" in {
+      withTempBinFile("custom_re", ".dat", "AA".getBytes) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map(
+          "enable_self_checks" -> "true",
+          "record_extractor" -> "za.co.absa.cobrix.spark.cobol.mocks.FixedRecordExtractorNoIndex")
+        )
+
+        assert(df.count() == 1)
       }
     }
 
