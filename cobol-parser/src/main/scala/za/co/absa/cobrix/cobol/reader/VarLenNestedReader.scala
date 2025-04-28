@@ -55,9 +55,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   def recordExtractor(startingRecordNumber: Long,
                       dataStream: SimpleStream,
-                      headerStream: SimpleStream,
-                      copybook: Copybook
-                     ): Option[RawRecordExtractor] = {
+                      headerStream: SimpleStream): Option[RawRecordExtractor] = {
     val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
 
     val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
@@ -66,7 +64,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
     val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
 
-    val reParams = RawRecordContext(startingRecordNumber, dataStream, headerStream, copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
+    val reParams = RawRecordContext(startingRecordNumber, dataStream, headerStream, cobolSchema.copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
@@ -113,7 +111,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
+        recordExtractor(startingRecordIndex, dataStream, headerStream),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -123,7 +121,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, dataStream, headerStream, cobolSchema.copybook),
+        recordExtractor(startingRecordIndex, dataStream, headerStream),
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -178,7 +176,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, dataStream, headerStream, copybook),
+        recordExtractor(0L, dataStream, headerStream),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         Some(copybook),
@@ -189,7 +187,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, dataStream, headerStream, copybook),
+        recordExtractor(0L, dataStream, headerStream),
         inputSplitSizeRecords,
         inputSplitSizeMB,
         None,

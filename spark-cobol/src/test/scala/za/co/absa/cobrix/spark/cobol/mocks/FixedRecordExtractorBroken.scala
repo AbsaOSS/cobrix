@@ -19,23 +19,18 @@ package za.co.absa.cobrix.spark.cobol.mocks
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{RawRecordContext, RawRecordExtractor}
 
 /**
-  * This record extractor assumes each record has the size of 2 bytes.
-  *
-  * This record extractor is not index compatible.
+  * This record extractor that returns hasNext=false when started with non-zero offset
   */
-class FixedRecordExtractorNoIndex (ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
+class FixedRecordExtractorBroken(ctx: RawRecordContext) extends Serializable with RawRecordExtractor {
   ctx.headerStream.close()
 
-  private var currentOffset = ctx.inputStream.offset
   private var recordNumber = ctx.startingRecordNumber
 
-  private var currentRecord = fetchRecord()
+  private val startingOffset = ctx.inputStream.offset
 
-  // This record extractor does not support indexes because it returns offsets not pointing to the next record.
-  // Since the record is fetched eagerly, it returns the offset of the next record.
-  override def offset: Long = currentOffset
+  override def offset: Long = ctx.inputStream.offset
 
-  override def hasNext: Boolean = currentRecord.nonEmpty
+  override def hasNext: Boolean = startingOffset == 0 && !ctx.inputStream.isEndOfStream
 
   @throws[NoSuchElementException]
   override def next(): Array[Byte] = {
@@ -43,22 +38,10 @@ class FixedRecordExtractorNoIndex (ctx: RawRecordContext) extends Serializable w
       throw new NoSuchElementException
     }
 
-    val rawRecord = currentRecord.get
-
-    // In order to support indexes the next 2 lines should be reversed.
-    currentRecord = fetchRecord()
-    currentOffset = ctx.inputStream.offset
+    val rawRecord = ctx.inputStream.next(2)
 
     recordNumber += 1
 
     rawRecord
-  }
-
-  def fetchRecord(): Option[Array[Byte]] = {
-    if (ctx.inputStream.isEndOfStream) {
-      None
-    } else {
-      Option(ctx.inputStream.next(2))
-    }
   }
 }

@@ -418,6 +418,7 @@ object CobolParametersParser extends Logging {
       parameters.decodeBinaryAsHex,
       parameters.dropGroupFillers,
       parameters.dropValueFillers,
+      parameters.enableSelfChecks,
       parameters.fillerNamingPolicy,
       parameters.nonTerminals,
       parameters.occursMappings,

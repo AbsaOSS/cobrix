@@ -117,6 +117,7 @@ case class ReaderParameters(
                              decodeBinaryAsHex:       Boolean = false,
                              dropGroupFillers:        Boolean = false,
                              dropValueFillers:        Boolean = true,
+                             enableSelfChecks:        Boolean = true,
                              fillerNamingPolicy:      FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
                              nonTerminals:            Seq[String] = Nil,
                              occursMappings:          Map[String, Map[String, Int]] = Map(),
