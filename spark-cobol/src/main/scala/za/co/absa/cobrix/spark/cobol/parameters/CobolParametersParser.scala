@@ -285,7 +285,7 @@ object CobolParametersParser extends Logging {
       getDebuggingFieldsPolicy(recordFormat, params),
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
-      params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "true").toBoolean,
+      params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "false").toBoolean,
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic"))
       )
     validateSparkCobolOptions(params, recordFormat)
