@@ -34,7 +34,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - uses: coursier/cache-action@v5
       - name: Setup JDK
         uses: actions/setup-java@v4
         with:
