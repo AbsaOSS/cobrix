@@ -40,7 +40,7 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
           "input_split_records" -> "2")
         )
 
-        val actual = df.toJSON.collect().mkString("[", ",", "]")
+        val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
 
         assert(actual == expected)
       }
@@ -117,7 +117,7 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
           "enable_indexes" -> "false")
         )
 
-        val actual = df.toJSON.collect().mkString("[", ",", "]")
+        val actual = df.orderBy("A").toJSON.collect().mkString("[", ",", "]")
 
         assert(actual == expected)
       }
@@ -133,5 +133,4 @@ class Test39RecordExtractorSelfCheck extends AnyWordSpec with SparkTestBase with
       .options(extraOptions)
       .load(inputPath)
   }
-
 }
