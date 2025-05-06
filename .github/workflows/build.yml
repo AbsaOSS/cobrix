@@ -19,17 +19,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scala: [ 2.11.12, 2.12.20, 2.13.15 ]
-        spark: [ 2.4.8, 3.4.3, 3.5.3 ]
+        scala: [ 2.11.12, 2.12.20, 2.13.16 ]
+        spark: [ 2.4.8, 3.4.4, 3.5.5 ]
         exclude:
           - scala: 2.11.12
-            spark: 3.4.3
+            spark: 3.4.4
           - scala: 2.11.12
-            spark: 3.5.3
+            spark: 3.5.5
           - scala: 2.12.20
             spark: 2.4.8
-          - scala: 2.13.15
+          - scala: 2.13.16
             spark: 2.4.8
+          - scala: 2.13.16
+            spark: 3.4.4
     name: Spark ${{matrix.spark}} on Scala ${{matrix.scala}}
     steps:
       - name: Checkout code

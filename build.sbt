@@ -21,7 +21,7 @@ import com.github.sbt.jacoco.report.JacocoReportSettings
 
 lazy val scala211 = "2.11.12"
 lazy val scala212 = "2.12.20"
-lazy val scala213 = "2.13.15"
+lazy val scala213 = "2.13.16"
 
 ThisBuild / organization := "za.co.absa.cobrix"
 
