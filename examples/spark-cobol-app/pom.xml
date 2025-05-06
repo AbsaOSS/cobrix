@@ -27,10 +27,10 @@
 	
 	<properties>
 		<encoding>UTF-8</encoding>
-		<scala.version>2.12.17</scala.version>
+		<scala.version>2.12.20</scala.version>
 		<scala.compat.version>2.12</scala.compat.version>
 		<scalatest.version>3.2.14</scalatest.version>
-		<spark.version>3.5.3</spark.version>
+		<spark.version>3.5.5</spark.version>
 		<spark.cobol.version>2.8.2</spark.cobol.version>
 	</properties>
 	
