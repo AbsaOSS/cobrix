@@ -1792,10 +1792,18 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+
 - #### 2.8.3 released 12 May 2025.
    - [#759](https://github.com/AbsaOSS/cobrix/issues/759) Added the ability to run self-checks for custom record extractors:
      ```scala
      .option("enable_self_checks", "true")
+     ```
+   - [#748](https://github.com/AbsaOSS/cobrix/issues/748) Implement the ability to specify copybooks directly in JAR.
+     ```scala
+     spark.read
+     .format("cobol")
+     .option("copybook", "jar:///path/in/resources/copybook.cpy")
+     .load("/data/path")
      ```
 
 - #### 2.8.2 released 25 February 2025.
