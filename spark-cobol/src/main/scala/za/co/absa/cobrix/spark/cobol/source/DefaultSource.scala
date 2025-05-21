@@ -17,9 +17,9 @@
 package za.co.absa.cobrix.spark.cobol.source
 
 import org.apache.hadoop.fs.Path
-import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationProvider, SchemaRelationProvider}
+import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
@@ -34,6 +34,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, SparkUtils}
 class DefaultSource
   extends RelationProvider
     with SchemaRelationProvider
+    with CreatableRelationProvider
     with DataSourceRegister
     with ReaderFactory
     with Logging {
@@ -44,6 +45,7 @@ class DefaultSource
     createRelation(sqlContext, parameters, null)
   }
 
+  /** Reader relation */
   override def createRelation(sqlContext: SQLContext, parameters: Map[String, String], schema: StructType): BaseRelation = {
     CobolParametersValidator.validateOrThrow(parameters, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
 
@@ -57,6 +59,36 @@ class DefaultSource
       LocalityParameters.extract(cobolParameters),
       cobolParameters.debugIgnoreFileSize)(sqlContext)
   }
+
+  /** Writer relation */
+  override def createRelation(sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
+    val path = parameters.getOrElse("path",
+      throw new IllegalArgumentException("Path is required for this data source."))
+
+    mode match {
+      case SaveMode.Overwrite =>
+        val outputPath = new Path(path)
+        val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+        val fs = outputPath.getFileSystem(hadoopConf)
+        if (fs.exists(outputPath)) {
+          fs.delete(outputPath, true)
+        }
+      case SaveMode.Append =>
+      case _ =>
+    }
+
+    // Simply save each row as comma-separated values in a text file
+    data.rdd
+      .map(row => row.mkString(","))
+      .saveAsTextFile(path)
+
+    new BaseRelation {
+      override def sqlContext: SQLContext = sqlContext
+
+      override def schema: StructType = data.schema
+    }
+  }
+
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader = null
