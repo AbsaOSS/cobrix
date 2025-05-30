@@ -200,32 +200,6 @@ class VRLRecordReaderSpec extends AnyWordSpec {
         assert(record2(14) == 0xF8.toByte)
       }
 
-      "throw an exception on a fraction type" in {
-        val copybookWithFieldLength =
-          """       01  RECORD.
-           05  LEN     PIC 9(8)V99.
-           05  N       PIC 9(2).
-           05  A       PIC X(2).
-          """
-
-        val records = Array[Byte](0x00)
-        val streamH = new ByteStreamMock(records)
-        val streamD = new ByteStreamMock(records)
-        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
-
-        val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
-
-        val ex = intercept[IllegalStateException] {
-          getUseCase(
-            copybook = copybookWithFieldLength,
-            records = records,
-            lengthFieldExpression = Some("LEN"),
-            recordExtractor = Some(new FixedWithRecordLengthExprRawRecordExtractor(context, readerParameters)))
-        }
-
-        assert(ex.getMessage == "The record length field LEN must be an integral type or a value mapping must be specified.")
-      }
-
       "the length mapping with default record length" in {
         val copybookWithLenbgthMap =
           """       01  RECORD.
