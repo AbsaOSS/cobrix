@@ -228,5 +228,40 @@ class Test21VariableOccursForTextFiles extends AnyWordSpec with SparkTestBase wi
         assertEqualsMultiline(actualData, expectedData)
       }
     }
+
+    "correctly keep occurs for Cobrix ASCII with variable length extractor and decimal depending field" in {
+      val expectedSchema =
+        """root
+          | |-- COUNT: decimal(1,0) (nullable = true)
+          | |-- GROUP: array (nullable = true)
+          | |    |-- element: struct (containsNull = true)
+          | |    |    |-- INNER_COUNT: decimal(1,0) (nullable = true)
+          | |    |    |-- INNER_GROUP: array (nullable = true)
+          | |    |    |    |-- element: struct (containsNull = true)
+          | |    |    |    |    |-- FIELD: string (nullable = true)
+          | |-- MARKER: string (nullable = true)
+          |""".stripMargin
+
+      withTempTextFile("variable_occurs_ascii", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "D")
+          .option("ascii_charset", "utf8")
+          .option("variable_size_occurs", "true")
+          .option("strict_integral_precision", "true")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+
+        assertEqualsMultiline(actualSchema, expectedSchema)
+
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        assertEqualsMultiline(actualData, expectedData)
+      }
+    }
   }
 }

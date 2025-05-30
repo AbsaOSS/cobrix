@@ -106,6 +106,27 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
       }
     }
 
+    "work for numeric mappings and strict integrals" in {
+      withTempBinFile("record_length_mapping", ".tmp", dataNumeric) { tempFile =>
+        val expected = """{"SEG_ID":"1","TEXT":"123"},{"SEG_ID":"2","TEXT":"123456"},{"SEG_ID":"3","TEXT":"1234567"}"""
+
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "SEG-ID")
+          .option("input_split_records", "2")
+          .option("pedantic", "true")
+          .option("record_length_map", """{"1":4,"2":7,"3":8}""")
+          .option("strict_integral_precision", "true")
+          .load(tempFile)
+
+        val actual = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
+
+        assert(actual == expected)
+      }
+    }
+
     "work for data with offsets" in {
       withTempBinFile("record_length_mapping", ".tmp", dataWithFileOffsets) { tempFile =>
         val expected = """{"SEG_ID":"A","TEXT":"123"},{"SEG_ID":"B","TEXT":"123456"},{"SEG_ID":"C","TEXT":"1234567"}"""

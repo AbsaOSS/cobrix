@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.validator
 
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
@@ -25,6 +26,7 @@ import za.co.absa.cobrix.cobol.reader.parameters.MultisegmentParameters
 import scala.util.Try
 
 object ReaderParametersValidator {
+  private val log = LoggerFactory.getLogger(this.getClass)
 
   def getEitherFieldAndExpression(fieldOrExpressionOpt: Option[String], recordLengthMap: Map[String, Int], cobolSchema: Copybook): (Option[RecordLengthField], Option[RecordLengthExpression]) = {
     fieldOrExpressionOpt match {
@@ -49,7 +51,7 @@ object ReaderParametersValidator {
     val astNode = field match {
       case s: Primitive =>
         if (!s.dataType.isInstanceOf[za.co.absa.cobrix.cobol.parser.ast.datatype.Integral] && recordLengthMap.isEmpty) {
-          throw new IllegalStateException(s"The record length field $recordLengthFieldName must be an integral type or a value mapping must be specified.")
+          log.warn(s"The record length field $recordLengthFieldName is not integral. Runtime exceptions could occur if values can't be parsed as numbers.")
         }
         if (s.occurs.isDefined && s.occurs.get > 1) {
           throw new IllegalStateException(s"The record length field '$recordLengthFieldName' cannot be an array.")

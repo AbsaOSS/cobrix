@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.parser.asttransform
 
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.Integral
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 
 import scala.collection.mutable
@@ -96,6 +96,7 @@ class DependencyMarker(
             val newPrimitive = if (dependees contains primitive) {
               primitive.dataType match {
                 case _: Integral => true
+                case d: Decimal  if d.scale == 0 => true
                 case dt =>
                   for (stmt <- dependees(primitive)) {
                     if (stmt.dependingOnHandlers.isEmpty)
