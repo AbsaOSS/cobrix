@@ -51,6 +51,7 @@ import scala.collection.mutable.ArrayBuffer
   */
 class CobolSchema(copybook: Copybook,
                   schemaRetentionPolicy: SchemaRetentionPolicy,
+                  isDisplayAlwaysString: Boolean = false,
                   strictIntegralPrecision: Boolean = false,
                   inputFileNameField: String = "",
                   generateRecordId: Boolean = false,
@@ -58,10 +59,16 @@ class CobolSchema(copybook: Copybook,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
                   metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
-  extends CobolReaderSchema(
-    copybook, schemaRetentionPolicy, strictIntegralPrecision, inputFileNameField, generateRecordId, generateRecordBytes,
-    generateSegIdFieldsCnt, segmentIdProvidedPrefix
-    ) with Logging with Serializable {
+  extends CobolReaderSchema(copybook,
+    schemaRetentionPolicy,
+    isDisplayAlwaysString,
+    strictIntegralPrecision,
+    inputFileNameField,
+    generateRecordId,
+    generateRecordBytes,
+    generateSegIdFieldsCnt,
+    segmentIdProvidedPrefix
+  ) with Logging with Serializable {
 
   @throws(classOf[IllegalStateException])
   private[this] lazy val sparkSchema = createSparkSchema()
@@ -184,6 +191,8 @@ class CobolSchema(copybook: Copybook,
           case Some(RAW) => BinaryType
           case _         => StringType
         }
+      case dt: Integral  if isDisplayAlwaysString  =>
+        StringType
       case dt: Integral  if strictIntegralPrecision  =>
         DecimalType(precision = dt.precision, scale = 0)
       case dt: Integral  =>
@@ -288,6 +297,7 @@ object CobolSchema {
     new CobolSchema(
       schema.copybook,
       schema.policy,
+      schema.isDisplayAlwaysString,
       schema.strictIntegralPrecision,
       schema.inputFileNameField,
       schema.generateRecordId,

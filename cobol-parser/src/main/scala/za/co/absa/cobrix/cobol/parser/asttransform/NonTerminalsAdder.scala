@@ -73,7 +73,7 @@ class NonTerminalsAdder(
             )
             val sz = g.binaryProperties.actualSize
             val dataType = AlphaNumeric(s"X($sz)", sz, enc = Some(enc))
-            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+            val decode = DecoderSelector.getDecoder(dataType, stringTrimmingPolicy, isDisplayAlwaysString = false, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
             val newName = getNonTerminalName(g.name, g.parent.get)
             newChildren.append(
               Primitive(

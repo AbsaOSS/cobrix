@@ -59,6 +59,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
   * @param schemaPolicy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
+  * @param isDisplayAlwaysString   If true, all fields having DISPLAY format will remain strings and won't be converted to numbers.
   * @param allowPartialRecords     If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
   * @param multisegment            Parameters specific to reading multisegment files
   * @param commentPolicy           A comment truncation policy
@@ -108,6 +109,7 @@ case class ReaderParameters(
                              generateRecordBytes:     Boolean = false,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                             isDisplayAlwaysString:   Boolean = false,
                              allowPartialRecords:     Boolean = false,
                              multisegment:            Option[MultisegmentParameters] = None,
                              commentPolicy:           CommentPolicy = CommentPolicy(),

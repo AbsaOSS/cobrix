@@ -107,24 +107,25 @@ object CopybookParser extends Logging {
     * Tokenizes a Cobol Copybook contents and returns the AST.
     *
     * @param dataEncoding          Encoding of the data file (either ASCII/EBCDIC). The encoding of the copybook is expected to be ASCII.
-    * @param copyBookContents      A string containing all lines of a copybook
-    * @param dropGroupFillers      Drop groups marked as fillers from the output AST
-    * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
-    * @param fillerNamingPolicy    Specifies a naming policy for fillers
+    * @param copyBookContents      A string containing all lines of a copybook.
+    * @param dropGroupFillers      Drop groups marked as fillers from the output AST.
+    * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST.
+    * @param fillerNamingPolicy    Specifies a naming policy for fillers.
     * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     *                              resolving segment redefines.
-    * @param fieldParentMap        A segment fields parent mapping
-    * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
-    * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers
+    * @param fieldParentMap        A segment fields parent mapping.
+    * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed.
+    * @param isDisplayAlwaysString If true, all fields having DISPLAY format will remain strings and won't be converted to numbers.
+    * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers.
     * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
-    * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
-    * @param ebcdicCodePage        A code page for EBCDIC encoded data
-    * @param asciiCharset          A charset for ASCII encoded data
+    * @param commentPolicy         Specifies a policy for comments truncation inside a copybook.
+    * @param ebcdicCodePage        A code page for EBCDIC encoded data.
+    * @param asciiCharset          A charset for ASCII encoded data.
     * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
-    * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
-    * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754).
+    * @param nonTerminals          A list of non-terminals that should be extracted as strings.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
-    * @return Seq[Group] where a group is a record inside the copybook
+    * @return Seq[Group] where a group is a record inside the copybook.
     */
   def parse(copyBookContents: String,
             dataEncoding: Encoding = EBCDIC,
@@ -134,6 +135,7 @@ object CopybookParser extends Logging {
             segmentRedefines: Seq[String] = Nil,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+            isDisplayAlwaysString: Boolean = false,
             commentPolicy: CommentPolicy = CommentPolicy(),
             strictSignOverpunch: Boolean = true,
             improvedNullDetection: Boolean = false,
@@ -155,6 +157,7 @@ object CopybookParser extends Logging {
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
+      isDisplayAlwaysString,
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
@@ -180,6 +183,7 @@ object CopybookParser extends Logging {
     * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
     * @param fieldParentMap        A segment fields parent mapping
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
+    * @param isDisplayAlwaysString If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
     * @param commentPolicy         Specifies a policy for comments truncation inside a copybook
     * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers
     * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
@@ -198,6 +202,7 @@ object CopybookParser extends Logging {
                 segmentRedefines: Seq[String] = Nil,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                isDisplayAlwaysString: Boolean = false,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 strictSignOverpunch: Boolean = true,
                 improvedNullDetection: Boolean = false,
@@ -219,6 +224,7 @@ object CopybookParser extends Logging {
       segmentRedefines,
       fieldParentMap,
       stringTrimmingPolicy,
+      isDisplayAlwaysString,
       commentPolicy,
       strictSignOverpunch,
       improvedNullDetection,
@@ -265,6 +271,7 @@ object CopybookParser extends Logging {
                 segmentRedefines: Seq[String],
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
+                isDisplayAlwaysString: Boolean,
                 commentPolicy: CommentPolicy,
                 strictSignOverpunch: Boolean,
                 improvedNullDetection: Boolean,
@@ -279,7 +286,7 @@ object CopybookParser extends Logging {
                 debugFieldsPolicy: DebugFieldsPolicy,
                 fieldCodePageMap: Map[String, String]): Copybook = {
 
-    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, commentPolicy, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
+    val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, isDisplayAlwaysString, commentPolicy, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
 
     val nonTerms: Set[String] = (for (id <- nonTerminals)
       yield transformIdentifier(id)

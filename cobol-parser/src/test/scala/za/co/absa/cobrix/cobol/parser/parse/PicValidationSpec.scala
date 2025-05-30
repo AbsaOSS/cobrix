@@ -33,7 +33,9 @@ class PicValidationSpec extends AnyFunSuite {
 
   private def validatePic(pic: String) = {
 
-    val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
+    val visitor = new ParserVisitor(ASCII,
+      StringTrimmingPolicy.TrimNone,
+      isDisplayAlwaysString = false,
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
       isUtf16BigEndian = true,
