@@ -192,88 +192,87 @@ class Test26FixLengthWithIdGeneration extends AnyWordSpec with SparkTestBase wit
         assertEqualsMultiline(actual, expected)
       }
     }
-  }
 
-  "correctly work with segment id generation option with length field" in {
-    withTempBinFile("fix_length_reg3", ".dat", binFileContentsLengthField) { tmpFileName =>
-      val df = spark
-        .read
-        .format("cobol")
-        .option("copybook_contents", copybook)
-        .option("record_format", "F")
-        .option("record_length_field", "LEN")
-        .option("strict_integral_precision", "true")
-        .option("segment_field", "IND")
-        .option("segment_id_prefix", "ID")
-        .option("segment_id_level0", "A")
-        .option("segment_id_level1", "_")
-        .option("redefine-segment-id-map:0", "SEGMENT1 => A")
-        .option("redefine-segment-id-map:1", "SEGMENT2 => B")
-        .option("redefine-segment-id-map:2", "SEGMENT3 => C")
-        .option("input_split_records", 1)
-        .option("pedantic", "true")
-        .load(tmpFileName)
+    "correctly work with segment id generation option with length field and strict integral precision" in {
+      withTempBinFile("fix_length_reg3", ".dat", binFileContentsLengthField) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "LEN")
+          .option("strict_integral_precision", "true")
+          .option("segment_field", "IND")
+          .option("segment_id_prefix", "ID")
+          .option("segment_id_level0", "A")
+          .option("segment_id_level1", "_")
+          .option("redefine-segment-id-map:0", "SEGMENT1 => A")
+          .option("redefine-segment-id-map:1", "SEGMENT2 => B")
+          .option("redefine-segment-id-map:2", "SEGMENT3 => C")
+          .option("input_split_records", 1)
+          .option("pedantic", "true")
+          .load(tmpFileName)
 
-      val actual = SparkUtils.convertDataFrameToPrettyJSON(df.drop("LEN").orderBy("Seg_Id0", "Seg_Id1"))
+        val actual = SparkUtils.convertDataFrameToPrettyJSON(df.drop("LEN").orderBy("Seg_Id0", "Seg_Id1"))
 
-      assertEqualsMultiline(actual, expected)
-    }
-  }
-
-  "work with string values" in {
-    val copybook =
-      """       01  R.
-           05  LEN      PIC X(1).
-           05  FIELD1   PIC X(1).
-      """
-
-    val binFileContentsLengthField: Array[Byte] = Array[Byte](
-      // A1
-      0xF2.toByte, 0xF3.toByte, 0xF3.toByte, 0xF4.toByte
-    ).map(_.toByte)
-
-    withTempBinFile("fix_length_str", ".dat", binFileContentsLengthField) { tmpFileName =>
-      val df = spark
-        .read
-        .format("cobol")
-        .option("copybook_contents", copybook)
-        .option("record_format", "F")
-        .option("record_length_field", "LEN")
-        .option("pedantic", "true")
-        .load(tmpFileName)
-
-      assert(df.count() == 2)
-    }
-  }
-
-  "fail for incorrect string values" in {
-    val copybook =
-      """       01  R.
-           05  LEN      PIC X(1).
-           05  FIELD1   PIC X(1).
-      """
-
-    val binFileContentsLengthField: Array[Byte] = Array[Byte](
-      // A1
-      0xF2.toByte, 0xF3.toByte, 0xC3.toByte, 0xF4.toByte
-    ).map(_.toByte)
-
-    withTempBinFile("fix_length_str", ".dat", binFileContentsLengthField) { tmpFileName =>
-      val df = spark
-        .read
-        .format("cobol")
-        .option("copybook_contents", copybook)
-        .option("record_format", "F")
-        .option("record_length_field", "LEN")
-        .option("pedantic", "true")
-        .load(tmpFileName)
-
-      val ex = intercept[SparkException] {
-        df.count()
+        assertEqualsMultiline(actual, expected)
       }
+    }
 
-      assert(ex.getCause.getMessage.contains("Record length value of the field LEN must be an integral type, encountered: 'C'"))
+    "correctly work when the length field has the string type" in {
+      val copybook =
+        """       01  R.
+           05  LEN      PIC X(1).
+           05  FIELD1   PIC X(1).
+      """
+
+      val binFileContentsLengthField: Array[Byte] = Array[Byte](
+        // A1
+        0xF2.toByte, 0xF3.toByte, 0xF3.toByte, 0xF4.toByte
+      ).map(_.toByte)
+
+      withTempBinFile("fix_length_str", ".dat", binFileContentsLengthField) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "LEN")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        assert(df.count() == 2)
+      }
+    }
+
+    "fail when the length field has the string type and incorrect string values are encountered" in {
+      val copybook =
+        """       01  R.
+           05  LEN      PIC X(1).
+           05  FIELD1   PIC X(1).
+      """
+
+      val binFileContentsLengthField: Array[Byte] = Array[Byte](
+        // A1
+        0xF2.toByte, 0xF3.toByte, 0xC3.toByte, 0xF4.toByte
+      ).map(_.toByte)
+
+      withTempBinFile("fix_length_str", ".dat", binFileContentsLengthField) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "LEN")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val ex = intercept[SparkException] {
+          df.count()
+        }
+
+        assert(ex.getCause.getMessage.contains("Record length value of the field LEN must be an integral type, encountered: 'C'"))
+      }
     }
   }
-
 }
