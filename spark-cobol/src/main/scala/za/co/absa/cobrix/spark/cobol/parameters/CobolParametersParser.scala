@@ -72,6 +72,7 @@ object CobolParametersParser extends Logging {
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
   val PARAM_FILLER_NAMING_POLICY      = "filler_naming_policy"
   val PARAM_STRICT_INTEGRAL_PRECISION = "strict_integral_precision"
+  val PARAM_DISPLAY_PIC_ALWAYS_STRING = "display_pic_always_string"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -270,6 +271,7 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
+      params.getOrElse(PARAM_DISPLAY_PIC_ALWAYS_STRING, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean,
       parseMultisegmentParameters(params),
       parseCommentTruncationPolicy(params),
@@ -409,6 +411,7 @@ object CobolParametersParser extends Logging {
       generateRecordBytes = parameters.generateRecordBytes,
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
+      isDisplayAlwaysString = parameters.isDisplayAlwaysString,
       allowPartialRecords = parameters.allowPartialRecords,
       parameters.multisegmentParams,
       parameters.commentPolicy,
@@ -921,6 +924,10 @@ object CobolParametersParser extends Logging {
       val max = params(PARAM_MAXIMUM_RECORD_LENGTH).toInt
       throw new IllegalArgumentException(s"'$PARAM_MINIMUM_RECORD_LENGTH' ($min) should be >= '$PARAM_MAXIMUM_RECORD_LENGTH' ($max).")
     }
+
+    if (params.contains(PARAM_DISPLAY_PIC_ALWAYS_STRING) && params(PARAM_DISPLAY_PIC_ALWAYS_STRING).toBoolean &&
+      params.contains(PARAM_STRICT_INTEGRAL_PRECISION) && params(PARAM_STRICT_INTEGRAL_PRECISION).toBoolean)
+      throw new IllegalArgumentException(s"Options '$PARAM_DISPLAY_PIC_ALWAYS_STRING' and '$PARAM_STRICT_INTEGRAL_PRECISION' cannot be used together.")
 
     if (unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")

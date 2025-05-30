@@ -41,6 +41,7 @@ sealed trait Expr
 
 class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
+                    isDisplayAlwaysString: Boolean,
                     ebcdicCodePage: CodePage,
                     asciiCharset: Charset,
                     isUtf16BigEndian: Boolean,
@@ -854,7 +855,7 @@ class ParserVisitor(enc: Encoding,
       Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, isDisplayAlwaysString, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian = isUtf16BigEndian, floatingPointFormat, strictSignOverpunch = strictSignOverpunch, improvedNullDetection = improvedNullDetection, strictIntegralPrecision = strictIntegralPrecision)
       ) (Some(parent))
 
     parent.children.append(prim)

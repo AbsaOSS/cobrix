@@ -36,6 +36,7 @@ import scala.collection.immutable.HashMap
   *
   * @param copybook                A parsed copybook.
   * @param policy                  Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param isDisplayAlwaysString   If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
@@ -46,6 +47,7 @@ import scala.collection.immutable.HashMap
   */
 class CobolSchema(val copybook: Copybook,
                   val policy: SchemaRetentionPolicy,
+                  val isDisplayAlwaysString: Boolean,
                   val strictIntegralPrecision: Boolean,
                   val inputFileNameField: String,
                   val generateRecordId: Boolean,
@@ -93,6 +95,7 @@ object CobolSchema {
         segmentRedefines,
         fieldParentMap,
         readerParameters.stringTrimmingPolicy,
+        readerParameters.isDisplayAlwaysString,
         readerParameters.commentPolicy,
         readerParameters.strictSignOverpunch,
         readerParameters.improvedNullDetection,
@@ -116,6 +119,7 @@ object CobolSchema {
           segmentRedefines,
           fieldParentMap,
           readerParameters.stringTrimmingPolicy,
+          readerParameters.isDisplayAlwaysString,
           readerParameters.commentPolicy,
           readerParameters.strictSignOverpunch,
           readerParameters.improvedNullDetection,
@@ -132,7 +136,17 @@ object CobolSchema {
       ))
     val segIdFieldCount = readerParameters.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerParameters.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
-    new CobolSchema(schema, readerParameters.schemaPolicy, readerParameters.strictIntegralPrecision, readerParameters.inputFileNameColumn, readerParameters.generateRecordId, readerParameters.generateRecordBytes, segIdFieldCount, segmentIdPrefix, readerParameters.metadataPolicy)
+    new CobolSchema(schema,
+      readerParameters.schemaPolicy,
+      readerParameters.isDisplayAlwaysString,
+      readerParameters.strictIntegralPrecision,
+      readerParameters.inputFileNameColumn,
+      readerParameters.generateRecordId,
+      readerParameters.generateRecordBytes,
+      segIdFieldCount,
+      segmentIdPrefix,
+      readerParameters.metadataPolicy
+    )
   }
 
   def getCodePage(codePageName: String, codePageClass: Option[String]): CodePage = {

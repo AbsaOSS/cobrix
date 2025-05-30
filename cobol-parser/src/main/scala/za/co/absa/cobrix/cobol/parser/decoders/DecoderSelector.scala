@@ -56,6 +56,7 @@ object DecoderSelector {
     */
   def getDecoder(dataType: CobolType,
                  stringTrimmingPolicy: StringTrimmingPolicy = TrimBoth,
+                 isDisplayAlwaysString: Boolean = false,
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII,
                  isUtf16BigEndian: Boolean = true,
@@ -66,6 +67,7 @@ object DecoderSelector {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, improvedNullDetection)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
+      case integralType: Integral if isDisplayAlwaysString => getDisplayDecoderAsString(integralType, improvedNullDetection, strictIntegralPrecision)
       case integralType: Integral => getIntegralDecoder(integralType, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
@@ -248,6 +250,29 @@ object DecoderSelector {
         getBinaryEncodedIntegralDecoder(Some(COMP9()), integralType.precision, integralType.signPosition, isBigEndian = false, strictIntegralPrecision)
       case _ =>
         throw new IllegalStateException(s"Unknown number compression format (${integralType.compact.get}).")
+    }
+  }
+
+  private[parser] def getDisplayDecoderAsString(integralType: Integral,
+                                                improvedNullDetection: Boolean,
+                                                strictSignOverpunch: Boolean): Decoder = {
+    val encoding = integralType.enc.getOrElse(EBCDIC)
+    val isSigned = integralType.signPosition.isDefined
+    val allowedSignOverpunch = isSigned || !strictSignOverpunch
+
+    val isEbcdic = encoding match {
+      case EBCDIC => true
+      case _ => false
+    }
+
+    if (isEbcdic) {
+      bytes: Array[Byte] => {
+        StringDecoders.decodeEbcdicNumber(bytes, !isSigned, allowedSignOverpunch,improvedNullDetection)
+      }
+    } else {
+      bytes: Array[Byte] => {
+        StringDecoders.decodeAsciiNumber(bytes, !isSigned, allowedSignOverpunch,improvedNullDetection)
+      }
     }
   }
 

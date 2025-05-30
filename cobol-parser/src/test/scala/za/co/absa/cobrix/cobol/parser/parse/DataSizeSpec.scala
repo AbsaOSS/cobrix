@@ -33,7 +33,9 @@ class DataSizeSpec extends AnyFunSuite {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private def parse(pic: String): Primitive = {
-    val visitor = new ParserVisitor(ASCII, StringTrimmingPolicy.TrimNone,
+    val visitor = new ParserVisitor(ASCII,
+      StringTrimmingPolicy.TrimNone,
+      isDisplayAlwaysString = false,
       CodePage.getCodePageByName("common"),
       StandardCharsets.US_ASCII,
       isUtf16BigEndian = true,
