@@ -67,7 +67,7 @@ object DecoderSelector {
     val decoder = dataType match {
       case alphaNumeric: AlphaNumeric => getStringDecoder(alphaNumeric.enc.getOrElse(EBCDIC), stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, improvedNullDetection)
       case decimalType: Decimal => getDecimalDecoder(decimalType, floatingPointFormat, strictSignOverpunch, improvedNullDetection)
-      case integralType: Integral if isDisplayAlwaysString => getDisplayDecoderAsString(integralType, improvedNullDetection, strictIntegralPrecision)
+      case integralType: Integral if isDisplayAlwaysString => getDisplayDecoderAsString(integralType, improvedNullDetection, strictSignOverpunch)
       case integralType: Integral => getIntegralDecoder(integralType, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision)
       case _ => throw new IllegalStateException("Unknown AST object")
     }
@@ -267,11 +267,11 @@ object DecoderSelector {
 
     if (isEbcdic) {
       bytes: Array[Byte] => {
-        StringDecoders.decodeEbcdicNumber(bytes, !isSigned, allowedSignOverpunch,improvedNullDetection)
+        StringDecoders.decodeEbcdicNumber(bytes, !isSigned, allowedSignOverpunch, improvedNullDetection)
       }
     } else {
       bytes: Array[Byte] => {
-        StringDecoders.decodeAsciiNumber(bytes, !isSigned, allowedSignOverpunch,improvedNullDetection)
+        StringDecoders.decodeAsciiNumber(bytes, !isSigned, allowedSignOverpunch, improvedNullDetection)
       }
     }
   }
