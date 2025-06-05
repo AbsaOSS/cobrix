@@ -192,6 +192,8 @@ class CobolSchema(copybook: Copybook,
           case _         => StringType
         }
       case dt: Integral  if isDisplayAlwaysString  =>
+        if (metadataPolicy != MetadataPolicy.NoMetadata)
+          addIntegralStringMetadata(metadata, dt)
         StringType
       case dt: Integral  if strictIntegralPrecision  =>
         DecimalType(precision = dt.precision, scale = 0)
@@ -230,6 +232,11 @@ class CobolSchema(copybook: Copybook,
 
   private def addAlphaNumericMetadata(metadataBuilder: MetadataBuilder, a: AlphaNumeric): MetadataBuilder = {
     metadataBuilder.putLong(MAX_LENGTH, a.length)
+  }
+
+  private def addIntegralStringMetadata(metadataBuilder: MetadataBuilder, i: Integral): MetadataBuilder = {
+    val maxLength = if (i.signPosition.isDefined) i.precision + 1 else i.precision
+    metadataBuilder.putLong(MAX_LENGTH, maxLength)
   }
 
   private def addExtendedMetadata(metadataBuilder: MetadataBuilder, s: Statement): MetadataBuilder = {

@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.MAX_LENGTH
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -119,6 +120,9 @@ class Test01DisplayPicAsStrings extends AnyFunSuite with SparkTestBase with Bina
 
       val actualSchema = df.schema.treeString
       val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+      assert(df.schema.fields.head.metadata.getLong(MAX_LENGTH) == 4)
+      assert(df.schema.fields(1).metadata.getLong(MAX_LENGTH) == 5)
 
       assertEqualsMultiline(actualSchema, expectedSchema)
       assertEqualsMultiline(actualData, expectedData)
