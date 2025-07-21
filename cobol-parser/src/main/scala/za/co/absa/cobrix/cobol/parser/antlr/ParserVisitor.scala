@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
+import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, EncoderSelector}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding._
@@ -855,8 +855,9 @@ class ParserVisitor(enc: Encoding,
       Map(),
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
-      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, isDisplayAlwaysString, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian = isUtf16BigEndian, floatingPointFormat, strictSignOverpunch = strictSignOverpunch, improvedNullDetection = improvedNullDetection, strictIntegralPrecision = strictIntegralPrecision)
-      ) (Some(parent))
+      DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, isDisplayAlwaysString, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian = isUtf16BigEndian, floatingPointFormat, strictSignOverpunch = strictSignOverpunch, improvedNullDetection = improvedNullDetection, strictIntegralPrecision = strictIntegralPrecision),
+      EncoderSelector.getEncoder(pic.value, effectiveEbcdicCodePage, effectiveAsciiCharset),
+    )(Some(parent))
 
     parent.children.append(prim)
 

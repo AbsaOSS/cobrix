@@ -17,19 +17,26 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
+import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector, EncoderSelector}
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
-  * @param level        A level for the statement
-  * @param name         An identifier
-  * @param originalName Original name of the AST element (before the conversion to the Spark-compatible name)
-  * @param lineNumber   An line number in the copybook
-  * @param redefines    A name of a field which is redefined by this one
-  * @param occurs       The number of elements in an fixed size array / minimum items in variable-sized array
-  * @param to           The maximum number of items in a variable size array
-  * @param dependingOn  A field which specifies size of the array in a record
-  * @param parent       A parent node
+  * @param level               A level for the statement
+  * @param name                An identifier
+  * @param originalName        Original name of the AST element (before the conversion to the Spark-compatible name)
+  * @param lineNumber          An line number in the copybook
+  * @param redefines           A name of a field which is redefined by this one
+  * @param isRedefined         A flag indicating if the field is redefined
+  * @param occurs              The number of elements in an fixed size array / minimum items in variable-sized array
+  * @param to                  The maximum number of items in a variable size array
+  * @param dependingOn         A field which specifies size of the array in a record
+  * @param dependingOnHandlers A map of handlers for the dependingOn field
+  * @param isDependee          A flag indicating if the field is a dependee
+  * @param isFiller            A flag indicating if the field is a filler
+  * @param decode              A decoder for the field to convert from raw data to a JVM data type
+  * @param encode              An optional encoder for the field to convert from a JVM data type to raw data
+  * @param binaryProperties    Binary properties of the field, such as size in bits, alignment, etc.
+  * @param parent              A parent node
   */
 case class Primitive(
                       level: Int,
@@ -46,6 +53,7 @@ case class Primitive(
                       isDependee: Boolean = false,
                       isFiller: Boolean = false,
                       decode: DecoderSelector.Decoder,
+                      encode: Option[EncoderSelector.Encoder],
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                     )
                     (val parent: Option[Group] = None)
