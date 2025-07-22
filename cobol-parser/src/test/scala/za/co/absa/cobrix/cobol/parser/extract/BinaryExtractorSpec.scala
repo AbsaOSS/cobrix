@@ -204,4 +204,17 @@ class BinaryExtractorSpec extends AnyFunSuite {
     }
     assert(thrown4.getMessage === s"'$notPrimitiveName2' is a GROUP and not a primitive field. Cannot extract it's value.")
   }
+
+  test("Test set field value by name") {
+    val fieldName1: String = "COMPANY.SHORT-NAME"
+    val newValue1: String = "NEWNAME"
+    copybook.setFieldValueByName(fieldName1, bytes, newValue1, startOffset)
+    val result1: Any = copybook.getFieldValueByName(fieldName1, bytes, startOffset)
+    assert(result1.asInstanceOf[String] === "NEWNAME")
+
+    val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
+    val fields2 = copybook.getFieldByName(fieldName2)
+    assert(fields2.isInstanceOf[Primitive])
+    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+  }
 }

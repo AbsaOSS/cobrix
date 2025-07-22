@@ -16,8 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.CobolType
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
 
 import java.nio.charset.{Charset, StandardCharsets}
 
@@ -27,7 +28,53 @@ object EncoderSelector {
   def getEncoder(dataType: CobolType,
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII): Option[Encoder] = {
-    None
+    dataType match {
+      case alphaNumeric: AlphaNumeric if alphaNumeric.compact.isEmpty =>
+        getStringEncoder(alphaNumeric.enc.getOrElse(EBCDIC), ebcdicCodePage, asciiCharset, alphaNumeric.length)
+      case _ =>
+        None
+    }
+  }
+
+  /** Gets a decoder function for a string data type. Encoder is chosen depending on whether input encoding is EBCDIC or ASCII */
+  private def getStringEncoder(encoding: Encoding,
+                               ebcdicCodePage: CodePage,
+                               asciiCharset: Charset,
+                               fieldLength: Int
+                              ): Option[Encoder] = {
+    encoding match {
+      case EBCDIC =>
+        val encoder = (a: Any) => {
+          encodeEbcdicString(a.toString, CodePageCommon.asciiToEbcdicMapping, fieldLength)
+        }
+        Option(encoder)
+      case ASCII =>
+        None
+      case _ =>
+        None
+    }
+  }
+
+  /**
+    * An encoder from a ASCII basic string to an EBCDIC byte array
+    *
+    * @param string          An input string
+    * @param conversionTable A conversion table to use to convert from ASCII to EBCDIC
+    * @param length          The length of the output (in bytes)
+    * @return A string representation of the binary data
+    */
+  def encodeEbcdicString(string: String, conversionTable: Array[Byte], length: Int): Array[Byte] = {
+    require(length >= 0, s"Field length cannot be negative, got $length")
+
+    var i = 0
+    val buf = new Array[Byte](length)
+
+    while (i < string.length && i < length) {
+      val asciiByte = string(i).toByte
+      buf(i) = conversionTable((asciiByte + 256) % 256)
+      i = i + 1
+    }
+    buf
   }
 
 }
