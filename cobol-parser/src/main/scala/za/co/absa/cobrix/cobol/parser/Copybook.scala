@@ -72,6 +72,44 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   }
 
   /**
+    * Get value of a field of the copybook record by name
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param fieldName   A field name
+    * @param recordBytes Binary encoded data of the record
+    * @param startOffset An offset where the record starts in the data (in bytes).
+    * @return The value of the field
+    */
+  def getFieldValueByName(fieldName: String, recordBytes: Array[Byte], startOffset: Int = 0): Any = {
+    val ast = getFieldByName(fieldName)
+    ast match {
+      case s: Primitive => extractPrimitiveField(s, recordBytes, startOffset)
+      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract it's value.")
+    }
+  }
+
+  /**
+    * Set value of a field of the copybook record by name
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param fieldName   A field name
+    * @param recordBytes Binary encoded data of the record
+    * @param startOffset An offset where the record starts in the data (in bytes).
+    * @return The value of the field
+    */
+  def setFieldValueByName(fieldName: String, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Any = {
+    val ast = getFieldByName(fieldName)
+    ast match {
+      case s: Primitive => setPrimitiveField(s, recordBytes, value, startOffset)
+      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot set it's value.")
+    }
+  }
+
+  /**
     * Get the AST object of a field by name.
     *
     * Nested field names can contain '.' to identify the exact field.
@@ -81,7 +119,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
     *
     */
-  @throws(classOf[IllegalArgumentException])
   def getFieldByName(fieldName: String): Statement = {
 
     def getFieldByNameInGroup(group: Group, fieldName: String): Seq[Statement] = {
@@ -171,31 +208,40 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     * @return The value of the field
     *
     */
-  @throws(classOf[Exception])
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val slicedBytes = bytes.slice(field.binaryProperties.offset + startOffset, field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize)
     field.decodeTypeValue(0, slicedBytes)
   }
 
   /**
-    * Get value of a field of the copybook record by name
+    * Set value of a field of the copybook record by the AST object of the field
     *
     * Nested field names can contain '.' to identify the exact field.
     * If the field name is unique '.' is not required.
     *
-    * @param fieldName A field name
+    * @param field The AST object of the field
     * @param bytes Binary encoded data of the record
-    * @param startOffset An offset where the record starts in the data (in bytes).
+    * @param startOffset An offset to the beginning of the field in the data (in bytes).
     * @return The value of the field
     *
     */
-  @throws(classOf[IllegalStateException])
-  @throws(classOf[Exception])
-  def getFieldValueByName(fieldName: String, bytes: Array[Byte], startOffset: Int = 0): Any = {
-    val ast = getFieldByName(fieldName)
-    ast match {
-      case s: Primitive => extractPrimitiveField(s, bytes, startOffset)
-      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract it's value.")
+  def setPrimitiveField(field: Primitive, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
+    field.encode match {
+      case Some(encode) =>
+        val fieldBytes = encode(value)
+        val startByte = field.binaryProperties.offset + startOffset
+        val endByte = field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize
+
+        if (startByte < 0 || endByte > recordBytes.length) {
+          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the field is out of bounds of the record.")
+        }
+        if (fieldBytes.length != field.binaryProperties.dataSize) {
+          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the encoded value has a different size than the field size.")
+        }
+
+        System.arraycopy(fieldBytes, 0, recordBytes, startByte, fieldBytes.length)
+      case None =>
+        throw new IllegalStateException(s"Cannot set value for field '${field.name}' because it does not have an encoder defined.")
     }
   }
 

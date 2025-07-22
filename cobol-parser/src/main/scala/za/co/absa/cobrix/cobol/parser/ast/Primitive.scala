@@ -108,7 +108,6 @@ case class Primitive(
     * @param itOffset An offset of the field inside the binary data
     * @param record   A record in a binary format represented as a vector of bits
     */
-  @throws(classOf[Exception])
   def decodeTypeValue(itOffset: Int, record: Array[Byte]): Any = {
     val bytesCount = binaryProperties.dataSize
     val idx = itOffset

@@ -856,7 +856,7 @@ class ParserVisitor(enc: Encoding,
       isDependee = false,
       identifier.toUpperCase() == Constants.FILLER,
       DecoderSelector.getDecoder(pic.value, stringTrimmingPolicy, isDisplayAlwaysString, effectiveEbcdicCodePage, effectiveAsciiCharset, isUtf16BigEndian = isUtf16BigEndian, floatingPointFormat, strictSignOverpunch = strictSignOverpunch, improvedNullDetection = improvedNullDetection, strictIntegralPrecision = strictIntegralPrecision),
-      EncoderSelector.getEncoder(pic.value, effectiveEbcdicCodePage, effectiveAsciiCharset),
+      EncoderSelector.getEncoder(pic.value, effectiveEbcdicCodePage, effectiveAsciiCharset)
     )(Some(parent))
 
     parent.children.append(prim)
