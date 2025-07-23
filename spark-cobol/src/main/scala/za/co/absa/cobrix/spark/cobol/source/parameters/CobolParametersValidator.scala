@@ -22,7 +22,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.utils.ResourceUtils.getClass
 import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType}
 

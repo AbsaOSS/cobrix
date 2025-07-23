@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.parameters
+package za.co.absa.cobrix.cobol.reader.parameters
 
 import scala.collection.mutable
 

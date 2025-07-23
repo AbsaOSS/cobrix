@@ -21,9 +21,8 @@ import org.apache.spark.sql.sources.{BaseRelation, DataSourceRegister, RelationP
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{SQLContext, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.reader._
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters._
