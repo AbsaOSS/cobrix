@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source
 
 import org.scalatest.funsuite.AnyFunSuite
-import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.immutable.HashMap
 

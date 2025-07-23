@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.parameters
+package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -26,7 +26,6 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import za.co.absa.cobrix.cobol.parser.policies._
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat._
-import za.co.absa.cobrix.cobol.reader.parameters._
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 

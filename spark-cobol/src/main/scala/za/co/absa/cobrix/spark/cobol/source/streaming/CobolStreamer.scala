@@ -25,7 +25,7 @@ import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.{FillerNamingPolicy, StringTrimmingPolicy}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
 import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils

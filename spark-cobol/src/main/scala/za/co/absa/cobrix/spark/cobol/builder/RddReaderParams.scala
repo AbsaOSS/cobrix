@@ -16,9 +16,8 @@
 
 package za.co.absa.cobrix.spark.cobol.builder
 
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters}
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters, ReaderParameters}
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 
 object RddReaderParams {
   def forBinary(options: Map[String, String]): ReaderParameters = {

@@ -24,12 +24,12 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser.getReaderProperties
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.getReaderProperties
 import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.{MAX_ELEMENTS, MAX_LENGTH, MIN_ELEMENTS}
-import za.co.absa.cobrix.spark.cobol.parameters.{CobolParametersParser, Parameters}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
