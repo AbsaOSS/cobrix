@@ -48,4 +48,8 @@ class TestStringStream(str: String) extends SimpleStream{
   }
 
   override def close(): Unit = position = sz
+
+  override def copyStream(): SimpleStream = {
+    new TestStringStream(str)
+  }
 }

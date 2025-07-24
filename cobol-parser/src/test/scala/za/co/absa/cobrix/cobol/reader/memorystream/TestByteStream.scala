@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.memorystream
 
+import za.co.absa.cobrix.cobol.mock.ByteStreamMock
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 class TestByteStream(bytes: Array[Byte]) extends SimpleStream{
@@ -48,4 +49,8 @@ class TestByteStream(bytes: Array[Byte]) extends SimpleStream{
   }
 
   override def close(): Unit = position = sz
+
+  override def copyStream(): SimpleStream = {
+    new TestByteStream(bytes)
+  }
 }

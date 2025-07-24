@@ -111,6 +111,10 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     }
   }
 
+  override def copyStream(): SimpleStream = {
+    new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+  }
+
   /**
     * Gets a Hadoop [[Path]] (HDFS, S3, DBFS, etc) to the file.
     *
