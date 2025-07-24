@@ -16,7 +16,9 @@
 
 package za.co.absa.cobrix.cobol.mock
 
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
+
+import java.io.FileNotFoundException
 
 class ByteStreamMock(bytes: Array[Byte]) extends SimpleStream{
 
@@ -48,4 +50,8 @@ class ByteStreamMock(bytes: Array[Byte]) extends SimpleStream{
   }
 
   override def close(): Unit = position = sz
+
+  override def copyStream(): SimpleStream = {
+    new ByteStreamMock(bytes)
+  }
 }

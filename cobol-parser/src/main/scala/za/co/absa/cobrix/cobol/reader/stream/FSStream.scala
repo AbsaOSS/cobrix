@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.stream
 
-import java.io.{BufferedInputStream, File, FileInputStream, IOException}
+import java.io.{BufferedInputStream, File, FileInputStream, FileNotFoundException, IOException}
 
 class FSStream (fileName: String) extends SimpleStream {
   val bytesStream = new BufferedInputStream(new FileInputStream(fileName))
@@ -33,7 +33,6 @@ class FSStream (fileName: String) extends SimpleStream {
 
   override def inputFileName: String = fileName
 
-  @throws(classOf[IllegalArgumentException])
   @throws(classOf[IOException])
   override def next(numberOfBytes: Int): Array[Byte] = {
     if (numberOfBytes <= 0) throw new IllegalArgumentException("Value of numberOfBytes should be greater than zero.")
@@ -54,5 +53,10 @@ class FSStream (fileName: String) extends SimpleStream {
       bytesStream.close()
       isClosed = true
     }
+  }
+
+  @throws(classOf[FileNotFoundException])
+  override def copyStream(): SimpleStream = {
+    new FSStream(fileName)
   }
 }

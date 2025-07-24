@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.reader.stream
+package za.co.absa.cobrix.cobol.processor
 
+import za.co.absa.cobrix.cobol.parser.Copybook
 
-/** This trait defines a simple abstraction for processing variable length record data. */
-trait SimpleStream {
-  def size: Long
+/**
+ * A trait that defines a processor for raw COBOL records.
+ * It provides a method to process a single COBOL record based on the provided copybook and options.
+ */
+trait RawRecordProcessor {
+  def processRecord(copybook: Copybook,
+                    options: Map[String, String],
+                    record: Array[Byte],
+                    offset: Long): Array[Byte]
 
-  def totalSize: Long
-
-  def offset: Long
-
-  def inputFileName: String
-
-  def isEndOfStream: Boolean = offset >= size
-
-  @throws(classOf[Exception])
-  def copyStream(): SimpleStream
-
-  @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
-
-  @throws(classOf[Exception]) def close(): Unit
 }
