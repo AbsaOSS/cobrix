@@ -45,11 +45,7 @@ object StreamProcessor {
       val record = recordExtractor.next()
       val recordSize = record.length
 
-      val updatedRecord = if (recordExtractor.hasNext) {
-        recordProcessor.processRecord(copybook, options, record, recordExtractor.offset)
-      } else {
-        record
-      }
+      val updatedRecord = recordProcessor.processRecord(copybook, options, record, recordExtractor.offset)
 
       val headerSize = recordExtractor.offset - recordSize - inputStream.offset
       if (headerSize > 0) {
