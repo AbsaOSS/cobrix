@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.cobol.reader.memorystream
 
-import za.co.absa.cobrix.cobol.mock.ByteStreamMock
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 class TestByteStream(bytes: Array[Byte]) extends SimpleStream{
