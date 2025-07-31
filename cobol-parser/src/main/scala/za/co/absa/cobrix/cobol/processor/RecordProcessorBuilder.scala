@@ -104,7 +104,7 @@ class RecordProcessorBuilder(copybookContents: String) {
     CobolParametersParser.getReaderProperties(cobolParameters, None)
   }
 
-  private[processor] def getRecordExtractor[T: ClassTag](readerParameters: ReaderParameters, inputStream: SimpleStream): RawRecordExtractor = {
+  private[processor] def getRecordExtractor(readerParameters: ReaderParameters, inputStream: SimpleStream): RawRecordExtractor = {
     val dataStream = inputStream.copyStream()
     val headerStream = inputStream.copyStream()
 

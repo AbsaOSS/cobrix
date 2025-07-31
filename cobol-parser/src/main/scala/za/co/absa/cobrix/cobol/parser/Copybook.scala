@@ -86,26 +86,28 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     val ast = getFieldByName(fieldName)
     ast match {
       case s: Primitive => extractPrimitiveField(s, recordBytes, startOffset)
-      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract it's value.")
+      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract its value.")
     }
   }
 
   /**
-    * Set value of a field of the copybook record by name
+    * Sets the value of a copybook record field specified by name.
     *
     * Nested field names can contain '.' to identify the exact field.
-    * If the field name is unique '.' is not required.
+    * If the field name is unique, '.' is not required.
+    *
+    * This method modifies the record in place and does not return a value.
     *
     * @param fieldName   A field name
     * @param recordBytes Binary encoded data of the record
-    * @param startOffset An offset where the record starts in the data (in bytes).
-    * @return The value of the field
+    * @param value       The value to set
+    * @param startOffset An offset where the record starts in the data (in bytes)
     */
-  def setFieldValueByName(fieldName: String, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Any = {
+  def setFieldValueByName(fieldName: String, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
     val ast = getFieldByName(fieldName)
     ast match {
       case s: Primitive => setPrimitiveField(s, recordBytes, value, startOffset)
-      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot set it's value.")
+      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot set its value.")
     }
   }
 
@@ -113,7 +115,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     * Get the AST object of a field by name.
     *
     * Nested field names can contain '.' to identify the exact field.
-    * If the field name is unique '.' is not required.
+    * If the field name is unique, '.' is not required.
     *
     * @param fieldName A field name
     * @return An AST object of the field. Throws an IllegalStateException if not found of found multiple.
