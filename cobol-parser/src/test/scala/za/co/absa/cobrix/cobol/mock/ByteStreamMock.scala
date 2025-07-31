@@ -16,9 +16,7 @@
 
 package za.co.absa.cobrix.cobol.mock
 
-import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
-
-import java.io.FileNotFoundException
+import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 class ByteStreamMock(bytes: Array[Byte]) extends SimpleStream{
 
