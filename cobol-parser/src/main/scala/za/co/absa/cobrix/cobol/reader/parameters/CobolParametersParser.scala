@@ -246,9 +246,14 @@ object CobolParametersParser extends Logging {
       recordFormatDefined
     }
 
+    val copybookPaths = params.get(PARAM_MULTI_COPYBOOK_PATH) match {
+      case Some(paths) => paths.split(',').toSeq
+      case None => Seq.empty[String]
+    }
+
     val cobolParameters = CobolParameters(
       getParameter(PARAM_COPYBOOK_PATH, params),
-      params.getOrElse(PARAM_MULTI_COPYBOOK_PATH, "").split(','),
+      copybookPaths,
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,
       recordFormat,

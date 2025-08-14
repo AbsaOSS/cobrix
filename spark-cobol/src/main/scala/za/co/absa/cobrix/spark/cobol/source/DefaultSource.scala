@@ -17,16 +17,19 @@
 package za.co.absa.cobrix.spark.cobol.source
 
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.reader._
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters._
 import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, SparkUtils}
+import za.co.absa.cobrix.spark.cobol.writer.{BasicRecordCombiner, RawBinaryOutputFormat}
 
 /**
   * This class represents a Cobol data source.
@@ -65,6 +68,11 @@ class DefaultSource
     val path = parameters.getOrElse("path",
       throw new IllegalArgumentException("Path is required for this data source."))
 
+    val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
+    CobolParametersValidator.checkSanity(cobolParameters)
+
+    val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+
     mode match {
       case SaveMode.Overwrite =>
         val outputPath = new Path(path)
@@ -77,10 +85,20 @@ class DefaultSource
       case _ =>
     }
 
-    // Simply save each row as comma-separated values in a text file
-    data.rdd
-      .map(row => row.mkString(","))
-      .saveAsTextFile(path)
+    val copybookContent = CopybookContentLoader.load(cobolParameters, sqlContext.sparkContext.hadoopConfiguration)
+    val cobolSchema = CobolSchema.fromReaderParameters(copybookContent, readerParameters)
+
+    val combiner = new BasicRecordCombiner
+
+    val rdd = combiner.combine(data, cobolSchema, readerParameters)
+
+    rdd.map(bytes => (NullWritable.get(), new BytesWritable(bytes)))
+      .saveAsNewAPIHadoopFile(
+        path,
+        classOf[NullWritable],
+        classOf[BytesWritable],
+        classOf[RawBinaryOutputFormat]
+      )
 
     new BaseRelation {
       override def sqlContext: SQLContext = sqlContext
