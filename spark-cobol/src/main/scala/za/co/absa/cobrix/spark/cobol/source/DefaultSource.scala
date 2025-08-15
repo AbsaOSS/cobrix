@@ -22,14 +22,14 @@ import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.reader._
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters._
 import za.co.absa.cobrix.spark.cobol.utils.{BuildProperties, SparkUtils}
-import za.co.absa.cobrix.spark.cobol.writer.{BasicRecordCombiner, RawBinaryOutputFormat}
+import za.co.absa.cobrix.spark.cobol.writer.{RawBinaryOutputFormat, RecordCombinerSelector}
 
 /**
   * This class represents a Cobol data source.
@@ -82,13 +82,17 @@ class DefaultSource
           fs.delete(outputPath, true)
         }
       case SaveMode.Append =>
+        throw new IllegalArgumentException(
+          s"Save mode '$mode' is not supported by the 'spark-cobol' data source at the moment. " +
+            "Please use 'Overwrite' mode to write data to a file or folder."
+        )
       case _ =>
     }
 
     val copybookContent = CopybookContentLoader.load(cobolParameters, sqlContext.sparkContext.hadoopConfiguration)
     val cobolSchema = CobolSchema.fromReaderParameters(copybookContent, readerParameters)
 
-    val combiner = new BasicRecordCombiner
+    val combiner = RecordCombinerSelector.selectCombiner(cobolSchema, readerParameters)
 
     val rdd = combiner.combine(data, cobolSchema, readerParameters)
 
