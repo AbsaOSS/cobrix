@@ -20,8 +20,8 @@ import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, EncoderSelector}
-import za.co.absa.cobrix.cobol.parser.encoding.EBCDIC
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
+import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, EncoderSelector}
 
 class BinaryExtractorSpec extends AnyFunSuite {
 

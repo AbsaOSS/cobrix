@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.parser.decoders
+package za.co.absa.cobrix.cobol.parser.encoding
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
-import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, Encoding}
 
 import java.nio.charset.{Charset, StandardCharsets}
 

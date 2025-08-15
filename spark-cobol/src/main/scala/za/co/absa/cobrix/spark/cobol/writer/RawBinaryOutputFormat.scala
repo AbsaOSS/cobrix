@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.writer
 
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
@@ -36,15 +37,23 @@ import java.io.DataOutputStream
   * - The key type for the output is `NullWritable` because the key is not used.
   * - The value type for the output is `BytesWritable`, which represents the binary data to be written.
   */
+
 class RawBinaryOutputFormat extends FileOutputFormat[NullWritable, BytesWritable] {
   override def getRecordWriter(context: TaskAttemptContext): RecordWriter[NullWritable, BytesWritable] = {
-    val file = getDefaultWorkFile(context, "")
-    val out: DataOutputStream = file.getFileSystem(context.getConfiguration).create(file)
+    val path: Path = getDefaultWorkFile(context, ".dat")
+    val fs = path.getFileSystem(context.getConfiguration)
+    val out: DataOutputStream = fs.create(path, false)
+
     new RecordWriter[NullWritable, BytesWritable] {
       override def write(key: NullWritable, value: BytesWritable): Unit = {
-        out.write(value.getBytes, 0, value.getLength)
+        if (value != null) {
+          out.write(value.getBytes, 0, value.getLength) // No separator
+        }
       }
-      override def close(context: TaskAttemptContext): Unit = out.close()
+      override def close(context: TaskAttemptContext): Unit = {
+        out.close()
+      }
     }
   }
 }
+

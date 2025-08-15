@@ -17,7 +17,8 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
-import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector, EncoderSelector}
+import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
+import za.co.absa.cobrix.cobol.parser.encoding.EncoderSelector
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *

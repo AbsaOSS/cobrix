@@ -20,9 +20,9 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.AlphaNumeric
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
-import za.co.absa.cobrix.cobol.parser.decoders.{DecoderSelector, EncoderSelector}
+import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.Encoding
+import za.co.absa.cobrix.cobol.parser.encoding.{EncoderSelector, Encoding}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 
