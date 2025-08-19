@@ -1663,6 +1663,34 @@ The output looks like this:
 
 `common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
+## EBCDIC Writer (experimental)
+
+Cobrix's EBCDIC writer is an experimental feature that allows writing Spark DataFrames as EBCDIC mainframe files.
+
+### Usage
+```scala
+df.write
+  .format("cobol")
+  .mode(SaveMode.Overwrite)
+  .option("copybook_contents", copybookContents)
+  .save("/some/output/path")
+```
+
+### Current Limitations
+The writer is still in its early stages and has several limitations:
+- Nested GROUPs are not supported. Only flat copybooks can be used, for example:
+  ```cobol
+  01  RECORD.
+      05  FIELD_1       PIC X(1).
+      05  FIELD_2       PIC X(5).
+  ```
+- Only `PIC X(n)` fields are supported; numeric types are not.
+- Only fixed record length output is supported (`record_format = F`).
+- `REDEFINES` and `OCCURS` are not supported.
+- Only the core EBCDIC encoder is supported; specific EBCDIC code pages are not yet available.
+- Save mode `append` is not supported; only `overwrite` is.
+- Partitioning by DataFrame fields is not supported.
+
 ## Performance Analysis
 
 Performance tests were performed on synthetic datasets. The setup and results are as follows.
