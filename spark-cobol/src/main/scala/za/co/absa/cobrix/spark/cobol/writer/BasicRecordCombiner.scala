@@ -18,16 +18,22 @@ package za.co.absa.cobrix.spark.cobol.writer
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
-import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 
 class BasicRecordCombiner extends RecordCombiner {
   override def combine(df: DataFrame, cobolSchema: CobolSchema, readerParameters: ReaderParameters): RDD[Array[Byte]] = {
     val ast = getAst(cobolSchema)
-    validateSchema(df, ast)
+    val copybookFields = ast.children.filter {
+      case p: Primitive => !p.isFiller
+      case g: Group     => !g.isFiller
+      case _            => true
+    }
 
-    val cobolFields = ast.children.map(_.asInstanceOf[Primitive])
+    validateSchema(df, copybookFields.toSeq)
+
+    val cobolFields = copybookFields.map(_.asInstanceOf[Primitive])
     val sparkFields = df.schema.fields.map(_.name.toLowerCase)
 
     cobolFields.foreach(cobolField =>
@@ -64,10 +70,10 @@ class BasicRecordCombiner extends RecordCombiner {
     }
   }
 
-  private def validateSchema(df: DataFrame, ast: Group): Unit = {
+  private def validateSchema(df: DataFrame, copybookFields: Seq[Statement]): Unit = {
     val dfFields = df.schema.fields.map(_.name.toLowerCase).toSet
 
-    val notFoundFields = ast.children.flatMap { field =>
+    val notFoundFields = copybookFields.flatMap { field =>
       if (dfFields.contains(field.name.toLowerCase)) {
         None
       } else {
@@ -79,7 +85,7 @@ class BasicRecordCombiner extends RecordCombiner {
       throw new IllegalArgumentException(s"The following fields from the copybook are not found in the DataFrame: ${notFoundFields.mkString(", ")}")
     }
 
-    val unsupportedDataTypeFields = ast.children.filter { field =>
+    val unsupportedDataTypeFields = copybookFields.filter { field =>
       field.isInstanceOf[Group] ||
         (field.isInstanceOf[Primitive] && field.asInstanceOf[Primitive].occurs.isDefined) ||
         field.redefines.nonEmpty

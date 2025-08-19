@@ -20,6 +20,7 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 
 import java.nio.charset.{Charset, StandardCharsets}
+import java.util
 
 object EncoderSelector {
   type Encoder = Any => Array[Byte]
@@ -35,7 +36,7 @@ object EncoderSelector {
     }
   }
 
-  /** Gets a decoder function for a string data type. Encoder is chosen depending on whether input encoding is EBCDIC or ASCII */
+  /** Gets an encoder function for a string data type. The encoder is chosen depending on whether the output encoding is EBCDIC or ASCII. */
   private def getStringEncoder(encoding: Encoding,
                                ebcdicCodePage: CodePage,
                                asciiCharset: Charset,
@@ -67,6 +68,9 @@ object EncoderSelector {
 
     var i = 0
     val buf = new Array[Byte](length)
+
+    // PIC X fields are space-filled on mainframe. Use EBCDIC space 0x40.
+    util.Arrays.fill(buf, 0x40.toByte)
 
     while (i < string.length && i < length) {
       val asciiByte = string(i).toByte

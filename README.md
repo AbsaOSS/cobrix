@@ -1691,6 +1691,15 @@ The writer is still in its early stages and has several limitations:
 - Save mode `append` is not supported; only `overwrite` is.
 - Partitioning by DataFrame fields is not supported.
 
+### Implementation details
+Handling of `PIC X(n)`:
+- Values are truncated when longer than n and right-padded when shorter.
+- The padding byte is EBCDIC space `0x40`.
+- `null` values in DataFrames are written as `0x00` bytes.
+
+Handling of `FILLER`s
+- FILLER areas are populated with 0x00 bytes.
+
 ## Performance Analysis
 
 Performance tests were performed on synthetic datasets. The setup and results are as follows.

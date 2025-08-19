@@ -247,12 +247,23 @@ object CobolParametersParser extends Logging {
     }
 
     val copybookPaths = params.get(PARAM_MULTI_COPYBOOK_PATH) match {
-      case Some(paths) => paths.split(',').toSeq
+      case Some(paths) =>
+        paths.split(',')
+          .map(_.trim)
+          .filter(_.nonEmpty)
+          .toSeq
       case None => Seq.empty[String]
     }
 
+    val copybookPathOpt = params.get(PARAM_COPYBOOK_PATH).map(_.trim).filter(_.nonEmpty)
+    if (copybookPathOpt.nonEmpty && copybookPaths.nonEmpty) {
+      throw new IllegalArgumentException(
+        s"Options '$PARAM_COPYBOOK_PATH' (single path) and '$PARAM_MULTI_COPYBOOK_PATH' (comma-separated list) are mutually exclusive. Use only one."
+      )
+    }
+
     val cobolParameters = CobolParameters(
-      getParameter(PARAM_COPYBOOK_PATH, params),
+      copybookPathOpt,
       copybookPaths,
       getParameter(PARAM_COPYBOOK_CONTENTS, params),
       paths,

@@ -39,7 +39,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
 
         val path = new Path(tempDir, "writer1")
 
-        df.repartition(1)
+        df.coalesce(1)
           .orderBy("A")
           .write
           .format("cobol")
@@ -63,8 +63,8 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         // Expected EBCDIC data for sample test data
         val expected = Array[Byte](
           0xC1.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
-          0xC2.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x00.toByte, // B,Scnd_
-          0xC3.toByte, 0xD3.toByte, 0x81.toByte, 0xa2.toByte, 0xa3.toByte, 0x00.toByte // C,Last_
+          0xC2.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x40.toByte, // B,Scnd_
+          0xC3.toByte, 0xD3.toByte, 0x81.toByte, 0xa2.toByte, 0xa3.toByte, 0x40.toByte // C,Last_
         )
 
         if (!bytes.sameElements(expected)) {
@@ -82,12 +82,19 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
 
         val path = new Path(tempDir, "writer1")
 
-        df.repartition(1)
+        val copybookContentsWithFilers =
+          """       01  RECORD.
+           05  A       PIC X(1).
+           05  FILLER  PIC X(1).
+           05  B       PIC X(5).
+    """
+
+        df.coalesce(1)
           .orderBy("A")
           .write
           .format("cobol")
           .mode(SaveMode.Overwrite)
-          .option("copybook_contents", copybookContents)
+          .option("copybook_contents", copybookContentsWithFilers)
           .save(path.toString)
 
         val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
@@ -105,9 +112,9 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
 
         // Expected EBCDIC data for sample test data
         val expected = Array[Byte](
-          0xC1.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
-          0xC2.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x00.toByte, // B,Scnd_
-          0xC3.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte // C,Last_
+          0xC1.toByte, 0x00.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
+          0xC2.toByte, 0x00.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x40.toByte, // B,Scnd_
+          0xC3.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte // C,Last_
         )
 
         if (!bytes.sameElements(expected)) {
