@@ -23,6 +23,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 
 class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
+
   import spark.implicits._
 
   private val copybookContents =
@@ -37,7 +38,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
 
         val path = new Path(tempDir, "writer1")
-        
+
         df.repartition(1)
           .orderBy("A")
           .write
@@ -74,6 +75,117 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         }
       }
     }
+
+    "write data frames with different field order and null values" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val df = List((1, "First", "A"), (2, "Scnd", "B"), (3, null, "C")).toDF("C", "B", "A")
+
+        val path = new Path(tempDir, "writer1")
+
+        df.repartition(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array[Byte](
+          0xC1.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
+          0xC2.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x00.toByte, // B,Scnd_
+          0xC3.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte // C,Last_
+        )
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("%02X" format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+
+    "write should fail with save mode append and the path exists" in {
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
+
+        val path = new Path(tempDir, "writer2")
+
+        df.write
+          .format("cobol")
+          .mode(SaveMode.Append)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        assertThrows[IllegalArgumentException] {
+          df.write
+            .format("cobol")
+            .mode(SaveMode.Append)
+            .option("copybook_contents", copybookContents)
+            .save(path.toString)
+        }
+      }
+    }
+
+    "write should fail with save mode fail if exists and the path exists" in {
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
+
+        val path = new Path(tempDir, "writer2")
+
+        df.write
+          .format("cobol")
+          .mode(SaveMode.ErrorIfExists)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        assertThrows[IllegalArgumentException] {
+          df.write
+            .format("cobol")
+            .mode(SaveMode.ErrorIfExists)
+            .option("copybook_contents", copybookContents)
+            .save(path.toString)
+        }
+      }
+    }
+
+    "write should be ignored when save mode is ignore" in {
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
+
+        val path = new Path(tempDir, "writer2")
+
+        df.write
+          .format("cobol")
+          .mode(SaveMode.Ignore)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        df.write
+          .format("cobol")
+          .mode(SaveMode.Ignore)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+        assert(fs.exists(path), "Output directory should exist")
+      }
+    }
+
   }
 
 }
