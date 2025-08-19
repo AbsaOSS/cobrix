@@ -36,7 +36,7 @@ class BasicRecordCombiner extends RecordCombiner {
       }
     )
 
-    val sparkFieldPositions = cobolFields.map { cobolField =>
+    val sparkFieldPositions = cobolFields.zipWithIndex.map { case (cobolField, idx) =>
       val fieldName = cobolField.name.toLowerCase
       val position = sparkFields.indexOf(fieldName)
 
@@ -44,7 +44,7 @@ class BasicRecordCombiner extends RecordCombiner {
         throw new IllegalArgumentException(s"Field '${cobolField.name}' from the copybook is not found in the DataFrame schema.")
       }
 
-      position
+      (idx, position)
     }
 
     val size = cobolSchema.getRecordSize
@@ -52,10 +52,12 @@ class BasicRecordCombiner extends RecordCombiner {
     df.rdd.map { row =>
       val ar = new Array[Byte](size)
 
-      sparkFieldPositions.foreach { index =>
-        val fieldStr = row.get(index)
-        val cobolField = cobolFields(index)
-        cobolSchema.copybook.setPrimitiveField(cobolField, ar, fieldStr, 0)
+      sparkFieldPositions.foreach { case (cobolIdx, sparkIdx) =>
+        if (!row.isNullAt(sparkIdx)) {
+          val fieldStr = row.get(sparkIdx)
+          val cobolField = cobolFields(cobolIdx)
+          cobolSchema.copybook.setPrimitiveField(cobolField, ar, fieldStr, 0)
+        }
       }
 
       ar

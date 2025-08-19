@@ -65,6 +65,7 @@ class DefaultSource
 
   /** Writer relation */
   override def createRelation(sqlContext: SQLContext, mode: SaveMode, parameters: Map[String, String], data: DataFrame): BaseRelation = {
+    val outSqlContext = sqlContext
     val path = parameters.getOrElse("path",
       throw new IllegalArgumentException("Path is required for this data source."))
 
@@ -73,27 +74,42 @@ class DefaultSource
 
     val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
 
+    val outputPath = new Path(path)
+    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+    val fs = outputPath.getFileSystem(hadoopConf)
+
     mode match {
       case SaveMode.Overwrite =>
-        val outputPath = new Path(path)
-        val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
-        val fs = outputPath.getFileSystem(hadoopConf)
         if (fs.exists(outputPath)) {
           fs.delete(outputPath, true)
         }
       case SaveMode.Append =>
-        throw new IllegalArgumentException(
-          s"Save mode '$mode' is not supported by the 'spark-cobol' data source at the moment. " +
-            "Please use 'Overwrite' mode to write data to a file or folder."
-        )
+        if (fs.exists(outputPath)) {
+          throw new IllegalArgumentException(
+            s"Save mode '$mode' is not supported by the 'spark-cobol' data source at the moment. " +
+              "Please use 'Overwrite' mode to write data to a file or folder."
+          )
+        }
+      case SaveMode.ErrorIfExists =>
+        if (fs.exists(outputPath)) {
+          throw new IllegalArgumentException(
+            s"Path '$path' already exists; SaveMode.ErrorIfExists prevents overwriting."
+          )
+        }
+      case SaveMode.Ignore =>
+        if (fs.exists(outputPath)) {
+          // Skip the write entirely
+          return new BaseRelation {
+            override val sqlContext: SQLContext = outSqlContext
+            override def schema: StructType = data.schema
+          }
+        }
       case _ =>
     }
 
     val copybookContent = CopybookContentLoader.load(cobolParameters, sqlContext.sparkContext.hadoopConfiguration)
     val cobolSchema = CobolSchema.fromReaderParameters(copybookContent, readerParameters)
-
     val combiner = RecordCombinerSelector.selectCombiner(cobolSchema, readerParameters)
-
     val rdd = combiner.combine(data, cobolSchema, readerParameters)
 
     rdd.map(bytes => (NullWritable.get(), new BytesWritable(bytes)))
@@ -105,8 +121,7 @@ class DefaultSource
       )
 
     new BaseRelation {
-      override def sqlContext: SQLContext = sqlContext
-
+      override def sqlContext: SQLContext = outSqlContext
       override def schema: StructType = data.schema
     }
   }
