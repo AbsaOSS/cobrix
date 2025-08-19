@@ -27,7 +27,7 @@ object RecordCombinerSelector {
     * Currently, only basic fixed record length combiner is implemented. 
     * This method is to be extended as writing capabilities evolve.
     *
-    * @param cobolSchema      The COBOL schema ot output record.
+    * @param cobolSchema      The COBOL schema of the output record.
     * @param readerParameters Configuration parameters that specify how records should be formed.
     * @return A `RecordCombiner` implementation suitable for combining records based on the given schema and parameters.
     */

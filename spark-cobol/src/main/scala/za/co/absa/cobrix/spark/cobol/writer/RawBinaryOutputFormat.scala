@@ -40,7 +40,8 @@ import java.io.DataOutputStream
 
 class RawBinaryOutputFormat extends FileOutputFormat[NullWritable, BytesWritable] {
   override def getRecordWriter(context: TaskAttemptContext): RecordWriter[NullWritable, BytesWritable] = {
-    val path: Path = getDefaultWorkFile(context, ".dat")
+    val extension = context.getConfiguration.get("cobol.writer.output.extension", ".dat")
+    val path: Path = getDefaultWorkFile(context, extension)
     val fs = path.getFileSystem(context.getConfiguration)
     val out: DataOutputStream = fs.create(path, false)
 

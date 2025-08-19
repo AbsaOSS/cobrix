@@ -22,6 +22,7 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, EncoderSelector}
+import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
 
 class BinaryExtractorSpec extends AnyFunSuite {
 
@@ -214,6 +215,34 @@ class BinaryExtractorSpec extends AnyFunSuite {
 
     val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
     val fields2 = copybook.getFieldByName(fieldName2)
+    assert(fields2.isInstanceOf[Primitive])
+    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+  }
+
+  test("Test padding when setting field value by name") {
+    val fieldName1: String = "COMPANY.SHORT-NAME"
+    val newValue1: String = "NEWN"
+    val copybook2 = CopybookParser.parseTree(copyBookContents, stringTrimmingPolicy = StringTrimmingPolicy.KeepAll)
+    copybook2.setFieldValueByName(fieldName1, bytes, newValue1, startOffset)
+    val result1: Any = copybook2.getFieldValueByName(fieldName1, bytes, startOffset)
+    assert(result1.asInstanceOf[String] === "NEWN      ")
+
+    val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
+    val fields2 = copybook2.getFieldByName(fieldName2)
+    assert(fields2.isInstanceOf[Primitive])
+    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+  }
+
+  test("Test truncating when setting field value by name") {
+    val fieldName1: String = "COMPANY.SHORT-NAME"
+    val newValue1: String = "NEWNAME_TEST123345"
+    val copybook2 = CopybookParser.parseTree(copyBookContents, stringTrimmingPolicy = StringTrimmingPolicy.KeepAll)
+    copybook2.setFieldValueByName(fieldName1, bytes, newValue1, startOffset)
+    val result1: Any = copybook2.getFieldValueByName(fieldName1, bytes, startOffset)
+    assert(result1.asInstanceOf[String] === "NEWNAME_TE")
+
+    val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
+    val fields2 = copybook2.getFieldByName(fieldName2)
     assert(fields2.isInstanceOf[Primitive])
     assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
   }
