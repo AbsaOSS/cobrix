@@ -216,7 +216,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
     val fields2 = copybook.getFieldByName(fieldName2)
     assert(fields2.isInstanceOf[Primitive])
-    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+    assert(fields2.asInstanceOf[Primitive].encode.nonEmpty)
   }
 
   test("Test padding when setting field value by name") {
@@ -230,7 +230,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
     val fields2 = copybook2.getFieldByName(fieldName2)
     assert(fields2.isInstanceOf[Primitive])
-    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+    assert(fields2.asInstanceOf[Primitive].encode.nonEmpty)
   }
 
   test("Test truncating when setting field value by name") {
@@ -244,6 +244,6 @@ class BinaryExtractorSpec extends AnyFunSuite {
     val fieldName2: String = "COMPANY.COMPANY-ID-NUM"
     val fields2 = copybook2.getFieldByName(fieldName2)
     assert(fields2.isInstanceOf[Primitive])
-    assert(fields2.asInstanceOf[Primitive].encode.isEmpty)
+    assert(fields2.asInstanceOf[Primitive].encode.nonEmpty)
   }
 }

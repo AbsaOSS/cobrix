@@ -26,6 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 
 
 class Copybook(val ast: CopybookAST) extends Logging with Serializable {
+  import Copybook._
 
   def getCobolSchema: CopybookAST = ast
 
@@ -213,38 +214,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
     val slicedBytes = bytes.slice(field.binaryProperties.offset + startOffset, field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize)
     field.decodeTypeValue(0, slicedBytes)
-  }
-
-  /**
-    * Set value of a field of the copybook record by the AST object of the field
-    *
-    * Nested field names can contain '.' to identify the exact field.
-    * If the field name is unique '.' is not required.
-    *
-    * @param field The AST object of the field
-    * @param bytes Binary encoded data of the record
-    * @param startOffset An offset to the beginning of the field in the data (in bytes).
-    * @return The value of the field
-    *
-    */
-  def setPrimitiveField(field: Primitive, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
-    field.encode match {
-      case Some(encode) =>
-        val fieldBytes = encode(value)
-        val startByte = field.binaryProperties.offset + startOffset
-        val endByte = field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize
-
-        if (startByte < 0 || endByte > recordBytes.length) {
-          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the field is out of bounds of the record.")
-        }
-        if (fieldBytes.length != field.binaryProperties.dataSize) {
-          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the encoded value has a different size than the field size.")
-        }
-
-        System.arraycopy(fieldBytes, 0, recordBytes, startByte, fieldBytes.length)
-      case None =>
-        throw new IllegalStateException(s"Cannot set value for field '${field.name}' because it does not have an encoder defined.")
-    }
   }
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
@@ -441,5 +410,37 @@ object Copybook {
     val schema = BinaryPropertiesAdder().transform(newRoot)
 
     new Copybook(schema)
+  }
+
+  /**
+    * Set value of a field of the copybook record by the AST object of the field
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param field       The AST object of the field
+    * @param recordBytes Binary encoded data of the record
+    * @param startOffset An offset to the beginning of the field in the data (in bytes).
+    * @return The value of the field
+    *
+    */
+  def setPrimitiveField(field: Primitive, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
+    field.encode match {
+      case Some(encode) =>
+        val fieldBytes = encode(value)
+        val startByte = field.binaryProperties.offset + startOffset
+        val endByte = field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize
+
+        if (startByte < 0 || endByte > recordBytes.length) {
+          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the field is out of bounds of the record.")
+        }
+        if (fieldBytes.length != field.binaryProperties.dataSize) {
+          throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the encoded value has a different size than the field size.")
+        }
+
+        System.arraycopy(fieldBytes, 0, recordBytes, startByte, fieldBytes.length)
+      case None =>
+        throw new IllegalStateException(s"Cannot set value for field '${field.name}' because it does not have an encoder defined.")
+    }
   }
 }
