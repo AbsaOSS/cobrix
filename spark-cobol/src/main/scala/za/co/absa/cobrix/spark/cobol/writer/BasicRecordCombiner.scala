@@ -18,17 +18,24 @@ package za.co.absa.cobrix.spark.cobol.writer
 
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, CobolType, Decimal, Integral}
+
+import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
 class BasicRecordCombiner extends RecordCombiner {
+
+  import BasicRecordCombiner._
+
   override def combine(df: DataFrame, cobolSchema: CobolSchema, readerParameters: ReaderParameters): RDD[Array[Byte]] = {
     val ast = getAst(cobolSchema)
     val copybookFields = ast.children.filter {
       case p: Primitive => !p.isFiller
-      case g: Group     => !g.isFiller
-      case _            => true
+      case g: Group => !g.isFiller
+      case _ => true
     }
 
     validateSchema(df, copybookFields.toSeq)
@@ -38,7 +45,9 @@ class BasicRecordCombiner extends RecordCombiner {
 
     cobolFields.foreach(cobolField =>
       if (cobolField.encode.isEmpty) {
-        throw new IllegalArgumentException(s"Field '${cobolField.name}' does not have an encoding defined in the copybook. 'PIC ${cobolField.dataType.originalPic}' is not yet supported.")
+        val fieldDefinition = getFieldDefinition(cobolField)
+        throw new IllegalArgumentException(s"Field '${cobolField.name}' does not have an encoding defined in the copybook. " +
+          s"'PIC $fieldDefinition' is not yet supported.")
       }
     )
 
@@ -62,7 +71,7 @@ class BasicRecordCombiner extends RecordCombiner {
         if (!row.isNullAt(sparkIdx)) {
           val fieldStr = row.get(sparkIdx)
           val cobolField = cobolFields(cobolIdx)
-          cobolSchema.copybook.setPrimitiveField(cobolField, ar, fieldStr, 0)
+          Copybook.setPrimitiveField(cobolField, ar, fieldStr, 0)
         }
       }
 
@@ -105,5 +114,19 @@ class BasicRecordCombiner extends RecordCombiner {
     } else {
       rootAst
     }
+  }
+}
+
+object BasicRecordCombiner {
+  def getFieldDefinition(field: Primitive): String = {
+    val pic = field.dataType.originalPic.getOrElse(field.dataType.pic)
+
+    val usage = field.dataType match {
+      case dt: Integral => dt.compact.map(_.toString).getOrElse("USAGE IS DISPLAY")
+      case dt: Decimal => dt.compact.map(_.toString).getOrElse("USAGE IS DISPLAY")
+      case _ => ""
+    }
+
+    s"$pic $usage".trim
   }
 }

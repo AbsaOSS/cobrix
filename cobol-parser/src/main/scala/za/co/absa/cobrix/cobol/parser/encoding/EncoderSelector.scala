@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 
 import java.nio.charset.{Charset, StandardCharsets}
@@ -31,6 +31,14 @@ object EncoderSelector {
     dataType match {
       case alphaNumeric: AlphaNumeric if alphaNumeric.compact.isEmpty =>
         getStringEncoder(alphaNumeric.enc.getOrElse(EBCDIC), ebcdicCodePage, asciiCharset, alphaNumeric.length)
+      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3]) =>
+        Option(getBdcEncoder(integralComp3.precision, 0, 0, integralComp3.signPosition.isDefined, mandatorySignNibble = true))
+      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3U]) =>
+        Option(getBdcEncoder(integralComp3.precision, 0, 0, integralComp3.signPosition.isDefined, mandatorySignNibble = false))
+      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3]) =>
+        Option(getBdcEncoder(decimalComp3.precision, decimalComp3.scale, decimalComp3.scaleFactor, decimalComp3.signPosition.isDefined, mandatorySignNibble = true))
+      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3U]) =>
+        Option(getBdcEncoder(decimalComp3.precision, decimalComp3.scale, decimalComp3.scaleFactor, decimalComp3.signPosition.isDefined, mandatorySignNibble = false))
       case _ =>
         None
     }
@@ -78,6 +86,28 @@ object EncoderSelector {
       i = i + 1
     }
     buf
+  }
+
+  def getBdcEncoder(precision: Int,
+                    scale: Int,
+                    scaleFactor: Int,
+                    signed: Boolean,
+                    mandatorySignNibble: Boolean): Encoder = {
+    if (signed && !mandatorySignNibble)
+      throw new IllegalArgumentException("If signed is true, mandatorySignNibble must also be true.")
+
+    (a: Any) => {
+      val number = a match {
+        case null => null
+        case d: java.math.BigDecimal => d
+        case n: java.math.BigInteger => new java.math.BigDecimal(n)
+        case n: Byte => new java.math.BigDecimal(n)
+        case n: Int => new java.math.BigDecimal(n)
+        case n: Long => new java.math.BigDecimal(n)
+        case x => new java.math.BigDecimal(x.toString)
+      }
+      BCDNumberEncoders.encodeBCDNumber(number, precision, scale, scaleFactor, signed, mandatorySignNibble)
+    }
   }
 
 }
