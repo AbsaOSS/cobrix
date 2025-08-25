@@ -29,6 +29,13 @@ class BCDNumberEncodersSuite extends AnyWordSpec {
         checkExpected(actual, expected)
       }
 
+      "encode a number with an even precision" in  {
+        val expected = Array[Byte](0x01, 0x23, 0x4C)
+        val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(1234), 4, 0, 0, signed = true, mandatorySignNibble = true)
+
+        checkExpected(actual, expected)
+      }
+
       "encode a small number" in  {
         val expected = Array[Byte](0x00, 0x00, 0x5C)
         val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(5), 5, 0, 0, signed = true, mandatorySignNibble = true)
@@ -64,6 +71,13 @@ class BCDNumberEncodersSuite extends AnyWordSpec {
         checkExpected(actual, expected)
       }
 
+      "encode a number without sign nibble with an even precision" in  {
+        val expected = Array[Byte](0x12, 0x34)
+        val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(1234), 4, 0, 0, signed = true, mandatorySignNibble = false)
+
+        checkExpected(actual, expected)
+      }
+
       "encode a too big number" in  {
         val expected = Array[Byte](0x00, 0x00, 0x00)
         val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(123456), 5, 0, 0, signed = false, mandatorySignNibble = false)
@@ -74,6 +88,13 @@ class BCDNumberEncodersSuite extends AnyWordSpec {
       "encode a too big negative number" in  {
         val expected = Array[Byte](0x00, 0x00, 0x00)
         val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(-123456), 5, 0, 0, signed = true, mandatorySignNibble = true)
+
+        checkExpected(actual, expected)
+      }
+
+      "encode a number with nbegative scale" in  {
+        val expected = Array[Byte](0x00, 0x00, 0x00)
+        val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(12345), 5, -1, 0, signed = false, mandatorySignNibble = false)
 
         checkExpected(actual, expected)
       }
@@ -104,6 +125,10 @@ class BCDNumberEncodersSuite extends AnyWordSpec {
         val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(12345), 4, 0, 0, signed = true, mandatorySignNibble = true)
 
         checkExpected(actual, expected)
+      }
+
+      "attempt to encode a number with zero prexision" in  {
+        assertThrows[IllegalArgumentException](BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(12345), 0, 0, 0, signed = true, mandatorySignNibble = true))
       }
     }
 

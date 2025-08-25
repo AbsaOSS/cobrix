@@ -22,7 +22,9 @@ object BCDNumberEncoders {
   /**
     * Encode a number as a binary encoded decimal (BCD) aka COMP-3 format to an array of bytes.
     *
-    * The length of the output array is determined by the formula: (precision + 1) / 2.
+    * Output length (bytes):
+    * - With mandatory sign nibble (signed or unsigned): ceil((precision + 1) / 2)
+    * - Unsigned without sign nibble: ceil(precision / 2).
     *
     * @param number              The number to encode.
     * @param precision           Total number of digits in the number.
@@ -55,26 +57,24 @@ object BCDNumberEncoders {
       return bytes
     }
 
-    val integralNumberStr = if (scaleFactor - scale == 0)
-      number.setScale(0, RoundingMode.HALF_DOWN).toString
-    else
-      number.movePointLeft(scaleFactor - scale).setScale(0, RoundingMode.HALF_DOWN).toString
+    val shift = scaleFactor - scale
+    val shifted = if (shift == 0) number else number.movePointLeft(shift)
 
-    val isNegative = integralNumberStr.startsWith("-")
-    val digitsOnly = integralNumberStr.stripPrefix("-").stripPrefix("+")
+    val isNegative = number.signum() < 0
+    val digitsOnly = shifted.abs().setScale(0, RoundingMode.HALF_DOWN).toPlainString
 
     if (isNegative && (!signed || !mandatorySignNibble)) {
       return bytes
     }
+
+    if (digitsOnly.length > precision || scale < 0)
+      return bytes
 
     val signNibble: Byte =  if (signed) {
       if (isNegative) 0x0D else 0x0C
     } else {
       0x0F
     }
-
-    if (digitsOnly.length > precision)
-      return bytes
 
     val padded = if (mandatorySignNibble) {
       if (digitsOnly.length == totalDigits - 1)

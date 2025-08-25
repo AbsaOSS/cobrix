@@ -19,12 +19,10 @@ package za.co.absa.cobrix.spark.cobol.writer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.DataFrame
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, CobolType, Decimal, Integral}
-
-import java.io.{ByteArrayOutputStream, ObjectOutputStream}
 
 class BasicRecordCombiner extends RecordCombiner {
 
@@ -34,8 +32,8 @@ class BasicRecordCombiner extends RecordCombiner {
     val ast = getAst(cobolSchema)
     val copybookFields = ast.children.filter {
       case p: Primitive => !p.isFiller
-      case g: Group => !g.isFiller
-      case _ => true
+      case g: Group     => !g.isFiller
+      case _            => true
     }
 
     validateSchema(df, copybookFields.toSeq)
@@ -123,8 +121,8 @@ object BasicRecordCombiner {
 
     val usage = field.dataType match {
       case dt: Integral => dt.compact.map(_.toString).getOrElse("USAGE IS DISPLAY")
-      case dt: Decimal => dt.compact.map(_.toString).getOrElse("USAGE IS DISPLAY")
-      case _ => ""
+      case dt: Decimal  => dt.compact.map(_.toString).getOrElse("USAGE IS DISPLAY")
+      case _            => ""
     }
 
     s"$pic $usage".trim
