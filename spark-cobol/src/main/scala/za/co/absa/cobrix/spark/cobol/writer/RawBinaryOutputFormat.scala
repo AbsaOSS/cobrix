@@ -20,8 +20,10 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.getOutputPath
 
 import java.io.DataOutputStream
+import java.util.UUID
 
 /**
   * A custom implementation of `FileOutputFormat` that outputs raw binary data for fixed record length
@@ -39,6 +41,26 @@ import java.io.DataOutputStream
   */
 
 class RawBinaryOutputFormat extends FileOutputFormat[NullWritable, BytesWritable] {
+  private val uniqueUuid = UUID.randomUUID().toString
+
+  override def checkOutputSpecs(job: JobContext): Unit = {
+    val outDir = getOutputPath(job)
+    if (outDir == null) throw new IllegalStateException("Output directory not set.")
+  }
+
+  override def getDefaultWorkFile(context: TaskAttemptContext, extension: String): Path = {
+    val conf = context.getConfiguration
+    val uniqueWriteJobId = conf.get("spark.sql.sources.writeJobUUID")
+    val idFilePart = if (uniqueWriteJobId == null) uniqueUuid else uniqueWriteJobId
+    val taskAttemptID = context.getTaskAttemptID
+    val taskId = f"${taskAttemptID.getTaskID.getId}%05d"
+    val attemptId = f"c${taskAttemptID.getId}%03d"
+
+    val filename = s"part-$taskId-$idFilePart-$attemptId$extension"
+    val outputPath = getOutputPath(context)
+    new Path(outputPath, filename)
+  }
+
   override def getRecordWriter(context: TaskAttemptContext): RecordWriter[NullWritable, BytesWritable] = {
     val extension = context.getConfiguration.get("cobol.writer.output.extension", ".dat")
     val path: Path = getDefaultWorkFile(context, extension)
