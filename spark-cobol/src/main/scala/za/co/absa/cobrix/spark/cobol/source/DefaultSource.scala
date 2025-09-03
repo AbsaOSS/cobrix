@@ -84,12 +84,7 @@ class DefaultSource
           fs.delete(outputPath, true)
         }
       case SaveMode.Append =>
-        if (fs.exists(outputPath)) {
-          throw new IllegalArgumentException(
-            s"Save mode '$mode' is not supported by the 'spark-cobol' data source at the moment. " +
-              "Please use 'Overwrite' mode to write data to a file or folder."
-          )
-        }
+      // In append mode, no action is needed. Tasks will write to different files.
       case SaveMode.ErrorIfExists =>
         if (fs.exists(outputPath)) {
           throw new IllegalArgumentException(

@@ -64,7 +64,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val expected = Array[Byte](
           0xC1.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
           0xC2.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x40.toByte, // B,Scnd_
-          0xC3.toByte, 0xD3.toByte, 0x81.toByte, 0xa2.toByte, 0xa3.toByte, 0x40.toByte // C,Last_
+          0xC3.toByte, 0xD3.toByte, 0x81.toByte, 0xa2.toByte, 0xa3.toByte, 0x40.toByte  // C,Last_
         )
 
         if (!bytes.sameElements(expected)) {
@@ -114,7 +114,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val expected = Array[Byte](
           0xC1.toByte, 0x00.toByte, 0xC6.toByte, 0x89.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,First
           0xC2.toByte, 0x00.toByte, 0xE2.toByte, 0x83.toByte, 0x95.toByte, 0x84.toByte, 0x40.toByte, // B,Scnd_
-          0xC3.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte // C,Last_
+          0xC3.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte  // C,Last_
         )
 
         if (!bytes.sameElements(expected)) {
@@ -184,7 +184,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
     }
 
 
-    "write should fail with save mode append and the path exists" in {
+    "write should successfully append" in {
       withTempDirectory("cobol_writer3") { tempDir =>
         val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
 
@@ -196,13 +196,19 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           .option("copybook_contents", copybookContents)
           .save(path.toString)
 
-        assertThrows[IllegalArgumentException] {
-          df.write
-            .format("cobol")
-            .mode(SaveMode.Append)
-            .option("copybook_contents", copybookContents)
-            .save(path.toString)
-        }
+        df.write
+          .format("cobol")
+          .mode(SaveMode.Append)
+          .option("copybook_contents", copybookContents)
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.length > 1)
       }
     }
 
