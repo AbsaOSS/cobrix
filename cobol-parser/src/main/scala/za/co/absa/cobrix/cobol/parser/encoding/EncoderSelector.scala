@@ -16,7 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, COMP4, COMP9, CobolType, Decimal, Integral, Usage}
+import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 
 import java.nio.charset.{Charset, StandardCharsets}
@@ -29,16 +30,24 @@ object EncoderSelector {
                  ebcdicCodePage: CodePage = new CodePageCommon,
                  asciiCharset: Charset = StandardCharsets.US_ASCII): Option[Encoder] = {
     dataType match {
-      case alphaNumeric: AlphaNumeric if alphaNumeric.compact.isEmpty =>
+      case alphaNumeric: AlphaNumeric if alphaNumeric.compact.isEmpty                       =>
         getStringEncoder(alphaNumeric.enc.getOrElse(EBCDIC), ebcdicCodePage, asciiCharset, alphaNumeric.length)
-      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3]) =>
+      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3])   =>
         Option(getBdcEncoder(integralComp3.precision, 0, 0, integralComp3.signPosition.isDefined, mandatorySignNibble = true))
-      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3U]) =>
+      case integralComp3: Integral if integralComp3.compact.exists(_.isInstanceOf[COMP3U])  =>
         Option(getBdcEncoder(integralComp3.precision, 0, 0, integralComp3.signPosition.isDefined, mandatorySignNibble = false))
-      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3]) =>
+      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3])      =>
         Option(getBdcEncoder(decimalComp3.precision, decimalComp3.scale, decimalComp3.scaleFactor, decimalComp3.signPosition.isDefined, mandatorySignNibble = true))
-      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3U]) =>
+      case decimalComp3: Decimal if decimalComp3.compact.exists(_.isInstanceOf[COMP3U])     =>
         Option(getBdcEncoder(decimalComp3.precision, decimalComp3.scale, decimalComp3.scaleFactor, decimalComp3.signPosition.isDefined, mandatorySignNibble = false))
+      case integralBinary: Integral if integralBinary.compact.exists(_.isInstanceOf[COMP4]) =>
+        Option(getBinaryEncoder(integralBinary.compact, integralBinary.precision, 0, 0, integralBinary.signPosition.isDefined, isBigEndian = true))
+      case integralBinary: Integral if integralBinary.compact.exists(_.isInstanceOf[COMP9]) =>
+        Option(getBinaryEncoder(integralBinary.compact, integralBinary.precision, 0, 0, integralBinary.signPosition.isDefined, isBigEndian = false))
+      case decimalBinary: Decimal if decimalBinary.compact.exists(_.isInstanceOf[COMP4]) =>
+        Option(getBinaryEncoder(decimalBinary.compact, decimalBinary.precision, decimalBinary.scale, decimalBinary.scaleFactor, decimalBinary.signPosition.isDefined, isBigEndian = true))
+      case decimalBinary: Decimal if decimalBinary.compact.exists(_.isInstanceOf[COMP9]) =>
+        Option(getBinaryEncoder(decimalBinary.compact, decimalBinary.precision, decimalBinary.scale, decimalBinary.scaleFactor, decimalBinary.signPosition.isDefined, isBigEndian = false))
       case _ =>
         None
     }
@@ -86,6 +95,27 @@ object EncoderSelector {
       i = i + 1
     }
     buf
+  }
+
+  def getBinaryEncoder(compression: Option[Usage],
+                       precision: Int,
+                       scale: Int,
+                       scaleFactor: Int,
+                       isSigned: Boolean,
+                       isBigEndian: Boolean): Encoder = {
+    val numBytes = BinaryUtils.getBytesCount(compression, precision, isSigned, isExplicitDecimalPt = false, isSignSeparate = false)
+    (a: Any) => {
+      val number = a match {
+        case null                    => null
+        case d: java.math.BigDecimal => d
+        case n: java.math.BigInteger => new java.math.BigDecimal(n)
+        case n: Byte                 => new java.math.BigDecimal(n)
+        case n: Int                  => new java.math.BigDecimal(n)
+        case n: Long                 => new java.math.BigDecimal(n)
+        case x                       => new java.math.BigDecimal(x.toString)
+      }
+      BinaryEncoders.encodeBinaryNumber(number, isSigned, numBytes, isBigEndian, precision, scale, scaleFactor)
+    }
   }
 
   def getBdcEncoder(precision: Int,

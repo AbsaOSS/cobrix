@@ -1684,11 +1684,12 @@ The writer is still in its early stages and has several limitations:
       05  FIELD_1       PIC X(1).
       05  FIELD_2       PIC X(5).
   ```
-- Only `PIC X(n)` fields are supported; numeric types are not.
+- Supported types:
+  - `PIC X(n)` alphanumeric.
+  - `PIC S9(n)` numeric (integral and decimal) with `COMP`, `COMP-3`, `COMP-4`, `COMP-9` (little-endian).
 - Only fixed record length output is supported (`record_format = F`).
 - `REDEFINES` and `OCCURS` are not supported.
 - Only the core EBCDIC encoder is supported; specific EBCDIC code pages are not yet available.
-- Save mode `append` is not supported; only `overwrite` is.
 - Partitioning by DataFrame fields is not supported.
 
 ### Implementation details
