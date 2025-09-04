@@ -97,7 +97,7 @@ object BinaryUtils {
 
   def getBytesCount(compression: Option[Usage], precision: Int, isSigned: Boolean, isExplicitDecimalPt: Boolean, isSignSeparate: Boolean): Int = {
     import Constants._
-    val isRealSigned = if (isSignSeparate) false else isSigned
+
     val bytes = compression match {
       case Some(comp) if comp == COMP4() || comp == COMP5() || comp == COMP9() =>     // || comp == binary2()
         // if native binary follow IBM guide to digit binary length
