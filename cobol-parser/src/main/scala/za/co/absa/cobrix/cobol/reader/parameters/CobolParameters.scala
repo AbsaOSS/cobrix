@@ -63,6 +63,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param debugIgnoreFileSize     If true the fixed length file reader won't check file size divisibility. Useful for debugging binary file / copybook mismatches.
   * @param debugLayoutPositions    If true, layout positions for input files will be logged (false by default)
   * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
+  * @param options                 Options passed to 'spark-cobol'.
   */
 case class CobolParameters(
                             copybookPath:            Option[String],
@@ -105,5 +106,6 @@ case class CobolParameters(
                             debugIgnoreFileSize:     Boolean,
                             debugLayoutPositions:    Boolean,
                             enableSelfChecks:        Boolean,
-                            metadataPolicy:          MetadataPolicy
+                            metadataPolicy:          MetadataPolicy,
+                            options:                 Map[String, String]
                           )

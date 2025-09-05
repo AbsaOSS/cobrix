@@ -75,6 +75,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param rhpAdditionalInfo       An optional additional option string passed to a custom record header parser
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
+  * @param options                 Options passed to spark-cobol
   */
 case class ReaderParameters(
                              recordFormat:            RecordFormat = FixedLength,
@@ -129,5 +130,6 @@ case class ReaderParameters(
                              rhpAdditionalInfo:       Option[String] = None,
                              reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = "",
-                             metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic
+                             metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic,
+                             options:                 Map[String, String] = Map.empty
                            )

@@ -64,7 +64,12 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
     val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
 
-    val reParams = RawRecordContext(startingRecordNumber, dataStream, headerStream, cobolSchema.copybook, rdwDecoder, bdwDecoderOpt.getOrElse(rdwDecoder), readerProperties.reAdditionalInfo)
+    val reParams = RawRecordContext.builder(startingRecordNumber, dataStream, headerStream, cobolSchema.copybook)
+      .withRdwDecoder(rdwDecoder)
+      .withBdwDecoder(bdwDecoderOpt.getOrElse(rdwDecoder))
+      .withAdditionalInfo(readerProperties.reAdditionalInfo)
+      .withOptions(readerProperties.options)
+      .build()
 
     readerProperties.recordExtractor match {
       case Some(recordExtractorClass) =>
