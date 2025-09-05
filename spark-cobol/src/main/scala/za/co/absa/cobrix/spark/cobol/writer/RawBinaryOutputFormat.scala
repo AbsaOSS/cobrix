@@ -46,19 +46,20 @@ class RawBinaryOutputFormat extends FileOutputFormat[NullWritable, BytesWritable
   override def checkOutputSpecs(job: JobContext): Unit = {
     val outDir = getOutputPath(job)
     if (outDir == null) throw new IllegalStateException("Output directory not set.")
+    val fs = outDir.getFileSystem(job.getConfiguration)
+    if (fs.exists(outDir) && !fs.getFileStatus(outDir).isDirectory)
+      throw new IllegalStateException(s"Output path '$outDir' is not a directory.")
   }
 
   override def getDefaultWorkFile(context: TaskAttemptContext, extension: String): Path = {
     val conf = context.getConfiguration
-    val uniqueWriteJobId = conf.get("spark.sql.sources.writeJobUUID")
-    val idFilePart = if (uniqueWriteJobId == null) uniqueUuid else uniqueWriteJobId
-    val taskAttemptID = context.getTaskAttemptID
-    val taskId = f"${taskAttemptID.getTaskID.getId}%05d"
-    val attemptId = f"c${taskAttemptID.getId}%03d"
-
-    val filename = s"part-$taskId-$idFilePart-$attemptId$extension"
-    val outputPath = getOutputPath(context)
-    new Path(outputPath, filename)
+    val writeJobId = Option(conf.get("spark.sql.sources.writeJobUUID")).getOrElse(uniqueUuid)
+    val attempt = context.getTaskAttemptID
+    val taskId = f"${attempt.getTaskID.getId}%05d"
+    val attemptId = f"c${attempt.getId}%03d"
+    val filename = s"part-$taskId-$writeJobId-$attemptId$extension"
+    val parent = super.getDefaultWorkFile(context, extension).getParent // committer work path
+    new Path(parent, filename)
   }
 
   override def getRecordWriter(context: TaskAttemptContext): RecordWriter[NullWritable, BytesWritable] = {
