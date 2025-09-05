@@ -99,8 +99,9 @@ object BinaryUtils {
     import Constants._
 
     val bytes = compression match {
-      case Some(comp) if comp == COMP4() || comp == COMP5() || comp == COMP9() =>     // || comp == binary2()
-        // if native binary follow IBM guide to digit binary length
+      case Some(comp) if comp == COMP4() || comp == COMP5() || comp == COMP9() =>
+        // If native binary follow IBM guide to digit binary length.
+        // COMP-9 is a little-endian Cobrix extension. It also supports 1 byte binary numbers for 1 and 2 decimal digit PICs.
         precision match {
           case p if p >= 1 && p <= 2 && comp == COMP9() => 1 // byte
           case p if p >= minShortPrecision && p <= maxShortPrecision => binaryShortSizeBytes

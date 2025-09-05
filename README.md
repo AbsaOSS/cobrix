@@ -1686,7 +1686,8 @@ The writer is still in its early stages and has several limitations:
   ```
 - Supported types:
   - `PIC X(n)` alphanumeric.
-  - `PIC S9(n)` numeric (integral and decimal) with `COMP`, `COMP-3`, `COMP-4`, `COMP-9` (little-endian).
+  - `PIC S9(n)` numeric (integral and decimal) with `COMP`/`COMP-4`/`COMP-5` (big-endian), `COMP-3`, and 
+    `COMP-9` (Cobrix little-endian).
 - Only fixed record length output is supported (`record_format = F`).
 - `REDEFINES` and `OCCURS` are not supported.
 - Only the core EBCDIC encoder is supported; specific EBCDIC code pages are not yet available.

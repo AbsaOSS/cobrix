@@ -52,7 +52,6 @@ class BinaryEncodersSuite extends AnyWordSpec {
     "encode a negative integer -1 little-endian format" in {
       val expected = Array(0xFF, 0xFF, 0xFF, 0xFF).map(_.toByte)
       val actual = BinaryEncoders.encodeBinaryNumber(new java.math.BigDecimal(-1), isSigned = true, outputSize = 4, bigEndian = false, precision = 4, scale = 0, scaleFactor = 0)
-      // bvnvjh  well well well ijg9 g5-0itg -30it 0ho 06 =-uo 65=-uo =u-ou
       assertArraysEqual(actual, expected)
     }
 
