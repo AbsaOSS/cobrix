@@ -17,8 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.writer
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.hadoop.mapreduce._
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat.getOutputPath
 
@@ -53,8 +53,10 @@ class RawBinaryOutputFormat extends FileOutputFormat[NullWritable, BytesWritable
 
   override def getDefaultWorkFile(context: TaskAttemptContext, extension: String): Path = {
     val conf = context.getConfiguration
-    val writeJobId = Option(conf.get("spark.sql.sources.writeJobUUID")).getOrElse(uniqueUuid)
     val attempt = context.getTaskAttemptID
+    val writeJobId = Option(conf.get("spark.sql.sources.writeJobUUID"))
+      .orElse(Option(attempt.getJobID).map(_.toString))
+      .getOrElse(uniqueUuid)
     val taskId = f"${attempt.getTaskID.getId}%05d"
     val attemptId = f"c${attempt.getId}%03d"
     val filename = s"part-$taskId-$writeJobId-$attemptId$extension"
