@@ -63,7 +63,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
 
       val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
 
-      val recordExtractor = new TextRecordExtractor(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new TextRecordExtractor(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, dataStream, 0L,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
@@ -85,7 +85,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
 
       val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
 
-      val recordExtractor = new TextFullRecordExtractor(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new TextFullRecordExtractor(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, dataStream, 0L,
         recordHeaderParser = recordHeaderParser, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(2),  sizePerIndexEntryMB = None,
@@ -105,7 +105,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
       val dataStream = new TestStringStream(textFileContent)
       val headerStream = new TestStringStream(textFileContent)
 
-      val recordExtractor = new RecordExtractorMock(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new RecordExtractorMock(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, dataStream, 0L,
                                                         recordHeaderParser = null, recordExtractor = Some(recordExtractor), recordsPerIndexEntry = Some(1), sizePerIndexEntryMB = None,
@@ -148,7 +148,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
       val dataStream = new TestByteStream(data)
       val headerStream = new TestByteStream(data)
 
-      val recordExtractor = new RecordExtractorMock(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new RecordExtractorMock(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
       recordExtractor.onReceiveAdditionalInfo("dummy")
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, dataStream, 0L,
@@ -178,7 +178,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
       // Skip the first 2 bytes to the file offset
       dataStream.next(2)
 
-      val recordExtractor = new RecordExtractorMock(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new RecordExtractorMock(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
 
 
       val indexes = IndexGenerator.sparseIndexGenerator(0, dataStream, 2L,
@@ -207,7 +207,7 @@ class SparseIndexSpecSpec extends AnyWordSpec  {
       val dataStream = new TestByteStream(data)
       val headerStream = new TestByteStream(data)
 
-      val recordExtractor = new RecordExtractorReadAhaedMock(RawRecordContext(0L, dataStream, headerStream, copybook, null, null, ""))
+      val recordExtractor = new RecordExtractorReadAhaedMock(RawRecordContext.builder(0L, dataStream, headerStream, copybook).build())
 
 
       val ex = intercept[IllegalStateException] {

@@ -42,7 +42,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
       val ibs = new TestByteStream(recordData)
       val hbs = new TestByteStream(recordData)
 
-      val rc = RawRecordContext(0, ibs, hbs, copybook, null, null, "")
+      val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
 
       val extractor = new VarOccursRecordExtractor(rc)
 
@@ -85,7 +85,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
       val ibs = new TestByteStream(recordData)
       val hbs = new TestByteStream(recordData)
 
-      val rc = RawRecordContext(0, ibs, hbs, copybook, null, null, "")
+      val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
 
 
       val extractor = new VarOccursRecordExtractor(rc)
@@ -141,7 +141,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
     val ibs = new TestByteStream(recordData)
     val hbs = new TestByteStream(recordData)
 
-    val rc = RawRecordContext(0, ibs, hbs, copybook, null, null, "")
+    val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
 
     val extractor = new VarOccursRecordExtractor(rc)
 

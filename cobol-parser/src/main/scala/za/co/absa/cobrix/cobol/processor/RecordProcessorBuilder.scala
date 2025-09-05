@@ -114,8 +114,7 @@ class RecordProcessorBuilder(copybookContents: String) {
       case Some(extractor) => extractor
       case None if readerParameters.recordFormat == FixedLength =>
         val dataStream = inputStream.copyStream()
-        val headerStream = inputStream.copyStream()
-        val ctx = RawRecordContext(0, dataStream, headerStream, getCobolSchema(readerParameters).copybook, null, null, "")
+        val ctx = RawRecordContext.builder(dataStream, getCobolSchema(readerParameters).copybook).build()
         new FixedRecordLengthRawRecordExtractor(ctx, readerParameters.recordLength)
       case None =>
         throw new IllegalArgumentException(s"Cannot create a record extractor for the given reader parameters. " +

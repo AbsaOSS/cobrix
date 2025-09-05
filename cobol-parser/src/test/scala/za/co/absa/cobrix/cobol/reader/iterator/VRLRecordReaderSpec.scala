@@ -89,7 +89,7 @@ class VRLRecordReaderSpec extends AnyWordSpec {
 
     "work for custom record extractor" in {
       val stream = new ByteStreamMock(customHeaderRecords)
-      val context = RawRecordContext(0, stream, stream, null, null, null, "")
+      val context = RawRecordContext.builder(stream, null).build()
 
       val reader = getUseCase(
         records = customHeaderRecords,
@@ -127,9 +127,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x07, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
-        val streamH = new ByteStreamMock(records)
-        val streamD = new ByteStreamMock(records)
-        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+        val stream = new ByteStreamMock(records)
+        val context = RawRecordContext.builder(stream, CopybookParser.parseSimple(copybookWithFieldLength)).build()
 
         val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
 
@@ -170,9 +169,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF1, 0xF5, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
           ).map(_.toByte)
 
-        val streamH = new ByteStreamMock(records)
-        val streamD = new ByteStreamMock(records)
-        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+        val stream = new ByteStreamMock(records)
+        val context = RawRecordContext.builder(stream, CopybookParser.parseSimple(copybookWithFieldLength)).build()
 
         val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN"))
 
@@ -214,9 +212,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
           0xC3, 0xF5, 0xF6, 0xC4, 0xC5, 0xC6
         ).map(_.toByte)
 
-        val streamH = new ByteStreamMock(records)
-        val streamD = new ByteStreamMock(records)
-        val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithLenbgthMap), null, null, "")
+        val stream = new ByteStreamMock(records)
+        val context = RawRecordContext.builder(stream, CopybookParser.parseSimple(copybookWithLenbgthMap)).build()
 
         val readerParameters = ReaderParameters(
           lengthFieldExpression = Some("LEN_SPEC"),
@@ -266,9 +263,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
         0x00, 0x08, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8
         ).map(_.toByte)
 
-      val streamH = new ByteStreamMock(records)
-      val streamD = new ByteStreamMock(records)
-      val context = RawRecordContext(0, streamH, streamD, CopybookParser.parseSimple(copybookWithFieldLength), null, null, "")
+      val stream = new ByteStreamMock(records)
+      val context = RawRecordContext.builder(stream, CopybookParser.parseSimple(copybookWithFieldLength)).build()
 
       val readerParameters = ReaderParameters(lengthFieldExpression = Some("LEN - 1"))
 

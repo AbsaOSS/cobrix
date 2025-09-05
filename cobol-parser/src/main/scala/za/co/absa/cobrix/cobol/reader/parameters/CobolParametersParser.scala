@@ -303,7 +303,8 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_DEBUG_IGNORE_FILE_SIZE, "false").toBoolean,
       params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
       params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "false").toBoolean,
-      MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic"))
+      MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
+      params.getMap
       )
     validateSparkCobolOptions(params, recordFormat)
     cobolParameters
@@ -446,7 +447,8 @@ object CobolParametersParser extends Logging {
       varLenParams.rhpAdditionalInfo,
       varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn,
-      parameters.metadataPolicy
+      parameters.metadataPolicy,
+      parameters.options
       )
   }
 

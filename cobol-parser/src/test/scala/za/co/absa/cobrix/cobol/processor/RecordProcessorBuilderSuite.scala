@@ -69,6 +69,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
         .option("record_format", "D")
 
       assert(builder.getReaderParameters.recordFormat == RecordFormat.AsciiText)
+      assert(builder.getReaderParameters.options.contains("record_format"))
       assert(builder.getOptions.contains("record_format"))
     }
   }
