@@ -27,12 +27,13 @@ object StreamProcessor {
   /**
     * Processes a stream of COBOL raw records and writes it back in the same format as the input data.
     *
-    * @param copybook the COBOL copybook that describes the schema of the records.
-    * @param options arbitrary options used for splitting input data into records. Same as options to 'spark-cobol'. Can contain custom options as well.
-    * @param inputStream the input stream containing the raw COBOL records.
+    * @param copybook        the COBOL copybook that describes the schema of the records.
+    * @param options         arbitrary options used for splitting input data into records (same as 'spark-cobol' options).
+    *                        Keys are lower-cased for case-insensitive handling. Can contain custom options as well.
+    * @param inputStream     the input stream containing the raw COBOL records.
     * @param recordExtractor the extractor that extracts raw records from the input stream.
     * @param recordProcessor the per-record processing logic implementation.
-    * @param outputStream the output stream where the processed records will be written.
+    * @param outputStream    the output stream where the processed records will be written.
     */
   def processStream(copybook: Copybook,
                     options: Map[String, String],
@@ -40,9 +41,7 @@ object StreamProcessor {
                     recordExtractor: RawRecordExtractor,
                     recordProcessor: RawRecordProcessor,
                     outputStream: OutputStream): Unit = {
-    var i = 0
     while (recordExtractor.hasNext) {
-      i += 1
       val record = recordExtractor.next()
       val recordSize = record.length
 

@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import za.co.absa.cobrix.cobol.parser.Copybook
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoder, RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParameters}
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
@@ -56,7 +57,23 @@ object RawRecordContext {
       Map.empty[String, String]
     )
 
+    def withReaderParams(readerParameters: ReaderParameters): RawRecordContextBuilder = {
+      val rdwParams = RecordHeaderParameters(readerParameters.isRdwBigEndian, readerParameters.rdwAdjustment)
+
+      val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
+
+      val bdwOpt = readerParameters.bdw
+      val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
+      val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
+
+      withAdditionalInfo(readerParameters.reAdditionalInfo)
+        .withRdwDecoder(rdwDecoder)
+        .withBdwDecoder(bdwDecoderOpt.getOrElse(rdwDecoder))
+        .withOptions(readerParameters.options)
+    }
+
     def withStartingRecordNumber(startingRecordNumber: Long): RawRecordContextBuilder = {
+      require(startingRecordNumber >= 0, s"startingRecordNumber must be >= 0, got: $startingRecordNumber")
       context = context.copy(startingRecordNumber = startingRecordNumber)
       this
     }

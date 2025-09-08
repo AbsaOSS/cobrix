@@ -32,7 +32,7 @@ class RecordExtractorDebugSpec extends AnyWordSpec {
     val dataStream = new TestStringStream(data)
     val headerStream = new TestStringStream(data)
 
-    val ctx = RawRecordContext.builder(0, dataStream, headerStream, null).build()
+    val ctx = RawRecordContext.builder(0L, dataStream, headerStream, null).build()
     val extractor = new CustomRecordExtractorMock(ctx)
 
     var i = 0
