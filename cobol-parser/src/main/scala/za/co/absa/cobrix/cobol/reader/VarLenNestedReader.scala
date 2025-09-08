@@ -81,6 +81,8 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         !readerProperties.isRecordSequence &&
         readerProperties.lengthFieldExpression.isEmpty            =>
         Some(new VarOccursRecordExtractor(reParams))
+      case None if readerProperties.recordFormat == FixedLength   =>
+        Some(new FixedRecordLengthRawRecordExtractor(reParams, readerProperties.recordLength))
       case None                                                   =>
         None
     }
