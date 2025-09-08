@@ -19,7 +19,6 @@ package za.co.absa.cobrix.cobol.reader.extractors.raw
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.memorystream.TestByteStream
-import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParametersFactory}
 
 class VarOccursRecordExtractorSuite extends AnyWordSpec {
   "variable occurs record extractor" should {
@@ -42,7 +41,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
       val ibs = new TestByteStream(recordData)
       val hbs = new TestByteStream(recordData)
 
-      val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
+      val rc = RawRecordContext.builder(0L, ibs, hbs, copybook).build()
 
       val extractor = new VarOccursRecordExtractor(rc)
 
@@ -85,7 +84,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
       val ibs = new TestByteStream(recordData)
       val hbs = new TestByteStream(recordData)
 
-      val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
+      val rc = RawRecordContext.builder(0L, ibs, hbs, copybook).build()
 
 
       val extractor = new VarOccursRecordExtractor(rc)
@@ -141,7 +140,7 @@ class VarOccursRecordExtractorSuite extends AnyWordSpec {
     val ibs = new TestByteStream(recordData)
     val hbs = new TestByteStream(recordData)
 
-    val rc = RawRecordContext.builder(0, ibs, hbs, copybook).build()
+    val rc = RawRecordContext.builder(0L, ibs, hbs, copybook).build()
 
     val extractor = new VarOccursRecordExtractor(rc)
 

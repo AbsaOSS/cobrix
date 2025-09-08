@@ -79,7 +79,7 @@ class CobolProcessorBuilderSuite extends AnyWordSpec {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
       val builder = CobolProcessor.builder(copybook)
 
-      val ext = builder.getRecordExtractor(ReaderParameters(recordLength = Some(2)), stream)
+      val ext = builder.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), stream)
 
       assert(ext.isInstanceOf[FixedRecordLengthRawRecordExtractor])
 

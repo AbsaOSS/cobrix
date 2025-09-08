@@ -17,7 +17,6 @@
 package za.co.absa.cobrix.cobol.reader
 
 import za.co.absa.cobrix.cobol.internal.Logging
-import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, FixedLength, VariableBlock, VariableLength}
@@ -27,7 +26,6 @@ import za.co.absa.cobrix.cobol.reader.index.IndexGenerator
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.iterator.{VarLenHierarchicalIterator, VarLenNestedIterator}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.recordheader.{RecordHeaderDecoderBdw, RecordHeaderDecoderRdw, RecordHeaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
@@ -56,19 +54,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
   def recordExtractor(startingRecordNumber: Long,
                       dataStream: SimpleStream,
                       headerStream: SimpleStream): Option[RawRecordExtractor] = {
-    val rdwParams = RecordHeaderParameters(readerProperties.isRdwBigEndian, readerProperties.rdwAdjustment)
-
-    val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
-
     val bdwOpt = readerProperties.bdw
-    val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
-    val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
-
     val reParams = RawRecordContext.builder(startingRecordNumber, dataStream, headerStream, cobolSchema.copybook)
-      .withRdwDecoder(rdwDecoder)
-      .withBdwDecoder(bdwDecoderOpt.getOrElse(rdwDecoder))
-      .withAdditionalInfo(readerProperties.reAdditionalInfo)
-      .withOptions(readerProperties.options)
+      .withReaderParams(readerProperties)
       .build()
 
     readerProperties.recordExtractor match {

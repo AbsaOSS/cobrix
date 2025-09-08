@@ -82,7 +82,8 @@ object CobolProcessor {
       * @return this builder instance for method chaining.
       */
     def option(key: String, value: String): CobolProcessorBuilder = {
-      caseInsensitiveOptions += (key.toLowerCase -> value)
+      require(key.trim.nonEmpty, "Option key must not be empty or whitespace-only")
+      caseInsensitiveOptions += (key.trim.toLowerCase -> value)
       this
     }
 
@@ -117,7 +118,9 @@ object CobolProcessor {
         case Some(extractor) => extractor
         case None if readerParameters.recordFormat == FixedLength =>
           val dataStream = inputStream.copyStream()
-          val ctx = RawRecordContext.builder(dataStream, getCobolSchema(readerParameters).copybook).build()
+          val ctx = RawRecordContext.builder(dataStream, getCobolSchema(readerParameters).copybook)
+            .withReaderParams(readerParameters)
+            .build()
           new FixedRecordLengthRawRecordExtractor(ctx, readerParameters.recordLength)
         case None =>
           throw new IllegalArgumentException(s"Cannot create a record extractor for the given reader parameters. " +
