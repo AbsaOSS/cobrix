@@ -163,7 +163,12 @@ private[source] object IndexBuilder extends Logging {
     logger.info(s"Going to generate index for the file: $filePath")
 
     val (inputStream, headerStream, maximumBytes) = getStreams(filePath, startOffset, endOffset, config)
-    val index = reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
+    val index = try {
+      reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
+    } finally {
+      inputStream.close()
+      headerStream.close()
+    }
 
     val indexWithEndOffset = if (maximumBytes > 0 ){
       index.map(entry => if (entry.offsetTo == -1) entry.copy(offsetTo = startOffset + maximumBytes) else entry)

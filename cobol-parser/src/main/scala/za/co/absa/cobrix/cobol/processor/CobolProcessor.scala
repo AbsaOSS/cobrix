@@ -50,12 +50,13 @@ object CobolProcessor {
     private val caseInsensitiveOptions = new mutable.HashMap[String, String]()
 
     def build(): CobolProcessor = {
+      val readerParameters = getReaderParameters
+      val cobolSchema = getCobolSchema(readerParameters)
+
       new CobolProcessor {
         override def process(inputStream: SimpleStream,
                              outputStream: OutputStream)
                             (rawRecordProcessor: RawRecordProcessor): Unit = {
-          val readerParameters = getReaderParameters
-          val cobolSchema = getCobolSchema(readerParameters)
           val recordExtractor = getRecordExtractor(readerParameters, inputStream)
 
           val dataStream = inputStream.copyStream()
