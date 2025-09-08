@@ -25,7 +25,7 @@ import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 
 import java.io.ByteArrayOutputStream
 
-class RecordProcessorBuilderSuite extends AnyWordSpec {
+class CobolProcessorBuilderSuite extends AnyWordSpec {
   private val copybook =
     """      01 RECORD.
       |         05  T     PIC X.
@@ -34,7 +34,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
     "process an input data stream into an output stream" in {
       val is = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
       val os = new ByteArrayOutputStream(10)
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
 
       val processor = new RawRecordProcessor {
         override def processRecord(copybook: Copybook, options: Map[String, String], record: Array[Byte], offset: Long): Array[Byte] = {
@@ -42,7 +42,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
         }
       }
 
-      builder.process(is, os)(processor)
+      builder.build().process(is, os)(processor)
 
       val outputArray = os.toByteArray
 
@@ -55,7 +55,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
 
   "getCobolSchema" should {
     "return the schema of the copybook provided" in {
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
 
       val cobolSchema = builder.getCobolSchema(ReaderParameters())
 
@@ -65,7 +65,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
 
   "getReaderParameters" should {
     "return a reader according to passed options" in {
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
         .option("record_format", "D")
 
       assert(builder.getReaderParameters.recordFormat == RecordFormat.AsciiText)
@@ -77,7 +77,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
   "getRecordExtractor" should {
     "work for an fixed-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
 
       val ext = builder.getRecordExtractor(ReaderParameters(recordLength = Some(2)), stream)
 
@@ -91,7 +91,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
 
     "work for an variable-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
 
       val ext = builder.getRecordExtractor(ReaderParameters(
         recordFormat = RecordFormat.VariableLength,
@@ -103,7 +103,7 @@ class RecordProcessorBuilderSuite extends AnyWordSpec {
 
     "throw an exception on a non-supported record format for processing" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = RecordProcessorBuilder.copybookContents(copybook)
+      val builder = CobolProcessor.builder(copybook)
 
       val ex = intercept[IllegalArgumentException] {
         builder.getRecordExtractor(ReaderParameters(

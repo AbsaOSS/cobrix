@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.cobol.processor
+package za.co.absa.cobrix.cobol.processor.impl
 
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
