@@ -22,9 +22,9 @@ import org.scalatest.Assertions.{fail, succeed}
 object ComparisonUtils {
   def assertArraysEqual(actual: Array[Byte], expected: Array[Byte]): Assertion = {
     if (!actual.sameElements(expected)) {
-      val actualHex = actual.map(b => f"$b%02X").mkString(" ")
-      val expectedHex = expected.map(b => f"$b%02X").mkString(" ")
-      fail(s"Actual: $actualHex\nExpected: $expectedHex")
+      val actualHex = actual.map(b => f"0x$b%02X").mkString(", ")
+      val expectedHex = expected.map(b => f"0x$b%02X").mkString(", ")
+      fail(s"Actual:   $actualHex\nExpected: $expectedHex")
     } else {
       succeed
     }
