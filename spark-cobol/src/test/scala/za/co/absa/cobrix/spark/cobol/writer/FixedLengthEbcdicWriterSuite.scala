@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.writer
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SaveMode
+import org.scalatest.Assertion
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -258,6 +259,76 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
       }
     }
 
+    "write data frames with DISPLAY fields" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val df = List(
+          (-1, 100.5, new java.math.BigDecimal(10.23), 1, 10050, new java.math.BigDecimal(10.12)),
+          (2, 800.4, new java.math.BigDecimal(30), 2, 80040, new java.math.BigDecimal(30)),
+          (3, 22.33, new java.math.BigDecimal(-20), 3, -2233, new java.math.BigDecimal(-20))
+        ).toDF("A", "B", "C", "D", "E", "F")
+
+        val path = new Path(tempDir, "writer1")
+
+        val copybookContentsWithBinFields =
+          """       01  RECORD.
+           05  A       PIC S9(1).
+           05  B       PIC 9(4)V9(2).
+           05  C       PIC S9(2).9(2).
+           05  D       PIC 9(1).
+           05  E       PIC S9(6)      SIGN IS LEADING SEPARATE.
+           05  F       PIC S9(2).9(2) SIGN IS TRAILING SEPARATE.
+    """
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookContentsWithBinFields)
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0xD1,                                      // -1     PIC S9(1).
+          0x40, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,        // 100.5  PIC 9(4)V9(2)
+          0xF1, 0xF0, 0x4B, 0xF2, 0xC3,              // 10.23  PIC S9(2).9(2)
+          0xF1,                                      // 1      9(1)
+          0x40, 0x40, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,  // 10050  S9(6)      SIGN IS LEADING SEPARATE.
+          0x40, 0xF1, 0xF0, 0x4B, 0xF1, 0xF2,        // 10.12  S9(2).9(2) SIGN IS TRAILING SEPARATE
+
+          0xC2,
+          0x40, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,
+          0xF3, 0xF0, 0x4B, 0xF0, 0xC0,
+          0xF2,
+          0x40, 0x40, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,
+          0x40, 0xF3, 0xF0, 0x4B, 0xF0, 0xF0,
+
+          0xC3,
+          0x40, 0x40, 0xF2, 0xF2, 0xF3, 0xF3,
+          0xF2, 0xF0, 0x4B, 0xF0, 0xD0,
+          0xF3,
+          0x40, 0x40, 0x60, 0xF2, 0xF2, 0xF3, 0xF3,
+          0x60, 0xF2, 0xF0, 0x4B, 0xF0, 0xF0
+        ).map(_.toByte)
+
+        assertArraysEqual(bytes, expected)
+      }
+    }
+
     "write should successfully append" in {
       withTempDirectory("cobol_writer3") { tempDir =>
         val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
@@ -330,7 +401,15 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         assert(fs.exists(path), "Output directory should exist")
       }
     }
-
   }
 
+  def assertArraysEqual(actual: Array[Byte], expected: Array[Byte]): Assertion = {
+    if (!actual.sameElements(expected)) {
+      val actualHex = actual.map(b => f"0x$b%02X").mkString(", ")
+      val expectedHex = expected.map(b => f"0x$b%02X").mkString(", ")
+      fail(s"Actual:   $actualHex\nExpected: $expectedHex")
+    } else {
+      succeed
+    }
+  }
 }
