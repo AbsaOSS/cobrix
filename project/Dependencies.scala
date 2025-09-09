@@ -23,12 +23,12 @@ object Dependencies {
   private val slf4jVersion = "1.7.25"
   private val jacksonVersion = "2.13.0"
 
-  private val scalatestVersion = "3.2.14"
+  private val scalatestVersion = "3.2.19"
   private val mockitoVersion = "4.11.0"
 
   private val defaultSparkVersionForScala211 = "2.4.8"
   private val defaultSparkVersionForScala212 = "3.4.4"
-  private val defaultSparkVersionForScala213 = "3.5.5"
+  private val defaultSparkVersionForScala213 = "3.5.6"
 
   def sparkFallbackVersion(scalaVersion: String): String = {
     if (scalaVersion.startsWith("2.11.")) {
@@ -87,7 +87,7 @@ object Dependencies {
 
   val CobolConvertersDependencies: Seq[ModuleID] = Seq(
     // compile
-    "org.slf4j"   % "slf4j-api"         % slf4jVersion,
+    "org.slf4j"                         % "slf4j-api"              % slf4jVersion,
     "com.fasterxml.jackson.module"     %% "jackson-module-scala"   % jacksonVersion,
     "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-xml" % jacksonVersion,
     "com.fasterxml.jackson.dataformat"  % "jackson-dataformat-csv" % jacksonVersion,
