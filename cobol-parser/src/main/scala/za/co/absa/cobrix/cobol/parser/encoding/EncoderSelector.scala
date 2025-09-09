@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, COMP4, COMP9, CobolType, Decimal, Integral, Usage}
 import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
+import za.co.absa.cobrix.cobol.parser.position.Position
 
 import java.nio.charset.{Charset, StandardCharsets}
 import java.util
@@ -48,6 +49,10 @@ object EncoderSelector {
         Option(getBinaryEncoder(decimalBinary.compact, decimalBinary.precision, decimalBinary.scale, decimalBinary.scaleFactor, decimalBinary.signPosition.isDefined, isBigEndian = true))
       case decimalBinary: Decimal if decimalBinary.compact.exists(_.isInstanceOf[COMP9]) =>
         Option(getBinaryEncoder(decimalBinary.compact, decimalBinary.precision, decimalBinary.scale, decimalBinary.scaleFactor, decimalBinary.signPosition.isDefined, isBigEndian = false))
+      case integralDisplay: Integral if integralDisplay.compact.isEmpty =>
+        Option(getDisplayEncoder(integralDisplay.precision, 0, 0, integralDisplay.signPosition, isExplicitDecimalPt = false, isSignSeparate = integralDisplay.isSignSeparate))
+      case decimalDisplay: Decimal if decimalDisplay.compact.isEmpty =>
+        Option(getDisplayEncoder(decimalDisplay.precision, decimalDisplay.scale, decimalDisplay.scaleFactor, decimalDisplay.signPosition, decimalDisplay.explicitDecimal, decimalDisplay.isSignSeparate))
       case _ =>
         None
     }
@@ -137,6 +142,32 @@ object EncoderSelector {
         case x => new java.math.BigDecimal(x.toString)
       }
       BCDNumberEncoders.encodeBCDNumber(number, precision, scale, scaleFactor, signed, mandatorySignNibble)
+    }
+  }
+
+  def getDisplayEncoder(precision: Int,
+                        scale: Int,
+                        scaleFactor: Int,
+                        signPosition: Option[Position],
+                        isExplicitDecimalPt: Boolean,
+                        isSignSeparate: Boolean): Encoder = {
+    val isSigned = signPosition.isDefined
+    val numBytes = BinaryUtils.getBytesCount(None, precision, isSigned, isExplicitDecimalPt = isExplicitDecimalPt, isSignSeparate = isSignSeparate)
+    (a: Any) => {
+      val number = a match {
+        case null                    => null
+        case d: java.math.BigDecimal => d
+        case n: java.math.BigInteger => new java.math.BigDecimal(n)
+        case n: Byte                 => new java.math.BigDecimal(n)
+        case n: Int                  => new java.math.BigDecimal(n)
+        case n: Long                 => new java.math.BigDecimal(n)
+        case x                       => new java.math.BigDecimal(x.toString)
+      }
+      if (isSignSeparate) {
+        DisplayEncoders.encodeDisplayNumberSignSeparate(number, signPosition, numBytes, precision, scale, scaleFactor, explicitDecimalPoint = isExplicitDecimalPt)
+      } else {
+        DisplayEncoders.encodeDisplayNumberSignOverpunched(number, signPosition, numBytes, precision, scale, scaleFactor, explicitDecimalPoint = isExplicitDecimalPt)
+      }
     }
   }
 
