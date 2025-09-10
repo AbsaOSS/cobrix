@@ -27,9 +27,11 @@ object DisplayEncoders {
                                       precision: Int,
                                       scale: Int,
                                       scaleFactor: Int,
-                                      explicitDecimalPoint: Boolean,
-                                     ): Array[Byte] = {
+                                      explicitDecimalPoint: Boolean): Array[Byte] = {
     val isSigned = signPosition.isDefined
+    val lengthAdjustment = if (isSigned) 1 else 0
+    val isSignPositionRight = signPosition.contains(za.co.absa.cobrix.cobol.parser.position.Right)
+    val isNegative = number.signum() < 0
     val bytes = new Array[Byte](outputSize)
 
     if (number == null || precision < 1 || scale < 0 || outputSize < 1 || (scaleFactor > 0 && scale > 0))
@@ -39,22 +41,20 @@ object DisplayEncoders {
       val shift = scaleFactor
 
       val bigDecimal = if (shift == 0)
-        number.setScale(scale, RoundingMode.HALF_EVEN)
+        number.abs().setScale(scale, RoundingMode.HALF_EVEN)
       else
-        number.movePointLeft(shift).setScale(scale, RoundingMode.HALF_EVEN)
+        number.abs().movePointLeft(shift).setScale(scale, RoundingMode.HALF_EVEN)
 
       val bigDecimalValue1 = bigDecimal.toString
 
       val bigDecimalValue = if (bigDecimalValue1.startsWith("0."))
         bigDecimalValue1.drop(1)
-      else if (bigDecimalValue1.startsWith("-0."))
-        "-" + bigDecimalValue1.drop(2)
       else
         bigDecimalValue1
 
-      val bigDecimalValueLen = bigDecimalValue.length
+      val bigDecimalValueLen = bigDecimalValue.length + lengthAdjustment
 
-      if (bigDecimalValueLen > outputSize || (!isSigned && bigDecimal.signum() < 0))
+      if (bigDecimalValueLen > outputSize || (!isSigned && isNegative))
         return bytes
 
       bigDecimalValue
@@ -62,19 +62,19 @@ object DisplayEncoders {
       val shift = scaleFactor - scale
 
       val bigInt = if (shift == 0)
-        number.setScale(0, RoundingMode.HALF_EVEN).toBigIntegerExact
+        number.abs().setScale(0, RoundingMode.HALF_EVEN).toBigIntegerExact
       else
-        number.movePointLeft(shift).setScale(0, RoundingMode.HALF_EVEN).toBigIntegerExact
+        number.abs().movePointLeft(shift).setScale(0, RoundingMode.HALF_EVEN).toBigIntegerExact
 
       val intValue = bigInt.toString
-      val intValueLen = intValue.length
+      val intValueLen = intValue.length + lengthAdjustment
 
-      if (intValueLen > outputSize || (!isSigned && bigInt.signum() < 0))
+      if (intValueLen > outputSize || (!isSigned && isNegative))
         return bytes
 
       intValue
     }
-    setPaddedEbcdicNumberWithSignSeparate(num, bytes)
+    setPaddedEbcdicNumberWithSignSeparate(num, isSigned, isNegative, isSignPositionRight, bytes)
     bytes
   }
 
@@ -174,7 +174,20 @@ object DisplayEncoders {
     }
   }
 
-  def setPaddedEbcdicNumberWithSignSeparate(num: String, array: Array[Byte]): Unit = {
+  def setPaddedEbcdicNumberWithSignSeparate(absNum: String, isSigned: Boolean, isNegative: Boolean, isSignPositionRight: Boolean, array: Array[Byte]): Unit = {
+    val num = if (isSigned) {
+      if (isNegative) {
+        if (isSignPositionRight) {
+          s"$absNum-"
+        } else {
+          s"-$absNum"
+        }
+      } else {
+        absNum
+      }
+    } else {
+      absNum
+    }
     val numLen = num.length
     val arLen = array.length
 

@@ -31,9 +31,10 @@ class BasicRecordCombiner extends RecordCombiner {
   override def combine(df: DataFrame, cobolSchema: CobolSchema, readerParameters: ReaderParameters): RDD[Array[Byte]] = {
     val ast = getAst(cobolSchema)
     val copybookFields = ast.children.filter {
-      case p: Primitive => !p.isFiller
-      case g: Group     => !g.isFiller
-      case _            => true
+      case f if f.redefines.nonEmpty => false
+      case p: Primitive              => !p.isFiller
+      case g: Group                  => !g.isFiller
+      case _                         => true
     }
 
     validateSchema(df, copybookFields.toSeq)
