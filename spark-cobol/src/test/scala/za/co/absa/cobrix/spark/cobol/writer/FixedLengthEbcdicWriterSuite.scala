@@ -21,9 +21,10 @@ import org.apache.spark.sql.SaveMode
 import org.scalatest.Assertion
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
-import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
+class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
 
   import spark.implicits._
 
@@ -264,7 +265,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val df = List(
           (-1, 100.5, new java.math.BigDecimal(10.23), 1, 10050, new java.math.BigDecimal(10.12)),
           (2, 800.4, new java.math.BigDecimal(30), 2, 80040, new java.math.BigDecimal(30)),
-          (3, 22.33, new java.math.BigDecimal(-20), -3, -2233, new java.math.BigDecimal(-20))
+          (3, 22.33, new java.math.BigDecimal(-20), -3, -2233, new java.math.BigDecimal(-20.456))
         ).toDF("A", "B", "C", "D", "E", "F")
 
         val path = new Path(tempDir, "writer1")
@@ -305,28 +306,63 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         // Expected EBCDIC data for sample test data
         val expected = Array(
           0xD1,                                      // -1     PIC S9(1).
-          0x40, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,        // 100.5  PIC 9(4)V9(2)
+          0xF0, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,        // 100.5  PIC 9(4)V9(2)
           0xF1, 0xF0, 0x4B, 0xF2, 0xC3,              // 10.23  PIC S9(2).9(2)
           0xF1,                                      // 1      9(1)
-          0x40, 0x40, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,  // 10050  S9(6)      SIGN IS LEADING SEPARATE.
-          0x40, 0xF1, 0xF0, 0x4B, 0xF1, 0xF2,        // 10.12  S9(2).9(2) SIGN IS TRAILING SEPARATE
+          0x4E, 0xF0, 0xF1, 0xF0, 0xF0, 0xF5, 0xF0,  // 10050  S9(6)      SIGN IS LEADING SEPARATE.
+          0xF1, 0xF0, 0x4B, 0xF1, 0xF2, 0x4E,        // 10.12  S9(2).9(2) SIGN IS TRAILING SEPARATE
 
           0xC2,                                      // 2      PIC S9(1).
-          0x40, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,        // 800.4  PIC 9(4)V9(2)
+          0xF0, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,        // 800.4  PIC 9(4)V9(2)
           0xF3, 0xF0, 0x4B, 0xF0, 0xC0,              // 30     PIC S9(2).9(2)
           0xF2,                                      // 2      9(1)
-          0x40, 0x40, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,  // 80040  S9(6)      SIGN IS LEADING SEPARATE.
-          0x40, 0xF3, 0xF0, 0x4B, 0xF0, 0xF0,        // 30     S9(2).9(2) SIGN IS TRAILING SEPARATE
+          0x4E, 0xF0, 0xF8, 0xF0, 0xF0, 0xF4, 0xF0,  // 80040  S9(6)      SIGN IS LEADING SEPARATE.
+          0xF3, 0xF0, 0x4B, 0xF0, 0xF0, 0x4E,        // 30     S9(2).9(2) SIGN IS TRAILING SEPARATE
 
           0xC3,                                      // 3      PIC S9(1).
-          0x40, 0x40, 0xF2, 0xF2, 0xF3, 0xF3,        // 22.33  PIC 9(4)V9(2)
+          0xF0, 0xF0, 0xF2, 0xF2, 0xF3, 0xF3,        // 22.33  PIC 9(4)V9(2)
           0xF2, 0xF0, 0x4B, 0xF0, 0xD0,              // -20    PIC S9(2).9(2)
           0x00,                                      // null   PIC 9(1) (because a negative value cannot be converted to this PIC)
-          0x40, 0x40, 0x60, 0xF2, 0xF2, 0xF3, 0xF3,  // -2233  S9(6)      SIGN IS LEADING SEPARATE.
-          0xF2, 0xF0, 0x4B, 0xF0, 0xF0, 0x60         // -20    S9(2).9(2) SIGN IS TRAILING SEPARATE
+          0x60, 0xF0, 0xF0, 0xF2, 0xF2, 0xF3, 0xF3,  // -2233  S9(6)      SIGN IS LEADING SEPARATE.
+          0xF2, 0xF0, 0x4B, 0xF4, 0xF6, 0x60         // -20    S9(2).9(2) SIGN IS TRAILING SEPARATE
         ).map(_.toByte)
 
         assertArraysEqual(bytes, expected)
+
+        val df2 = spark.read.format("cobol")
+          .option("copybook_contents", copybookContentsWithBinFields)
+          .load(path.toString)
+          .orderBy("A")
+
+        val expectedJson =
+          """[ {
+            |  "A" : -1,
+            |  "B" : 100.5,
+            |  "C" : 10.23,
+            |  "C1" : "10.2C",
+            |  "D" : 1,
+            |  "E" : 10050,
+            |  "F" : 10.12
+            |}, {
+            |  "A" : 2,
+            |  "B" : 800.4,
+            |  "C" : 30.0,
+            |  "C1" : "30.0{",
+            |  "D" : 2,
+            |  "E" : 80040,
+            |  "F" : 30.0
+            |}, {
+            |  "A" : 3,
+            |  "B" : 22.33,
+            |  "C" : -20.0,
+            |  "C1" : "20.0}",
+            |  "E" : -2233,
+            |  "F" : -20.46
+            |} ]""".stripMargin
+
+        val actualJson = SparkUtils.convertDataFrameToPrettyJSON(df2)
+
+        compareText(actualJson, expectedJson)
       }
     }
 
