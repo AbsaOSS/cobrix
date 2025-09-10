@@ -109,7 +109,6 @@ lazy val sparkCobol = (project in file("spark-cobol"))
       }
     },
     libraryDependencies ++= SparkCobolDependencies(scalaVersion.value) :+ getScalaDependency(scalaVersion.value),
-    dependencyOverrides ++= SparkCobolDependenciesOverride,
     Test / fork := true, // Spark tests fail randomly otherwise
     populateBuildInfoTemplate,
     releasePublishArtifactsAction := PgpKeys.publishSigned.value,

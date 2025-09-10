@@ -17,7 +17,6 @@
 import sbt._
 
 object Dependencies {
-  private val guavaVersion = "15.0"
   private val scodecCoreVersion = "1.11.4"
   private val antlrValue = "4.8"
   private val slf4jVersion = "1.7.25"
@@ -60,13 +59,6 @@ object Dependencies {
     // test
     "org.scalatest"    %% "scalatest"        % scalatestVersion           % Test,
     "org.mockito"       % "mockito-core"     % mockitoVersion             % Test
-  )
-
-  val SparkCobolDependenciesOverride: Seq[ModuleID] = Seq(
-    // Needs to be added as a separate dependency since Spark uses an newer
-    // version of Guava which has removed 'com.google.common.base.Stopwatch.elapsedMillis',
-    // however, the version of Hadoop imported by Spark relies on that method.
-    "com.google.guava" % "guava" % guavaVersion,
   )
 
   val CobolParserDependencies: Seq[ModuleID] = Seq(

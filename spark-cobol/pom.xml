@@ -42,15 +42,6 @@
 			<scope>provided</scope>
 		</dependency>
 
-		<!-- guava -->
-		<!-- Needs to be added as a separate dependency since Spark uses an newer 
-			version of Guava which has removed 'com.google.common.base.Stopwatch.elapsedMillis', 
-			however, the version of Hadoop imported by Spark relies on that method. -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-		</dependency>
-
 		<!-- COBOL parser -->
 		<dependency>
 			<groupId>za.co.absa.cobrix</groupId>
