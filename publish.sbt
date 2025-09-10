@@ -44,15 +44,4 @@ ThisBuild / description := "COBOL Reading and Import Extensions for Apache Spark
 ThisBuild / startYear := Some(2018)
 ThisBuild / licenses += "Apache-2.0" -> url("https://www.apache.org/licenses/LICENSE-2.0.txt")
 
-ThisBuild / pomIncludeRepository := { _ => false }
-ThisBuild / publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value) {
-    Some("snapshots" at s"${nexus}content/repositories/snapshots")
-  } else {
-    Some("releases" at s"${nexus}service/local/staging/deploy/maven2")
-  }
-}
-ThisBuild / publishMavenStyle := true
-
 ThisBuild / versionScheme := Some("semver-spec")
