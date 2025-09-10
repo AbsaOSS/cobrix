@@ -31,11 +31,12 @@ object DisplayEncoders {
     val isSigned = signPosition.isDefined
     val lengthAdjustment = if (isSigned) 1 else 0
     val isSignPositionRight = signPosition.contains(za.co.absa.cobrix.cobol.parser.position.Right)
-    val isNegative = number.signum() < 0
     val bytes = new Array[Byte](outputSize)
 
     if (number == null || precision < 1 || scale < 0 || outputSize < 1 || (scaleFactor > 0 && scale > 0))
       return bytes
+
+    val isNegative = number.signum() < 0
 
     val num = if (explicitDecimalPoint) {
       val shift = scaleFactor
@@ -45,7 +46,7 @@ object DisplayEncoders {
       else
         number.abs().movePointLeft(shift).setScale(scale, RoundingMode.HALF_EVEN)
 
-      val bigDecimalValue1 = bigDecimal.toString
+      val bigDecimalValue1 = bigDecimal.toPlainString
 
       val bigDecimalValue = if (bigDecimalValue1.startsWith("0."))
         bigDecimalValue1.drop(1)
@@ -86,12 +87,12 @@ object DisplayEncoders {
                                          scaleFactor: Int,
                                          explicitDecimalPoint: Boolean): Array[Byte] = {
     val isSigned = signPosition.isDefined
-    val isNegative = number.signum() < 0
     val bytes = new Array[Byte](outputSize)
-
 
     if (number == null || precision < 1 || scale < 0 || outputSize < 1 || (scaleFactor > 0 && scale > 0))
       return bytes
+
+    val isNegative = number.signum() < 0
 
     val num = if (explicitDecimalPoint) {
       val shift = scaleFactor
@@ -101,7 +102,7 @@ object DisplayEncoders {
       else
         number.abs().movePointLeft(shift).setScale(scale, RoundingMode.HALF_EVEN)
 
-      val bigDecimalValue1 = bigDecimal.toString
+      val bigDecimalValue1 = bigDecimal.toPlainString
 
       val bigDecimalValue = if (bigDecimalValue1.startsWith("0."))
         bigDecimalValue1.drop(1)
@@ -143,7 +144,7 @@ object DisplayEncoders {
 
     var i = 0
     while (i < arLen) {
-      var ebcdic = 0x40.toByte
+      var ebcdic = 0xF0.toByte
 
       if (i == 0) {
         // Signal overpunching
@@ -164,7 +165,7 @@ object DisplayEncoders {
         val c = num(numLen - i - 1)
         if (c >= '0' && c <= '9') {
           ebcdic = ((c - '0') + 0xF0).toByte
-        } else if (c == '.' || c == ',') {
+        } else if (c == '.') {
           ebcdic = 0x4B
         }
       }
@@ -174,43 +175,38 @@ object DisplayEncoders {
     }
   }
 
-  def setPaddedEbcdicNumberWithSignSeparate(absNum: String, isSigned: Boolean, isNegative: Boolean, isSignPositionRight: Boolean, array: Array[Byte]): Unit = {
-    val num = if (isSigned) {
-      if (isNegative) {
-        if (isSignPositionRight) {
-          s"$absNum-"
-        } else {
-          s"-$absNum"
-        }
-      } else {
-        absNum
-      }
-    } else {
-      absNum
-    }
+  def setPaddedEbcdicNumberWithSignSeparate(num: String, isSigned: Boolean, isNegative: Boolean, isSignPositionRight: Boolean, array: Array[Byte]): Unit = {
     val numLen = num.length
     val arLen = array.length
+    val fullNumLength = if (isSigned) numLen + 1 else numLen
 
-    if (numLen > arLen)
+    if (fullNumLength > arLen)
       return
 
+    val shift = if (isSigned && isSignPositionRight) 1 else 0
     var i = 0
-    while (i < arLen) {
-      var ebcdic = 0x40.toByte
+    while (i < arLen - shift) {
+      var ebcdic = 0xF0.toByte
 
       if (i < numLen) {
         val c = num(numLen - i - 1)
         if (c >= '0' && c <= '9') {
           ebcdic = ((c - '0') + 0xF0).toByte
-        } else if (c == '.' || c == ',') {
+        } else if (c == '.') {
           ebcdic = 0x4B
-        } else if (c == '-') {
-          ebcdic = 0x60
         }
       }
 
-      array(arLen - i - 1) = ebcdic
+      array(arLen - i - shift - 1) = ebcdic
       i += 1
+    }
+
+    if (isSigned) {
+      if (isNegative) {
+        if (isSignPositionRight) array(arLen - 1) = 0x60 else array(0) = 0x60
+      } else {
+        if (isSignPositionRight) array(arLen - 1) = 0x4E else array(0) = 0x4E
+      }
     }
   }
 }

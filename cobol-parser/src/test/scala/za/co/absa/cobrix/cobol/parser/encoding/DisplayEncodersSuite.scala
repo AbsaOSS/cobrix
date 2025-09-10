@@ -24,7 +24,7 @@ class DisplayEncodersSuite extends AnyWordSpec {
   "encodeDisplayNumberSignOverpunched" should {
     "integral number" when {
       "encode a number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -38,28 +38,28 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a small number" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(5), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode an unsigned number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(12345), signPosition = None, 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a negative number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xD5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xD5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small negative number" in  {
-        val expected = Array( 0x40, 0x40, 0x40, 0x40, 0xD7).map(_.toByte)
+        val expected = Array( 0xF0, 0xF0, 0xF0, 0xF0, 0xD7).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-7), signPosition = Some(Right), 5, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -110,56 +110,56 @@ class DisplayEncodersSuite extends AnyWordSpec {
 
     "decimal number" when {
       "encode a number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(123.45), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a number with explicit decimal" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(123.45), signPosition = Some(Left), 7, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 1" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.05), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 2" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0xF5, 0xC0).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xF5, 0xC0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.5), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 3" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xC1).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xF0, 0xC1).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.005), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 1 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF0, 0xC5).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0x4B, 0xF0, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.05), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 2 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF5, 0xC0).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0x4B, 0xF5, 0xC0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.5), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 3 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF0, 0xC1).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0x4B, 0xF0, 0xC1).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.005), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
@@ -167,7 +167,7 @@ class DisplayEncodersSuite extends AnyWordSpec {
 
       "encode an unsigned number" in  {
         val expected = Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF0).map(_.toByte)
-        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1234.5), signPosition = None, 6, 5, 2, 0, explicitDecimalPoint = false)
+        val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(1234.5), signPosition = None, 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
@@ -180,36 +180,36 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a negative number" in {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xD5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xD5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-12.345), signPosition = Some(Left), 6, 5, 3, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a negative number with explicit decimal point" in {
-        val expected = Array(0x40, 0xF1, 0xF2, 0x4B, 0xF3, 0xF4, 0xD5).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0x4B, 0xF3, 0xF4, 0xD5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-12.345), signPosition = Some(Right), 7, 5, 3, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small negative number" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0xD7).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xD7).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-0.00007), signPosition = Some(Right), 5, 4, 5, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small negative number with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x4B, 0xF0, 0xF0, 0xF0, 0xF0, 0xD7).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0x4B, 0xF0, 0xF0, 0xF0, 0xF0, 0xD7).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(-0.00007), signPosition = Some(Left), 8, 4, 5, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a too precise number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF6).map(_.toByte)
-        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(123.456), signPosition = None, 6, 5, 2, 0, explicitDecimalPoint = false)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF6).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(123.456), signPosition = None, 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
@@ -250,7 +250,7 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a number with positive scale factor" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0xF1, 0xF2, 0xC3).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF1, 0xF2, 0xC3).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(12300), signPosition = Some(Left), 6, 5, 0, 2, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -264,21 +264,21 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a number with negative scale factor" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0xF1, 0xF2, 0xC3).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF1, 0xF2, 0xC3).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(1.23), signPosition = Some(Left), 6, 5, 0, -2, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a number with negative scale factor with explicit decimal point" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0x4B, 0xC4).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0x4B, 0xC4).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(1.234), signPosition = Some(Left), 6, 5, 1, -2, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number with negative scale factor" in  {
-        val expected = Array(0x40, 0x40, 0xF1, 0xF2, 0xF0).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF1, 0xF2, 0xF0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(0.00012), signPosition = None, 5, 4, 3, -3, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -311,29 +311,29 @@ class DisplayEncodersSuite extends AnyWordSpec {
   "encodeDisplayNumberSignSeparate" should {
     "integral number" when {
       "encode a number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a number with an even precision" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1234), signPosition = Some(Left), 5, 4, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF0, 0xF0, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(5), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode an unsigned number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
-        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(12345), signPosition = None, 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
@@ -346,7 +346,7 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a small negative number" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0xF7, 0x60).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF0, 0xF7, 0x60).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(-7), signPosition = Some(Right), 6, 5, 0, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -397,63 +397,63 @@ class DisplayEncodersSuite extends AnyWordSpec {
 
     "decimal number" when {
       "encode a number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(123.45), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a number with explicit decimal" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(123.45), signPosition = Some(Left), 7, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 1" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF0, 0xF0, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.05), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 2" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0xF5, 0xF0).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF0, 0xF5, 0xF0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.5), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 3" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x40, 0x40, 0xF1).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF0, 0xF0, 0xF1).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.005), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 1 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF0, 0xF5).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0x4B, 0xF0, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.05), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 2 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF5, 0xF0).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0x4B, 0xF5, 0xF0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.5), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number 3 with explicit decimal point" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0x4B, 0xF0, 0xF1).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0x4B, 0xF0, 0xF1).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.005), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode an unsigned number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF0).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1234.5), signPosition = Some(Left), 7, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -481,21 +481,21 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a small negative number" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0xF7, 0x60).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF0, 0xF7, 0x60).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(-0.00007), signPosition = Some(Right), 5, 4, 5, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small negative number with explicit decimal point" in  {
-        val expected = Array(0x40, 0x60, 0x4B, 0xF0, 0xF0, 0xF0, 0xF0, 0xF7).map(_.toByte)
+        val expected = Array(0x60, 0xF0, 0x4B, 0xF0, 0xF0, 0xF0, 0xF0, 0xF7).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(-0.00007), signPosition = Some(Left), 8, 4, 5, 0, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a too precise number" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0xF4, 0xF6).map(_.toByte)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF6).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(123.456), signPosition = None, 6, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -537,7 +537,7 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a number with positive scale factor" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0xF1, 0xF2, 0xF3).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF1, 0xF2, 0xF3).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(12300), signPosition = Some(Left), 6, 5, 0, 2, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
@@ -551,21 +551,21 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode a number with negative scale factor" in  {
-        val expected = Array(0x40, 0x40, 0x40, 0xF1, 0xF2, 0xF3).map(_.toByte)
+        val expected = Array(0x4E, 0xF0, 0xF0, 0xF1, 0xF2, 0xF3).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1.23), signPosition = Some(Left), 6, 5, 0, -2, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a number with negative scale factor with explicit decimal point" in  {
-        val expected = Array(0x40, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4).map(_.toByte)
+        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0x4B, 0xF4).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1.234), signPosition = Some(Left), 6, 5, 1, -2, explicitDecimalPoint = true)
 
         assertArraysEqual(actual, expected)
       }
 
       "encode a small number with negative scale factor" in  {
-        val expected = Array(0x40, 0x40, 0xF1, 0xF2, 0xF0).map(_.toByte)
+        val expected = Array(0xF0, 0xF0, 0xF1, 0xF2, 0xF0).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(0.00012), signPosition = None, 5, 4, 3, -3, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
