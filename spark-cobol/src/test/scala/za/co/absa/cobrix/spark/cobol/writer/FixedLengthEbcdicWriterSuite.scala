@@ -262,10 +262,12 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
 
     "write data frames with DISPLAY fields" in {
       withTempDirectory("cobol_writer1") { tempDir =>
+        val bigDecimalNull = null: java.math.BigDecimal
         val df = List(
           (-1, 100.5, new java.math.BigDecimal(10.23), 1, 10050, new java.math.BigDecimal(10.12)),
           (2, 800.4, new java.math.BigDecimal(30), 2, 80040, new java.math.BigDecimal(30)),
-          (3, 22.33, new java.math.BigDecimal(-20), -3, -2233, new java.math.BigDecimal(-20.456))
+          (3, 22.33, new java.math.BigDecimal(-20), -3, -2233, new java.math.BigDecimal(-20.456)),
+          (4, -1.0, bigDecimalNull, 400, 1000000, bigDecimalNull)
         ).toDF("A", "B", "C", "D", "E", "F")
 
         val path = new Path(tempDir, "writer1")
@@ -324,7 +326,14 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           0xF2, 0xF0, 0x4B, 0xF0, 0xD0,              // -20    PIC S9(2).9(2)
           0x00,                                      // null   PIC 9(1) (because a negative value cannot be converted to this PIC)
           0x60, 0xF0, 0xF0, 0xF2, 0xF2, 0xF3, 0xF3,  // -2233  S9(6)      SIGN IS LEADING SEPARATE.
-          0xF2, 0xF0, 0x4B, 0xF4, 0xF6, 0x60         // -20    S9(2).9(2) SIGN IS TRAILING SEPARATE
+          0xF2, 0xF0, 0x4B, 0xF4, 0xF6, 0x60,        // -20    S9(2).9(2) SIGN IS TRAILING SEPARATE
+
+          0xC4,                                      // 4      PIC S9(1).
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00,        // nulls
+          0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         ).map(_.toByte)
 
         assertArraysEqual(bytes, expected)
@@ -358,6 +367,8 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
             |  "C1" : "20.0}",
             |  "E" : -2233,
             |  "F" : -20.46
+            |}, {
+            |  "A" : 4
             |} ]""".stripMargin
 
         val actualJson = SparkUtils.convertDataFrameToPrettyJSON(df2)

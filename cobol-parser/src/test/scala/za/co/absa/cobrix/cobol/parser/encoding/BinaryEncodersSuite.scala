@@ -21,6 +21,13 @@ import za.co.absa.cobrix.cobol.testutils.ComparisonUtils._
 
 class BinaryEncodersSuite extends AnyWordSpec {
   "encodeBinaryNumber" should {
+    "encode a null" in  {
+      val expected = Array(0x00, 0x00, 0x00, 0x00).map(_.toByte)
+      val actual = BinaryEncoders.encodeBinaryNumber(null: java.math.BigDecimal, isSigned = true, outputSize = 4, bigEndian = true, precision = 5, scale = 0, scaleFactor = 0)
+
+      assertArraysEqual(actual, expected)
+    }
+
     "encode a positive integer in big-endian format" in {
       val expected = Array(0x00, 0x00, 0x30, 0x39).map(_.toByte) // 12345 in hex
       val actual = BinaryEncoders.encodeBinaryNumber(new java.math.BigDecimal(12345), isSigned = true, outputSize = 4, bigEndian = true, precision = 5, scale = 0, scaleFactor = 0)

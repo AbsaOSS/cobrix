@@ -23,6 +23,13 @@ import za.co.absa.cobrix.cobol.testutils.ComparisonUtils.assertArraysEqual
 class DisplayEncodersSuite extends AnyWordSpec {
   "encodeDisplayNumberSignOverpunched" should {
     "integral number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(null: java.math.BigDecimal, signPosition = Some(Left), 3, 2, 0, 0, explicitDecimalPoint = false)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
@@ -109,6 +116,20 @@ class DisplayEncodersSuite extends AnyWordSpec {
     }
 
     "decimal number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(null: java.math.BigDecimal, signPosition = Some(Left), 3, 2, 1, 0, explicitDecimalPoint = false)
+
+        assertArraysEqual(actual, expected)
+      }
+
+      "encode a null and separate decimal point" in  {
+        val expected = Array(0x00, 0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(null: java.math.BigDecimal, signPosition = Some(Left), 4, 2, 1, 0, explicitDecimalPoint = true)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xC5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignOverpunched(new java.math.BigDecimal(123.45), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
@@ -310,6 +331,13 @@ class DisplayEncodersSuite extends AnyWordSpec {
 
   "encodeDisplayNumberSignSeparate" should {
     "integral number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(null: java.math.BigDecimal, signPosition = Some(Left), 3, 2, 0, 0, explicitDecimalPoint = false)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(12345), signPosition = Some(Left), 6, 5, 0, 0, explicitDecimalPoint = false)
@@ -396,6 +424,20 @@ class DisplayEncodersSuite extends AnyWordSpec {
     }
 
     "decimal number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(null: java.math.BigDecimal, signPosition = Some(Left), 4, 2, 1, 0, explicitDecimalPoint = false)
+
+        assertArraysEqual(actual, expected)
+      }
+
+      "encode a null and separate decimal point" in  {
+        val expected = Array(0x00, 0x00, 0x00, 0x00, 0x00).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(null: java.math.BigDecimal, signPosition = Some(Left), 5, 2, 1, 0, explicitDecimalPoint = true)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5).map(_.toByte)
         val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(123.45), signPosition = Some(Left), 6, 5, 2, 0, explicitDecimalPoint = false)
