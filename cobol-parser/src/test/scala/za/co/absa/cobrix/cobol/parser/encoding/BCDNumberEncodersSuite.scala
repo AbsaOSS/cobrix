@@ -17,11 +17,19 @@
 package za.co.absa.cobrix.cobol.parser.encoding
 
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.parser.position.Left
 import za.co.absa.cobrix.cobol.testutils.ComparisonUtils._
 
 class BCDNumberEncodersSuite extends AnyWordSpec {
   "encodeBCDNumber" should {
     "integral number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00).map(_.toByte)
+        val actual = BCDNumberEncoders.encodeBCDNumber(null: java.math.BigDecimal, 2, 0, 0, signed = true, mandatorySignNibble = true)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array[Byte](0x12, 0x34, 0x5C)
         val actual = BCDNumberEncoders.encodeBCDNumber(new java.math.BigDecimal(12345), 5, 0, 0, signed = true, mandatorySignNibble = true)
@@ -133,6 +141,13 @@ class BCDNumberEncodersSuite extends AnyWordSpec {
     }
 
     "decimal number" when {
+      "encode a null" in  {
+        val expected = Array(0x00, 0x00).map(_.toByte)
+        val actual = BCDNumberEncoders.encodeBCDNumber(null: java.math.BigDecimal, 2, 1, 0, signed = true, mandatorySignNibble = true)
+
+        assertArraysEqual(actual, expected)
+      }
+
       "encode a number" in  {
         val expected = Array[Byte](0x12, 0x34, 0x5C)
         val actual = BCDNumberEncoders.encodeBCDNumber(java.math.BigDecimal.valueOf(123.45), 5, 2, 0, signed = true, mandatorySignNibble = true)
