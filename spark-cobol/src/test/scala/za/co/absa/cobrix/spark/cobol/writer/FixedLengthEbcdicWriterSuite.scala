@@ -272,7 +272,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
 
         val path = new Path(tempDir, "writer1")
 
-        val copybookContentsWithBinFields =
+        val copybookContentsWithDisplayFields =
           """       01  RECORD.
            05  A       PIC S9(1).
            05  B       PIC 9(4)V9(2).
@@ -288,7 +288,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           .write
           .format("cobol")
           .mode(SaveMode.Overwrite)
-          .option("copybook_contents", copybookContentsWithBinFields)
+          .option("copybook_contents", copybookContentsWithDisplayFields)
           .save(path.toString)
 
         val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
@@ -339,7 +339,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         assertArraysEqual(bytes, expected)
 
         val df2 = spark.read.format("cobol")
-          .option("copybook_contents", copybookContentsWithBinFields)
+          .option("copybook_contents", copybookContentsWithDisplayFields)
           .load(path.toString)
           .orderBy("A")
 
