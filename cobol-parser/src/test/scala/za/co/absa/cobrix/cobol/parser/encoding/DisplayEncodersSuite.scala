@@ -453,8 +453,8 @@ class DisplayEncodersSuite extends AnyWordSpec {
       }
 
       "encode an unsigned number" in  {
-        val expected = Array(0x4E, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF0).map(_.toByte)
-        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1234.5), signPosition = Some(Left), 7, 5, 2, 0, explicitDecimalPoint = false)
+        val expected = Array(0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF0).map(_.toByte)
+        val actual = DisplayEncoders.encodeDisplayNumberSignSeparate(new java.math.BigDecimal(1234.5), signPosition = None, 7, 5, 2, 0, explicitDecimalPoint = false)
 
         assertArraysEqual(actual, expected)
       }
