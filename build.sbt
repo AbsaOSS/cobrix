@@ -52,9 +52,11 @@ lazy val cobrix = (project in file("."))
   .disablePlugins(sbtassembly.AssemblyPlugin)
   .settings(
     name := "cobrix",
+    crossScalaVersions := List(scala211, scala212, scala213),
 
     // No need to publish the aggregation [empty] artifact
     publishArtifact := false,
+    publish / skip := true,
     publish := {},
     publishLocal := {}
   )
@@ -65,13 +67,13 @@ lazy val cobolParser = (project in file("cobol-parser"))
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-parser",
+    crossScalaVersions := List(scala211, scala212, scala213),
     libraryDependencies ++= CobolParserDependencies :+ getScalaDependency(scalaVersion.value),
     shadedDependencies ++= CobolParserShadedDependencies,
     shadingRules ++= Seq (
       ShadingRule.moveUnder("org.antlr.v4.runtime", "za.co.absa.cobrix.cobol.parser.shaded")
     ),
     validNamespaces ++= Set("za"),
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings,
     jacocoReportSettings := commonJacocoReportSettings.withTitle("cobrix:cobol-parser Jacoco Report"),
     jacocoExcludes := commonJacocoExcludes
@@ -83,9 +85,11 @@ lazy val cobolConverters = (project in file("cobol-converters"))
   .enablePlugins(AutomateHeaderPlugin)
   .settings(
     name := "cobol-converters",
+    crossScalaVersions := List(scala211, scala212, scala213),
     libraryDependencies ++= CobolConvertersDependencies :+ getScalaDependency(scalaVersion.value),
     // No need to publish this artifact since it has test only at the moment
     publishArtifact := false,
+    publish / skip := true,
     publish := {},
     publishLocal := {}
   )
@@ -93,6 +97,7 @@ lazy val cobolConverters = (project in file("cobol-converters"))
 lazy val sparkCobol = (project in file("spark-cobol"))
   .settings(
     name := "spark-cobol",
+    crossScalaVersions := List(scala211, scala212, scala213),
     printSparkVersion := {
       val log = streams.value.log
       log.info(s"Building with Spark ${sparkVersion(scalaVersion.value)}, Scala ${scalaVersion.value}")
@@ -111,7 +116,6 @@ lazy val sparkCobol = (project in file("spark-cobol"))
     libraryDependencies ++= SparkCobolDependencies(scalaVersion.value) :+ getScalaDependency(scalaVersion.value),
     Test / fork := true, // Spark tests fail randomly otherwise
     populateBuildInfoTemplate,
-    releasePublishArtifactsAction := PgpKeys.publishSigned.value,
     assemblySettings
   ).dependsOn(cobolParser)
   .settings(
@@ -123,10 +127,6 @@ lazy val sparkCobol = (project in file("spark-cobol"))
 // scoverage settings
 ThisBuild / coverageExcludedPackages := ".*examples.*;.*replication.*"
 ThisBuild / coverageExcludedFiles := ".*Example.*;Test.*"
-
-// release settings
-releaseCrossBuild := true
-addCommandAlias("releaseNow", ";set releaseVersionBump := sbtrelease.Version.Bump.Bugfix; release with-defaults")
 
 lazy val assemblySettings = Seq(
   // This merge strategy retains service entries for all services in manifest.

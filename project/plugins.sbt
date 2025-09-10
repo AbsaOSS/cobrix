@@ -1,9 +1,9 @@
-addSbtPlugin("com.github.sbt"    % "sbt-pgp"       % "2.2.1")
-addSbtPlugin("com.github.sbt"    % "sbt-release"   % "1.1.0")
-addSbtPlugin("org.scoverage"     % "sbt-scoverage" % "1.6.0")
-addSbtPlugin("de.heikoseeberger" % "sbt-header"    % "5.2.0")
-addSbtPlugin("com.eed3si9n"      % "sbt-assembly"  % "0.15.0")
-addSbtPlugin("io.get-coursier"   % "sbt-shading"   % "2.1.5")
+addSbtPlugin("com.github.sbt"    % "sbt-ci-release"    % "1.11.1")
+addSbtPlugin("com.eed3si9n"      % "sbt-projectmatrix" % "0.9.2")
+addSbtPlugin("org.scoverage"     % "sbt-scoverage"     % "1.6.0")
+addSbtPlugin("de.heikoseeberger" % "sbt-header"        % "5.2.0")
+addSbtPlugin("com.eed3si9n"      % "sbt-assembly"      % "0.15.0")
+addSbtPlugin("io.get-coursier"   % "sbt-shading"       % "2.1.5")
 
 addDependencyTreePlugin
 
