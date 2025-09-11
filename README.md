@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.8.4</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.8.4</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.8.4</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.0</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.8.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.0
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.0
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.8.4
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.0
 ```
 
 ## Usage
@@ -239,8 +239,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.8.4.jar
-* cobol-parser_2.12-2.8.4.jar
+* spark-cobol_2.12-2.9.0.jar
+* cobol-parser_2.12-2.9.0.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -248,9 +248,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.8.4
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.0
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.8.4.jar,cobol-parser_2.12-2.8.4.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.0.jar,cobol-parser_2.12-2.9.0.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -318,7 +318,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.8.5-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.9.1-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1663,6 +1663,35 @@ The output looks like this:
 
 `common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
+## EBCDIC Processor (experimental)
+The EBCDIC processor allows processing files by replacing value of fields without changing the underlying format.
+
+The processing does not require Spark. A processing application can have only the COBOL parser as a dependency (`cobol-parser`).
+
+Here is an example usage:
+```scala
+val is = new FSStream(inputFile)
+val os = new FileOutputStream(outputFile)
+val copybookContents = "...some copybook..."
+val builder = CobolProcessor.builder(copybookContents)
+
+val processor = new RawRecordProcessor {
+  override def processRecord(copybook: Copybook, options: Map[String, String], record: Array[Byte], offset: Long): Array[Byte] = {
+    // The transformation logic goes here
+    val value = copybook.getFieldValueByName("some_field", record, 0)
+    // Change the field v
+    // val newValue = ...
+    // Write the changed value back
+    copybook.setFieldValueByName("some_field", record, newValue, 0)
+    // Return the changed record     
+    record
+  }
+}
+
+builder.build().process(is, os)(processor)
+```
+
+
 ## EBCDIC Writer (experimental)
 
 Cobrix's EBCDIC writer is an experimental feature that allows writing Spark DataFrames as EBCDIC mainframe files.
@@ -1832,6 +1861,20 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.9.0 released 10 September 2025.
+   - [#415](https://github.com/AbsaOSS/cobrix/issues/415) Added the basic experimental version of EBCDIC writer.
+     ```scala
+     df.write
+       .format("cobol")
+       .mode(SaveMode.Overwrite)
+       .option("copybook_contents", copybookContents)
+       .save("/some/output/path")
+     ```
+     The writer supports only flat copybooks at the moment, and only limited set of data types. More at https://github.com/AbsaOSS/cobrix/tree/master?tab=readme-ov-file#ebcdic-writer-experimental
+
+   - [#769](https://github.com/AbsaOSS/cobrix/issues/769) Added EBCDIC processor as a library routine.
+     This allows processing EBCDIC files without Spark, replacing chosen fields without changing the file format.
+   - [#780](https://github.com/AbsaOSS/cobrix/issues/780) Added `spark-cobol` options to the raw record extractor interface.
 
 - #### 2.8.4 released 5 June 2025.
   - [#763](https://github.com/AbsaOSS/cobrix/issues/763) Implemented relaxed type restrictions on which field can be used for record length.
