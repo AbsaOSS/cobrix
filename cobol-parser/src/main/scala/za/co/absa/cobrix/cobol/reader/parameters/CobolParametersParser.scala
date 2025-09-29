@@ -952,7 +952,11 @@ object CobolParametersParser extends Logging {
       if (isPedantic) {
         throw new IllegalArgumentException(msg)
       } else {
-        logger.error(msg)
+        if (hasRecordExtractor) {
+          logger.warn(msg)
+        } else {
+          logger.error(msg)
+        }
       }
     }
   }
