@@ -34,14 +34,17 @@ object StreamProcessor {
     * @param recordExtractor the extractor that extracts raw records from the input stream.
     * @param recordProcessor the per-record processing logic implementation.
     * @param outputStream    the output stream where the processed records will be written.
+    * @return The number of records processed.
     */
   def processStream(copybook: Copybook,
                     options: Map[String, String],
                     inputStream: SimpleStream,
                     recordExtractor: RawRecordExtractor,
                     recordProcessor: RawRecordProcessor,
-                    outputStream: OutputStream): Unit = {
+                    outputStream: OutputStream): Long = {
+    var recordCount = 0L
     while (recordExtractor.hasNext) {
+      recordCount += 1
       val record = recordExtractor.next()
       val recordSize = record.length
 
@@ -61,5 +64,6 @@ object StreamProcessor {
       val footer = inputStream.next(footerSize.toInt)
       outputStream.write(footer)
     }
+    recordCount
   }
 }

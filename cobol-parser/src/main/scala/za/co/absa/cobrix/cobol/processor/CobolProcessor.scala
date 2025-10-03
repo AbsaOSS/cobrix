@@ -38,10 +38,11 @@ trait CobolProcessor {
     * @param inputStream        the input stream containing raw COBOL records.
     * @param outputStream       the output stream where processed records will be written.
     * @param rawRecordProcessor the processor that processes each raw record.
+    * @return The number of records processed.
     */
   def process(inputStream: SimpleStream,
               outputStream: OutputStream)
-             (rawRecordProcessor: RawRecordProcessor): Unit
+             (rawRecordProcessor: RawRecordProcessor): Long
 
 }
 
@@ -56,7 +57,7 @@ object CobolProcessor {
       new CobolProcessor {
         override def process(inputStream: SimpleStream,
                              outputStream: OutputStream)
-                            (rawRecordProcessor: RawRecordProcessor): Unit = {
+                            (rawRecordProcessor: RawRecordProcessor): Long = {
           val recordExtractor = getRecordExtractor(readerParameters, inputStream)
 
           val dataStream = inputStream.copyStream()
@@ -116,7 +117,7 @@ object CobolProcessor {
 
       reader.recordExtractor(0, dataStream, headerStream) match {
         case Some(extractor) => extractor
-        case None =>
+        case None            =>
           throw new IllegalArgumentException(s"Cannot create a record extractor for the given reader parameters. " +
             "Please check the copybook and the reader parameters."
           )

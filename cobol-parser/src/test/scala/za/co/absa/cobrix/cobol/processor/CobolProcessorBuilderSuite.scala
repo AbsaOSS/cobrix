@@ -42,10 +42,11 @@ class CobolProcessorBuilderSuite extends AnyWordSpec {
         }
       }
 
-      builder.build().process(is, os)(processor)
+      val count = builder.build().process(is, os)(processor)
 
       val outputArray = os.toByteArray
 
+      assert(count == 4)
       assert(outputArray.head == -16)
       assert(outputArray(1) == -15)
       assert(outputArray(2) == -14)
