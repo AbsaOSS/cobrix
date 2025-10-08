@@ -16,9 +16,7 @@
 
 package za.co.absa.cobrix.cobol.processor
 
-import za.co.absa.cobrix.cobol.processor.impl.{ArrayOfAnyHandler, StreamProcessor}
-import za.co.absa.cobrix.cobol.reader.VarLenNestedReader
-import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
+import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorImpl
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
@@ -54,25 +52,7 @@ object CobolProcessor {
       val readerParameters = getReaderParameters
       val cobolSchema = getCobolSchema(readerParameters)
 
-      new CobolProcessor {
-        override def process(inputStream: SimpleStream,
-                             outputStream: OutputStream)
-                            (rawRecordProcessor: RawRecordProcessor): Long = {
-          val recordExtractor = getRecordExtractor(readerParameters, inputStream)
-
-          val dataStream = inputStream.copyStream()
-          try {
-            StreamProcessor.processStream(cobolSchema.copybook,
-              caseInsensitiveOptions.toMap,
-              dataStream,
-              recordExtractor,
-              rawRecordProcessor,
-              outputStream)
-          } finally {
-            dataStream.close()
-          }
-        }
-      }
+      new CobolProcessorImpl(readerParameters, cobolSchema.copybook, copybookContents, caseInsensitiveOptions.toMap)
     }
 
     /**
@@ -107,21 +87,6 @@ object CobolProcessor {
       val cobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
 
       CobolParametersParser.getReaderProperties(cobolParameters, None)
-    }
-
-    private[processor] def getRecordExtractor(readerParameters: ReaderParameters, inputStream: SimpleStream): RawRecordExtractor = {
-      val dataStream = inputStream.copyStream()
-      val headerStream = inputStream.copyStream()
-
-      val reader = new VarLenNestedReader[Array[Any]](Seq(copybookContents), readerParameters, new ArrayOfAnyHandler)
-
-      reader.recordExtractor(0, dataStream, headerStream) match {
-        case Some(extractor) => extractor
-        case None            =>
-          throw new IllegalArgumentException(s"Cannot create a record extractor for the given reader parameters. " +
-            "Please check the copybook and the reader parameters."
-          )
-      }
     }
 
     private[processor] def getOptions: Map[String, String] = caseInsensitiveOptions.toMap
