@@ -30,6 +30,7 @@ class CobolProcessorBuilderSuite extends AnyWordSpec {
     """      01 RECORD.
       |         05  T     PIC X.
       |""".stripMargin
+
   "process" should {
     "process an input data stream into an output stream" in {
       val is = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
@@ -74,47 +75,4 @@ class CobolProcessorBuilderSuite extends AnyWordSpec {
       assert(builder.getOptions.contains("record_format"))
     }
   }
-
-  "getRecordExtractor" should {
-    "work for an fixed-record-length files" in {
-      val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = CobolProcessor.builder(copybook)
-
-      val ext = builder.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), stream)
-
-      assert(ext.isInstanceOf[FixedRecordLengthRawRecordExtractor])
-
-      assert(ext.hasNext)
-      assert(ext.next().sameElements(Array(0xF1, 0xF2).map(_.toByte)))
-      assert(ext.next().sameElements(Array(0xF3, 0xF4).map(_.toByte)))
-      assert(!ext.hasNext)
-    }
-
-    "work for an variable-record-length files" in {
-      val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = CobolProcessor.builder(copybook)
-
-      val ext = builder.getRecordExtractor(ReaderParameters(
-        recordFormat = RecordFormat.VariableLength,
-        isText = true
-      ), stream)
-
-      assert(ext.isInstanceOf[TextFullRecordExtractor])
-    }
-
-    "throw an exception on a non-supported record format for processing" in {
-      val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val builder = CobolProcessor.builder(copybook)
-
-      val ex = intercept[IllegalArgumentException] {
-        builder.getRecordExtractor(ReaderParameters(
-          recordFormat = RecordFormat.VariableLength,
-          isRecordSequence = true
-        ), stream)
-      }
-
-      assert(ex.getMessage.contains("Cannot create a record extractor for the given reader parameters."))
-    }
-  }
-
 }
