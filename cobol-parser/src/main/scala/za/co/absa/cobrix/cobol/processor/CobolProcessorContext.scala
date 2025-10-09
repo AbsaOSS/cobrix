@@ -16,10 +16,8 @@
 
 package za.co.absa.cobrix.cobol.processor
 
-/**
- * A trait that defines a processor for raw COBOL records.
- * It provides a method to process a single COBOL record based on the provided copybook and options.
- */
-trait RawRecordProcessor {
-  def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte]
-}
+import za.co.absa.cobrix.cobol.parser.Copybook
+
+case class CobolProcessorContext(copybook: Copybook,
+                                 options: Map[String, String],
+                                 currentOffset: Long)

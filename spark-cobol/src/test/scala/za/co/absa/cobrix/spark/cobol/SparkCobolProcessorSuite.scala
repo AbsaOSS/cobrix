@@ -18,8 +18,7 @@ package za.co.absa.cobrix.spark.cobol
 
 import org.apache.hadoop.fs.Path
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.processor.SerializableRawRecordProcessor
+import za.co.absa.cobrix.cobol.processor.{CobolProcessorContext, SerializableRawRecordProcessor}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 
@@ -30,7 +29,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
       |""".stripMargin
 
   private val rawRecordProcessor = new SerializableRawRecordProcessor {
-    override def processRecord(copybook: Copybook, options: Map[String, String], record: Array[Byte], offset: Long): Array[Byte] = {
+    override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
       record.map(v => (v - 1).toByte)
     }
   }
@@ -38,7 +37,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
   "SparkCobolProcessor" should {
     "fail to create when a copybook is not specified" in {
       val exception = intercept[IllegalArgumentException] {
-        SparkCobolProcessor.builder.build()
+        SparkCobolProcessor.builder.load(".")
       }
 
       assert(exception.getMessage.contains("Copybook contents must be provided."))
@@ -47,8 +46,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
     "fail to create when a record processor is not provided" in {
       val exception = intercept[IllegalArgumentException] {
         SparkCobolProcessor.builder
-          .withCopybookContents(copybook)
-          .build()
+          .withCopybookContents(copybook).load(".")
       }
 
       assert(exception.getMessage.contains("A RawRecordProcessor must be provided."))
@@ -60,13 +58,24 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
           .withCopybookContents(copybook)
           .withRecordProcessor(rawRecordProcessor)
           .withMultithreaded(0)
-          .build()
+          .load("")
       }
 
       assert(exception.getMessage.contains("Number of threads must be at least 1."))
     }
 
-    "create a processor that processes files via an RDD" in {
+    "fail when no files are provided" in {
+      val exception = intercept[IllegalArgumentException] {
+        SparkCobolProcessor.builder
+          .withCopybookContents(copybook)
+          .withRecordProcessor(rawRecordProcessor)
+          .load(Seq.empty)
+      }
+
+      assert(exception.getMessage.contains("At least one input file must be provided."))
+    }
+
+    "process files via an RDD" in {
       withTempDirectory("spark_cobol_processor") { tempDir =>
         val binData = Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte)
 
@@ -76,12 +85,13 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
         writeBinaryFile(inputPath, binData)
 
-        val processor = SparkCobolProcessor.builder
+        SparkCobolProcessor.builder
           .withCopybookContents(copybook)
-          .withRecordProcessor(rawRecordProcessor)
-          .build()
-
-        processor.process(Seq(inputPath), outputPath)
+          .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
+            record.map(v => (v - 1).toByte)
+          }
+          .load(inputPath)
+          .save(outputPath)
 
         val outputData = readBinaryFile(outputFile)
 

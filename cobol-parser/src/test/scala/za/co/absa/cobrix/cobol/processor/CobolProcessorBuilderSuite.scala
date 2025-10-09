@@ -38,7 +38,7 @@ class CobolProcessorBuilderSuite extends AnyWordSpec {
       val builder = CobolProcessor.builder(copybook)
 
       val processor = new RawRecordProcessor {
-        override def processRecord(copybook: Copybook, options: Map[String, String], record: Array[Byte], offset: Long): Array[Byte] = {
+        override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
           record.map(v => (v - 1).toByte)
         }
       }
