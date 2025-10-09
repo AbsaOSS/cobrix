@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package za.co.absa.cobrix.spark.cobol.builder
+package za.co.absa.cobrix.spark.cobol
 
 import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.processor.{CobolProcessor, RawRecordProcessor}
+import za.co.absa.cobrix.cobol.processor.{CobolProcessor, SerializableRawRecordProcessor}
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 
@@ -47,7 +47,7 @@ object SparkCobolProcessor {
   class SparkCobolProcessorBuilder(implicit spark: SparkSession) {
     private val caseInsensitiveOptions = new mutable.HashMap[String, String]()
     private var copybookContentsOpt: Option[String] = None
-    private var rawRecordProcessorOpt: Option[RawRecordProcessor] = None
+    private var rawRecordProcessorOpt: Option[SerializableRawRecordProcessor] = None
     private var numberOfThreads: Int = 1
 
     def build(): SparkCobolProcessor = {
@@ -82,7 +82,7 @@ object SparkCobolProcessor {
       this
     }
 
-    def withRecordProcessor(processor: RawRecordProcessor): SparkCobolProcessorBuilder = {
+    def withRecordProcessor(processor: SerializableRawRecordProcessor): SparkCobolProcessorBuilder = {
       rawRecordProcessorOpt = Option(processor)
       this
     }
@@ -130,7 +130,7 @@ object SparkCobolProcessor {
                                   outputPath: String,
                                   copybookContents: String,
                                   cobolProcessor: CobolProcessor,
-                                  rawRecordProcessor: RawRecordProcessor,
+                                  rawRecordProcessor: SerializableRawRecordProcessor,
                                   sconf: SerializableConfiguration,
                                   numberOfThreads: Int
                                  )(implicit spark: SparkSession): RDD[Long] = {
@@ -145,7 +145,7 @@ object SparkCobolProcessor {
                                  outputPath: String,
                                  copybookContents: String,
                                  cobolProcessor: CobolProcessor,
-                                 rawRecordProcessor: RawRecordProcessor,
+                                 rawRecordProcessor: SerializableRawRecordProcessor,
                                  sconf: SerializableConfiguration,
                                  numberOfThreads: Int
                                 ): Long = {

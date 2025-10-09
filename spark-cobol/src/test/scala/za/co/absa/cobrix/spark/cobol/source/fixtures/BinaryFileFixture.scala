@@ -113,6 +113,16 @@ trait BinaryFileFixture {
     tempFile
   }
 
+  def writeBinaryFile(filePath: String, content: Array[Byte]): Unit = {
+    val ostream = new DataOutputStream(new FileOutputStream(filePath))
+    ostream.write(content)
+    ostream.close()
+  }
+
+  def readBinaryFile(filePath: String): Array[Byte] = {
+    FileUtils.readFileToByteArray(new File(filePath))
+  }
+
   private def hex2bytes(hex: String): Array[Byte] = {
     val compactStr = hex.replaceAll("\\s", "")
     compactStr.sliding(2, 2).toArray.map(Integer.parseInt(_, 16).toByte)
