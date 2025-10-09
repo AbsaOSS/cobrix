@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.processor.impl
 
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.processor.RawRecordProcessor
+import za.co.absa.cobrix.cobol.processor.{CobolProcessorContext, RawRecordProcessor}
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
@@ -48,7 +48,9 @@ object StreamProcessor {
       val record = recordExtractor.next()
       val recordSize = record.length
 
-      val updatedRecord = recordProcessor.processRecord(copybook, options, record, recordExtractor.offset)
+      val ctx = CobolProcessorContext(copybook, options, recordExtractor.offset)
+
+      val updatedRecord = recordProcessor.processRecord(record, ctx)
 
       val headerSize = recordExtractor.offset - recordSize - inputStream.offset
       if (headerSize > 0) {
