@@ -233,9 +233,11 @@ object SparkCobolProcessor {
 
     val seq = Future.sequence(futures)
 
-    val recordCuntProcessed = Await.result(seq, Duration.Inf).sum
-
-    threadPool.shutdown()
+    val recordCuntProcessed = try {
+      Await.result(seq, Duration.Inf).sum
+    } finally {
+      threadPool.shutdown()
+    }
 
     recordCuntProcessed
   }

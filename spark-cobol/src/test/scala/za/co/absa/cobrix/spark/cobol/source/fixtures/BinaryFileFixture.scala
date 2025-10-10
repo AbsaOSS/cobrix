@@ -21,7 +21,7 @@ import org.apache.commons.io.FileUtils
 import java.io.File.createTempFile
 import java.io.{DataOutputStream, File, FileOutputStream}
 import java.nio.charset.Charset
-import java.nio.file.Files
+import java.nio.file.{Files, Paths}
 
 /**
   * This fixture adds ability for a unit test to create temporary files for using them in the tests.
@@ -114,9 +114,7 @@ trait BinaryFileFixture {
   }
 
   def writeBinaryFile(filePath: String, content: Array[Byte]): Unit = {
-    val ostream = new DataOutputStream(new FileOutputStream(filePath))
-    ostream.write(content)
-    ostream.close()
+    Files.write(Paths.get(filePath), content)
   }
 
   def readBinaryFile(filePath: String): Array[Byte] = {
