@@ -1668,15 +1668,17 @@ The EBCDIC processor allows processing files by replacing value of fields withou
 
 The processing does not require Spark. A processing application can have only the COBOL parser as a dependency (`cobol-parser`).
 
-Here is an example usage:
+Here is an example usage (using streams of bytes):
 ```scala
 val is = new FSStream(inputFile)
 val os = new FileOutputStream(outputFile)
-val copybookContents = "...some copybook..."
 val builder = CobolProcessor.builder(copybookContents)
 
+val builder = CobolProcessor.builder
+  .withCopybookContents("...some copybook...")
+
 val processor = new RawRecordProcessor {
-  override def processRecord(copybook: Copybook, options: Map[String, String], record: Array[Byte], offset: Long): Array[Byte] = {
+  override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
     // The transformation logic goes here
     val value = copybook.getFieldValueByName("some_field", record, 0)
     // Change the field v
@@ -1688,9 +1690,52 @@ val processor = new RawRecordProcessor {
   }
 }
 
-builder.build().process(is, os)(processor)
+val count = builder.build().process(is, os)(processor)
 ```
 
+Here is an example usage (using paths):
+```scala
+val count = CobolProcessor.builder
+  .withCopybookContents(copybook)
+  .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
+    // The transformation logic goes here
+    val value = copybook.getFieldValueByName("some_field", record, 0)
+    // Change the field v
+    // val newValue = ...
+    // Write the changed value back
+    copybook.setFieldValueByName("some_field", record, newValue, 0)
+    // Return the changed record     
+    record
+  }
+  .load(inputFile)
+  .save(outputFile)
+```
+
+
+## EBCDIC Spark Processor (experimental)
+This allows in-place processing of data retaining original format in parallel uring RDDs under the hood.
+
+Here is an example usage:
+```scala
+import za.co.absa.cobrix.spark.cobol.SparkCobolProcessor
+
+val copybookContents = "...some copybook..."
+
+SparkCobolProcessor.builder
+  .withCopybookContents(copybook)
+  .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
+    // The transformation logic goes here
+    val value = ctx.copybook.getFieldValueByName("some_field", record, 0)
+    // Change the field v
+    // val newValue = ...
+    // Write the changed value back
+    ctx.copybook.setFieldValueByName("some_field", record, newValue, 0)
+    // Return the changed record     
+    record
+  }
+  .load(inputPath)
+  .save(outputPath)
+```
 
 ## EBCDIC Writer (experimental)
 
