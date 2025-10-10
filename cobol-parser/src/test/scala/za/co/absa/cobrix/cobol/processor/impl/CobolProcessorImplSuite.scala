@@ -32,7 +32,9 @@ class CobolProcessorImplSuite extends AnyWordSpec {
   "getRecordExtractor" should {
     "work for an fixed-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder(copybook).build().asInstanceOf[CobolProcessorImpl]
+      val processor = CobolProcessor.builder
+        .withCopybookContents(copybook)
+        .build().asInstanceOf[CobolProcessorImpl]
 
       val ext = processor.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), stream)
 
@@ -46,7 +48,9 @@ class CobolProcessorImplSuite extends AnyWordSpec {
 
     "work for an variable-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder(copybook).build().asInstanceOf[CobolProcessorImpl]
+      val processor = CobolProcessor.builder
+        .withCopybookContents(copybook)
+        .build().asInstanceOf[CobolProcessorImpl]
 
       val ext = processor.getRecordExtractor(ReaderParameters(
         recordFormat = RecordFormat.VariableLength,
@@ -58,7 +62,9 @@ class CobolProcessorImplSuite extends AnyWordSpec {
 
     "throw an exception on a non-supported record format for processing" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder(copybook).build().asInstanceOf[CobolProcessorImpl]
+      val processor = CobolProcessor.builder
+        .withCopybookContents(copybook)
+        .build().asInstanceOf[CobolProcessorImpl]
 
       val ex = intercept[IllegalArgumentException] {
         processor.getRecordExtractor(ReaderParameters(

@@ -128,7 +128,8 @@ object SparkCobolProcessor {
                                   options: Map[String, String])
                                  (implicit spark: SparkSession) {
     def save(outputPath: String): Long = {
-      val cobolProcessor = CobolProcessor.builder(copybookContents)
+      val cobolProcessor = CobolProcessor.builder
+        .withCopybookContents(copybookContents)
         .options(options)
         .build()
 
@@ -141,6 +142,7 @@ object SparkCobolProcessor {
         }
       }
 
+      log.info(s"Writing to $outputPath...")
       processor.process(filesToRead, outputPath)
     }
   }

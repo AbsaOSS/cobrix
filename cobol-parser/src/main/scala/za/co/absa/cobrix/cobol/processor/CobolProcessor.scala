@@ -16,12 +16,13 @@
 
 package za.co.absa.cobrix.cobol.processor
 
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorImpl
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
 
-import java.io.OutputStream
+import java.io.{BufferedInputStream, BufferedOutputStream, FileOutputStream, OutputStream}
 import scala.collection.mutable
 
 
@@ -45,14 +46,58 @@ trait CobolProcessor {
 }
 
 object CobolProcessor {
-  class CobolProcessorBuilder(copybookContents: String) {
+  class CobolProcessorBuilder {
     private val caseInsensitiveOptions = new mutable.HashMap[String, String]()
+    private var copybookContentsOpt: Option[String] = None
+    private var rawRecordProcessorOpt: Option[RawRecordProcessor] = None
 
     def build(): CobolProcessor = {
+      if (copybookContentsOpt.isEmpty) {
+        throw new IllegalArgumentException("Copybook contents must be provided.")
+      }
+
       val readerParameters = getReaderParameters
       val cobolSchema = getCobolSchema(readerParameters)
 
-      new CobolProcessorImpl(readerParameters, cobolSchema.copybook, copybookContents, caseInsensitiveOptions.toMap)
+      new CobolProcessorImpl(readerParameters, cobolSchema.copybook, copybookContentsOpt.get, caseInsensitiveOptions.toMap)
+    }
+
+    def load(path: String): CobolProcessorLoader = {
+      val file = new java.io.File(path)
+      if (!file.exists) {
+        throw new IllegalArgumentException(s"Path $path does not exist.")
+      }
+
+      if (file.isDirectory) {
+        throw new IllegalArgumentException(s"Path $path should be a file, not a directory.")
+      }
+
+      if (copybookContentsOpt.isEmpty) {
+        throw new IllegalArgumentException("Copybook contents must be provided.")
+      }
+
+      if (rawRecordProcessorOpt.isEmpty) {
+        throw new IllegalArgumentException("A RawRecordProcessor must be provided.")
+      }
+
+      if (rawRecordProcessorOpt.isEmpty) {
+        throw new IllegalArgumentException("A RawRecordProcessor must be provided.")
+      }
+
+      val readerParameters = getReaderParameters
+      val cobolSchema = getCobolSchema(readerParameters)
+
+      new CobolProcessorLoader(path, copybookContentsOpt.get, cobolSchema.copybook, rawRecordProcessorOpt.get, readerParameters, caseInsensitiveOptions.toMap)
+    }
+
+    def withCopybookContents(copybookContents: String): CobolProcessorBuilder = {
+      copybookContentsOpt = Option(copybookContents)
+      this
+    }
+
+    def withRecordProcessor(processor: RawRecordProcessor): CobolProcessorBuilder = {
+      rawRecordProcessorOpt = Option(processor)
+      this
     }
 
     /**
@@ -80,7 +125,7 @@ object CobolProcessor {
     }
 
     private[processor] def getCobolSchema(readerParameters: ReaderParameters): CobolSchema = {
-      CobolSchema.fromReaderParameters(Seq(copybookContents), readerParameters)
+      CobolSchema.fromReaderParameters(Seq(copybookContentsOpt.get), readerParameters)
     }
 
     private[processor] def getReaderParameters: ReaderParameters = {
@@ -92,7 +137,57 @@ object CobolProcessor {
     private[processor] def getOptions: Map[String, String] = caseInsensitiveOptions.toMap
   }
 
-  def builder(copybookContent: String): CobolProcessorBuilder = {
-    new CobolProcessorBuilder(copybookContent)
+  class CobolProcessorLoader(fileToProcess: String,
+                             copybookContents: String,
+                             copybook: Copybook,
+                             rawRecordProcessor: RawRecordProcessor,
+                             readerParameters: ReaderParameters,
+                             options: Map[String, String]) {
+    def save(outputFile: String): Long = {
+      val processor = new CobolProcessorImpl(readerParameters, copybook, copybookContents, options)
+
+      val ifs = new FSStream(fileToProcess)
+      val ofs = new BufferedOutputStream(new FileOutputStream(outputFile))
+
+      var originalException: Throwable = null
+
+      val recordCount = try {
+        processor.process(ifs, ofs)(rawRecordProcessor)
+      } catch {
+        case ex: Throwable =>
+          originalException = ex
+          0L
+      } finally {
+        try {
+          ifs.close()
+        } catch {
+          case e: Throwable =>
+            if (originalException != null) {
+              originalException.addSuppressed(e)
+            } else {
+              originalException = e
+            }
+        }
+
+        try {
+          ofs.close()
+        } catch {
+          case e: Throwable =>
+            if (originalException != null) {
+              originalException.addSuppressed(e)
+            } else {
+              originalException = e
+            }
+        }
+      }
+
+      if (originalException != null) throw originalException
+
+      recordCount
+    }
+  }
+
+  def builder: CobolProcessorBuilder = {
+    new CobolProcessorBuilder
   }
 }

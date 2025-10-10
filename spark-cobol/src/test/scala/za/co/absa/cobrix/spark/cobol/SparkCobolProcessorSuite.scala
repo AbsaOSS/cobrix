@@ -87,9 +87,11 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
         SparkCobolProcessor.builder
           .withCopybookContents(copybook)
-          .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
-            record.map(v => (v - 1).toByte)
-          }
+          .withRecordProcessor (new SerializableRawRecordProcessor {
+            override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
+              record.map(v => (v - 1).toByte)
+            }
+          })
           .load(inputPath)
           .save(outputPath)
 
