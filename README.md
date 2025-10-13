@@ -74,13 +74,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.0</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.1</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.0</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.1</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.0</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.1</pre>
 </td>
 </tr>
 </table>
@@ -91,17 +91,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.1
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.1
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.0
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.1
 ```
 
 ## Usage
@@ -239,8 +239,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.9.0.jar
-* cobol-parser_2.12-2.9.0.jar
+* spark-cobol_2.12-2.9.1.jar
+* cobol-parser_2.12-2.9.1.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -248,9 +248,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.0
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.1
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.0.jar,cobol-parser_2.12-2.9.0.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.1.jar,cobol-parser_2.12-2.9.1.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -318,7 +318,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.9.1-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.9.2-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1670,6 +1670,8 @@ The processing does not require Spark. A processing application can have only th
 
 Here is an example usage (using streams of bytes):
 ```scala
+import za.co.absa.cobrix.cobol.processor.{CobolProcessor, CobolProcessorContext, RawRecordProcessor}
+
 val is = new FSStream(inputFile)
 val os = new FileOutputStream(outputFile)
 val builder = CobolProcessor.builder(copybookContents)
@@ -1695,6 +1697,8 @@ val count = builder.build().process(is, os)(processor)
 
 Here is an example usage (using paths):
 ```scala
+import za.co.absa.cobrix.cobol.processor.{CobolProcessor, CobolProcessorContext}
+
 val count = CobolProcessor.builder
   .withCopybookContents(copybook)
   .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
@@ -1717,6 +1721,7 @@ This allows in-place processing of data retaining original format in parallel ur
 
 Here is an example usage:
 ```scala
+import za.co.absa.cobrix.cobol.processor.{CobolProcessorContext, SerializableRawRecordProcessor}
 import za.co.absa.cobrix.spark.cobol.SparkCobolProcessor
 
 val copybookContents = "...some copybook..."
@@ -1906,6 +1911,29 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.9.1 released 10 October 2025.
+   - [#786](https://github.com/AbsaOSS/cobrix/issues/786) Make Cobol processor return the number of records processed.
+   - [#788](https://github.com/AbsaOSS/cobrix/issues/788) Add mainframe file processor that runs in Spark via RDDs.
+     ```scala
+     import za.co.absa.cobrix.cobol.processor.{CobolProcessorContext, SerializableRawRecordProcessor}
+     import za.co.absa.cobrix.spark.cobol.SparkCobolProcessor
+
+     SparkCobolProcessor.builder
+       .withCopybookContents("...some copybook...")
+       .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
+         // The transformation logic goes here
+         val value = ctx.copybook.getFieldValueByName("some_field", record, 0)
+         // Change the field v
+         // val newValue = ...
+         // Write the changed value back
+         ctx.copybook.setFieldValueByName("some_field", record, newValue, 0)
+         // Return the changed record     
+         record
+       }
+      .load(inputPath)
+      .save(outputPath)
+     ```
+ 
 - #### 2.9.0 released 10 September 2025.
    - [#415](https://github.com/AbsaOSS/cobrix/issues/415) Added the basic experimental version of EBCDIC writer.
      ```scala
