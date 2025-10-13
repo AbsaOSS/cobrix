@@ -18,6 +18,8 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
 import za.co.absa.cobrix.cobol.internal.Logging
 
+import java.util
+
 /**
   * A trait for generalizing EBCDIC to ASCII conversion tables for different EBCDIC code pages.
   */
@@ -31,6 +33,23 @@ abstract class CodePage extends Serializable {
     * Converts an array of bytes to string according to the rules of the code page.
     */
   def convert(bytes: Array[Byte]): String
+
+  /**
+   * An encoder from a ASCII basic string to an EBCDIC byte array
+   * Users of this method should check whether the CodePage supports the encoding before calling it
+   *
+   * @param string          An input string
+   * @param length          The length of the output (in bytes)
+   * @return A string representation of the binary data
+   */
+  def convert(string: String, length: Int): Array[Byte]
+
+  /**
+   * Returns whether the CodePage is able to encode strings to ebcdic
+   *
+   * @return
+   */
+  def supportsEncoding: Boolean
 }
 
 object CodePage extends Logging {

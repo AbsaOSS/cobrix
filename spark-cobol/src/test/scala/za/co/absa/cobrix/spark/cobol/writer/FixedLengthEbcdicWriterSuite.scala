@@ -47,6 +47,7 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           .format("cobol")
           .mode(SaveMode.Overwrite)
           .option("copybook_contents", copybookContents)
+          //.option("ebcdic_code_page", "cp1144")
           .save(path.toString)
 
         val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
