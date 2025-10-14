@@ -64,11 +64,11 @@ You can link against this library in your program at the following coordinates:
 <tr><th>Scala 2.11</th><th>Scala 2.12</th><th>Scala 2.13</th></tr>
 <tr>
 <td align="center">
-<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.11?label=spark-cobol_2.11"></a></td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.11?label=spark-cobol_2.11"></a></td>
 <td align="center">
-<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.12?label=spark-cobol_2.12"></a></td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.12?label=spark-cobol_2.12"></a></td>
 <td align="center">
-<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.13?label=spark-cobol_2.13"></a></td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.13?label=spark-cobol_2.13"></a></td>
 </tr>
 <tr>
 <td>
