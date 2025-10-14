@@ -3,7 +3,8 @@
 [![License: Apache v2](https://img.shields.io/badge/license-Apache%202-blue)](https://directory.fsf.org/wiki/License:Apache-2.0)
 [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix.svg?type=shield)](https://app.fossa.com/projects/custom%2B24661%2Fgithub.com%2FAbsaOSS%2Fcobrix)
 [![Build](https://github.com/AbsaOSS/cobrix/workflows/Build/badge.svg)](https://github.com/AbsaOSS/cobrix/actions)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13)
+[![Maven Central](https://img.shields.io/maven-central/v/za.co.absa.cobrix/cobol-parser_2.12?label=cobol-parser)](https://mvnrepository.com/artifact/za.co.absa.cobrix/cobol-parser)
+[![Maven Central](https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.12?label=spark-cobol)](https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)
 
 Pain free Spark/Cobol files integration.
 
@@ -63,14 +64,11 @@ You can link against this library in your program at the following coordinates:
 <tr><th>Scala 2.11</th><th>Scala 2.12</th><th>Scala 2.13</th></tr>
 <tr>
 <td align="center">
-<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.11/badge.svg" alt="Maven Central"></a><br>
-</td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.11?label=spark-cobol_2.11"></a></td>
 <td align="center">
-<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.12/badge.svg" alt="Maven Central"></a><br>
-</td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.12?label=spark-cobol_2.12"></a></td>
 <td align="center">
-<a href = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13"><img src = "https://maven-badges.herokuapp.com/maven-central/za.co.absa.cobrix/spark-cobol_2.13/badge.svg" alt="Maven Central"></a><br>
-</td>
+<a href = "https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)"><img src="https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.13?label=spark-cobol_2.13"></a></td>
 </tr>
 <tr>
 <td>
@@ -1947,6 +1945,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
    - [#769](https://github.com/AbsaOSS/cobrix/issues/769) Added EBCDIC processor as a library routine.
      This allows processing EBCDIC files without Spark, replacing chosen fields without changing the file format.
+     More at https://github.com/AbsaOSS/cobrix/tree/master?tab=readme-ov-file#ebcdic-processor-experimental
    - [#780](https://github.com/AbsaOSS/cobrix/issues/780) Added `spark-cobol` options to the raw record extractor interface.
 
 - #### 2.8.4 released 5 June 2025.
