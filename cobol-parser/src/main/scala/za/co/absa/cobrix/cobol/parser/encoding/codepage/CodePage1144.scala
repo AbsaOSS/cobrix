@@ -57,24 +57,7 @@ object CodePage1144 {
   }
 
   /**
-   * To generate conversion mapping use this script
-   * from ebcdic import codecs
-   *
-   * conversion = list(range(256))
-   *
-   * for i in range(256):
-   * data = bytes([i])
-   * decoded = codecs.decode(data, "cp1144")
-   * # print(repr(decoded))
-   * try:
-   * encoded = codecs.encode(decoded, "UTF-32-le")
-   * conversion[i] = int.from_bytes(encoded, byteorder="little")
-   * except UnicodeEncodeError:
-   * print(f"Cannot convert char at index {i}")
-   * conversion[i] = 0x40
-   *
-   * for ebcdic, utf in list(enumerate(conversion)):
-   * print(f"case {utf} => 0x{ebcdic:02x}.toByte")
+   * To generate conversion mapping use the python script shared in the PR.
    */
   val asciiToEbcdicMapping: Int => Byte = {
     case 0 => 0x00.toByte
