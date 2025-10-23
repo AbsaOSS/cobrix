@@ -47,7 +47,6 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           .format("cobol")
           .mode(SaveMode.Overwrite)
           .option("copybook_contents", copybookContents)
-          //.option("ebcdic_code_page", "cp1144")
           .save(path.toString)
 
         val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
@@ -78,6 +77,52 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         }
       }
     }
+
+
+    "write simple fixed-record-length EBCDIC data files using code page 1144" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val df = List(("A", "F|rst"), ("B", "S€nd"), ("C", "Last]")).toDF("A", "B")
+
+        val path = new Path(tempDir, "writer1")
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookContents)
+          .option("ebcdic_code_page", "cp1144")
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array[Byte](
+          0xC1.toByte, 0xC6.toByte, 0xBB.toByte, 0x99.toByte, 0xa2.toByte, 0xa3.toByte, // A,F|rst
+          0xC2.toByte, 0xE2.toByte, 0x9F.toByte, 0x95.toByte, 0x84.toByte, 0x40.toByte, // B,S€nd_
+          0xC3.toByte, 0xD3.toByte, 0x81.toByte, 0xa2.toByte, 0xa3.toByte, 0x51.toByte  // C,Last]
+        )
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("%02X" format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC1144 encoding")
+        }
+      }
+    }
+
 
     "write data frames with different field order and null values" in {
       withTempDirectory("cobol_writer1") { tempDir =>
