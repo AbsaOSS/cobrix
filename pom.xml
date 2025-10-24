@@ -114,7 +114,7 @@
         <mockito.version>4.11.0</mockito.version>
         <scala_logging.version>3.7.2</scala_logging.version>
         <scodec_core.version>1.11.10</scodec_core.version>
-        <slf4j.version>2.0.6</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
     </properties>
 
     <dependencies>
