@@ -65,9 +65,9 @@ object EncoderSelector {
                                fieldLength: Int
                               ): Option[Encoder] = {
     encoding match {
-      case EBCDIC =>
+      case EBCDIC if ebcdicCodePage.supportsEncoding =>
         val encoder = (a: Any) => {
-          encodeEbcdicString(a.toString, CodePageCommon.asciiToEbcdicMapping, fieldLength)
+          ebcdicCodePage.convert(a.toString, fieldLength)
         }
         Option(encoder)
       case ASCII =>
@@ -75,31 +75,6 @@ object EncoderSelector {
       case _ =>
         None
     }
-  }
-
-  /**
-    * An encoder from a ASCII basic string to an EBCDIC byte array
-    *
-    * @param string          An input string
-    * @param conversionTable A conversion table to use to convert from ASCII to EBCDIC
-    * @param length          The length of the output (in bytes)
-    * @return A string representation of the binary data
-    */
-  def encodeEbcdicString(string: String, conversionTable: Array[Byte], length: Int): Array[Byte] = {
-    require(length >= 0, s"Field length cannot be negative, got $length")
-
-    var i = 0
-    val buf = new Array[Byte](length)
-
-    // PIC X fields are space-filled on mainframe. Use EBCDIC space 0x40.
-    util.Arrays.fill(buf, 0x40.toByte)
-
-    while (i < string.length && i < length) {
-      val asciiByte = string(i).toByte
-      buf(i) = conversionTable((asciiByte + 256) % 256)
-      i = i + 1
-    }
-    buf
   }
 
   def getBinaryEncoder(compression: Option[Usage],

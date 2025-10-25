@@ -16,10 +16,13 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
+import java.util
+
 /**
   * The base class for all single-byte EBCDIC decoders.
   */
-abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char]) extends CodePage {
+abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcdicMapping: Option[Int => Byte]=None)
+  extends CodePage {
   private val ConversionTableElements = 256
   private val conversionTable = ebcdicToAsciiMapping
 
@@ -40,4 +43,32 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char]) extends Cod
     }
     buf.toString
   }
+
+  /**
+   * An encoder from a ASCII basic string to an EBCDIC byte array
+   *
+   * @param string          An input string
+   * @param length          The length of the output (in bytes)
+   * @return A string representation of the binary data
+   */
+  def convert(string: String, length: Int): Array[Byte] = {
+    require(length >= 0, s"Field length cannot be negative, got $length")
+    require(asciiToEbcdicMapping.isDefined, s"Cannot encode strings for Code Page without ASCII to EBCDIC " +
+      s"mapping ${this.getClass.getSimpleName}")
+
+    var i = 0
+    val buf = new Array[Byte](length)
+
+    // PIC X fields are space-filled on mainframe. Use EBCDIC space 0x40.
+    util.Arrays.fill(buf, 0x40.toByte)
+
+    while (i < string.length && i < length) {
+      val unicodeCodePoint: Int = string.codePointAt(i)
+      buf(i) = asciiToEbcdicMapping.get(unicodeCodePoint)
+      i = i + 1
+    }
+    buf
+  }
+
+  override def supportsEncoding: Boolean = asciiToEbcdicMapping.isDefined
 }

@@ -90,6 +90,12 @@ abstract class TwoByteCodePage(ebcdicToAsciiMapping: Array[Char]) extends CodePa
     }
     buf.toString
   }
+
+  override def convert(string: String, length: Int): Array[Byte] = throw new IllegalStateException(s"Cannot encode " +
+    s"strings for Code Page without ASCII to EBCDIC mapping ${this.getClass.getSimpleName}, did you forget to call" +
+    s"supportsEncoding?")
+
+  override def supportsEncoding: Boolean = false
 }
 
 object TwoByteCodePage {
