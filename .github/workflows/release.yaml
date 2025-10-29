@@ -24,84 +24,21 @@ defaults:
     shell: bash
 
 jobs:
-  release-sbt:
-    runs-on: ubuntu-latest
-    name: Release Scala artifacts
+  publish:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          ref: ${{ github.head_ref || github.ref_name }}
-
-      - name: Prepare the release branch
-        run: |
-          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
-          git config --global user.email "absa_ci_cd_bot@absa.africa"
-          git config --global user.name "CI/CD bot"
-          git checkout -b release/$VERSION
-          git push --set-upstream origin release/$VERSION
-
-      - name: Setup JDK and sbt
-        uses: actions/setup-java@v4.2.2
+          fetch-depth: 0
+      - uses: actions/setup-java@v4.2.1
         with:
           distribution: temurin
           java-version: 8
           cache: sbt
-
-      - name: Install sbt
-        run: |
-          sudo apt-get update
-          sudo apt-get install apt-transport-https curl gnupg -yqq
-          echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" | sudo tee /etc/apt/sources.list.d/sbt.list
-          echo "deb https://repo.scala-sbt.org/scalasbt/debian /" | sudo tee /etc/apt/sources.list.d/sbt_old.list
-          curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" | sudo -H gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
-          sudo chmod 644 /etc/apt/trusted.gpg.d/scalasbt-release.gpg
-          sudo apt-get update
-          sudo apt-get install sbt
-
-      - name: Import GPG Key
-        run: |
-          echo "${{ secrets.ABSA_OSS_CI_CD_BOT_GPG_KEY }}" > gpg-secret-key.asc
-          gpg --import --batch gpg-secret-key.asc && rm -rf gpg-secret-key.asc
-          mkdir -p ~/.gnupg
-
-      - name: Setup SonaType config
-        run: |
-          mkdir -p ~/.sbt/1.0
-          echo "${{ secrets.SONATYPE_CONFIG }}" | base64 --decode > ~/.sbt/1.0/sonatype.sbt
-
-      - name: Checkout the release branch
-        run: |
-          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
-          git fetch origin release/$VERSION 
-          git checkout release/$VERSION
-
-      - name: Run the release plugin
-        run: sbt releaseNow
-
-  create-pr:
-    needs: [ "release-sbt" ]
-    runs-on: ubuntu-latest
-    name: Create Pull Request
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref || github.ref_name }}
-
-      - name: Checkout the release branch
-        id: release_branch3
-        run: |
-          VERSION=$(grep "ThisBuild / version" version.sbt | cut -d\" -f2 | sed 's/-SNAPSHOT//')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-          git config --global user.email "absa_ci_cd_bot@absa.africa"
-          git config --global user.name "CI/CD bot"
-          git fetch origin release/$VERSION
-          git checkout release/$VERSION
-
-      - name: Create Pull Request
-        run: gh pr create -B master -H "release/$VERSION" --title "Release Cobrix v$VERSION" --body 'Created by Github action'
+      - name: Build and release to Sonatype and Maven Central
+        run: sbt ci-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.release_branch3.outputs.VERSION }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
