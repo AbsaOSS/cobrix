@@ -19,9 +19,9 @@ ThisBuild / name         := "spark-cobol-app"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.12.20"
 
-val sparkVersion = "3.5.5"
+val sparkVersion = "3.5.7"
 val sparkCobolVersion = "2.9.2"
-val scalatestVersion = "3.2.14"
+val scalatestVersion = "3.2.19"
 
 ThisBuild / libraryDependencies ++= Seq(
   "za.co.absa.cobrix" %% "spark-cobol"     % sparkCobolVersion,
