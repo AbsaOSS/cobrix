@@ -21,7 +21,7 @@ import java.util
 /**
   * The base class for all single-byte EBCDIC decoders.
   */
-abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcdicMapping: Option[Int => Byte]=None)
+abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char])
   extends CodePage {
   private val ConversionTableElements = 256
   private val conversionTable = ebcdicToAsciiMapping
@@ -34,7 +34,7 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcd
   /**
     * Decodes bytes encoded as single byte EBCDIC code page to string.
     */
-  final def convert(bytes: Array[Byte]): String = {
+  final override def convert(bytes: Array[Byte]): String = {
     var i = 0
     val buf = new StringBuffer(bytes.length)
     while (i < bytes.length) {
@@ -51,10 +51,8 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcd
    * @param length          The length of the output (in bytes)
    * @return A string representation of the binary data
    */
-  def convert(string: String, length: Int): Array[Byte] = {
+  final override def convert(string: String, length: Int): Array[Byte] = {
     require(length >= 0, s"Field length cannot be negative, got $length")
-    require(asciiToEbcdicMapping.isDefined, s"Cannot encode strings for Code Page without ASCII to EBCDIC " +
-      s"mapping ${this.getClass.getSimpleName}")
 
     var i = 0
     val buf = new Array[Byte](length)
@@ -63,12 +61,22 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcd
     util.Arrays.fill(buf, 0x40.toByte)
 
     while (i < string.length && i < length) {
-      val unicodeCodePoint: Int = string.codePointAt(i)
-      buf(i) = asciiToEbcdicMapping.get(unicodeCodePoint)
+      buf(i) = reverseEbcdicToAsciiMapping.getOrElse(string.charAt(i), 0x40.toByte)
       i = i + 1
     }
     buf
   }
 
-  override def supportsEncoding: Boolean = asciiToEbcdicMapping.isDefined
+  override def supportsEncoding: Boolean = true
+
+  lazy val reverseEbcdicToAsciiMapping: Map[Char, Byte] = {
+    val map = scala.collection.mutable.Map[Char, Byte]()
+    for (i <- ebcdicToAsciiMapping.indices) {
+      val asciiChar = ebcdicToAsciiMapping(i)
+      if (!map.contains(asciiChar)) {
+        map(asciiChar) = i.toByte
+      }
+    }
+    map.toMap
+  }
 }
