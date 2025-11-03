@@ -21,7 +21,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   *
   * It is an "invariant" subset of EBCDIC. Each converted symbol should be present in all EBCDIC pages.
   */
-class CodePageCommon extends SingleByteCodePage(CodePageCommon.ebcdicToAsciiMapping, Some(CodePageCommon.asciiToEbcdicMapping)) {
+class CodePageCommon extends SingleByteCodePage(CodePageCommon.ebcdicToAsciiMapping) {
   override def codePageShortName: String = "common"
 }
 
