@@ -53,10 +53,10 @@ class BinaryPropertiesAdder extends AstTransformer {
           redefinedNames.clear()
         case Some(redefines) =>
           if (i == 0) {
-            throw new SyntaxErrorException(child.lineNumber, child.name, s"The first field of a group cannot use REDEFINES keyword.")
+            throw new SyntaxErrorException(child.lineNumber, None, Option(child.name), s"The first field of a group cannot use REDEFINES keyword.")
           }
           if (!redefinedNames.contains(redefines.toUpperCase)) {
-            throw new SyntaxErrorException(child.lineNumber, child.name, s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
+            throw new SyntaxErrorException(child.lineNumber, None, Option(child.name), s"The field ${child.name} redefines $redefines, which is not part if the redefined fields block.")
           }
           newChildren(i - 1) = newChildren(i - 1).withUpdatedIsRedefined(newIsRedefined = true)
       }

@@ -41,6 +41,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 5)
+    assert(syntaxErrorException.posOpt.isEmpty)
+    assert(syntaxErrorException.fieldOpt.contains("GRP_FIELD"))
     assert(syntaxErrorException.msg.contains("The field is a leaf element"))
   }
 
@@ -57,6 +59,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     }
 
     assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.posOpt.isEmpty)
+    assert(syntaxErrorException.fieldOpt.contains("SUB_FLD2"))
     assert(syntaxErrorException.msg.contains("The field SUB_FLD2 redefines SUB_FLD1, which is not part if the redefined fields block"))
   }
 
@@ -70,6 +74,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(36))
+    assert(syntaxErrorException.fieldOpt.contains("FIELD"))
     assert(syntaxErrorException.msg.contains("Decimal numbers with precision bigger"))
   }
 
@@ -83,6 +89,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(36))
+    assert(syntaxErrorException.fieldOpt.contains("FIELD"))
     assert(syntaxErrorException.msg.contains("Decimal numbers with scale bigger"))
   }
 
@@ -95,7 +103,10 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     val syntaxErrorException = intercept[SyntaxErrorException] {
       CopybookParser.parseTree(copyBookContents)
     }
+
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(8))
+    assert(syntaxErrorException.fieldOpt.isEmpty)
     assert(syntaxErrorException.msg.contains("Invalid input '/' at position 2:8"))
   }
 
@@ -110,6 +121,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.isEmpty)
+    assert(syntaxErrorException.fieldOpt.contains("FIELD"))
     assert(syntaxErrorException.msg.contains("SIGN SEPARATE clause is not supported for COMP-3"))
   }
 
@@ -123,6 +136,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(38))
+    assert(syntaxErrorException.fieldOpt.contains("FIELD"))
     assert(syntaxErrorException.msg.contains("Explicit decimal point in 'PIC 9(8).9(9)' is not supported for COMP-3."))
   }
 
@@ -148,6 +163,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(32))
+    assert(syntaxErrorException.fieldOpt.isEmpty)
     assert(syntaxErrorException.msg.contains("Invalid input"))
     assert(syntaxErrorException.msg.contains("at position 2:32"))
   }
@@ -162,6 +179,8 @@ class SyntaxErrorsSpec extends AnyFunSuite {
       CopybookParser.parseTree(copyBookContents)
     }
     assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(29))
+    assert(syntaxErrorException.fieldOpt.isEmpty)
     assert(syntaxErrorException.msg.contains("Invalid input '(' at position 2:29"))
   }
 
