@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.ASCII
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
-import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, StringTrimmingPolicy}
 
 class PicValidationSpec extends AnyFunSuite {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -35,6 +35,7 @@ class PicValidationSpec extends AnyFunSuite {
 
     val visitor = new ParserVisitor(ASCII,
       StringTrimmingPolicy.TrimNone,
+      CommentPolicy(),
       isDisplayAlwaysString = false,
       CodePage.getCodePageByName("common"),
       StandardCharsets.UTF_8,
@@ -55,7 +56,7 @@ class PicValidationSpec extends AnyFunSuite {
     val parser = new copybookParser(tokens)
     parser.removeErrorListeners()
     parser.addErrorListener(new LogErrorListener(logger))
-    parser.setErrorHandler(new ThrowErrorStrategy())
+    parser.setErrorHandler(new ThrowErrorStrategy(6))
     visitor.visit(parser.main())
   }
 

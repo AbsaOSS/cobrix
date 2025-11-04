@@ -29,13 +29,14 @@ import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmi
 import java.nio.charset.Charset
 
 
-class ThrowErrorStrategy() extends DefaultErrorStrategy {
+class ThrowErrorStrategy(posAdjustment: Int) extends DefaultErrorStrategy {
   override def recover(recognizer: Parser, e: RecognitionException): Unit = {
     throw new SyntaxErrorException(
       e.getOffendingToken.getLine,
-      "",
+      Option(e.getOffendingToken.getCharPositionInLine + posAdjustment),
+      None,
       "Invalid input " + getTokenErrorDisplay(e.getOffendingToken) + " at position " + e.getOffendingToken.getLine
-      + ":" + (e.getOffendingToken.getCharPositionInLine + 6)
+      + ":" + (e.getOffendingToken.getCharPositionInLine + posAdjustment)
     )
   }
 
@@ -65,8 +66,9 @@ object ANTLRParser extends Logging {
             isUtf16BigEndian: Boolean,
             floatingPointFormat: FloatingPointFormat,
             fieldCodePageMap: Map[String, String]): CopybookAST = {
-    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, isDisplayAlwaysString, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, fieldCodePageMap)
+    val visitor = new ParserVisitor(enc, stringTrimmingPolicy, commentPolicy, isDisplayAlwaysString, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, fieldCodePageMap)
 
+    val adjPos = if (commentPolicy.truncateComments) commentPolicy.commentsUpToChar else 0
     val strippedContents = filterSpecialCharacters(copyBookContents).split("\\r?\\n").map(
       line =>
         truncateComments(line, commentPolicy)
@@ -81,7 +83,7 @@ object ANTLRParser extends Logging {
     val parser = new copybookParser(tokens)
     parser.removeErrorListeners()
     parser.addErrorListener(new LogErrorListener(logger))
-    parser.setErrorHandler(new ThrowErrorStrategy())
+    parser.setErrorHandler(new ThrowErrorStrategy(adjPos))
 
     visitor.visitMain(parser.main())
     visitor.ast

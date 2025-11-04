@@ -16,14 +16,25 @@
 
 package za.co.absa.cobrix.cobol.parser.exceptions
 
-class SyntaxErrorException(val lineNumber: Int, val field: String, val msg: String)
-  extends Exception(SyntaxErrorException.constructErrorMessage(lineNumber, field, msg)) {
+class SyntaxErrorException(val lineNumber: Int, val posOpt: Option[Int], val fieldOpt: Option[String], val msg: String)
+  extends Exception(SyntaxErrorException.constructErrorMessage(lineNumber, posOpt, fieldOpt, msg)) {
 }
 
 object SyntaxErrorException {
-  private def constructErrorMessage(lineNumber: Int, field: String, msg: String): String = {
-    val atLine = if (lineNumber > 0) s" at line $lineNumber"
-    val atField = if (field.nonEmpty) s", field $field" else ""
+  private def constructErrorMessage(lineNumber: Int, pos: Option[Int], fieldOpt: Option[String], msg: String): String = {
+    val atLine = if (lineNumber > 0) {
+      pos match {
+        case Some(p) => s" at line $lineNumber:$p"
+        case None => s" at line $lineNumber"
+      }
+    }
+    else
+      ""
+
+    val atField = fieldOpt match {
+      case Some(f) => s", field $f"
+      case None => ""
+    }
 
     s"Syntax error in the copybook$atLine$atField: $msg"
   }

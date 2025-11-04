@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
 
@@ -41,6 +42,7 @@ sealed trait Expr
 
 class ParserVisitor(enc: Encoding,
                     stringTrimmingPolicy: StringTrimmingPolicy,
+                    commentPolicy: CommentPolicy,
                     isDisplayAlwaysString: Boolean,
                     ebcdicCodePage: CodePage,
                     asciiCharset: Charset,
@@ -158,11 +160,11 @@ class ParserVisitor(enc: Encoding,
           pic.value match {
             case dec: Decimal =>
               if (dec.compact.isDefined && !dec.compact.contains(usageVal))
-                throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${dec.compact.get}) doesn't match group's USAGE ($usageVal).")
+                throw  new SyntaxErrorException(ctx.start.getLine, Option(ctx.start.getCharPositionInLine), None, s"Field USAGE (${dec.compact.get}) doesn't match group's USAGE ($usageVal).")
               dec.copy(compact=usage)
             case int: Integral =>
               if (int.compact.isDefined && !int.compact.contains(usageVal))
-                throw  new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
+                throw  new SyntaxErrorException(ctx.start.getLine, Option(ctx.start.getCharPositionInLine), None, s"Field USAGE (${int.compact.get}) doesn't match group's USAGE ($usageVal).")
               int.copy(compact=usage)
             case x: AlphaNumeric if usageVal == COMP3U() =>
               Integral(x.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
@@ -170,7 +172,7 @@ class ParserVisitor(enc: Encoding,
               val enc = if (decodeBinaryAsHex) HEX else RAW
               x.copy(compact=usage, enc=Some(enc))
             case x: AlphaNumeric =>
-              throw new SyntaxErrorException(ctx.start.getLine, "", s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
+              throw new SyntaxErrorException(ctx.start.getLine, Option(ctx.start.getCharPositionInLine), None, s"Field USAGE $usageVal is not supported with this PIC: ${x.pic}. The field should be numeric.")
           }
         )
     }
@@ -226,7 +228,7 @@ class ParserVisitor(enc: Encoding,
       case None => addLevel(section)
       case Some(s) if s > section => addLevel(section)
       case _ =>
-        throw new SyntaxErrorException(levels.top.el.children.last.lineNumber, levels.top.el.children.last.name,
+        throw new SyntaxErrorException(levels.top.el.children.last.lineNumber, None, Option(levels.top.el.children.last.name),
           s"The field is a leaf element and cannot contain nested fields.")
     }
 
@@ -556,35 +558,37 @@ class ParserVisitor(enc: Encoding,
   }
 
   def checkBounds(ctx: ParserRuleContext, expr: PicExpr): PicExpr = {
+    val adjustPos = if (commentPolicy.truncateComments) commentPolicy.commentsUpToChar + 1 else 1
+    val pos = Option(ctx.stop.getCharPositionInLine + adjustPos)
     expr.value match {
       case x: Decimal =>
         if (x.isSignSeparate && x.compact.isDefined)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, None, Option(getIdentifier(ctx.parent)),
             s"SIGN SEPARATE clause is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
         if(x.scale > Constants.maxDecimalScale)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"Decimal numbers with scale bigger than ${Constants.maxDecimalScale} are not supported.")
         if(x.precision > Constants.maxDecimalPrecision)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"Decimal numbers with precision bigger than ${Constants.maxDecimalPrecision} are not supported.")
         if (x.compact.isDefined && x.explicitDecimal)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"Explicit decimal point in 'PIC ${expr.value.originalPic.get}' is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
       case x: Integral =>
         if (x.isSignSeparate && x.compact.isDefined) {
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, None, Option(getIdentifier(ctx.parent)),
             s"SIGN SEPARATE clause is not supported for ${x.compact.get}. It is only supported for DISPLAY formatted fields.")
         }
         if (x.precision > Constants.maxBinIntPrecision && x.compact.contains(COMP4())) {
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"BINARY-encoded integers with precision bigger than ${Constants.maxBinIntPrecision} are not supported.")
         }
         if (x.precision < 1 || x.precision >= Constants.maxFieldLength)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"Incorrect field size of ${x.precision} for PIC ${expr.value.originalPic.get}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
       case x: AlphaNumeric =>
         if (x.length < 1 || x.length >= Constants.maxFieldLength)
-          throw new SyntaxErrorException(ctx.start.getLine, getIdentifier(ctx.parent),
+          throw new SyntaxErrorException(ctx.start.getLine, pos, Option(getIdentifier(ctx.parent)),
             s"Incorrect field size of ${x.length} for PIC ${expr.value.originalPic.get}. Supported size is in range from 1 to ${Constants.maxFieldLength}.")
     }
     expr
