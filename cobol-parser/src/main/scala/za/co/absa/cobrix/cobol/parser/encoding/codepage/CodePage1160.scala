@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 1160 with support for Thai script used in IBM mainframes which is same as 838
   * with € at the position 0xFE.
   */
-class CodePage1160 extends SingleByteCodePage(CodePage1160.ebcdicToAsciiMapping) {
+class CodePage1160 extends SingleByteCodePage(CodePage1160.ebcdicToAsciiMapping, CodePage1160.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1160"
 }
 
@@ -69,4 +69,6 @@ object CodePage1160 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

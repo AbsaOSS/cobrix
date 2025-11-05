@@ -21,7 +21,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   *
   * In addition to "cp037" code page it contains conversions for non-printable characters.
   */
-class CodePage037Ext extends SingleByteCodePage(CodePage037Ext.ebcdicToAsciiMapping) {
+class CodePage037Ext extends SingleByteCodePage(CodePage037Ext.ebcdicToAsciiMapping, CodePage037Ext.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp037_extended"
 }
 
@@ -53,4 +53,6 @@ object CodePage037Ext {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

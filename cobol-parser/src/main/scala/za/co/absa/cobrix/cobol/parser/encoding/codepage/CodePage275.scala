@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 277 is used to represent characters of Brazil.
   */
-class CodePage275 extends SingleByteCodePage(CodePage275.ebcdicToAsciiMapping) {
+class CodePage275 extends SingleByteCodePage(CodePage275.ebcdicToAsciiMapping, CodePage275.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp275"
 }
 
@@ -51,4 +51,6 @@ object CodePage275 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

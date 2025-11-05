@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.utils
 
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.SingleByteCodePage
 
-class CustomCodePage extends SingleByteCodePage(CustomCodePage.ebcdicToAsciiMapping) {
+class CustomCodePage extends SingleByteCodePage(CustomCodePage.ebcdicToAsciiMapping, CustomCodePage.asciiToEbcdicMapping) {
   override def codePageShortName: String = "custom_test"
 }
 
@@ -50,4 +50,6 @@ object CustomCodePage {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 1146 is used to represent characters of the United Kingdom
   * with € at the position of the international currency symbol ¤.
   */
-class CodePage1146 extends SingleByteCodePage(CodePage1146.ebcdicToAsciiMapping) {
+class CodePage1146 extends SingleByteCodePage(CodePage1146.ebcdicToAsciiMapping, CodePage1146.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1146"
 }
 
@@ -52,4 +52,6 @@ object CodePage1146 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

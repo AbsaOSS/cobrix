@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page with full Latin-2-charset used in IBM mainframes
   * in Albania, Bosnia and Herzegovina, Croatia, Czech Republic, Hungary, Poland, Romania, Slovakia, and Slovenia
   */
-class CodePage870 extends SingleByteCodePage(CodePage870.ebcdicToAsciiMapping) {
+class CodePage870 extends SingleByteCodePage(CodePage870.ebcdicToAsciiMapping, CodePage870.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp870"
 }
 
@@ -57,4 +57,6 @@ object CodePage870 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

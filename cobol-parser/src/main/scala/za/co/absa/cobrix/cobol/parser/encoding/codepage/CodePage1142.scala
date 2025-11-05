@@ -22,7 +22,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * It corresponds to code page 277 and only differs from it in position 5A, where the euro sign € is located instead
   * of the international currency symbol ¤.
   */
-class CodePage1142 extends SingleByteCodePage(CodePage1142.ebcdicToAsciiMapping) {
+class CodePage1142 extends SingleByteCodePage(CodePage1142.ebcdicToAsciiMapping, CodePage1142.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1142"
 }
 
@@ -54,4 +54,6 @@ object CodePage1142 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 277 is used to represent characters of Denmark and Norway.
   */
-class CodePage277 extends SingleByteCodePage(CodePage277.ebcdicToAsciiMapping) {
+class CodePage277 extends SingleByteCodePage(CodePage277.ebcdicToAsciiMapping, CodePage277.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp277"
 }
 
@@ -51,4 +51,6 @@ object CodePage277 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

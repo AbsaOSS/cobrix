@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 1047 contains all of the Latin-1/Open System characters.
   *
   */
-class CodePage1047 extends SingleByteCodePage(CodePage1047.ebcdicToAsciiMapping) {
+class CodePage1047 extends SingleByteCodePage(CodePage1047.ebcdicToAsciiMapping, CodePage1047.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1047"
 }
 
@@ -55,4 +55,6 @@ object CodePage1047 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

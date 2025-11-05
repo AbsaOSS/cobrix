@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 500. Belgium, Canada, Switzerland, International.
   */
-class CodePage500 extends SingleByteCodePage(CodePage500.ebcdicToAsciiMapping) {
+class CodePage500 extends SingleByteCodePage(CodePage500.ebcdicToAsciiMapping, CodePage500.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp500"
 }
 
@@ -51,4 +51,6 @@ object CodePage500 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

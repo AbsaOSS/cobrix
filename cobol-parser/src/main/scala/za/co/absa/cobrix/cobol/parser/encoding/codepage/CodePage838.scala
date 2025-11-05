@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page with support for Thai script used in IBM mainframes
   */
-class CodePage838 extends SingleByteCodePage(CodePage838.ebcdicToAsciiMapping) {
+class CodePage838 extends SingleByteCodePage(CodePage838.ebcdicToAsciiMapping, CodePage838.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp838"
 }
 
@@ -69,4 +69,6 @@ object CodePage838 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 285 is used to represent characters of the United Kingdom.
   */
-class CodePage285 extends SingleByteCodePage(CodePage285.ebcdicToAsciiMapping) {
+class CodePage285 extends SingleByteCodePage(CodePage285.ebcdicToAsciiMapping, CodePage285.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp285"
 }
 
@@ -51,4 +51,6 @@ object CodePage285 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page with full Cyrillic-charset
   */
-class CodePage1025 extends SingleByteCodePage(CodePage1025.ebcdicToAsciiMapping) {
+class CodePage1025 extends SingleByteCodePage(CodePage1025.ebcdicToAsciiMapping, CodePage1025.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1025"
 }
 
@@ -56,4 +56,6 @@ object CodePage1025 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }
