@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 284 is used to represent characters of Spain and Latin America.
   */
-class CodePage284 extends SingleByteCodePage(CodePage284.ebcdicToAsciiMapping) {
+class CodePage284 extends SingleByteCodePage(CodePage284.ebcdicToAsciiMapping, CodePage284.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp284"
 }
 
@@ -51,4 +51,6 @@ object CodePage284 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 1145 is used to represent characters of Spain and Latin America
   * with € at the position of the international currency symbol ¤.
   */
-class CodePage1145 extends SingleByteCodePage(CodePage1145.ebcdicToAsciiMapping) {
+class CodePage1145 extends SingleByteCodePage(CodePage1145.ebcdicToAsciiMapping, CodePage1145.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1145"
 }
 
@@ -52,4 +52,6 @@ object CodePage1145 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

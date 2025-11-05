@@ -21,7 +21,7 @@ import java.util
 /**
   * The base class for all single-byte EBCDIC decoders.
   */
-abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char])
+abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcdicMapping: Array[Byte])
   extends CodePage {
   private val ConversionTableElements = 256
   private val conversionTable = ebcdicToAsciiMapping
@@ -60,23 +60,37 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char])
     // PIC X fields are space-filled on mainframe. Use EBCDIC space 0x40.
     util.Arrays.fill(buf, 0x40.toByte)
 
+    val conversionTable = asciiToEbcdicMapping
+    val maxChar = conversionTable.length - 1
+
     while (i < string.length && i < length) {
-      buf(i) = reverseEbcdicToAsciiMapping.getOrElse(string.charAt(i), 0x40.toByte)
+      val unicodeCodePoint: Int = string.codePointAt(i)
+
+      buf(i) = if (unicodeCodePoint > maxChar)
+        0x40.toByte
+      else
+        conversionTable(unicodeCodePoint)
       i = i + 1
     }
     buf
   }
 
   override def supportsEncoding: Boolean = true
+}
 
-  lazy val reverseEbcdicToAsciiMapping: Map[Char, Byte] = {
-    val map = scala.collection.mutable.Map[Char, Byte]()
+object SingleByteCodePage {
+  def getReverseTable(ebcdicToAsciiMapping: Array[Char]): Array[Byte] = {
+    val maxVal = ebcdicToAsciiMapping.map(_.toInt).max
+
+    val reverseMap = new Array[Byte](maxVal + 1)
+
+    util.Arrays.fill(reverseMap, 0x40.toByte)
+
     for (i <- ebcdicToAsciiMapping.indices) {
       val asciiChar = ebcdicToAsciiMapping(i)
-      if (!map.contains(asciiChar)) {
-        map(asciiChar) = i.toByte
-      }
+      reverseMap(asciiChar.toInt) = i.toByte
     }
-    map.toMap
+    reverseMap(32) = 0x40.toByte // space character
+    reverseMap
   }
 }

@@ -21,7 +21,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   *
   * Er wird zur Darstellung des Zeichensatzes der deutschen Sprache verwendet.
   */
-class CodePage273 extends SingleByteCodePage(CodePage273.ebcdicToAsciiMapping) {
+class CodePage273 extends SingleByteCodePage(CodePage273.ebcdicToAsciiMapping, CodePage273.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp273"
 }
 
@@ -53,4 +53,6 @@ object CodePage273 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

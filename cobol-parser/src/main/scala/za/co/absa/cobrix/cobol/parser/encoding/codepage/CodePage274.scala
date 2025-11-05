@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 274. Belgium.
   */
-class CodePage274 extends SingleByteCodePage(CodePage274.ebcdicToAsciiMapping) {
+class CodePage274 extends SingleByteCodePage(CodePage274.ebcdicToAsciiMapping, CodePage274.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp274"
 }
 
@@ -51,4 +51,6 @@ object CodePage274 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -22,7 +22,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * It is an "invariant" subset of EBCDIC. Each converted symbol should be present in all EBCDIC pages.
   * In addition to "common" code page it contains conversions for non-printable characters.
   */
-class CodePageCommonExt extends SingleByteCodePage(CodePageCommonExt.ebcdicToAsciiMapping) {
+class CodePageCommonExt extends SingleByteCodePage(CodePageCommonExt.ebcdicToAsciiMapping, CodePageCommonExt.asciiToEbcdicMapping) {
   override def codePageShortName: String = "common_extended"
 }
 
@@ -89,4 +89,6 @@ object CodePageCommonExt {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

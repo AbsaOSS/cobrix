@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding.codepage
 
-class FakeCodePage extends SingleByteCodePage(FakeCodePage.ebcdicToAsciiMapping) {
+class FakeCodePage extends SingleByteCodePage(FakeCodePage.ebcdicToAsciiMapping, FakeCodePage.asciiToEbcdicMapping) {
   /**
    * A short name is used to distinguish between different code pages, so it must be unique
    */
@@ -25,4 +25,6 @@ class FakeCodePage extends SingleByteCodePage(FakeCodePage.ebcdicToAsciiMapping)
 
 object FakeCodePage {
   val ebcdicToAsciiMapping: Array[Char] = CodePageCommon.ebcdicToAsciiMapping
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

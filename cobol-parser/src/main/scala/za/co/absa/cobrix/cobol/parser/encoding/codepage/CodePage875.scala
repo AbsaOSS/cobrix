@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 875 contains all of the Greek characters.
   *
   */
-class CodePage875 extends SingleByteCodePage(CodePage875.ebcdicToAsciiMapping) {
+class CodePage875 extends SingleByteCodePage(CodePage875.ebcdicToAsciiMapping, CodePage875.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp875"
 }
 
@@ -55,4 +55,6 @@ object CodePage875 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

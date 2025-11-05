@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 278 is used to represent characters of Finland and Sweden.
   */
-class CodePage278 extends SingleByteCodePage(CodePage278.ebcdicToAsciiMapping) {
+class CodePage278 extends SingleByteCodePage(CodePage278.ebcdicToAsciiMapping, CodePage278.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp278"
 }
 
@@ -51,4 +51,6 @@ object CodePage278 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 1147 of France is the same as 297.
   * with € at the position of the international currency symbol ¤.
   */
-class CodePage1147 extends SingleByteCodePage(CodePage1147.ebcdicToAsciiMapping) {
+class CodePage1147 extends SingleByteCodePage(CodePage1147.ebcdicToAsciiMapping, CodePage1147.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp1147"
 }
 
@@ -52,4 +52,6 @@ object CodePage1147 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

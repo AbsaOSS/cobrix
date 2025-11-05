@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 285 is used to represent characters of France.
   */
-class CodePage297 extends SingleByteCodePage(CodePage297.ebcdicToAsciiMapping) {
+class CodePage297 extends SingleByteCodePage(CodePage297.ebcdicToAsciiMapping, CodePage297.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp297"
 }
 
@@ -51,4 +51,6 @@ object CodePage297 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

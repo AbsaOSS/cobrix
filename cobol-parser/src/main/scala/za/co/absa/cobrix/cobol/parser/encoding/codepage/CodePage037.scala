@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
   * EBCDIC code page 37 contains all of the standard Latin-1 characters.
   *
   */
-class CodePage037 extends SingleByteCodePage(CodePage037.ebcdicToAsciiMapping) {
+class CodePage037 extends SingleByteCodePage(CodePage037.ebcdicToAsciiMapping, CodePage037.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp037"
 }
 
@@ -60,4 +60,6 @@ object CodePage037 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }

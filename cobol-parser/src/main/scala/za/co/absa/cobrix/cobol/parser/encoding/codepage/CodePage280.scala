@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.parser.encoding.codepage
 /**
   * EBCDIC code page 280 is used to represent characters of Italy.
   */
-class CodePage280 extends SingleByteCodePage(CodePage280.ebcdicToAsciiMapping) {
+class CodePage280 extends SingleByteCodePage(CodePage280.ebcdicToAsciiMapping, CodePage280.asciiToEbcdicMapping) {
   override def codePageShortName: String = "cp280"
 }
 
@@ -51,4 +51,6 @@ object CodePage280 {
     }
     ebcdic2ascii
   }
+
+  lazy val asciiToEbcdicMapping: Array[Byte] = SingleByteCodePage.getReverseTable(ebcdicToAsciiMapping)
 }
