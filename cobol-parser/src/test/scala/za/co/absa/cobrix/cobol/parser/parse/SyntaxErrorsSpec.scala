@@ -46,6 +46,22 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     assert(syntaxErrorException.msg.contains("The field is a leaf element"))
   }
 
+  test("Test handle malformed statement") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |  07         SUB-FLD1         PIC X(30).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 2)
+    assert(syntaxErrorException.posOpt.contains(13))
+    assert(syntaxErrorException.fieldOpt.isEmpty)
+    assert(syntaxErrorException.msg == "Invalid input 'SUB-FLD1' at position 2:13")
+  }
+
   test("Test handle malformed redefines") {
     val copyBookContents: String =
       """        01  RECORD.
