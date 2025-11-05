@@ -107,7 +107,7 @@
         <spark.version>3.5.7</spark.version>
         <scalatest.version>3.2.19</scalatest.version>
         <specs.version>2.4.16</specs.version>
-        <jackson.version>2.13.5</jackson.version>
+        <jackson.version>2.15.4</jackson.version>
         <mockito.version>4.11.0</mockito.version>
         <scodec_core.version>1.11.10</scodec_core.version>
         <slf4j.version>1.7.25</slf4j.version>
