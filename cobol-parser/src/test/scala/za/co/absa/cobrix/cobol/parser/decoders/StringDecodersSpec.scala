@@ -83,145 +83,181 @@ class StringDecodersSpec extends AnyWordSpec {
 
     "EBCDIC with code pages" should {
       "decode a CP273 string special characters" in {
-        val expected = " {Ä!~Ü^[ö§¤ß¢@ä¦ü}Ö\\] "
-        val bytes = Array(0x40, 0x43, 0x4A, 0x4F, 0x59, 0x5A, 0x5F, 0x63, 0x6A, 0x7C, 0x9F,
+        val expectedUnicode = " {Ä!~Ü^[ö§¤ß¢@ä¦ü}Ö\\] "
+        val ebcdicBytes = Array(0x40, 0x43, 0x4A, 0x4F, 0x59, 0x5A, 0x5F, 0x63, 0x6A, 0x7C, 0x9F,
           0xA1, 0xB0, 0xB5, 0xC0, 0xCC, 0xD0, 0xDC, 0xE0, 0xEC, 0xFC, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage273, improvedNullDetection = false)
+        val enc = new CodePage273
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP273 string example" in {
-        val expected = "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich"
+        val expectedUnicode = "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich"
 
-        val bytes = Array(0xE5, 0x89, 0x83, 0xA3, 0x96, 0x99, 0x40, 0x91, 0x81, 0x87, 0xA3, 0x40, 0xA9, 0xA6,
+        val ebcdicBytes = Array(0xE5, 0x89, 0x83, 0xA3, 0x96, 0x99, 0x40, 0x91, 0x81, 0x87, 0xA3, 0x40, 0xA9, 0xA6,
           0x6A, 0x93, 0x86, 0x40, 0xC2, 0x96, 0xA7, 0x92, 0xC0, 0x94, 0x97, 0x86, 0x85, 0x99, 0x40, 0x98,
           0xA4, 0x85, 0x99, 0x40, 0xD0, 0x82, 0x85, 0x99, 0x40, 0x84, 0x85, 0x95, 0x40, 0x87, 0x99, 0x96,
           0xA1, 0x85, 0x95, 0x40, 0xE2, 0xA8, 0x93, 0xA3, 0x85, 0x99, 0x40, 0xC4, 0x85, 0x89, 0x83, 0x88).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage273, improvedNullDetection = false)
+        val enc = new CodePage273
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP274 string special characters" in {
-        val expected = " æÄ!üÜ^Æö]ß¢§Øäèéø¨åÖ#àÅ[ç¤Ç "
-        val bytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
+        val expectedUnicode = " æÄ!üÜ^Æö]ß¢§Øäèéø¨åÖ#àÅ[ç¤Ç "
+        val ebcdicBytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
           0xB0, 0xB5, 0x80, 0x43, 0xD0, 0xC0, 0x70, 0xA1, 0x47, 0xEC, 0x7B, 0x7C, 0x67, 0x4A,
           0xE0, 0x9F, 0x68, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage274, improvedNullDetection = false)
+        val enc = new CodePage274
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP275 string special characters" in {
-        val expected = " æÄ!üÜ^Æö$ß¢§Øäéõø~åÖÕÃÅÉ\\¤] "
-        val bytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
+        val expectedUnicode = " æÄ!üÜ^Æö$ß¢§Øäéõø~åÖÕÃÅÉ\\¤] "
+        val ebcdicBytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
           0xB0, 0xB5, 0x80, 0x43, 0xD0, 0xC0, 0x70, 0xA1, 0x47, 0xEC, 0x7B, 0x7C, 0x67, 0x4A,
           0xE0, 0x9F, 0x68, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage275, improvedNullDetection = false)
+        val enc = new CodePage275
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP277 string special characters" in {
-        val expected = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
-        val bytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
+        val expectedUnicode = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
+        val ebcdicBytes = Array(0x40, 0x9C, 0x63, 0x4F, 0xDC, 0xFC, 0x5F, 0x9E, 0xCC, 0x5A, 0x59,
           0xB0, 0xB5, 0x80, 0x43, 0xD0, 0xC0, 0x70, 0xA1, 0x47, 0xEC, 0x7B, 0x7C, 0x67, 0x4A,
           0xE0, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage277, improvedNullDetection = false)
+        val enc = new CodePage277
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP277 string example" in {
-        val expected = "Ægte ørreder svømmer i åen, mens små ællinger leger ved søen."
+        val expectedUnicode = "Ægte ørreder svømmer i åen, mens små ællinger leger ved søen."
 
-        val bytes = Array(0x7B, 0x87, 0xA3, 0x85, 0x40, 0x6A, 0x99, 0x99, 0x85, 0x84, 0x85, 0x99, 0x40,
+        val ebcdicBytes = Array(0x7B, 0x87, 0xA3, 0x85, 0x40, 0x6A, 0x99, 0x99, 0x85, 0x84, 0x85, 0x99, 0x40,
           0xA2, 0xA5, 0x6A, 0x94, 0x94, 0x85, 0x99, 0x40, 0x89, 0x40, 0xD0, 0x85, 0x95, 0x6B, 0x40, 0x94,
           0x85, 0x95, 0xA2, 0x40, 0xA2, 0x94, 0xD0, 0x40, 0xC0, 0x93, 0x93, 0x89, 0x95, 0x87, 0x85, 0x99,
           0x40, 0x93, 0x85, 0x87, 0x85, 0x99, 0x40, 0xA5, 0x85, 0x84, 0x40, 0xA2, 0x6A, 0x85, 0x95, 0x4B).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage277, improvedNullDetection = false)
+        val enc = new CodePage277
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP278 string special characters" in {
-        val expected = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
-        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " {Ä!~Ü^[ö¤ß¢§@äåæ¦ü}ÖÆØ$#\\] "
+        val ebcdicBytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage278, improvedNullDetection = false)
+        val enc = new CodePage278
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP278 string example" in {
-        val expected = "Ångbåten är över sjön med färggranna blommor."
+        val expectedUnicode = "Ångbåten är över sjön med färggranna blommor."
 
-        val bytes = Array(0x5B, 0x95, 0x87, 0x82, 0xD0, 0xA3, 0x85, 0x95, 0x40, 0xC0, 0x99, 0x40, 0x6A,
+        val ebcdicBytes = Array(0x5B, 0x95, 0x87, 0x82, 0xD0, 0xA3, 0x85, 0x95, 0x40, 0xC0, 0x99, 0x40, 0x6A,
           0xA5, 0x85, 0x99, 0x40, 0xA2, 0x91, 0x6A, 0x95, 0x40, 0x94, 0x85, 0x84, 0x40, 0x86, 0xC0,
           0x99, 0x87, 0x87, 0x99, 0x81, 0x95, 0x95, 0x81, 0x40, 0x82, 0x93, 0x96, 0x94, 0x94, 0x96,
           0x99, 0x4B).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage278, improvedNullDetection = false)
+        val enc = new CodePage278
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP280 string special characters" in {
-        val expected = " ä£!üÜ^@òéß¢°Öàèæöìå§ÆØÅÄÉ¤ "
-        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " ä£!üÜ^@òéß¢°Öàèæöìå§ÆØÅÄÉ¤ "
+        val ebcdicBytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage280, improvedNullDetection = false)
+        val enc = new CodePage280
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP284 string special characters" in {
-        val expected = " äÑ|üÜ¬§ñ]ß¢[Ö{}æö¨å@ÆØÅÄÉ¤ "
-        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " äÑ|üÜ¬§ñ]ß¢[Ö{}æö¨å@ÆØÅÄÉ¤ "
+        val ebcdicBytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage284, improvedNullDetection = false)
+        val enc = new CodePage284
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP285 string special characters" in {
-        val expected = " $£¯¢[^~ä#|üÜ¬§¦!ß¢$Ö{}æö¯å@ÆØÅÄÉ¤ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " $£¯¢[^~ä#|üÜ¬§¦!ß¢$Ö{}æö¯å@ÆØÅÄÉ¤ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage285, improvedNullDetection = false)
+        val enc = new CodePage285
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP297 string special characters" in {
-        val expected = " °$¨¢#¬¯ä£!üÜ^]ù§ß¢°Öéèæö¨åàÆØÅÄÉ¤ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " °$¨¢#¬¯ä£!üÜ^]ù§ß¢°Öéèæö¨åàÆØÅÄÉ¤ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage297, improvedNullDetection = false)
+        val enc = new CodePage297
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP500 string special characters" in {
-        val expected = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ¤µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ¤µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
+        val ebcdicBytes = Array(
                       0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -236,19 +272,25 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage500, improvedNullDetection = false)
+        val enc = new CodePage500
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP838 string special characters" in {
-        val expected = " ¢$~๐๑ฯัข#|แํ¬๕¦!]๐¢็{}ลึ~ฆ@ว๏ดฐ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " ¢$~๐๑ฯัข#|แํ¬๕¦!]๐¢็{}ลึ~ฆ@ว๏ดฐ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage838, improvedNullDetection = false)
+        val enc = new CodePage838
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1025 string special characters" in {
@@ -297,8 +339,8 @@ class StringDecodersSpec extends AnyWordSpec {
       }
 
       "decode a CP1141 string special characters" in {
-        val expected = "â{àáãåçñÄ.<(+!&éêëèíîïì~Ü$*);^-/Â[ÀÁÃÅÇÑö,%_>?øÉÊËÈÍÎÏÌ`:#§'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ€µßstuvwxyz¡¿ÐÝÞ®¢£¥·©@¶¼½¾¬|¯¨´×äABCDEFGHI\u00ADô¦òóõüJKLMNOPQR¹û}ùúÿÖ÷STUVWXYZ²Ô\\ÒÓÕ0123456789³Û]ÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "â{àáãåçñÄ.<(+!&éêëèíîïì~Ü$*);^-/Â[ÀÁÃÅÇÑö,%_>?øÉÊËÈÍÎÏÌ`:#§'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ€µßstuvwxyz¡¿ÐÝÞ®¢£¥·©@¶¼½¾¬|¯¨´×äABCDEFGHI\u00ADô¦òóõüJKLMNOPQR¹û}ùúÿÖ÷STUVWXYZ²Ô\\ÒÓÕ0123456789³Û]ÙÚ"
+        val ebcdicBytes = Array(
                       0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -313,14 +355,17 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1141, improvedNullDetection = false)
+        val enc = new CodePage1141
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1142 string example" in {
-        val expected = "âäàáã}çñ#.<(+!&éêëèíîïìß€Å*);^-/ÂÄÀÁÃ$ÇÑø,%_>?¦ÉÊËÈÍÎÏÌ`:ÆØ'=\"@abcdefghi«»ðýþ±°jklmnopqrªº{¸[]µüstuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×æABCDEFGHI\u00ADôöòóõåJKLMNOPQR¹û~ùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "âäàáã}çñ#.<(+!&éêëèíîïìß€Å*);^-/ÂÄÀÁÃ$ÇÑø,%_>?¦ÉÊËÈÍÎÏÌ`:ÆØ'=\"@abcdefghi«»ðýþ±°jklmnopqrªº{¸[]µüstuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×æABCDEFGHI\u00ADôöòóõåJKLMNOPQR¹û~ùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
+        val ebcdicBytes = Array(
           0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -335,14 +380,17 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1142, improvedNullDetection = false)
+        val enc = new CodePage1142
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1143 string example" in {
-        val expected = "â{àáã}çñ§.<(+!&`êëèíîïìß€Å*);^-/Â#ÀÁÃ$ÇÑö,%_>?ø\\ÊËÈÍÎÏÌé:ÄÖ'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ]µüstuvwxyz¡¿ÐÝÞ®¢£¥·©[¶¼½¾¬|¯¨´×äABCDEFGHI\u00ADô¦òóõåJKLMNOPQR¹û~ùúÿÉ÷STUVWXYZ²Ô@ÒÓÕ0123456789³ÛÜÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "â{àáã}çñ§.<(+!&`êëèíîïìß€Å*);^-/Â#ÀÁÃ$ÇÑö,%_>?ø\\ÊËÈÍÎÏÌé:ÄÖ'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ]µüstuvwxyz¡¿ÐÝÞ®¢£¥·©[¶¼½¾¬|¯¨´×äABCDEFGHI\u00ADô¦òóõåJKLMNOPQR¹û~ùúÿÉ÷STUVWXYZ²Ô@ÒÓÕ0123456789³ÛÜÙÚ"
+        val ebcdicBytes = Array(
           0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -357,14 +405,17 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1143, improvedNullDetection = false)
+        val enc = new CodePage1143
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1144 string example" in {
-        val expected = "âä{áãå\\ñ°.<(+!&]êë}íîï~ßé$*);^-/ÂÄÀÁÃÅÇÑò,%_>?øÉÊËÈÍÎÏÌù:£§'=\"Øabcdefghi«»ðýþ±[jklmnopqrªºæ¸Æ€µìstuvwxyz¡¿ÐÝÞ®¢#¥·©@¶¼½¾¬|¯¨´×àABCDEFGHI\u00ADôö¦óõèJKLMNOPQR¹ûü`úÿç÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "âä{áãå\\ñ°.<(+!&]êë}íîï~ßé$*);^-/ÂÄÀÁÃÅÇÑò,%_>?øÉÊËÈÍÎÏÌù:£§'=\"Øabcdefghi«»ðýþ±[jklmnopqrªºæ¸Æ€µìstuvwxyz¡¿ÐÝÞ®¢#¥·©@¶¼½¾¬|¯¨´×àABCDEFGHI\u00ADôö¦óõèJKLMNOPQR¹ûü`úÿç÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
+        val ebcdicBytes = Array(
           0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -379,47 +430,59 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1144, improvedNullDetection = false)
+        val enc = new CodePage1144
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1145 string special characters" in {
-        val expected = " äÑ|üÜ¬§ñ]ß¢[Ö{}æö¨å@ÆØÅÄÉ€ "
-        val bytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " äÑ|üÜ¬§ñ]ß¢[Ö{}æö¨å@ÆØÅÄÉ€ "
+        val ebcdicBytes = Array(0x40, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1145, improvedNullDetection = false)
+        val enc = new CodePage1145
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1146 string special characters" in {
-        val expected = " $£¯¢[^~ä#|üÜ¬§¦!ß¢$Ö{}æö¯å@ÆØÅÄÉ€ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " $£¯¢[^~ä#|üÜ¬§¦!ß¢$Ö{}æö¯å@ÆØÅÄÉ€ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1146, improvedNullDetection = false)
+        val enc = new CodePage1146
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1147 string special characters" in {
-        val expected = " °$¨¢#¬¯ä£!üÜ^]ù§ß¢°Öéèæö¨åàÆØÅÄÉ€ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " °$¨¢#¬¯ä£!üÜ^]ù§ß¢°Öéèæö¨åàÆØÅÄÉ€ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63,
           0x71, 0x9F, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1147, improvedNullDetection = false)
+        val enc = new CodePage1147
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1148 string special characters" in {
-        val expected = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ€µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
-        val bytes = Array(
+        val expectedUnicode = "âäàáãåçñ[.<(+!&éêëèíîïìß]$*);^-/ÂÄÀÁÃÅÇÑ¦,%_>?øÉÊËÈÍÎÏÌ`:#@'=\"Øabcdefghi«»ðýþ±°jklmnopqrªºæ¸Æ€µ~stuvwxyz¡¿ÐÝÞ®¢£¥·©§¶¼½¾¬|¯¨´×{ABCDEFGHI\u00ADôöòóõ}JKLMNOPQR¹ûüùúÿ\\÷STUVWXYZ²ÔÖÒÓÕ0123456789³ÛÜÙÚ"
+        val ebcdicBytes = Array(
                       0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
           0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
           0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
@@ -434,19 +497,25 @@ class StringDecodersSpec extends AnyWordSpec {
           0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE
         ).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1148, improvedNullDetection = false)
+        val enc = new CodePage1148
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
 
       "decode a CP1160 string special characters" in {
-        val expected = " ¢$~๐๑ฯัข#|แํ¬๕¦!]๐¢็{}ลึ~ฆ@ว๏ดฐ€ "
-        val bytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
+        val expectedUnicode = " ¢$~๐๑ฯัข#|แํ¬๕¦!]๐¢็{}ลึ~ฆ@ว๏ดฐ€ "
+        val ebcdicBytes = Array(0x40, 0x4A, 0x5B, 0xA1, 0xB0, 0xB1, 0xBA, 0xBC, 0x43, 0x7B, 0x4F, 0xDC, 0xFC, 0x5F, 0xB5, 0x6A, 0x5A, 0x59,
           0xB0, 0x4A, 0xEC, 0xC0, 0xD0, 0x9C, 0xCC, 0xA1, 0x47, 0x7C, 0x9E, 0x80, 0x67, 0x63, 0xFE, 0x40).map(_.toByte)
 
-        val actual = decodeEbcdicString(bytes, KeepAll, new CodePage1160, improvedNullDetection = false)
+        val enc = new CodePage1160
+        val actualUnicode = decodeEbcdicString(ebcdicBytes, KeepAll, enc, improvedNullDetection = false)
+        val actualEbcdicBytes = enc.convert(expectedUnicode, expectedUnicode.length)
 
-        assert(actual == expected)
+        assert(actualUnicode == expectedUnicode)
+        assert(actualEbcdicBytes.sameElements(ebcdicBytes))
       }
     }
   }
