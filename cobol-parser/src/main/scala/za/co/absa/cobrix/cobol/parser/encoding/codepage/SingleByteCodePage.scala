@@ -54,7 +54,6 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcd
   final override def convert(string: String, length: Int): Array[Byte] = {
     require(length >= 0, s"Field length cannot be negative, got $length")
 
-    var i = 0
     val buf = new Array[Byte](length)
 
     // PIC X fields are space-filled on mainframe. Use EBCDIC space 0x40.
@@ -63,14 +62,15 @@ abstract class SingleByteCodePage(ebcdicToAsciiMapping: Array[Char], asciiToEbcd
     val conversionTable = asciiToEbcdicMapping
     val maxChar = conversionTable.length - 1
 
-    while (i < string.length && i < length) {
-      val unicodeCodePoint: Int = string.codePointAt(i)
-
-      buf(i) = if (unicodeCodePoint > maxChar)
-        0x40.toByte
-      else
-        conversionTable(unicodeCodePoint)
-      i = i + 1
+    var inPos = 0
+    var outPos = 0
+    while (inPos < string.length && outPos < length) {
+      val unicodeCodePoint = string.codePointAt(inPos)
+      if (unicodeCodePoint <= maxChar) {
+        buf(outPos) = conversionTable(unicodeCodePoint)
+      }
+      outPos += 1
+      inPos += Character.charCount(unicodeCodePoint)
     }
     buf
   }

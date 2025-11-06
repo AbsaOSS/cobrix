@@ -77,7 +77,7 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     assert(syntaxErrorException.lineNumber == 4)
     assert(syntaxErrorException.posOpt.isEmpty)
     assert(syntaxErrorException.fieldOpt.contains("SUB_FLD2"))
-    assert(syntaxErrorException.msg.contains("The field SUB_FLD2 redefines SUB_FLD1, which is not part if the redefined fields block"))
+    assert(syntaxErrorException.msg.contains("The field SUB_FLD2 redefines SUB_FLD1, which is not part of the redefined fields block"))
   }
 
   test("Test too big decimal precision") {
