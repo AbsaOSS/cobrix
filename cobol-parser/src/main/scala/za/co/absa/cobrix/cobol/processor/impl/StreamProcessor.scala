@@ -36,12 +36,12 @@ object StreamProcessor {
     * @param outputStream    the output stream where the processed records will be written.
     * @return The number of records processed.
     */
-  def processStream(copybook: Copybook,
-                    options: Map[String, String],
-                    inputStream: SimpleStream,
-                    recordExtractor: RawRecordExtractor,
-                    recordProcessor: RawRecordProcessor,
-                    outputStream: OutputStream): Long = {
+  def processStreamInPlace(copybook: Copybook,
+                           options: Map[String, String],
+                           inputStream: SimpleStream,
+                           recordExtractor: RawRecordExtractor,
+                           recordProcessor: RawRecordProcessor,
+                           outputStream: OutputStream): Long = {
     var recordCount = 0L
     while (recordExtractor.hasNext) {
       recordCount += 1
@@ -68,4 +68,41 @@ object StreamProcessor {
     }
     recordCount
   }
+
+  /**
+    * Processes a stream of COBOL raw records and writes it back as a variable length format with little-endian RDW headers.
+    *
+    * @param copybook        the COBOL copybook that describes the schema of the records.
+    * @param options         arbitrary options used for splitting input data into records (same as 'spark-cobol' options).
+    *                        Keys are lower-cased for case-insensitive handling. Can contain custom options as well.
+    * @param recordExtractor the extractor that extracts raw records from the input stream.
+    * @param recordProcessor the per-record processing logic implementation.
+    * @param outputStream    the output stream where the processed records will be written.
+    * @return The number of records processed.
+    */
+  def processStreamToRdw(copybook: Copybook,
+                         options: Map[String, String],
+                         recordExtractor: RawRecordExtractor,
+                         recordProcessor: RawRecordProcessor,
+                         outputStream: OutputStream): Long = {
+    var recordCount = 0L
+
+    while (recordExtractor.hasNext) {
+      recordCount += 1
+      val record = recordExtractor.next()
+      val recordSize = record.length
+
+      val ctx = CobolProcessorContext(copybook, options, recordExtractor.offset)
+
+      val updatedRecord = recordProcessor.processRecord(record, ctx)
+
+      val rdw = Array[Byte](0, 0, ((updatedRecord.length) & 0xFF).toByte, (((updatedRecord.length) >> 8) & 0xFF).toByte)
+
+      outputStream.write(rdw)
+      outputStream.write(updatedRecord)
+    }
+
+    recordCount
+  }
+
 }

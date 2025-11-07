@@ -23,7 +23,7 @@ import za.co.absa.cobrix.cobol.processor.CobolProcessor
 import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedRecordLengthRawRecordExtractor, TextFullRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 
-class CobolProcessorImplSuite extends AnyWordSpec {
+class CobolProcessorBaseSuite extends AnyWordSpec {
   private val copybook =
     """      01 RECORD.
       |         05  T     PIC X.
@@ -34,9 +34,9 @@ class CobolProcessorImplSuite extends AnyWordSpec {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
       val processor = CobolProcessor.builder
         .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorImpl]
+        .build().asInstanceOf[CobolProcessorInPlace]
 
-      val ext = processor.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), stream)
+      val ext = processor.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), copybook, stream)
 
       assert(ext.isInstanceOf[FixedRecordLengthRawRecordExtractor])
 
@@ -50,12 +50,12 @@ class CobolProcessorImplSuite extends AnyWordSpec {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
       val processor = CobolProcessor.builder
         .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorImpl]
+        .build().asInstanceOf[CobolProcessorInPlace]
 
       val ext = processor.getRecordExtractor(ReaderParameters(
         recordFormat = RecordFormat.VariableLength,
         isText = true
-      ), stream)
+      ), copybook, stream)
 
       assert(ext.isInstanceOf[TextFullRecordExtractor])
     }
@@ -64,13 +64,13 @@ class CobolProcessorImplSuite extends AnyWordSpec {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
       val processor = CobolProcessor.builder
         .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorImpl]
+        .build().asInstanceOf[CobolProcessorInPlace]
 
       val ex = intercept[IllegalArgumentException] {
         processor.getRecordExtractor(ReaderParameters(
           recordFormat = RecordFormat.VariableLength,
           isRecordSequence = true
-        ), stream)
+        ), copybook, stream)
       }
 
       assert(ex.getMessage.contains("Cannot create a record extractor for the given reader parameters."))

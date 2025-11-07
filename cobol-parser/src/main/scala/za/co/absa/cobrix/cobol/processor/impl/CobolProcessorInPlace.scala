@@ -27,9 +27,8 @@ import java.io.OutputStream
 
 /**
   * Implementation of the CobolProcessor trait, responsible for processing COBOL data streams
-  * by extracting records and applying a user-defined raw record processor.
-  *
-  * The processing can be done from inside an RDD so this is why it is serializable.
+  * by extracting records and applying a user-defined raw record processor. This processor
+  * retains the original COBOL data format in the output.
   *
   * Please, do not use this class directly. Use `CobolProcessor.builder()` instead.
   *
@@ -38,18 +37,18 @@ import java.io.OutputStream
   * @param copybookContents The raw textual representation of the copybook.
   * @param options          A map of processing options to customize the behavior of the processor (same as for `spark-cobol`).
   */
-class CobolProcessorImpl(readerParameters: ReaderParameters,
-                         copybook: Copybook,
-                         copybookContents: String,
-                         options: Map[String, String]) extends CobolProcessor with Serializable {
+class CobolProcessorInPlace(readerParameters: ReaderParameters,
+                            copybook: Copybook,
+                            copybookContents: String,
+                            options: Map[String, String]) extends CobolProcessorBase {
   override def process(inputStream: SimpleStream,
                        outputStream: OutputStream)
                       (rawRecordProcessor: RawRecordProcessor): Long = {
-    val recordExtractor = getRecordExtractor(readerParameters, inputStream)
+    val recordExtractor = getRecordExtractor(readerParameters, copybookContents, inputStream)
 
     val dataStream = inputStream.copyStream()
     try {
-      StreamProcessor.processStream(copybook,
+      StreamProcessor.processStreamInPlace(copybook,
         options,
         dataStream,
         recordExtractor,
@@ -60,18 +59,5 @@ class CobolProcessorImpl(readerParameters: ReaderParameters,
     }
   }
 
-  private[processor] def getRecordExtractor(readerParameters: ReaderParameters, inputStream: SimpleStream): RawRecordExtractor = {
-    val dataStream = inputStream.copyStream()
-    val headerStream = inputStream.copyStream()
 
-    val reader = new VarLenNestedReader[Array[Any]](Seq(copybookContents), readerParameters, new ArrayOfAnyHandler)
-
-    reader.recordExtractor(0, dataStream, headerStream) match {
-      case Some(extractor) => extractor
-      case None            =>
-        throw new IllegalArgumentException(s"Cannot create a record extractor for the given reader parameters. " +
-          "Please check the copybook and the reader parameters."
-        )
-    }
-  }
 }
