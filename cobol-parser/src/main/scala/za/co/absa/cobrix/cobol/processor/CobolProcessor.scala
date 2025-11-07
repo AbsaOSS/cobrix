@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.processor
 
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorImpl
+import za.co.absa.cobrix.cobol.processor.impl.{CobolProcessorInPlace, CobolProcessorToRdw}
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
@@ -50,6 +50,7 @@ object CobolProcessor {
     private val caseInsensitiveOptions = new mutable.HashMap[String, String]()
     private var copybookContentsOpt: Option[String] = None
     private var rawRecordProcessorOpt: Option[RawRecordProcessor] = None
+    private var cobolProcessingStrategy: CobolProcessingStrategy = CobolProcessingStrategy.InPlace
 
     def build(): CobolProcessor = {
       if (copybookContentsOpt.isEmpty) {
@@ -59,7 +60,10 @@ object CobolProcessor {
       val readerParameters = getReaderParameters
       val cobolSchema = getCobolSchema(readerParameters)
 
-      new CobolProcessorImpl(readerParameters, cobolSchema.copybook, copybookContentsOpt.get, caseInsensitiveOptions.toMap)
+      cobolProcessingStrategy match {
+        case CobolProcessingStrategy.InPlace => new CobolProcessorInPlace(readerParameters, cobolSchema.copybook, copybookContentsOpt.get, caseInsensitiveOptions.toMap)
+        case CobolProcessingStrategy.ToVariableLength => new CobolProcessorToRdw(readerParameters, cobolSchema.copybook, copybookContentsOpt.get, caseInsensitiveOptions.toMap)
+      }
     }
 
     def load(path: String): CobolProcessorLoader = {
@@ -87,7 +91,7 @@ object CobolProcessor {
       val readerParameters = getReaderParameters
       val cobolSchema = getCobolSchema(readerParameters)
 
-      new CobolProcessorLoader(path, copybookContentsOpt.get, cobolSchema.copybook, rawRecordProcessorOpt.get, readerParameters, caseInsensitiveOptions.toMap)
+      new CobolProcessorLoader(path, copybookContentsOpt.get, cobolSchema.copybook, rawRecordProcessorOpt.get, readerParameters, cobolProcessingStrategy, caseInsensitiveOptions.toMap)
     }
 
     def withCopybookContents(copybookContents: String): CobolProcessorBuilder = {
@@ -97,6 +101,11 @@ object CobolProcessor {
 
     def withRecordProcessor(processor: RawRecordProcessor): CobolProcessorBuilder = {
       rawRecordProcessorOpt = Option(processor)
+      this
+    }
+
+    def withProcessingStrategy(strategy: CobolProcessingStrategy): CobolProcessorBuilder = {
+      cobolProcessingStrategy = strategy
       this
     }
 
@@ -142,9 +151,13 @@ object CobolProcessor {
                              copybook: Copybook,
                              rawRecordProcessor: RawRecordProcessor,
                              readerParameters: ReaderParameters,
+                             cobolProcessingStrategy: CobolProcessingStrategy,
                              options: Map[String, String]) {
     def save(outputFile: String): Long = {
-      val processor = new CobolProcessorImpl(readerParameters, copybook, copybookContents, options)
+      val processor = cobolProcessingStrategy match {
+        case CobolProcessingStrategy.InPlace => new CobolProcessorInPlace(readerParameters, copybook, copybookContents, options)
+        case CobolProcessingStrategy.ToVariableLength => new CobolProcessorToRdw(readerParameters, copybook, copybookContents, options)
+      }
 
       val ifs = new FSStream(fileToProcess)
       val ofs = new BufferedOutputStream(new FileOutputStream(outputFile))

@@ -20,7 +20,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
-import za.co.absa.cobrix.cobol.processor.{CobolProcessor, SerializableRawRecordProcessor}
+import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcessor, SerializableRawRecordProcessor}
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -49,6 +49,7 @@ object SparkCobolProcessor {
     private val caseInsensitiveOptions = new mutable.HashMap[String, String]()
     private var copybookContentsOpt: Option[String] = None
     private var rawRecordProcessorOpt: Option[SerializableRawRecordProcessor] = None
+    private var cobolProcessingStrategy: CobolProcessingStrategy = CobolProcessingStrategy.InPlace
     private var numberOfThreads: Int = 1
 
     def load(path: String): SparkCobolProcessorLoader = {
@@ -75,7 +76,7 @@ object SparkCobolProcessor {
         throw new IllegalArgumentException("At least one input file must be provided.")
       }
 
-      new SparkCobolProcessorLoader(filePaths, copybookContentsOpt.get, rawRecordProcessorOpt.get, numberOfThreads, caseInsensitiveOptions.toMap)
+      new SparkCobolProcessorLoader(filePaths, copybookContentsOpt.get, rawRecordProcessorOpt.get, cobolProcessingStrategy, numberOfThreads, caseInsensitiveOptions.toMap)
     }
 
     def withCopybookContents(copybookContents: String): SparkCobolProcessorBuilder = {
@@ -85,6 +86,11 @@ object SparkCobolProcessor {
 
     def withRecordProcessor(processor: SerializableRawRecordProcessor): SparkCobolProcessorBuilder = {
       rawRecordProcessorOpt = Option(processor)
+      this
+    }
+
+    def withProcessingStrategy(strategy: CobolProcessingStrategy): SparkCobolProcessorBuilder = {
+      cobolProcessingStrategy = strategy
       this
     }
 
@@ -124,12 +130,14 @@ object SparkCobolProcessor {
   class SparkCobolProcessorLoader(filesToRead: Seq[String],
                                   copybookContents: String,
                                   rawRecordProcessor: SerializableRawRecordProcessor,
+                                  cobolProcessingStrategy: CobolProcessingStrategy,
                                   numberOfThreads: Int,
                                   options: Map[String, String])
                                  (implicit spark: SparkSession) {
     def save(outputPath: String): Long = {
       val cobolProcessor = CobolProcessor.builder
         .withCopybookContents(copybookContents)
+        .withProcessingStrategy(cobolProcessingStrategy)
         .options(options)
         .build()
 
