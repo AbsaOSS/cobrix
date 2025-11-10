@@ -19,14 +19,17 @@ package za.co.absa.cobrix.spark.cobol.utils
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.nio.charset.StandardCharsets
 import scala.collection.JavaConverters._
+import scala.util.control.NonFatal
 
 /**
   * This object provides utility methods for interacting with HDFS internals.
   */
 object HDFSUtils {
+  private val log: Logger = LoggerFactory.getLogger(this.getClass)
   final val bytesInMegabyte = 1048576
 
   /**
@@ -72,16 +75,22 @@ object HDFSUtils {
     */
   def getHDFSDefaultBlockSizeMB(fileSystem: FileSystem, path: Option[String] = None): Option[Int] = {
     val hdfsPath = new Path(path.getOrElse("/"))
-    val blockSizeInBytes = fileSystem.getDefaultBlockSize(hdfsPath)
-    if (blockSizeInBytes > 0) {
-      val blockSizeInBM = (blockSizeInBytes / bytesInMegabyte).toInt
-      if (blockSizeInBM>0) {
-        Some (blockSizeInBM)
+    try {
+      val blockSizeInBytes = fileSystem.getDefaultBlockSize(hdfsPath)
+      if (blockSizeInBytes > 0) {
+        val blockSizeInMB = (blockSizeInBytes / bytesInMegabyte).toInt
+        if (blockSizeInMB > 0) {
+          Some(blockSizeInMB)
+        } else {
+          None
+        }
       } else {
         None
       }
-    } else {
-      None
+    } catch {
+      case NonFatal(ex) =>
+        log.debug(s"Failed to get HDFS default block size for path: $hdfsPath..", ex)
+        None
     }
   }
 
