@@ -70,7 +70,7 @@ object StreamProcessor {
   }
 
   /**
-    * Processes a stream of COBOL raw records and writes it back as a variable length format with little-endian RDW headers.
+    * Processes a stream of COBOL raw records and writes it back as a variable length format with big-endian RDW headers.
     *
     * @param copybook        the COBOL copybook that describes the schema of the records.
     * @param options         arbitrary options used for splitting input data into records (same as 'spark-cobol' options).
@@ -96,7 +96,7 @@ object StreamProcessor {
 
       val updatedRecord = recordProcessor.processRecord(record, ctx)
 
-      val rdw = Array[Byte](0, 0, ((updatedRecord.length) & 0xFF).toByte, (((updatedRecord.length) >> 8) & 0xFF).toByte)
+      val rdw = Array[Byte](((updatedRecord.length >> 8) & 0xFF).toByte, ((updatedRecord.length) & 0xFF).toByte, 0, 0)
 
       outputStream.write(rdw)
       outputStream.write(updatedRecord)

@@ -53,7 +53,7 @@ class CobolProcessorToRdwSuite extends AnyWordSpec {
       assert(count == 4)
       assert(outputArray.length == 24)
       assert(outputArray.sameElements(
-        Array(0, 0, 2, 0, -16, -16, 0, 0, 2, 0, -15, -15, 0, 0, 2, 0, -14, -14, 0, 0, 2, 0, -13, -13)
+        Array(0, 2, 0, 0, -16, -16, 0, 2, 0, 0, -15, -15, 0, 2, 0, 0, -14, -14, 0, 2, 0, 0, -13, -13)
       ))
     }
   }

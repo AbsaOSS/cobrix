@@ -26,7 +26,7 @@ import java.io.OutputStream
 /**
   * Implementation of the CobolProcessor trait, responsible for processing COBOL data streams
   * by extracting records and applying a user-defined raw record processor. This processor
-  * converts the input format to the variable record length format with little-endian RDW records.
+  * converts the input format to the variable record length format with big-endian RDW records.
   *
   * Please, do not use this class directly. Use `CobolProcessor.builder()` instead.
   *
