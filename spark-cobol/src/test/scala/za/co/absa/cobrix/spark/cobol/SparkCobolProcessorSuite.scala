@@ -130,13 +130,15 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
         val outputData = readBinaryFile(outputFile)
 
         assert(outputData.sameElements(
-          Array(0, 0, 1, 0, -16, 0, 0, 1, 0, -15, 0, 0, 1, 0, -14, 0, 0, 1, 0, -13).map(_.toByte)
+          Array(0, 1, 0, 0, -16, 0, 1, 0, 0, -15, 0, 1, 0, 0, -14, 0, 1, 0, 0, -13).map(_.toByte)
         ))
 
         val actual = spark.read
           .format("cobol")
           .option("copybook_contents", copybook)
           .option("record_format", "V")
+          .option("is_rdw_big_endian", "true")
+          .option("pedantic", "true")
           .load(outputFile)
           .toJSON
           .collect()
