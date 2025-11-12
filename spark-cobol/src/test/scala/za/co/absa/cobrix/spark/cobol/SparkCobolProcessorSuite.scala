@@ -87,7 +87,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
         SparkCobolProcessor.builder
           .withCopybookContents(copybook)
-          .withRecordProcessor (new SerializableRawRecordProcessor {
+          .withRecordProcessor(new SerializableRawRecordProcessor {
             override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
               record.map(v => (v - 1).toByte)
             }
@@ -119,7 +119,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
         SparkCobolProcessor.builder
           .withCopybookContents(copybook)
           .withProcessingStrategy(CobolProcessingStrategy.ToVariableLength)
-          .withRecordProcessor (new SerializableRawRecordProcessor {
+          .withRecordProcessor(new SerializableRawRecordProcessor {
             override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
               record.map(v => (v - 1).toByte)
             }
@@ -146,6 +146,34 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
         assert(actual == expected)
       }
+    }
+  }
+
+  "convert input format into an RDD" in {
+    val expected = """-13, -14, -15"""
+    withTempDirectory("spark_cobol_processor") { tempDir =>
+      val binData = Array(0xF1, 0xF2, 0xF3, 0xF1).map(_.toByte)
+
+      val inputPath = new Path(tempDir, "input.dat").toString
+      val outputPath = new Path(tempDir, "output").toString
+
+      writeBinaryFile(inputPath, binData)
+
+      val rdd = SparkCobolProcessor.builder
+        .withCopybookContents(copybook)
+        .toRDD(inputPath)
+
+      val count = rdd.count()
+
+      assert(count == 4)
+
+      val actual = rdd
+        .map(row => row.mkString)
+        .distinct
+        .sortBy(x => x)
+        .collect().mkString(", ")
+
+      assert(actual == expected)
     }
   }
 }

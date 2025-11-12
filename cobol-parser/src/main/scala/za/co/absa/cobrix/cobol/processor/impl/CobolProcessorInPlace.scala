@@ -44,7 +44,7 @@ class CobolProcessorInPlace(readerParameters: ReaderParameters,
   override def process(inputStream: SimpleStream,
                        outputStream: OutputStream)
                       (rawRecordProcessor: RawRecordProcessor): Long = {
-    val recordExtractor = getRecordExtractor(readerParameters, copybookContents, inputStream)
+    val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream)
 
     val dataStream = inputStream.copyStream()
     try {
