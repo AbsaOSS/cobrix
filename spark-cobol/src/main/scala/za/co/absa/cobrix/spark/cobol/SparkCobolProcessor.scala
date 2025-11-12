@@ -20,7 +20,9 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorBase
 import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcessor, SerializableRawRecordProcessor}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -77,6 +79,22 @@ object SparkCobolProcessor {
       }
 
       new SparkCobolProcessorLoader(filePaths, copybookContentsOpt.get, rawRecordProcessorOpt.get, cobolProcessingStrategy, numberOfThreads, caseInsensitiveOptions.toMap)
+    }
+
+    def toRDD(path: String): RDD[Array[Byte]] = {
+      val filePaths = FileUtils
+        .getFiles(path, spark.sparkContext.hadoopConfiguration)
+
+      toRDD(filePaths)
+    }
+
+    def toRDD(filePaths: Seq[String]): RDD[Array[Byte]] = {
+      if (copybookContentsOpt.isEmpty) {
+        throw new IllegalArgumentException("Copybook contents must be provided.")
+      }
+
+      val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
+      getRecordRdd(filePaths, copybookContentsOpt.get, caseInsensitiveOptions.toMap, sconf)
     }
 
     def withCopybookContents(copybookContents: String): SparkCobolProcessorBuilder = {
@@ -172,6 +190,23 @@ object SparkCobolProcessor {
     rdd.map(group => {
       processListOfFiles(group, outputPath, copybookContents, cobolProcessor, rawRecordProcessor, sconf, numberOfThreads)
     })
+  }
+
+  private def getRecordRdd(listOfFiles: Seq[String],
+                           copybookContents: String,
+                           options: Map[String, String],
+                           sconf: SerializableConfiguration)(implicit spark: SparkSession): RDD[Array[Byte]] = {
+
+    val cobolParameters = CobolParametersParser.parse(new Parameters(options))
+    val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+
+    spark.sparkContext.parallelize(listOfFiles).flatMap { inputFile =>
+      val hadoopConfig = sconf.value
+      val inputFs = new Path(inputFile).getFileSystem(hadoopConfig)
+      val ifs = new FileStreamer(inputFile, inputFs)
+
+      CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs)
+    }
   }
 
   private def processListOfFiles(listOfFiles: Seq[String],

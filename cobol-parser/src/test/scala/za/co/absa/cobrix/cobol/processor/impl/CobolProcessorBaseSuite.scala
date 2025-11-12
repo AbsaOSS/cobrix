@@ -32,11 +32,8 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
   "getRecordExtractor" should {
     "work for an fixed-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder
-        .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorInPlace]
 
-      val ext = processor.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), copybook, stream)
+      val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), copybook, stream)
 
       assert(ext.isInstanceOf[FixedRecordLengthRawRecordExtractor])
 
@@ -48,11 +45,8 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
 
     "work for an variable-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder
-        .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorInPlace]
 
-      val ext = processor.getRecordExtractor(ReaderParameters(
+      val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(
         recordFormat = RecordFormat.VariableLength,
         isText = true
       ), copybook, stream)
@@ -62,12 +56,9 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
 
     "throw an exception on a non-supported record format for processing" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-      val processor = CobolProcessor.builder
-        .withCopybookContents(copybook)
-        .build().asInstanceOf[CobolProcessorInPlace]
 
       val ex = intercept[IllegalArgumentException] {
-        processor.getRecordExtractor(ReaderParameters(
+        CobolProcessorBase.getRecordExtractor(ReaderParameters(
           recordFormat = RecordFormat.VariableLength,
           isRecordSequence = true
         ), copybook, stream)

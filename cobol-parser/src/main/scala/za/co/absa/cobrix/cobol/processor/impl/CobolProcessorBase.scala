@@ -27,8 +27,10 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
   *
   * The processing can be done from inside an RDD so this is why it is serializable.
   */
-abstract class CobolProcessorBase extends CobolProcessor with Serializable {
-  private[processor] def getRecordExtractor(readerParameters: ReaderParameters, copybookContents: String, inputStream: SimpleStream): RawRecordExtractor = {
+abstract class CobolProcessorBase extends CobolProcessor with Serializable
+
+object CobolProcessorBase {
+  def getRecordExtractor(readerParameters: ReaderParameters, copybookContents: String, inputStream: SimpleStream): RawRecordExtractor = {
     val dataStream = inputStream.copyStream()
     val headerStream = inputStream.copyStream()
 
