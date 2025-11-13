@@ -46,16 +46,15 @@ class CobolProcessorInPlace(readerParameters: ReaderParameters,
                       (rawRecordProcessor: RawRecordProcessor): Long = {
     val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream, None)
 
-    val dataStream = inputStream.copyStream()
     try {
       StreamProcessor.processStreamInPlace(copybook,
         options,
-        dataStream,
+        inputStream,
         recordExtractor,
         rawRecordProcessor,
         outputStream)
     } finally {
-      dataStream.close()
+      inputStream.close()
     }
   }
 
