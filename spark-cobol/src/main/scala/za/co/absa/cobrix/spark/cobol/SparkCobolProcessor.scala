@@ -20,12 +20,14 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorBase
 import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcessor, SerializableRawRecordProcessor}
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_ID
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.reader.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
@@ -73,10 +75,6 @@ object SparkCobolProcessor {
         throw new IllegalArgumentException("Copybook contents must be provided.")
       }
 
-      if (rawRecordProcessorOpt.isEmpty) {
-        throw new IllegalArgumentException("A RawRecordProcessor must be provided.")
-      }
-
       if (numberOfThreads < 1) {
         throw new IllegalArgumentException("Number of threads must be at least 1.")
       }
@@ -85,23 +83,7 @@ object SparkCobolProcessor {
         throw new IllegalArgumentException("At least one input file must be provided.")
       }
 
-      new SparkCobolProcessorLoader(filePaths, copybookContentsOpt.get, rawRecordProcessorOpt.get, cobolProcessingStrategy, numberOfThreads, caseInsensitiveOptions.toMap)
-    }
-
-    def toRDD(path: String): RDD[Array[Byte]] = {
-      val filePaths = FileUtils
-        .getFiles(path, spark.sparkContext.hadoopConfiguration)
-
-      toRDD(filePaths)
-    }
-
-    def toRDD(filePaths: Seq[String]): RDD[Array[Byte]] = {
-      if (copybookContentsOpt.isEmpty) {
-        throw new IllegalArgumentException("Copybook contents must be provided.")
-      }
-
-      val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
-      getRecordRdd(filePaths, copybookContentsOpt.get, caseInsensitiveOptions.toMap, sconf)
+      new SparkCobolProcessorLoader(filePaths, copybookContentsOpt.get, rawRecordProcessorOpt, cobolProcessingStrategy, numberOfThreads, caseInsensitiveOptions.toMap)
     }
 
     def withCopybookContents(copybookContents: String): SparkCobolProcessorBuilder = {
@@ -154,12 +136,16 @@ object SparkCobolProcessor {
 
   class SparkCobolProcessorLoader(filesToRead: Seq[String],
                                   copybookContents: String,
-                                  rawRecordProcessor: SerializableRawRecordProcessor,
+                                  rawRecordProcessorOpt: Option[SerializableRawRecordProcessor],
                                   cobolProcessingStrategy: CobolProcessingStrategy,
                                   numberOfThreads: Int,
                                   options: Map[String, String])
                                  (implicit spark: SparkSession) {
     def save(outputPath: String): Long = {
+      if (rawRecordProcessorOpt.isEmpty) {
+        throw new IllegalArgumentException("A RawRecordProcessor must be provided.")
+      }
+
       val cobolProcessor = CobolProcessor.builder
         .withCopybookContents(copybookContents)
         .withProcessingStrategy(cobolProcessingStrategy)
@@ -170,13 +156,24 @@ object SparkCobolProcessor {
         private val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
 
         override def process(listOfFiles: Seq[String], outputPath: String): Long = {
-          getFileProcessorRdd(listOfFiles, outputPath, copybookContents, cobolProcessor, rawRecordProcessor, sconf, numberOfThreads)
+          getFileProcessorRdd(listOfFiles, outputPath, cobolProcessor, rawRecordProcessorOpt.get, sconf, numberOfThreads)
             .reduce(_ + _)
         }
       }
 
       log.info(s"Writing to $outputPath...")
       processor.process(filesToRead, outputPath)
+    }
+
+    def getParsedCopybook: Copybook = {
+      val cobolParameters = getCobolParameters(filesToRead, copybookContents, options, ignoreRedundantOptions = true)
+      val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+      CobolSchema.fromReaderParameters(Seq(copybookContents), readerParameters).copybook
+    }
+
+    def toRDD: RDD[Array[Byte]] = {
+      val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
+      getRecordRdd(filesToRead, copybookContents, options, sconf)
     }
   }
 
@@ -186,7 +183,6 @@ object SparkCobolProcessor {
 
   private def getFileProcessorRdd(listOfFiles: Seq[String],
                                   outputPath: String,
-                                  copybookContents: String,
                                   cobolProcessor: CobolProcessor,
                                   rawRecordProcessor: SerializableRawRecordProcessor,
                                   sconf: SerializableConfiguration,
@@ -195,19 +191,22 @@ object SparkCobolProcessor {
     val groupedFiles = listOfFiles.grouped(numberOfThreads).toSeq
     val rdd = spark.sparkContext.parallelize(groupedFiles)
     rdd.map(group => {
-      processListOfFiles(group, outputPath, copybookContents, cobolProcessor, rawRecordProcessor, sconf, numberOfThreads)
+      processListOfFiles(group, outputPath, cobolProcessor, rawRecordProcessor, sconf, numberOfThreads)
     })
+  }
+
+  private def getCobolParameters(listOfFiles: Seq[String], copybookContents: String, options: Map[String, String], ignoreRedundantOptions: Boolean): CobolParameters = {
+    val varLenOptions = options + (PARAM_GENERATE_RECORD_ID -> "true")
+
+    CobolParametersParser.parse(new Parameters(varLenOptions), !ignoreRedundantOptions)
+      .copy(sourcePaths = listOfFiles, copybookContent = Option(copybookContents))
   }
 
   private def getRecordRdd(listOfFiles: Seq[String],
                            copybookContents: String,
                            options: Map[String, String],
                            sconf: SerializableConfiguration)(implicit spark: SparkSession): RDD[Array[Byte]] = {
-
-    val varLenOptions = options + (PARAM_GENERATE_RECORD_ID -> "true")
-
-    val cobolParameters: CobolParameters = CobolParametersParser.parse(new Parameters(varLenOptions))
-      .copy(sourcePaths = listOfFiles, copybookContent = Option(copybookContents))
+    val cobolParameters = getCobolParameters(listOfFiles, copybookContents, options, ignoreRedundantOptions = false)
 
     val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
     val cobolReader = DefaultSource.createVariableLengthReader(cobolParameters, spark)
@@ -248,7 +247,6 @@ object SparkCobolProcessor {
 
   private def processListOfFiles(listOfFiles: Seq[String],
                                  outputPath: String,
-                                 copybookContents: String,
                                  cobolProcessor: CobolProcessor,
                                  rawRecordProcessor: SerializableRawRecordProcessor,
                                  sconf: SerializableConfiguration,

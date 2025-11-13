@@ -222,7 +222,7 @@ object CobolParametersParser extends Logging {
     policy
   }
 
-  def parse(params: Parameters): CobolParameters = {
+  def parse(params: Parameters, validateRedundantOptions: Boolean = true): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
@@ -306,7 +306,7 @@ object CobolParametersParser extends Logging {
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
       params.getMap
       )
-    validateSparkCobolOptions(params, recordFormat)
+    validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
     cobolParameters
   }
 
@@ -753,7 +753,7 @@ object CobolParametersParser extends Logging {
     *
     * @param params Parameters provided by spark.read.option(...)
     */
-  private def validateSparkCobolOptions(params: Parameters, recordFormat: RecordFormat): Unit = {
+  private def validateSparkCobolOptions(params: Parameters, recordFormat: RecordFormat, validateRedundantOptions: Boolean): Unit = {
     val isRecordSequence = params.getOrElse(PARAM_IS_XCOM, "false").toBoolean ||
       params.getOrElse(PARAM_IS_RECORD_SEQUENCE, "false").toBoolean ||
       params.contains(PARAM_FILE_START_OFFSET) ||
@@ -946,7 +946,7 @@ object CobolParametersParser extends Logging {
       params.contains(PARAM_STRICT_INTEGRAL_PRECISION) && params(PARAM_STRICT_INTEGRAL_PRECISION).toBoolean)
       throw new IllegalArgumentException(s"Options '$PARAM_DISPLAY_PIC_ALWAYS_STRING' and '$PARAM_STRICT_INTEGRAL_PRECISION' cannot be used together.")
 
-    if (unusedKeys.nonEmpty) {
+    if (validateRedundantOptions && unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")
       val msg = s"Redundant or unrecognized option(s) to 'spark-cobol': $unusedKeyStr."
       if (isPedantic) {

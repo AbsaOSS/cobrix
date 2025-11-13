@@ -47,6 +47,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
       val exception = intercept[IllegalArgumentException] {
         SparkCobolProcessor.builder
           .withCopybookContents(copybook).load(".")
+          .save("ignored")
       }
 
       assert(exception.getMessage.contains("A RawRecordProcessor must be provided."))
@@ -159,10 +160,13 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
       writeBinaryFile(inputPath, binData)
 
-      val rdd = SparkCobolProcessor.builder
+      val rddBuilder = SparkCobolProcessor.builder
         .withCopybookContents(copybook)
         .option("enable_indexes", "false")
-        .toRDD(inputPath)
+        .load(inputPath)
+
+      val parsedCopybook = rddBuilder.getParsedCopybook
+      val rdd = rddBuilder.toRDD
 
       val count = rdd.count()
 
@@ -174,6 +178,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
         .sortBy(x => x)
         .collect().mkString(", ")
 
+      assert(parsedCopybook.ast.children.length == 1)
       assert(actual == expected)
     }
   }
@@ -192,7 +197,8 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
         .withCopybookContents(copybook)
         .option("enable_indexes", "true")
         .option("input_split_records", "2")
-        .toRDD(inputPath)
+        .load(inputPath)
+        .toRDD
 
       val count = rdd.count()
 
