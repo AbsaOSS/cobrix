@@ -44,7 +44,7 @@ import scala.collection.mutable.ArrayBuffer
   *
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
-private[source] object IndexBuilder extends Logging {
+private[cobol] object IndexBuilder extends Logging {
   def buildIndex(filesList: Array[FileWithOrder],
                  cobolReader: Reader,
                  sqlContext: SQLContext)

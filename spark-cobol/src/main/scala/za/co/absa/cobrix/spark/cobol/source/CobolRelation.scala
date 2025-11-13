@@ -71,7 +71,7 @@ class CobolRelation(sourceDirs: Seq[String],
     with Serializable
     with TableScan {
 
-  private val filesList = getListFilesWithOrder(sourceDirs)
+  private val filesList = CobolRelation.getListFilesWithOrder(sourceDirs, sqlContext, isRecursiveRetrieval)
 
   private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
 
@@ -95,23 +95,6 @@ class CobolRelation(sourceDirs: Seq[String],
   }
 
   /**
-    * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
-    * as their order.
-    *
-    * The List contains [[za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder]] instances.
-    */
-  private def getListFilesWithOrder(sourceDirs: Seq[String]): Array[FileWithOrder] = {
-    val allFiles = sourceDirs.flatMap(sourceDir => {
-      FileUtils
-        .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
-    }).toArray
-
-    allFiles
-      .zipWithIndex
-      .map(file => FileWithOrder(file._1, file._2))
-  }
-
-  /**
     * Checks if the recursive file retrieval flag is set
     */
   private def isRecursiveRetrieval: Boolean = {
@@ -126,5 +109,24 @@ class CobolRelation(sourceDirs: Seq[String],
         parsedRecord
       }
     })
+  }
+}
+
+object CobolRelation {
+  /**
+    * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
+    * as their order.
+    *
+    * The List contains [[za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder]] instances.
+    */
+  def getListFilesWithOrder(sourceDirs: Seq[String], sqlContext: SQLContext, isRecursiveRetrieval: Boolean): Array[FileWithOrder] = {
+    val allFiles = sourceDirs.flatMap(sourceDir => {
+      FileUtils
+        .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
+    }).toArray
+
+    allFiles
+      .zipWithIndex
+      .map(file => FileWithOrder(file._1, file._2))
   }
 }

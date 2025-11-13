@@ -149,7 +149,7 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
     }
   }
 
-  "convert input format into an RDD" in {
+  "convert input format into an RDD without indexes" in {
     val expected = """-13, -14, -15"""
     withTempDirectory("spark_cobol_processor") { tempDir =>
       val binData = Array(0xF1, 0xF2, 0xF3, 0xF1).map(_.toByte)
@@ -161,11 +161,42 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
 
       val rdd = SparkCobolProcessor.builder
         .withCopybookContents(copybook)
+        .option("enable_indexes", "false")
         .toRDD(inputPath)
 
       val count = rdd.count()
 
       assert(count == 4)
+
+      val actual = rdd
+        .map(row => row.mkString)
+        .distinct
+        .sortBy(x => x)
+        .collect().mkString(", ")
+
+      assert(actual == expected)
+    }
+  }
+
+  "convert input format into an RDD with index" in {
+    val expected = """-10, -11, -12, -13, -14, -15"""
+    withTempDirectory("spark_cobol_processor") { tempDir =>
+      val binData = Array(0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF1).map(_.toByte)
+
+      val inputPath = new Path(tempDir, "input.dat").toString
+      val outputPath = new Path(tempDir, "output").toString
+
+      writeBinaryFile(inputPath, binData)
+
+      val rdd = SparkCobolProcessor.builder
+        .withCopybookContents(copybook)
+        .option("enable_indexes", "true")
+        .option("input_split_records", "2")
+        .toRDD(inputPath)
+
+      val count = rdd.count()
+
+      assert(count == 7)
 
       val actual = rdd
         .map(row => row.mkString)
