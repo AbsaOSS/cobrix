@@ -33,7 +33,7 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
     "work for an fixed-record-length files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
 
-      val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), copybook, stream)
+      val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(recordLength = Some(2), options = Map("test" -> "option")), copybook, stream, None)
 
       assert(ext.isInstanceOf[FixedRecordLengthRawRecordExtractor])
 
@@ -49,7 +49,7 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
       val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(
         recordFormat = RecordFormat.VariableLength,
         isText = true
-      ), copybook, stream)
+      ), copybook, stream, None)
 
       assert(ext.isInstanceOf[TextFullRecordExtractor])
     }
@@ -61,7 +61,7 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
         CobolProcessorBase.getRecordExtractor(ReaderParameters(
           recordFormat = RecordFormat.VariableLength,
           isRecordSequence = true
-        ), copybook, stream)
+        ), copybook, stream, None)
       }
 
       assert(ex.getMessage.contains("Cannot create a record extractor for the given reader parameters."))

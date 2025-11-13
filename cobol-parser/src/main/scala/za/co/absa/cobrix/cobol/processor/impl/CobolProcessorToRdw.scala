@@ -42,7 +42,7 @@ class CobolProcessorToRdw(readerParameters: ReaderParameters,
   override def process(inputStream: SimpleStream,
                        outputStream: OutputStream)
                       (rawRecordProcessor: RawRecordProcessor): Long = {
-    val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream)
+    val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream, None)
 
     StreamProcessor.processStreamToRdw(copybook,
       options,

@@ -30,9 +30,12 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 abstract class CobolProcessorBase extends CobolProcessor with Serializable
 
 object CobolProcessorBase {
-  def getRecordExtractor(readerParameters: ReaderParameters, copybookContents: String, inputStream: SimpleStream): RawRecordExtractor = {
+  def getRecordExtractor(readerParameters: ReaderParameters, copybookContents: String, inputStream: SimpleStream, headerStreamOpt: Option[SimpleStream]): RawRecordExtractor = {
     val dataStream = inputStream.copyStream()
-    val headerStream = inputStream.copyStream()
+    val headerStream = headerStreamOpt match {
+      case Some(stream) => stream
+      case None => inputStream.copyStream()
+    }
 
     val reader = new VarLenNestedReader[Array[Any]](Seq(copybookContents), readerParameters, new ArrayOfAnyHandler)
 

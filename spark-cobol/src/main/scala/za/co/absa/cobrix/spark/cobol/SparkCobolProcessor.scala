@@ -22,9 +22,15 @@ import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.processor.impl.CobolProcessorBase
 import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcessor, SerializableRawRecordProcessor}
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
-import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
+import za.co.absa.cobrix.cobol.reader.common.Constants
+import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_ID
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.spark.cobol.reader.VarLenReader
+import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
+import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
+import za.co.absa.cobrix.spark.cobol.source.{CobolRelation, DefaultSource, SerializableConfiguration}
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import java.io.BufferedOutputStream
@@ -45,6 +51,7 @@ trait SparkCobolProcessor {
 }
 
 object SparkCobolProcessor {
+  @transient
   private val log = LoggerFactory.getLogger(this.getClass)
 
   class SparkCobolProcessorBuilder(implicit spark: SparkSession) {
@@ -197,15 +204,45 @@ object SparkCobolProcessor {
                            options: Map[String, String],
                            sconf: SerializableConfiguration)(implicit spark: SparkSession): RDD[Array[Byte]] = {
 
-    val cobolParameters = CobolParametersParser.parse(new Parameters(options))
+    val varLenOptions = options + (PARAM_GENERATE_RECORD_ID -> "true")
+
+    val cobolParameters: CobolParameters = CobolParametersParser.parse(new Parameters(varLenOptions))
+      .copy(sourcePaths = listOfFiles, copybookContent = Option(copybookContents))
+
     val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+    val cobolReader = DefaultSource.createVariableLengthReader(cobolParameters, spark)
+    val allowIndexes = readerParameters.isIndexGenerationNeeded
 
-    spark.sparkContext.parallelize(listOfFiles).flatMap { inputFile =>
-      val hadoopConfig = sconf.value
-      val inputFs = new Path(inputFile).getFileSystem(hadoopConfig)
-      val ifs = new FileStreamer(inputFile, inputFs)
+    cobolReader match {
+      case reader: VarLenReader if reader.isIndexGenerationNeeded && allowIndexes =>
+        val orderedFiles = CobolRelation.getListFilesWithOrder(listOfFiles, spark.sqlContext, isRecursiveRetrieval = false)
+        val filesMap = orderedFiles.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap
+        val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(orderedFiles, cobolReader, spark.sqlContext)(LocalityParameters(improveLocality = false, optimizeAllocation = false))
 
-      CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs)
+        indexes.flatMap(indexEntry => {
+          val filePathName = filesMap(indexEntry.fileId)
+          val path = new Path(filePathName)
+          val fileSystem = path.getFileSystem(sconf.value)
+          val fileName = path.getName
+          val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
+          val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
+
+          log.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
+          val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
+          val headerStream = new FileStreamer(filePathName, fileSystem)
+
+          CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, dataStream, Some(headerStream))
+        })
+
+      case _ =>
+        spark.sparkContext.parallelize(listOfFiles).flatMap { inputFile =>
+          val hadoopConfig = sconf.value
+          log.info(s"Going to process data from $inputFile")
+          val inputFs = new Path(inputFile).getFileSystem(hadoopConfig)
+          val ifs = new FileStreamer(inputFile, inputFs)
+
+          CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs, None)
+        }
     }
   }
 

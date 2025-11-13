@@ -21,6 +21,7 @@ import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
@@ -41,6 +42,7 @@ class DefaultSource
     with DataSourceRegister
     with ReaderFactory
     with Logging {
+  import DefaultSource._
 
   override def shortName(): String = SHORT_NAME
 
@@ -124,13 +126,17 @@ class DefaultSource
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader = null
+}
+
+object DefaultSource {
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   /**
     * Builds one of two Readers, depending on the parameters.
     *
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
-  private def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
+  def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
     val reader = if (cobolParameters.isText && cobolParameters.variableLengthParams.isEmpty) {
       createTextReader(cobolParameters, spark)
     } else if (cobolParameters.variableLengthParams.isEmpty) {
@@ -148,7 +154,7 @@ class DefaultSource
   /**
     * Creates a Reader that knows how to consume text Cobol records.
     */
-  private def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
+  def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark, parameters.sourcePaths.headOption)
     new FixedLenTextReader(copybookContent,  getReaderProperties(parameters, defaultHdfsBlockSize)
@@ -158,7 +164,7 @@ class DefaultSource
   /**
     * Creates a Reader that knows how to consume fixed-length Cobol records.
     */
-  private def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
+  def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
     val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark, parameters.sourcePaths.headOption)
@@ -171,7 +177,7 @@ class DefaultSource
     *
     * The variable-length reading process is approached as if reading from a stream.
     */
-  private def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
+  def createVariableLengthReader(parameters: CobolParameters, spark: SparkSession): VarLenReader = {
 
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
