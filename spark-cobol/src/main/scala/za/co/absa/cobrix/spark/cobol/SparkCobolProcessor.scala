@@ -198,6 +198,8 @@ object SparkCobolProcessor {
   private def getCobolParameters(listOfFiles: Seq[String], copybookContents: String, options: Map[String, String], ignoreRedundantOptions: Boolean): CobolParameters = {
     val varLenOptions = options + (PARAM_GENERATE_RECORD_ID -> "true")
 
+    // This method might be called several times during the ebcdic file processing. If there are redundant options, they will be logged.
+    // `ignoreRedundantOptions=true` when the method is called just for copybook parsing so logging redundant options could be skipped.
     CobolParametersParser.parse(new Parameters(varLenOptions), !ignoreRedundantOptions)
       .copy(sourcePaths = listOfFiles, copybookContent = Option(copybookContents))
   }
