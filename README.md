@@ -1662,7 +1662,8 @@ The output looks like this:
 `common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
 ## EBCDIC Processor (experimental)
-The EBCDIC processor allows processing files by replacing value of fields without changing the underlying format.
+The EBCDIC processor allows processing files by replacing value of fields without changing the underlying format (`CobolProcessingStrategy.InPlace`)
+or with conversion of the input format to variable-record-length format with big-endian RDWs (`CobolProcessingStrategy.ToVariableLength`).
 
 The processing does not require Spark. A processing application can have only the COBOL parser as a dependency (`cobol-parser`).
 
@@ -1676,6 +1677,7 @@ val builder = CobolProcessor.builder(copybookContents)
 
 val builder = CobolProcessor.builder
   .withCopybookContents("...some copybook...")
+  .withProcessingStrategy(CobolProcessingStrategy.InPlace) // Or CobolProcessingStrategy.ToVariableLength
 
 val processor = new RawRecordProcessor {
   override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
@@ -1699,6 +1701,7 @@ import za.co.absa.cobrix.cobol.processor.{CobolProcessor, CobolProcessorContext}
 
 val count = CobolProcessor.builder
   .withCopybookContents(copybook)
+  .withProcessingStrategy(CobolProcessingStrategy.InPlace) // Or CobolProcessingStrategy.ToVariableLength
   .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
     // The transformation logic goes here
     val value = copybook.getFieldValueByName("some_field", record, 0)
@@ -1726,6 +1729,7 @@ val copybookContents = "...some copybook..."
 
 SparkCobolProcessor.builder
   .withCopybookContents(copybook)
+  .withProcessingStrategy(CobolProcessingStrategy.InPlace) // Or CobolProcessingStrategy.ToVariableLength
   .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
     // The transformation logic goes here
     val value = ctx.copybook.getFieldValueByName("some_field", record, 0)
@@ -1738,6 +1742,35 @@ SparkCobolProcessor.builder
   }
   .load(inputPath)
   .save(outputPath)
+```
+
+## EBCDIC Spark raw record RDD generator (experimental)
+You can process raw records of a mainframe file as an `RDD[Array[Byte]]`. This can be useful for custom processing without converting
+to Spark data types. You can still access fields via parsed copybooks.
+
+Example:
+```scala
+import org.apache.spark.rdd.RDD
+import za.co.absa.cobrix.spark.cobol.SparkCobolProcessor
+
+val copybookContents = "...some copybook..."
+
+val rddBuilder = SparkCobolProcessor.builder
+  .withCopybookContents(copybookContents)
+  .option("record_format", "F")
+  .load("s3://bucket/some/path")
+
+// Fetch the parsed copybook and the RDD separately
+val copybook = rddBuilder.getParsedCopybook
+val rdd: RDD[Array[Byte]] = rddBuilder.toRDD
+
+val segmentRdds RDD[String] = recordsRdd.flatMap { record =>
+  val seg = copybook.getFieldValueByName("SEGMENT_ID", record).toString
+  seg
+}
+
+// Print the list of unique segments
+segmentRdds.distinct.collect.sorted.foreach(println)
 ```
 
 ## EBCDIC Writer (experimental)
