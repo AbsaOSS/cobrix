@@ -1800,7 +1800,6 @@ The writer is still in its early stages and has several limitations:
     `COMP-9` (Cobrix little-endian).
 - Only fixed record length output is supported (`record_format = F`).
 - `REDEFINES` and `OCCURS` are not supported.
-- Only the core EBCDIC encoder is supported; specific EBCDIC code pages are not yet available.
 - Partitioning by DataFrame fields is not supported.
 
 ### Implementation details
