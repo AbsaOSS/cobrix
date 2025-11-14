@@ -27,11 +27,12 @@
 	
 	<properties>
 		<encoding>UTF-8</encoding>
-		<scala.version>2.11.12</scala.version>
-		<scala.compat.version>2.11</scala.compat.version>	
-		<spark.version>2.4.8</spark.version>
+		<scala.version>2.12.20</scala.version>
+		<scala.compat.version>2.12</scala.compat.version>
+		<spark.version>3.5.7</spark.version>
 		<specs.version>2.4.16</specs.version>
-		<spark.cobol.version>2.9.2</spark.cobol.version>
+		<spark.cobol.version>2.9.3</spark.cobol.version>
+        <scodec_core.version>1.11.10</scodec_core.version>
 	</properties>
 	
 	<dependencies>
@@ -75,7 +76,12 @@
             <artifactId>spark-cobol_${scala.compat.version}</artifactId>
             <version>${spark.cobol.version}</version>
         </dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.scodec</groupId>
+            <artifactId>scodec-core_${scala.compat.version}</artifactId>
+            <version>${scodec_core.version}</version>
+        </dependency>
+    </dependencies>
 
 	<build>
 		<sourceDirectory>src/main/scala</sourceDirectory>

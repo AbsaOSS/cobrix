@@ -18,7 +18,7 @@ package com.example.spark.cobol.examples.apps
 
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import za.co.absa.cobrix.spark.cobol.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 
 object StreamingExample {
 

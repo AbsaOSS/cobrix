@@ -72,13 +72,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.3</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.3</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.3</pre>
 </td>
 </tr>
 </table>
@@ -89,17 +89,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.3
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.3
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.3
 ```
 
 ## Usage
@@ -237,8 +237,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.9.2.jar
-* cobol-parser_2.12-2.9.2.jar
+* spark-cobol_2.12-2.9.3.jar
+* cobol-parser_2.12-2.9.3.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -246,9 +246,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.2
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.3
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.2.jar,cobol-parser_2.12-2.9.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.3.jar,cobol-parser_2.12-2.9.3.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -316,7 +316,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.9.3-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.9.4-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1942,6 +1942,30 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.9.3 released 13 November 2025.
+   - [#792](https://github.com/AbsaOSS/cobrix/pull/792) Added EBCDIC to ASCII encoders for all single byte code pages.
+     ```scala
+     df.write
+       .format("cobol")
+       .mode(SaveMode.Overwrite)
+       .option("copybook_contents", copybookContents)
+       .option("ebcdic_code_page", "cp273") // Specify the EBCDIC code page to use
+       .save("/some/output/path")
+     ```
+   - [#795](https://github.com/AbsaOSS/cobrix/pull/795) Added the ability to process EBCDIC files in-place and convert them to VRL format.
+     ```scala
+     import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcessorContext, SerializableRawRecordProcessor}
+     import za.co.absa.cobrix.spark.cobol.SparkCobolProcessor
+
+     SparkCobolProcessor.builder
+       .withCopybookContents(copybook)
+       .withProcessingStrategy(CobolProcessingStrategy.ToVariableLength) // Convert files to RDW-based VRL format
+       .withRecordProcessor(...)
+       .load(inputPath)
+       .save(outputPath)
+     ```
+   - [#796](https://github.com/AbsaOSS/cobrix/pull/796) Fixed redundant errors when getting the default block size for the Hadoop filesystem.
+     
 - #### 2.9.2 released 30 October 2025.
    - [#790](https://github.com/AbsaOSS/cobrix/pull/790) Extended EBCDIC Encoder - added support for CP1144 (thanks by @Il-Pela).  
 
