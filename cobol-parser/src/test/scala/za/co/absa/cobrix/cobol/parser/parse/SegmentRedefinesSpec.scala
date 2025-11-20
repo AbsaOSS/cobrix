@@ -88,6 +88,33 @@ class SegmentRedefinesSpec extends AnyFunSuite {
     assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(4).asInstanceOf[Group].isSegmentRedefine)
   }
 
+  test ("Test allow gaps in segment redefines as long as they are in the same group") {
+    val copybook =
+      """      01 RECORD.
+        |        02 A-RECORD.
+        |           03 FIELD0 PIC X(2).
+        |        02 SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-B REDEFINES SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-C REDEFINES SEGMENT-A.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 SEGMENT-D REDEFINES SEGMENT-A.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 Z-RECORD.
+        |           03 FIELD5 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+
+    assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
+    assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(2).asInstanceOf[Group].isSegmentRedefine)
+    assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(3).asInstanceOf[Group].isSegmentRedefine)
+  }
+
   test ("Test segment redefines should be in the same redefined group") {
     val copybook =
       """      01 RECORD.
@@ -113,6 +140,56 @@ class SegmentRedefinesSpec extends AnyFunSuite {
       CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
     }
     assert(exception1.getMessage.contains("The 'SEGMENT_C' field is specified to be a segment redefine."))
+  }
+
+  test ("Test first segment should be redefined") {
+    val copybook =
+      """      01 RECORD.
+        |        02 A-RECORD.
+        |           03 FIELD0 PIC X(2).
+        |        02 SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-B.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-C  REDEFINES SEGMENT-B.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 SEGMENT-D REDEFINES SEGMENT-C.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 Z-RECORD.
+        |           03 FIELD5 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+
+    val exception1 = intercept[IllegalStateException] {
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+    }
+    assert(exception1.getMessage.contains("The following segment redefines not found: [ SEGMENT_A ]."))
+  }
+
+  test ("Test don't allow non-redefined fields in between segment redefines") {
+    val copybook =
+      """      01 RECORD.
+        |        02 A-RECORD.
+        |           03 FIELD0 PIC X(2).
+        |        02 SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-B REDEFINES SEGMENT-A.
+        |           03 FIELD1 PIC X(2).
+        |        02 SEGMENT-C.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 SEGMENT-D REDEFINES SEGMENT-C.
+        |           03 FIELD4 PICTURE S9(6)USAGE COMP.
+        |        02 Z-RECORD.
+        |           03 FIELD5 PIC X(2).
+      """.stripMargin
+
+    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+
+    val exception1 = intercept[IllegalStateException] {
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+    }
+    assert(exception1.getMessage.contains("The segment redefine field 'SEGMENT_C' is not a REDEFINE or redefined by another field."))
   }
 
 

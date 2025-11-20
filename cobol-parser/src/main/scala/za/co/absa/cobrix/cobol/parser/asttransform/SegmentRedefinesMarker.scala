@@ -72,11 +72,20 @@ class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransform
             if (foundRedefines.contains(g.name)) {
               throw new IllegalStateException(s"Duplicate segment redefine field '${g.name}' found.")
             }
+
+            if (redefineGroupState == 1 && g.redefines.isEmpty)
+              throw new IllegalStateException(s"The segment redefine field '${g.name}' is not a REDEFINE or redefined by another field.")
+
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
             foundRedefines += g.name
             g.withUpdatedIsSegmentRedefine(true)
           } else {
-            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = false)
+            // Allow redefines in between segment redefines.
+            val fieldMightBeRedefine = if (redefineGroupState == 1 && g.redefines.nonEmpty)
+              true
+            else
+              false
+            ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = fieldMightBeRedefine)
             // Check nested fields recursively only if segment redefines hasn't been found so far.
             if (redefineGroupState == 0) {
               processGroupFields(g)
