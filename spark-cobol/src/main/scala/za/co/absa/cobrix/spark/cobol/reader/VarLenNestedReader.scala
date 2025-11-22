@@ -53,14 +53,19 @@ final class VarLenNestedReader(copybookContents: Seq[String],
                               headerStream: SimpleStream,
                               startingFileOffset: Long,
                               fileNumber: Int,
-                              startingRecordIndex: Long): Iterator[Row] =
+                              startingRecordIndex: Long): Iterator[Row] = {
+    val recordExtractorOpt = recordExtractor(startingRecordIndex, dataStream, headerStream)
+    if (recordExtractorOpt.isEmpty) {
+      headerStream.close()
+    }
+
     if (cobolSchema.copybook.isHierarchical) {
       new RowIterator(
         new VarLenHierarchicalIterator(cobolSchema.copybook,
           dataStream,
           getReaderProperties,
           recordHeaderParser,
-          recordExtractor(startingRecordIndex, dataStream, headerStream),
+          recordExtractorOpt,
           fileNumber,
           startingRecordIndex,
           startingFileOffset,
@@ -72,7 +77,7 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           dataStream,
           getReaderProperties,
           recordHeaderParser,
-          recordExtractor(startingRecordIndex, dataStream, headerStream),
+          recordExtractorOpt,
           fileNumber,
           startingRecordIndex,
           startingFileOffset,
@@ -80,4 +85,5 @@ final class VarLenNestedReader(copybookContents: Seq[String],
           new RowHandler())
       )
     }
+  }
 }

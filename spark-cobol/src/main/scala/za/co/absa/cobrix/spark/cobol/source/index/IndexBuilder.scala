@@ -215,56 +215,64 @@ private[cobol] object IndexBuilder extends Logging {
     readerProperties.recordExtractor.foreach { recordExtractorClass =>
       val (dataStream, headerStream, _) = getStreams(filePath, startOffset, endOffset, config)
 
-      val extractorOpt = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(0, dataStream, headerStream)
+      try {
+        val extractorOpt = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(0, dataStream, headerStream)
 
-      var offset = -1L
-      var record = Array[Byte]()
+        var offset = -1L
+        var record = Array[Byte]()
 
-      extractorOpt.foreach { extractor =>
-        if (extractor.hasNext) {
-          // Getting the first record, if available
-          extractor.next()
-          offset = extractor.offset // Saving offset to jump to later
-
+        extractorOpt.foreach { extractor =>
           if (extractor.hasNext) {
-            // Getting the second record, if available
-            record = extractor.next() // Saving the record to check later
+            // Getting the first record, if available
+            extractor.next()
+            offset = extractor.offset // Saving offset to jump to later
 
-            dataStream.close()
-            headerStream.close()
+            if (extractor.hasNext) {
+              // Getting the second record, if available
+              record = extractor.next() // Saving the record to check later
 
-            // Getting new streams and record extractor that points directly to the second record
-            val (dataStream2, headerStream2, _) = getStreams(filePath, offset, endOffset, config)
-            val extractorOpt2 = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(1, dataStream2, headerStream2)
+              dataStream.close()
+              headerStream.close()
 
-            extractorOpt2.foreach { extractor2 =>
-              if (!extractor2.hasNext) {
-                // If the extractor refuses to return the second record, it is obviously faulty in terms of indexing support.
-                throw new RuntimeException(
-                  s"Record extractor self-check failed. When reading from a non-zero offset the extractor returned hasNext()=false. " +
-                    "Please, use 'enable_indexes = false'. " +
-                    s"File: $filePath, offset: $offset"
-                )
+              // Getting new streams and record extractor that points directly to the second record
+              val (dataStream2, headerStream2, _) = getStreams(filePath, offset, endOffset, config)
+              try {
+                val extractorOpt2 = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(1, dataStream2, headerStream2)
+
+                extractorOpt2.foreach { extractor2 =>
+                  if (!extractor2.hasNext) {
+                    // If the extractor refuses to return the second record, it is obviously faulty in terms of indexing support.
+                    throw new RuntimeException(
+                      s"Record extractor self-check failed. When reading from a non-zero offset the extractor returned hasNext()=false. " +
+                        "Please, use 'enable_indexes = false'. " +
+                        s"File: $filePath, offset: $offset"
+                    )
+                  }
+
+                  // Getting the second record from the extractor pointing to the second record offset at the start.
+                  val expectedRecord = extractor2.next()
+
+                  if (!expectedRecord.sameElements(record)) {
+                    // Records should match. If they don't, the record extractor is faulty in terms of indexing support..
+                    throw new RuntimeException(
+                      s"Record extractor self-check failed. The record extractor returned wrong record when started from non-zero offset. " +
+                        "Please, use 'enable_indexes = false'. " +
+                        s"File: $filePath, offset: $offset"
+                    )
+                  } else {
+                    logger.info(s"Record extractor self-check passed. File: $filePath, offset: $offset")
+                  }
+                }
+              } finally {
+                dataStream2.close()
+                headerStream2.close()
               }
-
-              // Getting the second record from the extractor pointing to the second record offset at the start.
-              val expectedRecord = extractor2.next()
-
-              if (!expectedRecord.sameElements(record)) {
-                // Records should match. If they don't, the record extractor is faulty in terms of indexing support..
-                throw new RuntimeException(
-                  s"Record extractor self-check failed. The record extractor returned wrong record when started from non-zero offset. " +
-                    "Please, use 'enable_indexes = false'. " +
-                    s"File: $filePath, offset: $offset"
-                )
-              } else {
-                logger.info(s"Record extractor self-check passed. File: $filePath, offset: $offset")
-              }
-              dataStream2.close()
-              headerStream2.close()
             }
           }
         }
+      } finally {
+        dataStream.close()
+        headerStream.close()
       }
     }
   }

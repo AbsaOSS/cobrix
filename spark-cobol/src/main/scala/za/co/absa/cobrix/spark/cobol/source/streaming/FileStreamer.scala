@@ -22,17 +22,19 @@ import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import org.apache.hadoop.fs.ContentSummary
 import za.co.absa.cobrix.cobol.reader.common.Constants
 
+import java.io.IOException
+
 /**
-  * This class provides methods for streaming bytes from an Hadoop file.
+  * This class provides methods for streaming bytes from a Hadoop file.
   *
   * It is stateful, which means that it stores the offset until which the file has been consumed.
   *
-  * Instances of this class are not reusable, i.e. once the file is fully read it can neither be reopened nor can other
+  * Instances of this class are not reusable, i.e., once the file is fully read, it can neither be reopened nor can another
   * file be consumed.
   *
-  * @param filePath   String contained the fully qualified path to the file.
-  * @param fileSystem Underlying FileSystem point of access.
-  * @throws IllegalArgumentException in case the file is not found in the underlying file system.
+  * @param filePath   String containing the fully qualified path to the file.
+  * @param fileSystem Underlying Hadoop file system.
+  * @note This class is not thread-safe and should only be accessed from a single thread
   */
 class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
 
@@ -40,10 +42,14 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   private var byteIndex = startOffset
 
-  // Use a buffer to read the data from Hadoop in big chunks
-  private var bufferedStream = new BufferedFSDataInputStream(new Path(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+  // This ensures that the file is never opened if the stream is never used. This serves two purposes:
+  // - Safety: ensures that unused streams are closed.
+  // - Performance: prevents time being spent on opening unused files.
+  // Note: Since we are working with a network file system, opening a file is a very expensive operation.
+  private var wasOpened = false
+  private var bufferedStream: BufferedFSDataInputStream = _
 
-  private val fileSize = getHadoopFileSize(new Path(filePath))
+  private lazy val fileSize = getHadoopFileSize(new Path(filePath))
 
   override def inputFileName: String = filePath
 
@@ -65,7 +71,9 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     * @param numberOfBytes The number of bytes to read from the stream
     * @return An array containing the requested bytes, or fewer bytes if end of stream is reached, or empty array if no more data
     */
+  @throws[IOException]
   override def next(numberOfBytes: Int): Array[Byte] = {
+    ensureOpened()
     val actualBytesToRead = if (maximumBytes > 0) {
       Math.min(maximumBytes - byteIndex + startOffset, numberOfBytes).toInt
     } else {
@@ -104,7 +112,9 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     }
   }
 
+  @throws[IOException]
   override def close(): Unit = {
+    wasOpened = true
     if (bufferedStream != null && !bufferedStream.isClosed) {
       bufferedStream.close()
       bufferedStream = null
@@ -113,6 +123,14 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   override def copyStream(): SimpleStream = {
     new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+  }
+
+  @throws[IOException]
+  private def ensureOpened(): Unit = {
+    if (!wasOpened) {
+      bufferedStream = new BufferedFSDataInputStream(new Path(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+      wasOpened = true
+    }
   }
 
   private def getHadoopFileSize(hadoopPath: Path): Long = {
