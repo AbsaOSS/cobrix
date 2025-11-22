@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -43,10 +43,9 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
   behavior of classOf[FileStreamer].getName
 
   it should "throw if file does not exist" in {
-    val caught = intercept[IllegalArgumentException] {
+    assertThrows[FileNotFoundException] {
       new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
     }
-    assert(caught.getMessage.toLowerCase.contains("inexistent"))
   }
 
   it should "return array of same length than expected number of bytes if enough data" in {

@@ -41,9 +41,9 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   private var byteIndex = startOffset
 
   // Use a buffer to read the data from Hadoop in big chunks
-  private var bufferedStream = new BufferedFSDataInputStream(getHadoopPath(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+  private var bufferedStream = new BufferedFSDataInputStream(new Path(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
 
-  private val fileSize = getHadoopFileSize(getHadoopPath(filePath))
+  private val fileSize = getHadoopFileSize(new Path(filePath))
 
   override def inputFileName: String = filePath
 
@@ -54,16 +54,16 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   override def offset: Long = byteIndex
 
   /**
-    * Retrieves a given number of bytes.
+    * Retrieves a given number of bytes from the file stream.
     *
     * One of three situations is possible:
     *
-    * 1. There's enough data to be read, thus, the resulting array's length will be exactly ''numberOfBytes''.
-    * 2. There's not enough data but at least some, thus, the resulting array's length will be the number of available bytes.
-    * 3. The end of the file was already reached, in which case the resulting array will be empty.
+    * 1. There's enough data to be read, thus, the resulting array's length will be exactly `numberOfBytes`.
+    * 2. There's not enough data but at least some bytes are available, thus, the resulting array's length will be less than requested.
+    * 3. The end of the file was already reached or the stream is closed, in which case the resulting array will be empty.
     *
-    * @param numberOfBytes
-    * @return
+    * @param numberOfBytes The number of bytes to read from the stream
+    * @return An array containing the requested bytes, or fewer bytes if end of stream is reached, or empty array if no more data
     */
   override def next(numberOfBytes: Int): Array[Byte] = {
     val actualBytesToRead = if (maximumBytes > 0) {
@@ -113,19 +113,6 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
 
   override def copyStream(): SimpleStream = {
     new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
-  }
-
-  /**
-    * Gets a Hadoop [[Path]] (HDFS, S3, DBFS, etc) to the file.
-    *
-    * Throws IllegalArgumentException in case the file does not exist.
-    */
-  private def getHadoopPath(path: String) = {
-    val hadoopPath = new Path(path)
-    if (!fileSystem.exists(hadoopPath)) {
-      throw new IllegalArgumentException(s"File does not exist: $path")
-    }
-    hadoopPath
   }
 
   private def getHadoopFileSize(hadoopPath: Path): Long = {
