@@ -100,13 +100,17 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                  headerStream: SimpleStream,
                                  startingFileOffset: Long,
                                  fileNumber: Int,
-                                 startingRecordIndex: Long): Iterator[Seq[Any]] =
+                                 startingRecordIndex: Long): Iterator[Seq[Any]] = {
+    val recordExtractorOpt = recordExtractor(startingRecordIndex, dataStream, headerStream)
+    if (recordExtractorOpt.isEmpty) {
+      headerStream.close()
+    }
     if (cobolSchema.copybook.isHierarchical) {
       new VarLenHierarchicalIterator(cobolSchema.copybook,
         dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, dataStream, headerStream),
+        recordExtractorOpt,
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
@@ -116,13 +120,14 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties,
         recordHeaderParser,
-        recordExtractor(startingRecordIndex, dataStream, headerStream),
+        recordExtractorOpt,
         fileNumber,
         startingRecordIndex,
         startingFileOffset,
         cobolSchema.segmentIdPrefix,
         handler)
     }
+  }
 
   /**
     * Traverses the data sequentially as fast as possible to generate record index.
