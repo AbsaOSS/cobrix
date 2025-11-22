@@ -44,10 +44,16 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
   it should "throw if file does not exist" in {
     assertThrows[FileNotFoundException] {
-      new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
+      val stream = new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
+      stream.size
     }
   }
 
+  it should "not throw if the stream is never used, even if the file does not exist" in {
+    noException should be thrownBy {
+      new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
+    }
+  }
   it should "return array of same length than expected number of bytes if enough data" in {
     val batchLength = 8
     val iterations = 10

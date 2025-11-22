@@ -18,6 +18,8 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
 
+import java.io.IOException
+
 class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOffset: Long, bufferSizeInMegabytes: Int, maximumBytes: Long ) {
   val bytesInMegabyte: Int = 1048576
 
@@ -38,6 +40,7 @@ class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOff
   private var bufferConitainBytes = 0
   private var bytesRead = 0
 
+  @throws[IOException]
   def close(): Unit = {
     if (!isStreamClosed) {
       in.close()

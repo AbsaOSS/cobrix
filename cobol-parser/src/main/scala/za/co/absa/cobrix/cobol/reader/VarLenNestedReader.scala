@@ -171,12 +171,17 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       case None => false
     }
 
+    val recordExtractorOpt = recordExtractor(0L, dataStream, headerStream)
+    if (recordExtractorOpt.isEmpty) {
+      headerStream.close()
+    }
+
     segmentIdField match {
       case Some(field) => IndexGenerator.sparseIndexGenerator(fileNumber,
         dataStream,
         readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, dataStream, headerStream),
+        recordExtractorOpt,
         inputSplitSizeRecords,
         inputSplitSizeMB,
         Some(copybook),
@@ -187,7 +192,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         dataStream,
         readerProperties.fileStartOffset,
         recordHeaderParser,
-        recordExtractor(0L, dataStream, headerStream),
+        recordExtractorOpt,
         inputSplitSizeRecords,
         inputSplitSizeMB,
         None,
