@@ -119,6 +119,7 @@ object CobolParametersParser extends Logging {
 
   // Indexed multisegment file processing
   val PARAM_ENABLE_INDEXES            = "enable_indexes"
+  val PARAM_ENABLE_INDEX_CACHE        = "enable_index_cache"
   val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
   val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
   val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
@@ -381,6 +382,7 @@ object CobolParametersParser extends Logging {
                                  fileEndOffset = 0,
                                  generateRecordId = false,
                                  isUsingIndex = false,
+                                 isIndexCachingAllowed = false,
                                  inputSplitRecords = None,
                                  inputSplitSizeMB = None,
                                  improveLocality = false,
@@ -416,6 +418,7 @@ object CobolParametersParser extends Logging {
       isRdwPartRecLength = varLenParams.isRdwPartRecLength,
       rdwAdjustment = varLenParams.rdwAdjustment,
       isIndexGenerationNeeded = varLenParams.isUsingIndex,
+      isIndexCachingAllowed = varLenParams.isIndexCachingAllowed,
       inputSplitRecords = varLenParams.inputSplitRecords,
       inputSplitSizeMB = varLenParams.inputSplitSizeMB,
       hdfsDefaultBlockSize = defaultBlockSize,
@@ -502,6 +505,7 @@ object CobolParametersParser extends Logging {
         fileEndOffset,
         isRecordIdGenerationEnabled,
         params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean,
+        params.getOrElse(PARAM_ENABLE_INDEX_CACHE, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,

@@ -34,6 +34,7 @@ package za.co.absa.cobrix.cobol.reader.parameters
   * @param fileEndOffset          A number of bytes to skip at the end of each file
   * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
   * @param isUsingIndex           Is indexing input file before processing is requested
+  * @param isIndexCachingAllowed  Is caching of generated index allowed
   * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
@@ -56,6 +57,7 @@ case class VariableLengthParameters(
                                      fileEndOffset:         Int,
                                      generateRecordId:      Boolean,
                                      isUsingIndex:          Boolean,
+                                     isIndexCachingAllowed: Boolean,
                                      inputSplitRecords:     Option[Int],
                                      inputSplitSizeMB:      Option[Int],
                                      improveLocality:       Boolean,
