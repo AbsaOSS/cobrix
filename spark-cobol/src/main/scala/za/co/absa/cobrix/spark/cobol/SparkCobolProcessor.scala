@@ -218,7 +218,7 @@ object SparkCobolProcessor {
       case reader: VarLenReader if reader.isIndexGenerationNeeded && allowIndexes =>
         val orderedFiles = CobolRelation.getListFilesWithOrder(listOfFiles, spark.sqlContext, isRecursiveRetrieval = false)
         val filesMap = orderedFiles.map(fileWithOrder => (fileWithOrder.order, fileWithOrder.filePath)).toMap
-        val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(orderedFiles, cobolReader, spark.sqlContext)(LocalityParameters(improveLocality = false, optimizeAllocation = false))
+        val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(orderedFiles, cobolReader, spark.sqlContext, readerParameters.isIndexCachingAllowed)(LocalityParameters(improveLocality = false, optimizeAllocation = false))
 
         indexes.flatMap(indexEntry => {
           val filePathName = filesMap(indexEntry.fileId)

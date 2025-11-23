@@ -83,6 +83,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
     if (numberOfBytes <= 0) {
       new Array[Byte](0)
     } else if (actualBytesToRead <=0 || bufferedStream == null || bufferedStream.isClosed) {
+      logger.info(s"End of stream reached: Requested $numberOfBytes bytes, reached offset $byteIndex.")
       close()
       new Array[Byte](0)
     } else {
@@ -97,7 +98,7 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
       if (readBytes == numberOfBytes) {
         buffer
       } else {
-        logger.warn(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
+        logger.info(s"End of stream reached: Requested $numberOfBytes bytes, received $readBytes.")
         close()
         if (readBytes == actualBytesToRead) {
           buffer

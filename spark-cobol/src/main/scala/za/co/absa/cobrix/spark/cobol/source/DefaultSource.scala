@@ -58,11 +58,16 @@ class DefaultSource
 
     val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
     CobolParametersValidator.checkSanity(cobolParameters)
+    val indexCachingAllowed = cobolParameters.variableLengthParams match {
+      case Some(varLenParams) => varLenParams.isIndexCachingAllowed
+      case None => false
+    }
 
     new CobolRelation(cobolParameters.sourcePaths,
       buildEitherReader(sqlContext.sparkSession, cobolParameters),
       LocalityParameters.extract(cobolParameters),
-      cobolParameters.debugIgnoreFileSize)(sqlContext)
+      cobolParameters.debugIgnoreFileSize,
+      indexCachingAllowed)(sqlContext)
   }
 
   /** Writer relation */

@@ -64,7 +64,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
 
         val localityParameters = LocalityParameters(improveLocality = true, optimizeAllocation = true)
 
-        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext)(localityParameters).collect()
+        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext, cachingAllowed = false)(localityParameters).collect()
 
         assert(index.length == 3)
       }
@@ -86,7 +86,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
 
         val localityParameters = LocalityParameters(improveLocality = false, optimizeAllocation = false)
 
-        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext)(localityParameters).collect()
+        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext, cachingAllowed = false)(localityParameters).collect()
 
         assert(index.length == 3)
       }
@@ -104,7 +104,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
 
         val localityParameters = LocalityParameters(improveLocality = false, optimizeAllocation = false)
 
-        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext)(localityParameters).collect()
+        val index = IndexBuilder.buildIndex(filesWithOrder, reader, spark.sqlContext, cachingAllowed = false)(localityParameters).collect()
 
         assert(index.length == 1)
       }
@@ -168,7 +168,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
 
         val reader = new VarLenNestedReader(Seq(copybook), readerParameters)
 
-        val index = IndexBuilder.buildIndexForVarLenReader(filesWithOrder, reader, spark.sqlContext).collect()
+        val index = IndexBuilder.buildIndexForVarLenReader(filesWithOrder, reader, spark.sqlContext, cachingAllowed = false).collect()
 
         assert(index.length == 3)
       }
@@ -188,7 +188,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
 
         val reader = new VarLenNestedReader(Seq(copybook), readerParameters)
 
-        val index = IndexBuilder.buildIndexForVarLenReader(filesWithOrder, reader, spark.sqlContext).collect()
+        val index = IndexBuilder.buildIndexForVarLenReader(filesWithOrder, reader, spark.sqlContext, cachingAllowed = false).collect()
 
         assert(index.length == 2)
       }

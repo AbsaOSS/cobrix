@@ -65,15 +65,16 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
 class CobolRelation(sourceDirs: Seq[String],
                     cobolReader: Reader,
                     localityParams: LocalityParameters,
-                    debugIgnoreFileSize: Boolean
-                   )(@transient val sqlContext: SQLContext)
+                    debugIgnoreFileSize: Boolean,
+                    indexCachingAllowed: Boolean)
+                   (@transient val sqlContext: SQLContext)
   extends BaseRelation
     with Serializable
     with TableScan {
 
   private val filesList = CobolRelation.getListFilesWithOrder(sourceDirs, sqlContext, isRecursiveRetrieval)
 
-  private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext)(localityParams)
+  private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext, indexCachingAllowed)(localityParams)
 
   override def schema: StructType = {
     cobolReader.getSparkSchema

@@ -99,6 +99,7 @@ case class ReaderParameters(
                              isRdwPartRecLength:      Boolean = false,
                              rdwAdjustment:           Int = 0,
                              isIndexGenerationNeeded: Boolean = false,
+                             isIndexCachingAllowed:   Boolean = false,
                              inputSplitRecords:       Option[Int] = None,
                              inputSplitSizeMB:        Option[Int] = None,
                              hdfsDefaultBlockSize:    Option[Int] = None,

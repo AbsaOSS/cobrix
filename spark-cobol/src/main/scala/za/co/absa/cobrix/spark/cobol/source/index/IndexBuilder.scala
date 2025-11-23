@@ -34,6 +34,7 @@ import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 import za.co.absa.cobrix.spark.cobol.utils.{HDFSUtils, SparkUtils}
 
+import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -45,18 +46,24 @@ import scala.collection.mutable.ArrayBuffer
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
 private[cobol] object IndexBuilder extends Logging {
+  private val indexCache = new ConcurrentHashMap[String, Array[SparseIndexEntry]]()
+
   def buildIndex(filesList: Array[FileWithOrder],
                  cobolReader: Reader,
-                 sqlContext: SQLContext)
+                 sqlContext: SQLContext,
+                 cachingAllowed: Boolean)
                 (localityParams: LocalityParameters): RDD[SparseIndexEntry] = {
     val fs = new Path(filesList.head.filePath).getFileSystem(sqlContext.sparkSession.sparkContext.hadoopConfiguration)
 
     cobolReader match {
       case reader: VarLenReader if reader.isIndexGenerationNeeded && localityParams.improveLocality && isDataLocalitySupported(fs) =>
+        logger.info("Building indexes with data locality...")
         buildIndexForVarLenReaderWithFullLocality(filesList, reader, sqlContext, localityParams.optimizeAllocation)
       case reader: VarLenReader                                                                                                    =>
-        buildIndexForVarLenReader(filesList, reader, sqlContext)
+        logger.info("Building indexes for variable record length input files...")
+        buildIndexForVarLenReader(filesList, reader, sqlContext, cachingAllowed)
       case _                                                                                                                       =>
+        logger.info("Generating indexes for full files...")
         buildIndexForFullFiles(filesList, sqlContext)
     }
   }
@@ -112,24 +119,58 @@ private[cobol] object IndexBuilder extends Logging {
     */
   private[cobol] def buildIndexForVarLenReader(filesList: Array[FileWithOrder],
                                                reader: VarLenReader,
-                                               sqlContext: SQLContext): RDD[SparseIndexEntry] = {
+                                               sqlContext: SQLContext,
+                                               cachingAllowed: Boolean): RDD[SparseIndexEntry] = {
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
 
-    if (reader.getReaderProperties.enableSelfChecks && filesList.nonEmpty) {
-      selfCheckForIndexCompatibility(reader, filesList.head.filePath, conf)
+    // Splitting between files for which indexes are chached and teh list of files for which indexes are not cached
+    val cachedFiles = if (cachingAllowed) {
+      filesList.filter(f => indexCache.containsKey(f.filePath))
+    } else {
+      Array.empty[FileWithOrder]
     }
 
-    val filesRDD = sqlContext.sparkContext.parallelize(filesList, filesList.length)
+    val nonCachedFiles = filesList.diff(cachedFiles)
 
-    val indexRDD = filesRDD.mapPartitions(
-      partition => {
-        partition.flatMap(row => {
-          generateIndexEntry(row, sconf.value, reader)
-        })
-      }).cache()
+    // Getting indexes for files for which indexes are not in the cache
+    val newIndexes = if (nonCachedFiles.length > 0) {
+      if (reader.getReaderProperties.enableSelfChecks) {
+        selfCheckForIndexCompatibility(reader, nonCachedFiles.head.filePath, conf)
+      }
 
-    repartitionIndexes(indexRDD)
+      val filesRDD = sqlContext.sparkContext.parallelize(nonCachedFiles, nonCachedFiles.length)
+      filesRDD.mapPartitions(
+        partition => {
+          partition.flatMap(row => {
+            generateIndexEntry(row, sconf.value, reader)
+          })
+        }).collect()
+    } else {
+      Array.empty[SparseIndexEntry]
+    }
+
+    // Storing new indexes in the cache
+    if (cachingAllowed && newIndexes.length > 0) {
+      newIndexes.groupBy(_.fileId).foreach { case (fileId, indexEntries) =>
+        val filePathOpt = filesList.find(_.order == fileId).map(_.filePath)
+
+        filePathOpt.foreach { filePath =>
+          logger.info(s"Index stored to cache for file: $filePath.")
+          indexCache.put(filePath, indexEntries.sortBy(_.offsetFrom))
+        }
+      }
+    }
+
+    // Getting indexes for files for which indexes are in the cache
+    val cachedIndexes = cachedFiles.flatMap { f =>
+      logger.info("Index fetched from cache for file: " + f.filePath)
+      indexCache.get(f.filePath)
+        .map(ind => ind.copy(fileId = f.order))
+    }
+
+    // Creating the final RDD with all indexes
+    createIndexRDD(cachedIndexes ++ newIndexes, sqlContext)
   }
 
   /**
@@ -335,5 +376,14 @@ private[cobol] object IndexBuilder extends Logging {
     val numPartitions = Math.min(indexCount, Constants.maxNumPartitions).toInt
     logger.info(s"Index elements count: $indexCount, number of partitions = $numPartitions")
     indexRDD.repartition(numPartitions).cache()
+  }
+
+  private def createIndexRDD(indexes: Array[SparseIndexEntry], sqlContext: SQLContext): RDD[SparseIndexEntry] = {
+    val indexCount = indexes.length
+
+    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions)
+    logger.info(s"Index elements count: ${indexes.length}, number of partitions = $numPartitions")
+
+    sqlContext.sparkContext.parallelize(indexes, numPartitions)
   }
 }
