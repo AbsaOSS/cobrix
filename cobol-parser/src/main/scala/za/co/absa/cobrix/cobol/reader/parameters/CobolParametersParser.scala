@@ -505,7 +505,7 @@ object CobolParametersParser extends Logging {
         fileEndOffset,
         isRecordIdGenerationEnabled,
         params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean,
-        params.getOrElse(PARAM_ENABLE_INDEX_CACHE, "true").toBoolean,
+        params.getOrElse(PARAM_ENABLE_INDEX_CACHE, "false").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,

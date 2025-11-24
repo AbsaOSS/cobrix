@@ -170,6 +170,31 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
       }
     }
 
+    "work for data with offsets and indexes and index cache" in {
+      withTempBinFile("record_length_mapping", ".tmp", dataWithFileOffsets) { tempFile =>
+        val expected = """{"SEG_ID":"A","TEXT":"123"},{"SEG_ID":"B","TEXT":"123456"},{"SEG_ID":"C","TEXT":"1234567"}"""
+
+        val df = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("record_length_field", "SEG-ID")
+          .option("file_start_offset", 1)
+          .option("file_end_offset", 2)
+          .option("input_split_records", "2")
+          .option("enable_index_cache", "true")
+          .option("pedantic", "true")
+          .option("record_length_map", """{"A":4,"B":7,"C":8}""")
+          .load(tempFile)
+
+        val actualInitial = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
+        val actualCached = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
+
+        assert(actualInitial == expected)
+        assert(actualCached == expected)
+      }
+    }
+
     "throw an exception for unknown mapping" in {
       withTempBinFile("record_length_mapping", ".tmp", dataSimple) { tempFile =>
         val df = spark.read
