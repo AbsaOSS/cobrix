@@ -16,10 +16,13 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
+import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkException
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.{PARAM_ENABLE_INDEXES, PARAM_ENABLE_INDEX_CACHE}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 
 class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture {
   private val copybook =
@@ -171,7 +174,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
     }
 
     "work for data with offsets and indexes and index cache" in {
-      withTempBinFile("record_length_mapping", ".tmp", dataWithFileOffsets) { tempFile =>
+      withTempBinFile("record_length_mapping", ".tmp", dataSimple) { tempFile =>
         val expected = """{"SEG_ID":"A","TEXT":"123"},{"SEG_ID":"B","TEXT":"123456"},{"SEG_ID":"C","TEXT":"1234567"}"""
 
         val df = spark.read
@@ -179,9 +182,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("copybook_contents", copybook)
           .option("record_format", "F")
           .option("record_length_field", "SEG-ID")
-          .option("file_start_offset", 1)
-          .option("file_end_offset", 2)
-          .option("input_split_records", "2")
+          .option("input_split_records", "1")
           .option("enable_index_cache", "true")
           .option("pedantic", "true")
           .option("record_length_map", """{"A":4,"B":7,"C":8}""")
@@ -190,8 +191,32 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
         val actualInitial = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
         val actualCached = df.orderBy("SEG_ID").toJSON.collect().mkString(",")
 
+        val pathNameAsCached = s"file:$tempFile"
+
+        assert(IndexBuilder.indexCache.get(pathNameAsCached) != null)
+        assert(IndexBuilder.indexCache.get(pathNameAsCached).length == 2)
+
         assert(actualInitial == expected)
         assert(actualCached == expected)
+      }
+    }
+
+    "throw an exception when index caching is requested while indexes are turned off" in {
+      withTempBinFile("record_length_mapping", ".tmp", dataWithFileOffsets) { tempFile =>
+        val ex = intercept[IllegalArgumentException] {
+          spark.read
+            .format("cobol")
+            .option("copybook_contents", copybook)
+            .option("record_format", "F")
+            .option("record_length_field", "SEG-ID")
+            .option("enable_indexes", "false")
+            .option("enable_index_cache", "true")
+            .option("pedantic", "true")
+            .option("record_length_map", """{"A":4,"B":7,"C":8}""")
+            .load(tempFile)
+        }
+
+        assert(ex.getMessage == s"When '$PARAM_ENABLE_INDEXES' = false, '$PARAM_ENABLE_INDEX_CACHE' cannot be true.")
       }
     }
 

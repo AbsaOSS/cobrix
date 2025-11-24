@@ -46,7 +46,7 @@ import scala.collection.mutable.ArrayBuffer
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
 private[cobol] object IndexBuilder extends Logging {
-  private val indexCache = new ConcurrentHashMap[String, Array[SparseIndexEntry]]()
+  private[cobol] val indexCache = new ConcurrentHashMap[String, Array[SparseIndexEntry]]()
 
   def buildIndex(filesList: Array[FileWithOrder],
                  cobolReader: Reader,
@@ -124,7 +124,7 @@ private[cobol] object IndexBuilder extends Logging {
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
 
-    // Splitting between files for which indexes are chached and teh list of files for which indexes are not cached
+    // Splitting between files for which indexes are cached and the list of files for which indexes are not cached
     val cachedFiles = if (cachingAllowed) {
       filesList.filter(f => indexCache.containsKey(f.filePath))
     } else {
@@ -381,7 +381,7 @@ private[cobol] object IndexBuilder extends Logging {
   private def createIndexRDD(indexes: Array[SparseIndexEntry], sqlContext: SQLContext): RDD[SparseIndexEntry] = {
     val indexCount = indexes.length
 
-    val numPartitions = Math.min(indexCount, Constants.maxNumPartitions)
+    val numPartitions = Math.max(1, Math.min(indexCount, Constants.maxNumPartitions))
     logger.info(s"Index elements count: ${indexes.length}, number of partitions = $numPartitions")
 
     sqlContext.sparkContext.parallelize(indexes, numPartitions)

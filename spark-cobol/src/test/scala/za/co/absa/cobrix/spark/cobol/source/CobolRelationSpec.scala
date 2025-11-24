@@ -64,8 +64,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
     val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false,
-      indexCachingAllowed = false)(sqlContext)
+      debugIgnoreFileSize = false)(sqlContext)
     val cobolData: RDD[Row] = relation.parseRecords(testReader, oneRowRDD)
 
     val cobolDataFrame = sqlContext.createDataFrame(cobolData, sparkSchema)
@@ -89,8 +88,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
     val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false,
-      indexCachingAllowed = false)(sqlContext)
+      debugIgnoreFileSize = false)(sqlContext)
 
     val caught = intercept[Exception] {
       relation.parseRecords(testReader, oneRowRDD).collect()
@@ -105,8 +103,7 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
     val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false,
-      indexCachingAllowed = false)(sqlContext)
+      debugIgnoreFileSize = false)(sqlContext)
 
     val caught = intercept[SparkException] {
       relation.parseRecords(testReader, oneRowRDD).collect()
