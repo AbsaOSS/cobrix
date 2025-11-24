@@ -832,6 +832,10 @@ object CobolParametersParser extends Logging {
       }
     }
 
+    if (!params.contains(PARAM_RECORD_LENGTH_FIELD) && params.contains(PARAM_RECORD_LENGTH_MAP)) {
+      throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH_MAP' requires '$PARAM_RECORD_LENGTH_FIELD' to be specified.")
+    }
+
     if (params.contains(PARAM_RECORD_LENGTH)) {
       val incorrectParameters = new ListBuffer[String]
       if (isText) {
@@ -949,6 +953,10 @@ object CobolParametersParser extends Logging {
     if (params.contains(PARAM_DISPLAY_PIC_ALWAYS_STRING) && params(PARAM_DISPLAY_PIC_ALWAYS_STRING).toBoolean &&
       params.contains(PARAM_STRICT_INTEGRAL_PRECISION) && params(PARAM_STRICT_INTEGRAL_PRECISION).toBoolean)
       throw new IllegalArgumentException(s"Options '$PARAM_DISPLAY_PIC_ALWAYS_STRING' and '$PARAM_STRICT_INTEGRAL_PRECISION' cannot be used together.")
+
+    if (params.contains(PARAM_ENABLE_INDEXES) && !params(PARAM_ENABLE_INDEXES).toBoolean &&
+      params.contains(PARAM_ENABLE_INDEX_CACHE) && params(PARAM_ENABLE_INDEX_CACHE).toBoolean)
+      throw new IllegalArgumentException(s"When '$PARAM_ENABLE_INDEXES' = false, '$PARAM_ENABLE_INDEX_CACHE' cannot be true.")
 
     if (validateRedundantOptions && unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")
