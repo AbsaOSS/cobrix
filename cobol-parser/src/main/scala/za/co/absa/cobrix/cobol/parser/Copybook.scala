@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.asttransform.BinaryPropertiesAdder
 
+import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -28,11 +29,21 @@ import scala.collection.mutable.ArrayBuffer
 class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   import Copybook._
 
-  def getCobolSchema: CopybookAST = ast
+  private val cachePrimitives = new ConcurrentHashMap[String, Primitive]()
+  private val cacheStatements = new ConcurrentHashMap[String, Statement]()
+
+  val isFlatCopybook: Boolean = ast.children.exists(f => f.isInstanceOf[Primitive])
 
   lazy val getRecordSize: Int = {
     ast.binaryProperties.offset + ast.binaryProperties.actualSize
   }
+
+  /**
+    * Returns true if there is at least 1 parent-child relationship defined in any of segment redefines.
+    */
+  lazy val isHierarchical: Boolean = getAllSegmentRedefines.exists(_.parentSegment.nonEmpty)
+
+  def getCobolSchema: CopybookAST = ast
 
   def isRecordFixedSize: Boolean = true
 
@@ -57,13 +68,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   def getRootSegmentIds(segmentIdRedefineMap: Map[String, String], fieldParentMap: Map[String, String]): List[String] =
     CopybookParser.getRootSegmentIds(segmentIdRedefineMap, fieldParentMap)
 
-  /**
-    * Returns true if there at least 1 parent-child relationships defined in any of segment redefines.
-    */
-  lazy val isHierarchical: Boolean = getAllSegmentRedefines.exists(_.parentSegment.nonEmpty)
-
-  val isFlatCopybook: Boolean = ast.children.exists(f => f.isInstanceOf[Primitive])
-
   def getRootRecords: scala.collection.Seq[Statement] = {
     if (isFlatCopybook) {
       scala.collection.Seq(ast)
@@ -84,11 +88,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     * @return The value of the field
     */
   def getFieldValueByName(fieldName: String, recordBytes: Array[Byte], startOffset: Int = 0): Any = {
-    val ast = getFieldByName(fieldName)
-    ast match {
-      case s: Primitive => extractPrimitiveField(s, recordBytes, startOffset)
-      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract its value.")
-    }
+    val primitive = getPrimitiveFieldByName(fieldName)
+
+    extractPrimitiveField(primitive, recordBytes, startOffset)
   }
 
   /**
@@ -105,11 +107,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     * @param startOffset An offset where the record starts in the data (in bytes)
     */
   def setFieldValueByName(fieldName: String, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
-    val ast = getFieldByName(fieldName)
-    ast match {
-      case s: Primitive => setPrimitiveField(s, recordBytes, value, startOffset)
-      case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot set its value.")
-    }
+    val primitive = getPrimitiveFieldByName(fieldName)
+
+    setPrimitiveField(primitive, recordBytes, value, startOffset)
   }
 
   /**
@@ -126,12 +126,10 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
     def getFieldByNameInGroup(group: Group, fieldName: String): Seq[Statement] = {
       val groupMatch = if (group.name.equalsIgnoreCase(fieldName)) Seq(group) else Seq()
-      groupMatch ++ group.children.flatMap(child => {
-        child match {
-          case g: Group => getFieldByNameInGroup(g, fieldName)
-          case st: Primitive => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
-        }
-      })
+      groupMatch ++ group.children.flatMap {
+        case g: Group      => getFieldByNameInGroup(g, fieldName)
+        case st: Primitive => if (st.name.equalsIgnoreCase(fieldName)) Seq(st) else Seq()
+      }
     }
 
     def getFieldByUniqueName(schema: CopybookAST, fieldName: String): Seq[Statement] = {
@@ -143,18 +141,16 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       if (path.length == 0) {
         throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract it's value.")
       } else {
-        group.children.flatMap(child => {
-          child match {
-            case g: Group =>
-              if (g.name.equalsIgnoreCase(path.head))
-                getFieldByPathInGroup(g, path.drop(1))
-              else scala.collection.Seq.empty[Statement]
-            case st: Primitive =>
-              if (st.name.equalsIgnoreCase(path.head))
-                Seq(st)
-              else scala.collection.Seq.empty[Statement]
-          }
-        })
+        group.children.flatMap {
+          case g: Group      =>
+            if (g.name.equalsIgnoreCase(path.head))
+              getFieldByPathInGroup(g, path.drop(1))
+            else scala.collection.Seq.empty[Statement]
+          case st: Primitive =>
+            if (st.name.equalsIgnoreCase(path.head))
+              Seq(st)
+            else scala.collection.Seq.empty[Statement]
+        }
       }
     }
 
@@ -181,21 +177,27 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       )
     }
 
-    val schema = getCobolSchema
+    val cachedStatement = cacheStatements.get(fieldName)
 
-    val foundFields = if (fieldName.contains('.')) {
-      getFieldByPathName(schema, fieldName)
-    } else {
-      getFieldByUniqueName(schema, fieldName)
-    }
+    if (cachedStatement == null) {
+      val schema = getCobolSchema
 
-    if (foundFields.isEmpty) {
-      throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
-    } else if (foundFields.lengthCompare(1) == 0) {
-      foundFields.head
+      val foundFields = if (fieldName.contains('.')) {
+        getFieldByPathName(schema, fieldName)
+      } else {
+        getFieldByUniqueName(schema, fieldName)
+      }
+
+      if (foundFields.isEmpty) {
+        throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
+      } else if (foundFields.lengthCompare(1) == 0) {
+        foundFields.head
+      } else {
+        throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
+          s"notation.")
+      }
     } else {
-      throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
-        s"notation.")
+      cachedStatement
     }
   }
 
@@ -344,8 +346,23 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     }
     visitGroup(ast)
   }
-}
 
+  private def getPrimitiveFieldByName(fieldName: String): Primitive = {
+    val cachedPrimitive = cachePrimitives.get(fieldName)
+
+    if (cachedPrimitive == null) {
+      val ast = getFieldByName(fieldName)
+      ast match {
+        case s: Primitive =>
+          cachePrimitives.put(fieldName, s)
+          s
+        case _ => throw new IllegalStateException(s"$fieldName is not a primitive field, cannot extract its value.")
+      }
+    } else {
+      cachedPrimitive
+    }
+  }
+}
 
 object Copybook {
   def merge(copybooks: Seq[Copybook]): Copybook = {
