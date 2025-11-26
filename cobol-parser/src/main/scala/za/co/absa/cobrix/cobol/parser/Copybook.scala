@@ -191,7 +191,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       if (foundFields.isEmpty) {
         throw new IllegalStateException(s"Field '$fieldName' is not found in the copybook.")
       } else if (foundFields.lengthCompare(1) == 0) {
-        foundFields.head
+        val result = foundFields.head
+        cacheStatements.put(fieldName, result)
+        result
       } else {
         throw new IllegalStateException(s"Multiple fields with name '$fieldName' found in the copybook. Please specify the exact field using '.' " +
           s"notation.")
