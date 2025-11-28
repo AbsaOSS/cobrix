@@ -72,13 +72,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.4</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.4</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.3</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.4</pre>
 </td>
 </tr>
 </table>
@@ -89,17 +89,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.4
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.4
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.3
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.4
 ```
 
 ## Usage
@@ -237,8 +237,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.9.3.jar
-* cobol-parser_2.12-2.9.3.jar
+* spark-cobol_2.12-2.9.4.jar
+* cobol-parser_2.12-2.9.4.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -246,9 +246,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.3
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.4
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.3.jar,cobol-parser_2.12-2.9.3.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.4.jar,cobol-parser_2.12-2.9.4.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -316,7 +316,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.9.4-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.9.5-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -1942,6 +1942,36 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.9.4 released 26 November 2025.
+  - [#805](https://github.com/AbsaOSS/cobrix/pull/805) Added the option to cache VRL indexes for better performance when same files are processed multiple times.
+    ```scala
+    .option("enable_index_cache", "true")
+    ```
+  - [#807](https://github.com/AbsaOSS/cobrix/pull/807) Added field name to AST object memoization for better performance of raw record processing.
+    ```scala
+    // Repeated calls to this method are now much faster
+    val value = copybook.getFieldValueByName("some_field", record)
+    ```
+  - [#801](https://github.com/AbsaOSS/cobrix/pull/801) Allow gaps between segment redefined fields as long as they have a single common base redefine.
+    For example, for this copybook:
+    ```cobol
+    01 RECORD.
+       05 SEGMENT-ID       PIC X(5).
+       05 SEGMENT-1.
+          10 FIELD-A       PIC X(10).
+       05 SEGMENT-2        REDEFINES SEGMENT-1.
+          10 FIELD-B       PIC X(20).
+       05 SEGMENT-3        REDEFINES SEGMENT-1.
+          10 FIELD-C       PIC X(15).
+    ```
+    This set of options is now acceptable:
+    ```scala
+    .option("segment_field", "SEGMENT-ID")
+    .option("redefine-segment-id-map:0", "SEGMENT-1 => SEG1")
+    .option("redefine-segment-id-map:1", "SEGMENT-3 => SEG3") // e.g. SEGMENT-2 is skipped
+    ```
+  - [#803](https://github.com/AbsaOSS/cobrix/pull/803) Fixed possible cases when Hadoop file streams are opened but not closed.
+
 - #### 2.9.3 released 13 November 2025.
    - [#792](https://github.com/AbsaOSS/cobrix/pull/792) Added EBCDIC to ASCII encoders for all single byte code pages.
      ```scala
