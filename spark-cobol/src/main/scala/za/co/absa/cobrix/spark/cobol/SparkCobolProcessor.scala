@@ -229,8 +229,8 @@ object SparkCobolProcessor {
           val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
           log.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-          val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
-          val headerStream = new FileStreamer(filePathName, fileSystem)
+          val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes)
+          val headerStream = new FileStreamer(filePathName, sconf.value)
 
           CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, dataStream, Some(headerStream))
         })
@@ -240,7 +240,7 @@ object SparkCobolProcessor {
           val hadoopConfig = sconf.value
           log.info(s"Going to process data from $inputFile")
           val inputFs = new Path(inputFile).getFileSystem(hadoopConfig)
-          val ifs = new FileStreamer(inputFile, inputFs)
+          val ifs = new FileStreamer(inputFile, sconf.value)
 
           CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs, None)
         }
@@ -266,7 +266,7 @@ object SparkCobolProcessor {
       Future {
         val hadoopConfig = sconf.value
         val inputFs = new Path(inputFIle).getFileSystem(hadoopConfig)
-        val ifs = new FileStreamer(inputFIle, inputFs)
+        val ifs = new FileStreamer(inputFIle, sconf.value)
         val outputFile = new Path(outputPath, fileName)
         val outputFs = outputFile.getFileSystem(hadoopConfig)
         val ofs = new BufferedOutputStream(outputFs.create(outputFile, true))

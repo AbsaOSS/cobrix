@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.hadoop.mapred.FileInputFormat
 import org.apache.spark.sql.sources._
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
@@ -59,8 +60,17 @@ class DefaultSource
     val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
     CobolParametersValidator.checkSanity(cobolParameters)
 
+    val filesList = CobolRelation.getListFilesWithOrder(cobolParameters.sourcePaths, sqlContext, isRecursiveRetrieval(sqlContext))
+
+    val hasCompressedFiles = filesList.exists(_.isCompressed)
+
+    if (hasCompressedFiles) {
+      logger.info(s"Compressed files found. Binary parallelism and indexes won't be used for them.")
+    }
+
     new CobolRelation(cobolParameters.sourcePaths,
-      buildEitherReader(sqlContext.sparkSession, cobolParameters),
+      filesList,
+      buildEitherReader(sqlContext.sparkSession, cobolParameters, hasCompressedFiles),
       LocalityParameters.extract(cobolParameters),
       cobolParameters.debugIgnoreFileSize)(sqlContext)
   }
@@ -126,6 +136,14 @@ class DefaultSource
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader = null
+
+  /**
+    * Checks if the recursive file retrieval flag is set
+    */
+  private def isRecursiveRetrieval(sqlContext: SQLContext): Boolean = {
+    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+    hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
+  }
 }
 
 object DefaultSource {
@@ -136,10 +154,10 @@ object DefaultSource {
     *
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
-  def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters): Reader = {
+  def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters, hasCompressedFiles: Boolean): Reader = {
     val reader = if (cobolParameters.isText && cobolParameters.variableLengthParams.isEmpty) {
       createTextReader(cobolParameters, spark)
-    } else if (cobolParameters.variableLengthParams.isEmpty) {
+    } else if (cobolParameters.variableLengthParams.isEmpty && !hasCompressedFiles) {
       createFixedLengthReader(cobolParameters, spark)
     }
     else {

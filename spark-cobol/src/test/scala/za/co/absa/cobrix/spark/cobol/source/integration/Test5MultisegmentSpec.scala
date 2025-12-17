@@ -16,11 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.scalatest.funsuite.AnyFunSuite
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
@@ -31,6 +27,8 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
 
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 import scala.collection.JavaConverters._
 
 //noinspection NameBooleanParameters
@@ -210,7 +208,7 @@ class Test5MultisegmentSpec extends AnyFunSuite with SparkTestBase {
     val segmentIdField = copybook.getFieldByName("SEGMENT_ID").asInstanceOf[Primitive]
     val segmentIdRootValue = "C"
 
-    val stream = new FileStreamer("../data/test5_data/COMP.DETAILS.SEP30.DATA.dat", FileSystem.get(new Configuration()))
+    val stream = new FileStreamer("../data/test5_data/COMP.DETAILS.SEP30.DATA.dat", new Configuration())
 
     val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwLittleEndian, 0, 0, 0, 0)
     val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L,

@@ -17,7 +17,6 @@
 package za.co.absa.cobrix.spark.cobol.source.regression
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
@@ -62,7 +61,7 @@ class Test12MultiRootSparseIndex extends AnyWordSpec with SparkTestBase with Bin
         val segmentIdField = copybook.getFieldByName("S").asInstanceOf[Primitive]
         val segmentIdRootValues = "0,1"
 
-        val stream = new FileStreamer(tmpFileName, FileSystem.get(new Configuration()))
+        val stream = new FileStreamer(tmpFileName, new Configuration())
 
         val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength, 3, 0, 0, 0)
         val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L,
@@ -78,7 +77,7 @@ class Test12MultiRootSparseIndex extends AnyWordSpec with SparkTestBase with Bin
         val segmentIdField = copybook.getFieldByName("S").asInstanceOf[Primitive]
         val segmentIdRootValues = "0,1"
 
-        val stream = new FileStreamer(tmpFileName, FileSystem.get(new Configuration()))
+        val stream = new FileStreamer(tmpFileName, new Configuration())
 
         val recordHeaderParser = RecordHeaderParserFactory.createRecordHeaderParser(Constants.RhRdwFixedLength, 3, 0, 0, 0)
         val indexes = IndexGenerator.sparseIndexGenerator(0, stream, 0L,

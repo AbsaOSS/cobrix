@@ -43,14 +43,13 @@ private[source] object CobolScanners extends Logging {
     indexes.flatMap(indexEntry => {
       val filePathName = filesMap(indexEntry.fileId)
       val path = new Path(filePathName)
-      val fileSystem = path.getFileSystem(sconf.value)
       val fileName = path.getName
       val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
       val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-      val dataStream = new FileStreamer(filePathName, fileSystem, indexEntry.offsetFrom, numOfBytes)
-      val headerStream = new FileStreamer(filePathName, fileSystem)
+      val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes)
+      val headerStream = new FileStreamer(filePathName, sconf.value)
       reader.getRowIterator(dataStream, headerStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }
@@ -75,8 +74,8 @@ private[source] object CobolScanners extends Logging {
           } else {
             fileSystem.getFileStatus(path).getLen - reader.getReaderProperties.fileEndOffset - startFileOffset
           }
-          val dataStream = new FileStreamer(filePath, fileSystem, startFileOffset, maximumFileBytes)
-          val headerStream = new FileStreamer(filePath, fileSystem, startFileOffset)
+          val dataStream = new FileStreamer(filePath, sconf.value, startFileOffset, maximumFileBytes)
+          val headerStream = new FileStreamer(filePath, sconf.value, startFileOffset)
           reader.getRowIterator(dataStream, headerStream, startFileOffset, fileOrder, 0L)
         })
       })

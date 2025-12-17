@@ -16,8 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import java.io.File
-
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkException
 import org.apache.spark.rdd.RDD
@@ -30,6 +28,8 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkCobolTestBase
 import za.co.absa.cobrix.spark.cobol.source.base.impl.{DummyCobolSchema, DummyFixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.utils.SourceTestUtils.{createFileInRandomDirectory, sampleCopybook}
+
+import java.io.File
 
 class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -61,7 +61,12 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
 
   it should "return an RDD[Row] if data are correct" in {
     val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => ())
-    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
+
+    val sourcePaths = Seq(copybookFile.getParentFile.getAbsolutePath)
+    val filesList = CobolRelation.getListFilesWithOrder(sourcePaths, sqlContext, isRecursiveRetrieval = true)
+
+    val relation = new CobolRelation(sourcePaths,
+      filesList,
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)
@@ -85,7 +90,10 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
   it should "manage exceptions from Reader" in {
     val exceptionMessage = "exception expected message"
     val testReader: FixedLenReader = new DummyFixedLenReader(sparkSchema, cobolSchema, testData)(() => throw new Exception(exceptionMessage))
-    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
+    val sourcePaths = Seq(copybookFile.getParentFile.getAbsolutePath)
+    val filesList = CobolRelation.getListFilesWithOrder(sourcePaths, sqlContext, isRecursiveRetrieval = true)
+    val relation = new CobolRelation(sourcePaths,
+      filesList,
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)
@@ -100,7 +108,10 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
     val absentField = "absentField"
     val modifiedSparkSchema = sparkSchema.add(StructField(absentField, StringType, false))
     val testReader: FixedLenReader = new DummyFixedLenReader(modifiedSparkSchema, cobolSchema, testData)(() => ())
-    val relation = new CobolRelation(Seq(copybookFile.getParentFile.getAbsolutePath),
+    val sourcePaths = Seq(copybookFile.getParentFile.getAbsolutePath)
+    val filesList = CobolRelation.getListFilesWithOrder(sourcePaths, sqlContext, isRecursiveRetrieval = true)
+    val relation = new CobolRelation(sourcePaths,
+      filesList,
       testReader,
       localityParams = localityParams,
       debugIgnoreFileSize = false)(sqlContext)

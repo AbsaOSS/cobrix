@@ -16,21 +16,21 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 
-import java.io.IOException
+import java.io.{IOException, InputStream}
 
-class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOffset: Long, bufferSizeInMegabytes: Int, maximumBytes: Long ) {
+class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, startOffset: Long, bufferSizeInMegabytes: Int, maximumBytes: Long ) {
   val bytesInMegabyte: Int = 1048576
+  private var isCompressedStream = false
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
     throw new IllegalArgumentException(s"Invalid buffer size $bufferSizeInMegabytes MB.")
   }
 
-  var in: FSDataInputStream = fileSystem.open(filePath)
-  if (startOffset > 0) {
-    in.seek(startOffset)
-  }
+  private var in: InputStream = openStream()
 
   private val bufferSizeInBytes = bufferSizeInMegabytes * bytesInMegabyte
   private var isStreamClosed = in == null
@@ -50,6 +50,8 @@ class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOff
   }
 
   def isClosed: Boolean = isStreamClosed && bufferPos >= bufferConitainBytes
+
+  def isCompressed: Boolean = isCompressedStream
 
   def readFully(b: Array[Byte], off: Int, len: Int): Int =
   {
@@ -115,4 +117,23 @@ class BufferedFSDataInputStream(filePath: Path, fileSystem: FileSystem, startOff
     }
   }
 
+  private def openStream(): InputStream = {
+    val fileSystem = filePath.getFileSystem(hadoopConfig)
+    val fsIn: FSDataInputStream = fileSystem.open(filePath)
+
+    if (startOffset > 0) {
+      fsIn.seek(startOffset)
+    }
+
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    val codec = factory.getCodec(filePath)
+
+    if (codec != null) {
+      isCompressedStream = true
+      codec.createInputStream(fsIn)
+    } else {
+      // No compression detected
+      fsIn
+    }
+  }
 }

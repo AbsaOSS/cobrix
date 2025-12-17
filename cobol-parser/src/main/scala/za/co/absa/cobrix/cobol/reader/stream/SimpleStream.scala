@@ -29,6 +29,8 @@ trait SimpleStream {
 
   def isEndOfStream: Boolean = offset >= size
 
+  def isCompressed: Boolean = false
+
   @throws(classOf[Exception])
   def copyStream(): SimpleStream
 
