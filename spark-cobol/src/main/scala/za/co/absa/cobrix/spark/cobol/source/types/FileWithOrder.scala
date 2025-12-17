@@ -19,4 +19,4 @@ package za.co.absa.cobrix.spark.cobol.source.types
 /**
   * Represents a file attached to an order.
   */
-private[source] case class FileWithOrder(filePath: String, order: Int)
+private[source] case class FileWithOrder(filePath: String, order: Int, isCompressed: Boolean)

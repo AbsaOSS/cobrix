@@ -16,13 +16,13 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import java.io.{File, FileNotFoundException}
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.FileSystem
 import org.scalatest.BeforeAndAfter
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+
+import java.io.{File, FileNotFoundException}
 
 class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
@@ -44,14 +44,14 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
 
   it should "throw if file does not exist" in {
     assertThrows[FileNotFoundException] {
-      val stream = new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
+      val stream = new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, new Configuration())
       stream.size
     }
   }
 
   it should "not throw if the stream is never used, even if the file does not exist" in {
     noException should be thrownBy {
-      new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, FileSystem.get(new Configuration()))
+      new FileStreamer(new File(TEMP_DIR, "inexistent").getAbsolutePath, new Configuration())
     }
   }
   it should "return array of same length than expected number of bytes if enough data" in {
@@ -59,7 +59,7 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
     val iterations = 10
     val tmpFile = createTempFile(iterations * batchLength)
 
-    streamer = new FileStreamer(tmpFile.getAbsolutePath, FileSystem.get(new Configuration()))
+    streamer = new FileStreamer(tmpFile.getAbsolutePath, new Configuration())
     for (i <- 0 until iterations) {
       assert(streamer.next(batchLength).length == batchLength)
     }
@@ -71,7 +71,7 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
     val extraBytes = 1
     val tmpFile = createTempFile(iterations * batchLength + extraBytes)
 
-    streamer = new FileStreamer(tmpFile.getAbsolutePath, FileSystem.get(new Configuration()))
+    streamer = new FileStreamer(tmpFile.getAbsolutePath, new Configuration())
     streamer.next(iterations * batchLength ) // consumes all but the extra bytes
     assert(streamer.next(batchLength).length == extraBytes)
   }
@@ -79,7 +79,7 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
   it should "return empty array if end of file was reached" in {
     val totalBytes = 10
     val tmpFile = createTempFile(totalBytes)
-    streamer = new FileStreamer(tmpFile.getAbsolutePath, FileSystem.get(new Configuration()))
+    streamer = new FileStreamer(tmpFile.getAbsolutePath, new Configuration())
     streamer.next(totalBytes) // consumes all bytes
     assert(streamer.next(totalBytes).length == 0)
   }
@@ -87,7 +87,7 @@ class FileStreamerSpec extends AnyFlatSpec with BeforeAndAfter with Matchers {
   it should "return empty array if file is empty" in {
     val totalBytes = 0
     val tmpFile = createTempFile(totalBytes)
-    streamer = new FileStreamer(tmpFile.getAbsolutePath, FileSystem.get(new Configuration()))
+    streamer = new FileStreamer(tmpFile.getAbsolutePath, new Configuration())
     assert(streamer.next(totalBytes).length == totalBytes)
   }
 

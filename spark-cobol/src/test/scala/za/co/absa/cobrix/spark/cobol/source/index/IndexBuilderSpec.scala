@@ -53,7 +53,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -75,7 +75,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -97,7 +97,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val reader = mock(classOf[Reader])
@@ -117,7 +117,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -137,7 +137,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -159,7 +159,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -178,7 +178,7 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         val file = createFile(new File(tempDir), "test_file", records)
 
         val filesWithOrder = Array(
-          FileWithOrder(file.getAbsolutePath, 0)
+          FileWithOrder(file.getAbsolutePath, 0, isCompressed = false)
         )
 
         val readerParameters = ReaderParameters(isIndexGenerationNeeded = true,
@@ -198,10 +198,10 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
   "buildIndexForFullFiles()" should {
     "generate a spare index placeholder for each file" in {
       val files = Array(
-        FileWithOrder("dummy_file1", 0),
-        FileWithOrder("dummy_file2", 1),
-        FileWithOrder("dummy_file3", 2),
-        FileWithOrder("dummy_file4", 3)
+        FileWithOrder("dummy_file1", 0, isCompressed = false),
+        FileWithOrder("dummy_file2", 1, isCompressed = false),
+        FileWithOrder("dummy_file3", 2, isCompressed = false),
+        FileWithOrder("dummy_file4", 3, isCompressed = false)
       )
 
       val sparseIndexRDD = IndexBuilder.buildIndexForFullFiles(files, spark.sqlContext)
@@ -239,8 +239,8 @@ class IndexBuilderSpec extends AnyWordSpec with BinaryFileFixture with SparkTest
         Files.createFile(Paths.get(tempDir, "text1.txt"))
         Files.createFile(Paths.get(tempDir, "text2.txt"))
 
-        val files = Array(FileWithOrder(Paths.get(tempDir, "text1.txt").toString, 0),
-          FileWithOrder(Paths.get(tempDir, "text2.txt").toString, 1))
+        val files = Array(FileWithOrder(Paths.get(tempDir, "text1.txt").toString, 0, isCompressed = false),
+          FileWithOrder(Paths.get(tempDir, "text2.txt").toString, 1, isCompressed = false))
 
         val filesWIthPreferredLocations = IndexBuilder.toRDDWithLocality(files, spark.sparkContext.hadoopConfiguration, spark.sqlContext)
 

@@ -16,22 +16,22 @@
 
 package za.co.absa.cobrix.spark.cobol.source
 
-import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
-
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.mapred.FileInputFormat
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.sources.{BaseRelation, TableScan}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Row, SQLContext}
-import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, FixedLenTextReader, Reader, VarLenReader}
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
+import za.co.absa.cobrix.spark.cobol.reader.{FixedLenReader, FixedLenTextReader, Reader, VarLenReader}
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.scanners.CobolScanners
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 import scala.util.control.NonFatal
 
 
@@ -63,6 +63,7 @@ class SerializableConfiguration(@transient var value: Configuration) extends Ser
   * Its constructor is expected to change after the hierarchy of [[za.co.absa.cobrix.spark.cobol.reader.Reader]] is put in place.
   */
 class CobolRelation(sourceDirs: Seq[String],
+                    filesList: Array[FileWithOrder],
                     cobolReader: Reader,
                     localityParams: LocalityParameters,
                     debugIgnoreFileSize: Boolean)
@@ -70,8 +71,6 @@ class CobolRelation(sourceDirs: Seq[String],
   extends BaseRelation
     with Serializable
     with TableScan {
-
-  private val filesList = CobolRelation.getListFilesWithOrder(sourceDirs, sqlContext, isRecursiveRetrieval)
 
   private lazy val indexes: RDD[SparseIndexEntry] = IndexBuilder.buildIndex(filesList, cobolReader, sqlContext, cobolReader.getReaderProperties.isIndexCachingAllowed)(localityParams)
 
@@ -94,15 +93,7 @@ class CobolRelation(sourceDirs: Seq[String],
     }
   }
 
-  /**
-    * Checks if the recursive file retrieval flag is set
-    */
-  private def isRecursiveRetrieval: Boolean = {
-    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
-    hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
-  }
-
-  private[source] def parseRecords(reader: FixedLenReader, records: RDD[Array[Byte]]) = {
+  private[source] def parseRecords(reader: FixedLenReader, records: RDD[Array[Byte]]): RDD[Row] = {
     records.flatMap(record => {
       val it = reader.getRowIterator(record)
       for (parsedRecord <- it) yield {
@@ -125,8 +116,16 @@ object CobolRelation {
         .getFiles(sourceDir, sqlContext.sparkContext.hadoopConfiguration, isRecursiveRetrieval)
     }).toArray
 
+    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+    val factory = new CompressionCodecFactory(hadoopConf)
+
     allFiles
       .zipWithIndex
-      .map(file => FileWithOrder(file._1, file._2))
+      .map { case (fileName, order) =>
+        val codec = factory.getCodec(new Path(fileName))
+        val isCompressed = codec != null
+
+        FileWithOrder(fileName, order, isCompressed)
+      }
   }
 }

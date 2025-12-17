@@ -16,11 +16,11 @@
 
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{ContentSummary, Path}
 import org.apache.log4j.Logger
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
-import org.apache.hadoop.fs.ContentSummary
 import za.co.absa.cobrix.cobol.reader.common.Constants
+import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 import java.io.IOException
 
@@ -33,10 +33,10 @@ import java.io.IOException
   * file be consumed.
   *
   * @param filePath   String containing the fully qualified path to the file.
-  * @param fileSystem Underlying Hadoop file system.
+  * @param hadoopConfig Hadoop configuration.
   * @note This class is not thread-safe and should only be accessed from a single thread
   */
-class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
+class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
@@ -58,6 +58,11 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   override def totalSize: Long = fileSize
 
   override def offset: Long = byteIndex
+
+  override def isCompressed: Boolean = {
+    ensureOpened()
+    bufferedStream.isCompressed
+  }
 
   /**
     * Retrieves a given number of bytes from the file stream.
@@ -123,18 +128,19 @@ class FileStreamer(filePath: String, fileSystem: FileSystem, startOffset: Long =
   }
 
   override def copyStream(): SimpleStream = {
-    new FileStreamer(filePath, fileSystem, startOffset, maximumBytes)
+    new FileStreamer(filePath, hadoopConfig, startOffset, maximumBytes)
   }
 
   @throws[IOException]
   private def ensureOpened(): Unit = {
     if (!wasOpened) {
-      bufferedStream = new BufferedFSDataInputStream(new Path(filePath), fileSystem, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+      bufferedStream = new BufferedFSDataInputStream(new Path(filePath), hadoopConfig, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
       wasOpened = true
     }
   }
 
   private def getHadoopFileSize(hadoopPath: Path): Long = {
+    val fileSystem = hadoopPath.getFileSystem(hadoopConfig)
     val cSummary: ContentSummary = fileSystem.getContentSummary(hadoopPath)
     cSummary.getLength
   }
