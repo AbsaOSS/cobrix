@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ContentSummary, Path}
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
@@ -40,6 +41,7 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
 
   private val logger = Logger.getLogger(FileStreamer.this.getClass)
 
+  private val hadoopPath = new Path(filePath)
   private var byteIndex = startOffset
 
   // This ensures that the file is never opened if the stream is never used. This serves two purposes:
@@ -49,7 +51,14 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
   private var wasOpened = false
   private var bufferedStream: BufferedFSDataInputStream = _
 
-  private lazy val fileSize = getHadoopFileSize(new Path(filePath))
+  private lazy val isCompressedStream = {
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    val codec = factory.getCodec(hadoopPath)
+
+    codec != null
+  }
+
+  private lazy val fileSize = getHadoopFileSize(hadoopPath)
 
   override def inputFileName: String = filePath
 
@@ -59,9 +68,12 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
 
   override def offset: Long = byteIndex
 
-  override def isCompressed: Boolean = {
-    ensureOpened()
-    bufferedStream.isCompressed
+  override def isCompressed: Boolean = isCompressedStream
+
+  override def isEndOfStream: Boolean = if (isCompressed) {
+    wasOpened && (bufferedStream == null || bufferedStream.isClosed)
+  } else {
+    offset >= size
   }
 
   /**
