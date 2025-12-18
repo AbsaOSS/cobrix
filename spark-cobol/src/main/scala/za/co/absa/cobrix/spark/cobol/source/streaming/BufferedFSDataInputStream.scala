@@ -37,7 +37,7 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
 
   private val buffer = new Array[Byte](bufferSizeInBytes)
   private var bufferPos = 0
-  private var bufferConitainBytes = 0
+  private var bufferContainBytes = 0
   private var bytesRead = 0
 
   @throws[IOException]
@@ -49,7 +49,7 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
     }
   }
 
-  def isClosed: Boolean = isStreamClosed && bufferPos >= bufferConitainBytes
+  def isClosed: Boolean = isStreamClosed && bufferPos >= bufferContainBytes
 
   def isCompressed: Boolean = isCompressedStream
 
@@ -57,40 +57,40 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
   {
     if (isClosed) {
       -1
-    } else if (bufferPos + len < bufferConitainBytes) {
+    } else if (bufferPos + len < bufferContainBytes) {
       System.arraycopy(buffer, bufferPos, b, off, len)
       bufferPos += len
       len
     } else {
       var offsetLeft = off
       var lengthLeft = len
-      if (bufferPos < bufferConitainBytes) {
-        val bytesLeft = bufferConitainBytes - bufferPos
+      if (bufferPos < bufferContainBytes) {
+        val bytesLeft = bufferContainBytes - bufferPos
         System.arraycopy(buffer, bufferPos, b, off, bytesLeft)
-        lengthLeft -= bufferConitainBytes - bufferPos
+        lengthLeft -= bufferContainBytes - bufferPos
         offsetLeft += bytesLeft
       }
       bufferPos = 0
-      bufferConitainBytes = if ( (maximumBytes>0 && bytesRead >= maximumBytes) || isStreamClosed) {
+      bufferContainBytes = if ( (maximumBytes>0 && bytesRead >= maximumBytes) || isStreamClosed) {
         close()
         0
       } else {
-        val toRead = if (maximumBytes >0) Math.min(bufferSizeInBytes, maximumBytes - bytesRead) else bufferSizeInBytes
-        readFullyHelper(buffer, 0, bufferSizeInBytes)
+        val toRead = if (maximumBytes > 0) Math.min(bufferSizeInBytes, maximumBytes - bytesRead) else bufferSizeInBytes
+        readFullyHelper(buffer, 0, toRead.toInt)
       }
-      bytesRead += bufferConitainBytes
-      if (bufferConitainBytes > 0) {
-        if (bufferPos + lengthLeft < bufferConitainBytes) {
+      bytesRead += bufferContainBytes
+      if (bufferContainBytes > 0) {
+        if (bufferPos + lengthLeft < bufferContainBytes) {
           System.arraycopy(buffer, bufferPos, b, offsetLeft, lengthLeft)
           bufferPos += lengthLeft
           offsetLeft += lengthLeft
           lengthLeft = 0
         } else {
-          if (bufferConitainBytes > 0) {
+          if (bufferContainBytes > 0) {
             System.arraycopy(buffer, bufferPos, b, offsetLeft, lengthLeft)
-            bufferPos += bufferConitainBytes
-            offsetLeft += bufferConitainBytes
-            lengthLeft -= bufferConitainBytes
+            bufferPos += bufferContainBytes
+            offsetLeft += bufferContainBytes
+            lengthLeft -= bufferContainBytes
           }
         }
       }
