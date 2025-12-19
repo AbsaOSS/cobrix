@@ -174,7 +174,7 @@ object DefaultSource {
     */
   def createTextReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark, parameters.sourcePaths.headOption)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultFsBlockSize(spark, parameters.sourcePaths.headOption)
     new FixedLenTextReader(copybookContent,  getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
@@ -185,7 +185,7 @@ object DefaultSource {
   def createFixedLengthReader(parameters: CobolParameters, spark: SparkSession): FixedLenReader = {
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark, parameters.sourcePaths.headOption)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultFsBlockSize(spark, parameters.sourcePaths.headOption)
     new FixedLenNestedReader(copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )
   }
@@ -199,7 +199,7 @@ object DefaultSource {
 
 
     val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
-    val defaultHdfsBlockSize = SparkUtils.getDefaultHdfsBlockSize(spark, parameters.sourcePaths.headOption)
+    val defaultHdfsBlockSize = SparkUtils.getDefaultFsBlockSize(spark, parameters.sourcePaths.headOption)
     new VarLenNestedReader(
       copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )

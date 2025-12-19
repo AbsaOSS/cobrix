@@ -51,7 +51,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param inputSplitRecords       The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param inputSplitSizeMB        A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
   * @param inputSplitSizeCompressedMB A partition size to target for compressed files.
-  * @param hdfsDefaultBlockSize    Default HDFS block size for the HDFS filesystem used. This value is used as the default split size if inputSplitSizeMB is not specified
+  * @param fsDefaultBlockSize      Default HDFS block size for the HDFS filesystem used. This value is used as the default split size if inputSplitSizeMB is not specified
   * @param startOffset             An offset to the start of the record in each binary data block.
   * @param endOffset               An offset from the end of the record to the end of the binary data block.
   * @param fileStartOffset         A number of bytes to skip at the beginning of each file
@@ -104,7 +104,7 @@ case class ReaderParameters(
                              inputSplitRecords:       Option[Int] = None,
                              inputSplitSizeMB:        Option[Int] = None,
                              inputSplitSizeCompressedMB: Option[Int] = None,
-                             hdfsDefaultBlockSize:    Option[Int] = None,
+                             fsDefaultBlockSize:      Option[Int] = None,
                              startOffset:             Int = 0,
                              endOffset:               Int = 0,
                              fileStartOffset:         Int = 0,

@@ -42,6 +42,8 @@ import scala.reflect.ClassTag
 class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                       readerProperties: ReaderParameters,
                                       handler: RecordHandler[T]) extends VarLenReader with Logging with Serializable {
+  private val DEFAULT_INDEX_SIZE_COMPRESSED_FILES_MB = 1024
+  private val DEFAULT_FS_INDEX_SIZE_MULTIPLIER = 4
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -217,13 +219,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   private def getSplitSizeMB(isCompressed: Boolean): Option[Int] = {
     if (isCompressed) {
-      readerProperties.inputSplitSizeCompressedMB.orElse(Some(1024))
+      readerProperties.inputSplitSizeCompressedMB.orElse(Some(DEFAULT_INDEX_SIZE_COMPRESSED_FILES_MB))
     } else {
-      if (readerProperties.inputSplitSizeMB.isDefined) {
-        readerProperties.inputSplitSizeMB
-      } else {
-        readerProperties.hdfsDefaultBlockSize
-      }
+      readerProperties.inputSplitSizeMB.orElse(readerProperties.fsDefaultBlockSize).map(_ * DEFAULT_FS_INDEX_SIZE_MULTIPLIER)
     }
   }
 

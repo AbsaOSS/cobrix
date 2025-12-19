@@ -19,12 +19,12 @@ package za.co.absa.cobrix.spark.cobol.utils
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions.{array, col, expr, max, struct}
-import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{Column, DataFrame, SparkSession}
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.MAX_ELEMENTS
+import za.co.absa.cobrix.spark.cobol.utils.impl.HofsWrapper.transform
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -489,7 +489,7 @@ object SparkUtils extends Logging {
     }.getOrElse(None)
   }
 
-  def getDefaultHdfsBlockSize(spark: SparkSession, pathOpt: Option[String]): Option[Int] = {
+  def getDefaultFsBlockSize(spark: SparkSession, pathOpt: Option[String]): Option[Int] = {
     val conf = spark.sparkContext.hadoopConfiguration
 
     val fileSystem  =pathOpt match {

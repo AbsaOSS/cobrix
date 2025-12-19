@@ -56,6 +56,7 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
     val options = if (useIndexes) {
       Map(
         "input_split_records" -> "1",
+        "enable_index_cache" -> "false",
         "generate_record_id" -> "true"
       )
     } else {
@@ -178,6 +179,8 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IEEE754")
       .option("strict_sign_overpunching", "true")
+      .option("generate_record_id", "true")
+      .option("enable_index_cache", "false")
       .option("pedantic", "true")
       .load(inputDataPath)
 
@@ -195,6 +198,7 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
       .option("floating_point_format", "IEEE754")
       .option("strict_sign_overpunching", "true")
       .option("file_end_offset", 1493)
+      .option("enable_index_cache", "false")
       .option("pedantic", "true")
       .load(inputDataPath)
 

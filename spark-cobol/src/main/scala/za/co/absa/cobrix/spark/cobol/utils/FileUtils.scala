@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.utils
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
-import org.apache.hadoop.io.compress.CompressionCodecFactory
+import org.apache.hadoop.io.compress.{CompressionCodec, CompressionCodecFactory}
 import za.co.absa.cobrix.cobol.internal.Logging
 
 import java.io.{FileOutputStream, IOException, OutputStreamWriter, PrintWriter}
@@ -217,16 +217,17 @@ object FileUtils extends Logging {
   }
 
   def isCompressed(file: Path, hadoopConfig: Configuration): Boolean = {
-    val factory = new CompressionCodecFactory(hadoopConfig)
-    val codec = factory.getCodec(file)
+    getCompressionCodec(file, hadoopConfig) != null
+  }
 
-    codec != null
+  def getCompressionCodec(file: Path, hadoopConfig: Configuration): CompressionCodec = {
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    factory.getCodec(file)
   }
 
   def getCompressedFileSize(file: Path, hadoopConfig: Configuration): Long = {
     logger.warn(s"Using full scan to determine file size of $file..")
-    val factory = new CompressionCodecFactory(hadoopConfig)
-    val codec = factory.getCodec(file)
+    val codec = getCompressionCodec(file, hadoopConfig)
     val fileSystem = file.getFileSystem(hadoopConfig)
     val fsIn: FSDataInputStream = fileSystem.open(file)
     val ifs = codec.createInputStream(fsIn)
