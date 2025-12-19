@@ -184,6 +184,23 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
     assert(df.count == 300)
   }
 
+  test("read mixed compressed EBCDIC files and file_end_offset") {
+    val inputDataPath = "../data/test40_data"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook", inputCopybookPath)
+      .option("schema_retention_policy", "collapse_root")
+      .option("floating_point_format", "IEEE754")
+      .option("strict_sign_overpunching", "true")
+      .option("file_end_offset", 1493)
+      .option("pedantic", "true")
+      .load(inputDataPath)
+
+    assert(df.count == 297)
+  }
+
   test("read a compressed ASCII file 1") {
     testCompressedAsciiFile(Map(
       "record_format" -> "D"

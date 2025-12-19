@@ -16,13 +16,14 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.{FileOutputStream, OutputStreamWriter, PrintWriter}
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 import za.co.absa.cobrix.cobol.internal.Logging
 
+import java.io.{FileOutputStream, IOException, OutputStreamWriter, PrintWriter}
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 import scala.collection.JavaConverters._
 
 /**
@@ -33,7 +34,6 @@ import scala.collection.JavaConverters._
   * Applies the same filter as Hadoop's FileInputFormat, which excludes files starting with '.' or '_'.
   */
 object FileUtils extends Logging {
-
   val THRESHOLD_DIR_LENGTH_FOR_SINGLE_FILE_CHECK = 50
 
   private val hiddenFileFilter = new PathFilter() {
@@ -214,6 +214,42 @@ object FileUtils extends Logging {
     }
 
     allNonDivisibleFiles.map(status => (status.getPath.toString, status.getLen))
+  }
+
+  def isCompressed(file: Path, hadoopConfig: Configuration): Boolean = {
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    val codec = factory.getCodec(file)
+
+    codec != null
+  }
+
+  def getCompressedFileSize(file: Path, hadoopConfig: Configuration): Long = {
+    logger.warn(s"Using full scan to determine file size of $file..")
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    val codec = factory.getCodec(file)
+    val fileSystem = file.getFileSystem(hadoopConfig)
+    val fsIn: FSDataInputStream = fileSystem.open(file)
+    val ifs = codec.createInputStream(fsIn)
+
+    val size = try {
+      val SKIP_BUFFER_SIZE = 1024*1024*50
+      var totalBytesSkipped = 0L
+      var skippedLast = 1L
+      while (skippedLast > 0) {
+        skippedLast = ifs.skip(SKIP_BUFFER_SIZE)
+        if (skippedLast > 0)
+          totalBytesSkipped += skippedLast
+      }
+      totalBytesSkipped
+    } catch {
+      case e: IOException =>
+        throw new IOException(s"Unable to determine compressed file size for $file", e)
+    } finally {
+      ifs.close()
+      fsIn.close()
+    }
+    logger.info(s"The size of the uncompressed file $file is $size bytes.")
+    size
   }
 
   private def isNonDivisible(fileStatus: FileStatus, divisor: Long) = fileStatus.getLen % divisor != 0

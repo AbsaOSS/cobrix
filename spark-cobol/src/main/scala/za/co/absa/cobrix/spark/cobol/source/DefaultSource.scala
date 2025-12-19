@@ -65,7 +65,7 @@ class DefaultSource
     val hasCompressedFiles = filesList.exists(_.isCompressed)
 
     if (hasCompressedFiles) {
-      logger.info(s"Compressed files found. Binary parallelism and indexes won't be used for them.")
+      logger.info(s"Compressed files found. Binary parallelism and indexes will be adjusted accordingly.")
     }
 
     new CobolRelation(cobolParameters.sourcePaths,
