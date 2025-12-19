@@ -217,10 +217,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
 
   private def getSplitSizeMB(isCompressed: Boolean): Option[Int] = {
     if (isCompressed) {
-      readerProperties.inputSplitSizeCompressedMB match {
-        case Some(size) => readerProperties.inputSplitSizeCompressedMB
-        case None => Some(1024)
-      }
+      readerProperties.inputSplitSizeCompressedMB.orElse(Some(1024))
     } else {
       if (readerProperties.inputSplitSizeMB.isDefined) {
         readerProperties.inputSplitSizeMB
