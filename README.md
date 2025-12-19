@@ -39,6 +39,9 @@ Among the motivations for this project, it is possible to highlight:
 
 - The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines.
 
+- Supports reading files compressed in Hadoop-compatible way (gzip, bzip2, etc), but with limited parallelism (only per-file parallelism). 
+  Uncompressed files are preferred for performance. 
+
 ## Videos
 
 We have presented Cobrix at DataWorks Summit 2019 and Spark Summit 2019 conferences. The screencasts are available here:
