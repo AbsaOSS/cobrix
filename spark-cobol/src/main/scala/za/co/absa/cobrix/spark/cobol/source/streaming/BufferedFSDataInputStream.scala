@@ -90,9 +90,9 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
             val available = bufferContainBytes - bufferPos
             val bytesToCopy = Math.min(lengthLeft, available)
             System.arraycopy(buffer, bufferPos, b, offsetLeft, bytesToCopy)
-            bufferPos += bufferContainBytes
-            offsetLeft += bufferContainBytes
-            lengthLeft -= bufferContainBytes
+            bufferPos += bytesToCopy
+            offsetLeft += bytesToCopy
+            lengthLeft -= bytesToCopy
           }
         }
       }
@@ -136,7 +136,7 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
 
     if (startOffset > 0) {
       if (codec == null) {
-        baseStream.seek(startOffset)
+        fsIn.seek(startOffset)
       } else {
         var toSkip = startOffset
         while (toSkip > 0) {
