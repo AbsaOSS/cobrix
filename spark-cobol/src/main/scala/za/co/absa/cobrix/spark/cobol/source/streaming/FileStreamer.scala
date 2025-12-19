@@ -18,10 +18,10 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{ContentSummary, Path}
-import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import java.io.IOException
 
@@ -51,12 +51,7 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
   private var wasOpened = false
   private var bufferedStream: BufferedFSDataInputStream = _
 
-  private lazy val isCompressedStream = {
-    val factory = new CompressionCodecFactory(hadoopConfig)
-    val codec = factory.getCodec(hadoopPath)
-
-    codec != null
-  }
+  private lazy val isCompressedStream = FileUtils.isCompressed(hadoopPath, hadoopConfig)
 
   private lazy val fileSize = getHadoopFileSize(hadoopPath)
 

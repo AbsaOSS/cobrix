@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
-import org.apache.hadoop.io.compress.CompressionCodecFactory
+import za.co.absa.cobrix.spark.cobol.utils.FileUtils
 
 import java.io.{IOException, InputStream}
 
@@ -121,10 +121,8 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
 
   private def openStream(): InputStream = {
     val fileSystem = filePath.getFileSystem(hadoopConfig)
+    val codec = FileUtils.getCompressionCodec(filePath, hadoopConfig)
     val fsIn: FSDataInputStream = fileSystem.open(filePath)
-
-    val factory = new CompressionCodecFactory(hadoopConfig)
-    val codec = factory.getCodec(filePath)
 
     val baseStream = if (codec != null) {
       isCompressedStream = true
