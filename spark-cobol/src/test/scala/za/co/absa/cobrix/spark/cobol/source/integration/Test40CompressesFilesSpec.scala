@@ -18,7 +18,6 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.scalatest.Assertion
 import org.scalatest.funsuite.AnyFunSuite
-import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
@@ -30,8 +29,6 @@ import java.nio.file.{Files, Paths}
 import scala.collection.JavaConverters._
 
 class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
-  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
   private val exampleName = "Test40 (compressed files)"
 
   private val inputCopybookPath = "file://../data/test40_copybook.cob"
@@ -92,15 +89,41 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
     succeed
   }
 
-  test("Test gzip") {
+  def testAsciiFile(options: Map[String, String]): Assertion = {
+    val inputDataPath = "../data/test40_data_ascii/ascii.txt.gz"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents",
+        """
+          |      01 RECORD.
+          |         05 DATA PIC X(5).
+          |""".stripMargin)
+      .option("record_format", "D")
+      .option("pedantic", "true")
+      .options(options)
+      .load(inputDataPath)
+
+    assert(df.count == 3)
+
+    val actual = df.orderBy("data")
+      .collect()
+      .map(a => a.getString(0))
+      .mkString(",")
+
+    assert(actual == "12345,67890,A1234")
+  }
+
+  test("Test compressed EBCDIC gzip file") {
     testCompressedFile("../data/test40_data/example.dat.gz")
   }
 
-  test("Test bzip2") {
+  test("Test compressed EBCDIC  bzip2 file") {
     testCompressedFile("../data/test40_data/example.dat.bz2")
   }
 
-  test("read mixed compressed files") {
+  test("read mixed compressed EBCDIC files") {
     val inputDataPath = "../data/test40_data"
 
     val df = spark
@@ -114,5 +137,24 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
       .load(inputDataPath)
 
     assert(df.count == 300)
+  }
+
+  test("read a compressed ASCII file 1") {
+    testAsciiFile(Map(
+      "record_format" -> "D"
+    ))
+  }
+
+  test("read a compressed ASCII file 2") {
+    testAsciiFile(Map(
+      "record_format" -> "D",
+      "ascii_charset" -> "ISO-8859-1"
+    ))
+  }
+
+  test("read a compressed ASCII file 3") {
+    testAsciiFile(Map(
+      "record_format" -> "D2"
+    ))
   }
 }
