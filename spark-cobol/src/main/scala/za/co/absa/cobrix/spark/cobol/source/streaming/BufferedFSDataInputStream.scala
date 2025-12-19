@@ -38,7 +38,7 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
   private val buffer = new Array[Byte](bufferSizeInBytes)
   private var bufferPos = 0
   private var bufferContainBytes = 0
-  private var bytesRead = 0
+  private var bytesRead = 0L
 
   @throws[IOException]
   def close(): Unit = {
@@ -67,7 +67,7 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
       if (bufferPos < bufferContainBytes) {
         val bytesLeft = bufferContainBytes - bufferPos
         System.arraycopy(buffer, bufferPos, b, off, bytesLeft)
-        lengthLeft -= bufferContainBytes - bufferPos
+        lengthLeft -= bytesLeft
         offsetLeft += bytesLeft
       }
       bufferPos = 0
