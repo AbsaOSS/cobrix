@@ -32,7 +32,7 @@ import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
-import za.co.absa.cobrix.spark.cobol.utils.{HDFSUtils, SparkUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HDFSUtils, SparkUtils}
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.ArrayBuffer
@@ -231,7 +231,13 @@ private[cobol] object IndexBuilder extends Logging {
     val maximumBytes = if (fileEndOffset == 0) {
       0
     } else {
-      val bytesToRead = fileSystem.getContentSummary(path).getLength - fileEndOffset - startOffset
+      val fileSize = if (FileUtils.isCompressed(path, config)) {
+        FileUtils.getCompressedFileSize(path,config)
+      } else {
+        fileSystem.getFileStatus(path).getLen
+      }
+
+      val bytesToRead = fileSize - fileEndOffset - startOffset
       if (bytesToRead < 0)
         0
       else
