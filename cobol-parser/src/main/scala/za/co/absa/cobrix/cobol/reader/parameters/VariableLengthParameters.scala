@@ -17,51 +17,53 @@
 package za.co.absa.cobrix.cobol.reader.parameters
 
 /**
-  * This class holds the parameters currently used for parsing variable-length records.
+  * This class is used to hold the parameters currently used for parsing variable-length records.
   *
-  * @param isRecordSequence       Does input files have 4 byte record length headers
-  * @param bdw                    Block descriptor word (if specified), for FB and VB record formats
-  * @param isRdwBigEndian         Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
-  * @param isRdwPartRecLength     Does RDW count itself as part of record length itself
-  * @param rdwAdjustment          Controls a mismatch between RDW and record length
-  * @param recordHeaderParser     An optional custom record header parser for non-standard RDWs
-  * @param recordExtractor        An optional custom raw record parser class non-standard record types
-  * @param rhpAdditionalInfo      An optional additional option string passed to a custom record header parser
-  * @param reAdditionalInfo       An optional additional option string passed to a custom record extractor
-  * @param recordLengthField      A field that stores record length
-  * @param recordLengthMap        A mapping between field value and record size.
-  * @param fileStartOffset        A number of bytes to skip at the beginning of each file
-  * @param fileEndOffset          A number of bytes to skip at the end of each file
-  * @param generateRecordId       Generate a sequential record number for each record to be able to retain the order of the original data
-  * @param isUsingIndex           Is indexing input file before processing is requested
-  * @param isIndexCachingAllowed  Is caching of generated index allowed
-  * @param inputSplitSizeMB       A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
-  * @param inputSplitRecords      The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
-  * @param improveLocality        Tries to improve locality by extracting preferred locations for variable-length records
-  * @param optimizeAllocation     Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
-  * @param inputFileNameColumn    A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
+  * @param isRecordSequence           Do input files have 4 byte record length headers
+  * @param bdw                        Block descriptor word (if specified), for FB and VB record formats
+  * @param isRdwBigEndian             Is RDW big endian? It may depend on flavor of mainframe and/or mainframe to PC transfer method
+  * @param isRdwPartRecLength         Does RDW count itself as part of record length itself
+  * @param rdwAdjustment              Controls a mismatch between RDW and record length
+  * @param recordHeaderParser         An optional custom record header parser for non-standard RDWs
+  * @param recordExtractor            An optional custom raw record parser class for non-standard record types
+  * @param rhpAdditionalInfo          An optional additional option string passed to a custom record header parser
+  * @param reAdditionalInfo           An optional additional option string passed to a custom record extractor
+  * @param recordLengthField          A field that stores record length
+  * @param recordLengthMap            A mapping between field value and record size.
+  * @param fileStartOffset            A number of bytes to skip at the beginning of each file
+  * @param fileEndOffset              A number of bytes to skip at the end of each file
+  * @param generateRecordId           Generate a sequential record number for each record to be able to retain the order of the original data
+  * @param isUsingIndex               Is indexing input file before processing is requested
+  * @param isIndexCachingAllowed      Is caching of generated index allowed
+  * @param inputSplitSizeMB           A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
+  * @param inputSplitSizeCompressedMB A partition size to target for compressed files.
+  * @param inputSplitRecords          The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
+  * @param improveLocality            Tries to improve locality by extracting preferred locations for variable-length records
+  * @param optimizeAllocation         Optimizes cluster usage in case of optimization for locality in the presence of new nodes (nodes that do not contain any blocks of the files being processed)
+  * @param inputFileNameColumn        A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   */
 case class VariableLengthParameters(
-                                     isRecordSequence:      Boolean, // [deprecated by recordFormat]
-                                     bdw:                   Option[Bdw],
-                                     isRdwBigEndian:        Boolean,
-                                     isRdwPartRecLength:    Boolean,
-                                     rdwAdjustment:         Int,
-                                     recordHeaderParser:    Option[String],
-                                     recordExtractor:       Option[String],
-                                     rhpAdditionalInfo:     Option[String],
-                                     reAdditionalInfo:      String,
-                                     recordLengthField:     String,
-                                     recordLengthMap:       Map[String, Int],
-                                     fileStartOffset:       Int,
-                                     fileEndOffset:         Int,
-                                     generateRecordId:      Boolean,
-                                     isUsingIndex:          Boolean,
-                                     isIndexCachingAllowed: Boolean,
-                                     inputSplitRecords:     Option[Int],
-                                     inputSplitSizeMB:      Option[Int],
-                                     improveLocality:       Boolean,
-                                     optimizeAllocation:    Boolean,
-                                     inputFileNameColumn:   String,
-                                     occursMappings:        Map[String, Map[String, Int]]
+                                     isRecordSequence:           Boolean, // [deprecated by recordFormat]
+                                     bdw:                        Option[Bdw],
+                                     isRdwBigEndian:             Boolean,
+                                     isRdwPartRecLength:         Boolean,
+                                     rdwAdjustment:              Int,
+                                     recordHeaderParser:         Option[String],
+                                     recordExtractor:            Option[String],
+                                     rhpAdditionalInfo:          Option[String],
+                                     reAdditionalInfo:           String,
+                                     recordLengthField:          String,
+                                     recordLengthMap:            Map[String, Int],
+                                     fileStartOffset:            Int,
+                                     fileEndOffset:              Int,
+                                     generateRecordId:           Boolean,
+                                     isUsingIndex:               Boolean,
+                                     isIndexCachingAllowed:      Boolean,
+                                     inputSplitRecords:          Option[Int],
+                                     inputSplitSizeMB:           Option[Int],
+                                     inputSplitSizeCompressedMB: Option[Int],
+                                     improveLocality:            Boolean,
+                                     optimizeAllocation:         Boolean,
+                                     inputFileNameColumn:        String,
+                                     occursMappings:             Map[String, Map[String, Int]]
                                    )

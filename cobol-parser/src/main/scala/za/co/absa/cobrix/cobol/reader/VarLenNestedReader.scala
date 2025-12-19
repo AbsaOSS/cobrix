@@ -144,7 +144,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                              fileNumber: Int,
                              isRdwBigEndian: Boolean): ArrayBuffer[SparseIndexEntry] = {
     val inputSplitSizeRecords: Option[Int] = readerProperties.inputSplitRecords
-    val inputSplitSizeMB: Option[Int] = getSplitSizeMB
+    val inputSplitSizeMB: Option[Int] = getSplitSizeMB(dataStream.isCompressed)
 
     if (inputSplitSizeRecords.isDefined) {
       if (inputSplitSizeRecords.get < 1 || inputSplitSizeRecords.get > 1000000000) {
@@ -153,7 +153,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       logger.info(s"Input split size = ${inputSplitSizeRecords.get} records")
     } else {
       if (inputSplitSizeMB.nonEmpty) {
-        if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > 2000) {
+        if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > 200000) {
           throw new IllegalArgumentException(s"Invalid input split size of ${inputSplitSizeMB.get} MB.")
         }
         logger.info(s"Input split size = ${inputSplitSizeMB.get} MB")
@@ -214,11 +214,18 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     }
   }
 
-  private def getSplitSizeMB: Option[Int] = {
-    if (readerProperties.inputSplitSizeMB.isDefined) {
-      readerProperties.inputSplitSizeMB
+  private def getSplitSizeMB(isCompressed: Boolean): Option[Int] = {
+    if (isCompressed) {
+      readerProperties.inputSplitSizeCompressedMB match {
+        case Some(size) => readerProperties.inputSplitSizeCompressedMB
+        case None => Some(1024)
+      }
     } else {
-      readerProperties.hdfsDefaultBlockSize
+      if (readerProperties.inputSplitSizeMB.isDefined) {
+        readerProperties.inputSplitSizeMB
+      } else {
+        readerProperties.hdfsDefaultBlockSize
+      }
     }
   }
 

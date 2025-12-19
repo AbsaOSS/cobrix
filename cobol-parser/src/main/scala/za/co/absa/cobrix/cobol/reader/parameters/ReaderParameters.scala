@@ -20,7 +20,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, MetadataPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies._
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.FixedLength
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -50,6 +50,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param isIndexGenerationNeeded Is indexing input file before processing is requested
   * @param inputSplitRecords       The number of records to include in each partition. Notice mainframe records may have variable size, inputSplitMB is the recommended option
   * @param inputSplitSizeMB        A partition size to target. In certain circumstances this size may not be exactly that, but the library will do the best effort to target that size
+  * @param inputSplitSizeCompressedMB A partition size to target for compressed files.
   * @param hdfsDefaultBlockSize    Default HDFS block size for the HDFS filesystem used. This value is used as the default split size if inputSplitSizeMB is not specified
   * @param startOffset             An offset to the start of the record in each binary data block.
   * @param endOffset               An offset from the end of the record to the end of the binary data block.
@@ -102,6 +103,7 @@ case class ReaderParameters(
                              isIndexCachingAllowed:   Boolean = false,
                              inputSplitRecords:       Option[Int] = None,
                              inputSplitSizeMB:        Option[Int] = None,
+                             inputSplitSizeCompressedMB: Option[Int] = None,
                              hdfsDefaultBlockSize:    Option[Int] = None,
                              startOffset:             Int = 0,
                              endOffset:               Int = 0,
