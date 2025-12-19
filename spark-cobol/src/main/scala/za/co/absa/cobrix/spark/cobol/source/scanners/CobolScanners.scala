@@ -18,6 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.scanners
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.compress.CompressionCodecFactory
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.TextInputFormat
 import org.apache.spark.rdd.RDD
@@ -72,13 +73,30 @@ private[source] object CobolScanners extends Logging {
           val maximumFileBytes = if (reader.getReaderProperties.fileEndOffset == 0) {
             0
           } else {
-            fileSystem.getFileStatus(path).getLen - reader.getReaderProperties.fileEndOffset - startFileOffset
+            if (isCompressed(path, sconf.value)) {
+              // ToDo determine if the uncompressed file size can be effectively fetched
+              if (reader.getReaderProperties.fileEndOffset > 0) {
+                logger.warn(s"File end offset for $path is ignored because the file is compressed.")
+              }
+              0L
+            } else {
+              val fileSize = fileSystem.getFileStatus(path).getLen
+
+              fileSize - reader.getReaderProperties.fileEndOffset - startFileOffset
+            }
           }
           val dataStream = new FileStreamer(filePath, sconf.value, startFileOffset, maximumFileBytes)
           val headerStream = new FileStreamer(filePath, sconf.value, startFileOffset)
           reader.getRowIterator(dataStream, headerStream, startFileOffset, fileOrder, 0L)
         })
       })
+  }
+
+  private[source] def isCompressed(file: Path, hadoopConfig: Configuration): Boolean = {
+    val factory = new CompressionCodecFactory(hadoopConfig)
+    val codec = factory.getCodec(file)
+
+    codec != null
   }
 
   private[source] def buildScanForFixedLength(reader: FixedLenReader, sourceDirs: Seq[String],

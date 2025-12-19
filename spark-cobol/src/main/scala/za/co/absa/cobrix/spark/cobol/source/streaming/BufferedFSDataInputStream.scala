@@ -86,8 +86,10 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
           offsetLeft += lengthLeft
           lengthLeft = 0
         } else {
-          if (bufferContainBytes > 0) {
-            System.arraycopy(buffer, bufferPos, b, offsetLeft, lengthLeft)
+          if (bufferContainBytes > 0 && lengthLeft > 0) {
+            val available = bufferContainBytes - bufferPos
+            val bytesToCopy = Math.min(lengthLeft, available)
+            System.arraycopy(buffer, bufferPos, b, offsetLeft, bytesToCopy)
             bufferPos += bufferContainBytes
             offsetLeft += bufferContainBytes
             lengthLeft -= bufferContainBytes
@@ -128,12 +130,26 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
     val factory = new CompressionCodecFactory(hadoopConfig)
     val codec = factory.getCodec(filePath)
 
-    if (codec != null) {
+    val baseStream = if (codec != null) {
       isCompressedStream = true
       codec.createInputStream(fsIn)
     } else {
       // No compression detected
       fsIn
     }
+
+    if (startOffset > 0) {
+      if (codec == null) {
+        baseStream.seek(startOffset)
+      } else {
+        var toSkip = startOffset
+        while (toSkip > 0) {
+          val skipped = baseStream.skip(toSkip)
+          if (skipped <= 0) return baseStream
+          toSkip -= skipped
+        }
+      }
+    }
+    baseStream
   }
 }
