@@ -161,11 +161,11 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
   }
 
   test("Test compressed EBCDIC gzip file with indexes") {
-    testCompressedFile("../data/test40_data/example.dat.gz")
+    testCompressedFile("../data/test40_data/example.dat.gz", useIndexes = true)
   }
 
-  test("Test compressed EBCDIC  bzip2 file with indexes") {
-    testCompressedFile("../data/test40_data/example.dat.bz2")
+  test("Test compressed EBCDIC bzip2 file with indexes") {
+    testCompressedFile("../data/test40_data/example.dat.bz2", useIndexes = true)
   }
 
   test("read mixed compressed EBCDIC files") {

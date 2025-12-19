@@ -153,8 +153,9 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
       logger.info(s"Input split size = ${inputSplitSizeRecords.get} records")
     } else {
       if (inputSplitSizeMB.nonEmpty) {
-        if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > 200000) {
-          throw new IllegalArgumentException(s"Invalid input split size of ${inputSplitSizeMB.get} MB.")
+        val maxSplitSizeMB = if (dataStream.isCompressed) 200000 else 2000
+        if (inputSplitSizeMB.get < 1 || inputSplitSizeMB.get > maxSplitSizeMB) {
+          throw new IllegalArgumentException(s"Invalid input split size of ${inputSplitSizeMB.get} MB (max allowed: $maxSplitSizeMB MB).")
         }
         logger.info(s"Input split size = ${inputSplitSizeMB.get} MB")
       }
