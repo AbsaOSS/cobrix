@@ -89,7 +89,7 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
     succeed
   }
 
-  def testAsciiFile(options: Map[String, String]): Assertion = {
+  def testCompressedAsciiFile(options: Map[String, String]): Assertion = {
     val inputDataPath = "../data/test40_data_ascii/ascii.txt.gz"
 
     val df = spark
@@ -113,6 +113,32 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
       .mkString(",")
 
     assert(actual == "12345,67890,A1234")
+  }
+
+  def testMixedAsciiFiles(options: Map[String, String]): Assertion = {
+    val inputDataPath = "../data/test40_data_ascii/"
+
+    val df = spark
+      .read
+      .format("cobol")
+      .option("copybook_contents",
+        """
+          |      01 RECORD.
+          |         05 DATA PIC X(5).
+          |""".stripMargin)
+      .option("record_format", "D")
+      .option("pedantic", "true")
+      .options(options)
+      .load(inputDataPath)
+
+    assert(df.count == 6)
+
+    val actual = df.orderBy("data")
+      .collect()
+      .map(a => a.getString(0))
+      .mkString(",")
+
+    assert(actual == "12345,12345,67890,67890,A1234,A1234")
   }
 
   test("Test compressed EBCDIC gzip file") {
@@ -140,21 +166,42 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
   }
 
   test("read a compressed ASCII file 1") {
-    testAsciiFile(Map(
+    testCompressedAsciiFile(Map(
       "record_format" -> "D"
     ))
   }
 
   test("read a compressed ASCII file 2") {
-    testAsciiFile(Map(
+    testCompressedAsciiFile(Map(
       "record_format" -> "D",
       "ascii_charset" -> "ISO-8859-1"
     ))
   }
 
   test("read a compressed ASCII file 3") {
-    testAsciiFile(Map(
+    testCompressedAsciiFile(Map(
+      "record_format" -> "D2"
+    ))
+  }
+
+  test("read a mixed ASCII files 1") {
+    testMixedAsciiFiles(Map(
+      "record_format" -> "D"
+    ))
+  }
+
+  test("read a mixed ASCII files 2") {
+    testMixedAsciiFiles(Map(
+      "record_format" -> "D",
+      "ascii_charset" -> "ISO-8859-1"
+    ))
+  }
+
+  test("read a mixed ASCII files 3") {
+    testMixedAsciiFiles(Map(
       "record_format" -> "D2"
     ))
   }
 }
+
+
