@@ -40,7 +40,7 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
   private val expectedResultsPath = "../data/test40_expected/test40.txt"
   private val actualResultsPath = "../data/test40_expected/test40_actual.txt"
 
-  def testCompressedFile(inputDataPath: String): Assertion = {
+  def testCompressedFile(inputDataPath: String, useIndexes: Boolean = false): Assertion = {
     // Comparing layout
     val copybookContents = Files.readAllLines(Paths.get(inputCopybookFSPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val cobolSchema = CopybookParser.parseTree(copybookContents, debugFieldsPolicy = DebugFieldsPolicy.HexValue)
@@ -53,6 +53,15 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
         s"$actualLayoutPath for details.")
     }
 
+    val options = if (useIndexes) {
+      Map(
+        "input_split_records" -> "1",
+        "generate_record_id" -> "true"
+      )
+    } else {
+      Map.empty[String, String]
+    }
+
     val df = spark
       .read
       .format("cobol")
@@ -60,8 +69,10 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
       .option("schema_retention_policy", "collapse_root")
       .option("floating_point_format", "IEEE754")
       .option("strict_sign_overpunching", "true")
+      .options(options)
       .option("pedantic", "true")
       .load(inputDataPath)
+      .drop("File_Id",  "Record_Id", "Record_Byte_Length")
 
     val expectedSchema = Files.readAllLines(Paths.get(expectedSchemaPath), StandardCharsets.ISO_8859_1).toArray.mkString("\n")
     val actualSchema = SparkUtils.prettyJSON(df.schema.json)
@@ -141,11 +152,19 @@ class Test40CompressesFilesSpec extends AnyFunSuite with SparkTestBase with Bina
     assert(actual == "12345,12345,67890,67890,A1234,A1234")
   }
 
-  test("Test compressed EBCDIC gzip file") {
+  test("Test compressed EBCDIC gzip file without indexes") {
     testCompressedFile("../data/test40_data/example.dat.gz")
   }
 
-  test("Test compressed EBCDIC  bzip2 file") {
+  test("Test compressed EBCDIC  bzip2 file without indexes") {
+    testCompressedFile("../data/test40_data/example.dat.bz2")
+  }
+
+  test("Test compressed EBCDIC gzip file with indexes") {
+    testCompressedFile("../data/test40_data/example.dat.gz")
+  }
+
+  test("Test compressed EBCDIC  bzip2 file with indexes") {
     testCompressedFile("../data/test40_data/example.dat.bz2")
   }
 

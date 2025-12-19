@@ -123,10 +123,6 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
     val fileSystem = filePath.getFileSystem(hadoopConfig)
     val fsIn: FSDataInputStream = fileSystem.open(filePath)
 
-    if (startOffset > 0) {
-      fsIn.seek(startOffset)
-    }
-
     val factory = new CompressionCodecFactory(hadoopConfig)
     val codec = factory.getCodec(filePath)
 

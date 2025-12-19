@@ -118,13 +118,14 @@ object CobolParametersParser extends Logging {
   val PARAM_SEGMENT_REDEFINE_PREFIX_ALT = "redefine-segment-id-map"
 
   // Indexed multisegment file processing
-  val PARAM_ENABLE_INDEXES            = "enable_indexes"
-  val PARAM_ENABLE_INDEX_CACHE        = "enable_index_cache"
-  val PARAM_INPUT_SPLIT_RECORDS       = "input_split_records"
-  val PARAM_INPUT_SPLIT_SIZE_MB       = "input_split_size_mb"
-  val PARAM_SEGMENT_ID_PREFIX         = "segment_id_prefix"
-  val PARAM_OPTIMIZE_ALLOCATION       = "optimize_allocation"
-  val PARAM_IMPROVE_LOCALITY          = "improve_locality"
+  val PARAM_ENABLE_INDEXES                   = "enable_indexes"
+  val PARAM_ENABLE_INDEX_CACHE               = "enable_index_cache"
+  val PARAM_INPUT_SPLIT_RECORDS              = "input_split_records"
+  val PARAM_INPUT_SPLIT_SIZE_MB              = "input_split_size_mb"
+  val PARAM_INPUT_SPLIT_SIZE_COMPRESSED_MB   = "input_split_size_compressed_mb"
+  val PARAM_SEGMENT_ID_PREFIX                = "segment_id_prefix"
+  val PARAM_OPTIMIZE_ALLOCATION              = "optimize_allocation"
+  val PARAM_IMPROVE_LOCALITY                 = "improve_locality"
 
   // Parameters for debugging
   val PARAM_DEBUG_LAYOUT_POSITIONS    = "debug_layout_positions"
@@ -385,6 +386,7 @@ object CobolParametersParser extends Logging {
                                  isIndexCachingAllowed = false,
                                  inputSplitRecords = None,
                                  inputSplitSizeMB = None,
+                                 inputSplitSizeCompressedMB = None,
                                  improveLocality = false,
                                  optimizeAllocation = false,
                                  inputFileNameColumn = "",
@@ -421,6 +423,7 @@ object CobolParametersParser extends Logging {
       isIndexCachingAllowed = varLenParams.isIndexCachingAllowed,
       inputSplitRecords = varLenParams.inputSplitRecords,
       inputSplitSizeMB = varLenParams.inputSplitSizeMB,
+      inputSplitSizeCompressedMB = varLenParams.inputSplitSizeCompressedMB,
       hdfsDefaultBlockSize = defaultBlockSize,
       startOffset = parameters.recordStartOffset,
       endOffset = parameters.recordEndOffset,
@@ -508,6 +511,7 @@ object CobolParametersParser extends Logging {
         params.getOrElse(PARAM_ENABLE_INDEX_CACHE, "false").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),
+        params.get(PARAM_INPUT_SPLIT_SIZE_COMPRESSED_MB).map(v => v.toInt),
         params.getOrElse(PARAM_IMPROVE_LOCALITY, "true").toBoolean,
         params.getOrElse(PARAM_OPTIMIZE_ALLOCATION, "false").toBoolean,
         params.getOrElse(PARAM_INPUT_FILE_COLUMN, ""),

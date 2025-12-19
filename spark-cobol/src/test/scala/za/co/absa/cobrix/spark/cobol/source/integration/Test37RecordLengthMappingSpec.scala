@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkException
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.{PARAM_ENABLE_INDEXES, PARAM_ENABLE_INDEX_CACHE}
@@ -59,6 +58,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("record_format", "F")
           .option("record_length_field", "SEG-ID")
           .option("input_split_records", "2")
+          .option("enable_index_cache", "false")
           .option("pedantic", "true")
           .option("record_length_map", """{"A":4,"B":7,"C":8}""")
           .load(tempFile)
@@ -79,6 +79,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("record_format", "V")
           .option("record_length_field", "SEG-ID")
           .option("input_split_records", "2")
+          .option("enable_index_cache", "false")
           .option("pedantic", "true")
           .option("record_length_map", """{"A":4,"B":7,"C":8}""")
           .load(tempFile)
@@ -99,6 +100,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("record_format", "F")
           .option("record_length_field", "SEG-ID")
           .option("input_split_records", "2")
+          .option("enable_index_cache", "false")
           .option("pedantic", "true")
           .option("record_length_map", """{"1":4,"2":7,"3":8}""")
           .load(tempFile)
@@ -119,6 +121,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("record_format", "F")
           .option("record_length_field", "SEG-ID")
           .option("input_split_records", "2")
+          .option("enable_index_cache", "false")
           .option("pedantic", "true")
           .option("record_length_map", """{"1":4,"2":7,"3":8}""")
           .option("strict_integral_precision", "true")
@@ -163,6 +166,7 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
           .option("file_start_offset", 1)
           .option("file_end_offset", 2)
           .option("input_split_records", "2")
+          .option("enable_index_cache", "false")
           .option("pedantic", "true")
           .option("record_length_map", """{"A":4,"B":7,"C":8}""")
           .load(tempFile)

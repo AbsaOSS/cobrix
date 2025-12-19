@@ -205,12 +205,7 @@ private[cobol] object IndexBuilder extends Logging {
 
     val (inputStream, headerStream, maximumBytes) = getStreams(filePath, startOffset, endOffset, config)
     val index = try {
-      if (inputStream.isCompressed) {
-        val element = SparseIndexEntry(0, -1, fileOrder, 0L)
-        ArrayBuffer[SparseIndexEntry](element)
-      } else {
-        reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
-      }
+      reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
     } finally {
       inputStream.close()
       headerStream.close()
