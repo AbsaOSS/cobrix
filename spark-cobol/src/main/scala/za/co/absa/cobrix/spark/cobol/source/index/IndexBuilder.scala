@@ -32,9 +32,8 @@ import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
-import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HDFSUtils, SparkUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HDFSUtils, LRUCache, SparkUtils}
 
-import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -46,7 +45,9 @@ import scala.collection.mutable.ArrayBuffer
   * In a nutshell, ideally, there will be as many partitions as are there are indexes.
   */
 private[cobol] object IndexBuilder extends Logging {
-  private[cobol] val indexCache = new ConcurrentHashMap[String, Array[SparseIndexEntry]]()
+  private val maxCacheSize = 10000
+
+  private[cobol] val indexCache = new LRUCache[IndexKey, Array[SparseIndexEntry]](maxCacheSize)
 
   def buildIndex(filesList: Array[FileWithOrder],
                  cobolReader: Reader,
@@ -123,10 +124,11 @@ private[cobol] object IndexBuilder extends Logging {
                                                cachingAllowed: Boolean): RDD[SparseIndexEntry] = {
     val conf = sqlContext.sparkContext.hadoopConfiguration
     val sconf = new SerializableConfiguration(conf)
+    val readerOptionsHashCode = reader.getReaderProperties.hashCode()
 
     // Splitting between files for which indexes are cached and the list of files for which indexes are not cached
     val cachedFiles = if (cachingAllowed) {
-      filesList.filter(f => indexCache.containsKey(f.filePath))
+      filesList.filter(f => indexCache.containsKey(IndexKey(f.filePath, readerOptionsHashCode)))
     } else {
       Array.empty[FileWithOrder]
     }
@@ -157,7 +159,7 @@ private[cobol] object IndexBuilder extends Logging {
 
         filePathOpt.foreach { filePath =>
           logger.info(s"Index stored to cache for file: $filePath.")
-          indexCache.put(filePath, indexEntries.sortBy(_.offsetFrom))
+          indexCache.put(IndexKey(filePath, readerOptionsHashCode), indexEntries.sortBy(_.offsetFrom))
         }
       }
     }
@@ -165,7 +167,7 @@ private[cobol] object IndexBuilder extends Logging {
     // Getting indexes for files for which indexes are in the cache
     val cachedIndexes = cachedFiles.flatMap { f =>
       logger.info("Index fetched from cache for file: " + f.filePath)
-      indexCache.get(f.filePath)
+      indexCache(IndexKey(f.filePath, readerOptionsHashCode))
         .map(ind => ind.copy(fileId = f.order))
     }
 

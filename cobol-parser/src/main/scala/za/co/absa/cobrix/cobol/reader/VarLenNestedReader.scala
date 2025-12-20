@@ -221,7 +221,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     if (isCompressed) {
       readerProperties.inputSplitSizeCompressedMB.orElse(Some(DEFAULT_INDEX_SIZE_COMPRESSED_FILES_MB))
     } else {
-      readerProperties.inputSplitSizeMB.orElse(readerProperties.fsDefaultBlockSize).map(_ * DEFAULT_FS_INDEX_SIZE_MULTIPLIER)
+      val defaultIndexSizeBofFsBlock = readerProperties.fsDefaultBlockSize.map { size =>
+        Math.min(size * DEFAULT_FS_INDEX_SIZE_MULTIPLIER, 256)
+      }
+      readerProperties.inputSplitSizeMB.orElse(defaultIndexSizeBofFsBlock)
     }
   }
 
