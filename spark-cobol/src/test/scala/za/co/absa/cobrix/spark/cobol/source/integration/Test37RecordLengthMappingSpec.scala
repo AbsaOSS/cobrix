@@ -197,8 +197,12 @@ class Test37RecordLengthMappingSpec extends AnyWordSpec with SparkTestBase with 
 
         val pathNameAsCached = s"file:$tempFile"
 
-        assert(IndexBuilder.indexCache.get(pathNameAsCached) != null)
-        assert(IndexBuilder.indexCache.get(pathNameAsCached).length == 2)
+        val indexCacheSimplified = IndexBuilder.indexCache.getMap.map {
+          case (k, v) => (k.fileName, v)
+        }
+
+        assert(indexCacheSimplified.get(pathNameAsCached) != null)
+        assert(indexCacheSimplified(pathNameAsCached).length == 2)
 
         assert(actualInitial == expected)
         assert(actualCached == expected)
