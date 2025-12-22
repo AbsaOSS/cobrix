@@ -44,6 +44,7 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
                                       handler: RecordHandler[T]) extends VarLenReader with Logging with Serializable {
   private val DEFAULT_INDEX_SIZE_COMPRESSED_FILES_MB = 1024
   private val DEFAULT_FS_INDEX_SIZE_MULTIPLIER = 4
+  private val DEFAULT_MAX_FS_BASED_SPLIT_SIZE_MB = 256
 
   protected val cobolSchema: CobolSchema = loadCopyBook(copybookContents)
 
@@ -221,10 +222,10 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
     if (isCompressed) {
       readerProperties.inputSplitSizeCompressedMB.orElse(Some(DEFAULT_INDEX_SIZE_COMPRESSED_FILES_MB))
     } else {
-      val defaultIndexSizeBofFsBlock = readerProperties.fsDefaultBlockSize.map { size =>
-        Math.min(size * DEFAULT_FS_INDEX_SIZE_MULTIPLIER, 256)
+      val defaultIndexSizeBasedOnFsBlock = readerProperties.fsDefaultBlockSize.map { size =>
+        Math.min(size * DEFAULT_FS_INDEX_SIZE_MULTIPLIER, DEFAULT_MAX_FS_BASED_SPLIT_SIZE_MB)
       }
-      readerProperties.inputSplitSizeMB.orElse(defaultIndexSizeBofFsBlock)
+      readerProperties.inputSplitSizeMB.orElse(defaultIndexSizeBasedOnFsBlock)
     }
   }
 

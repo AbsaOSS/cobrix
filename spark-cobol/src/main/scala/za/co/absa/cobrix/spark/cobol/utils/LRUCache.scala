@@ -19,7 +19,7 @@ package za.co.absa.cobrix.spark.cobol.utils
 import scala.collection.JavaConverters._
 
 class LRUCache[K,V](maxSize: Int, loadFactor: Float = 0.75f) {
-  private val cache = new java.util.LinkedHashMap[K, V](16, loadFactor, true) {
+  private val cache = new java.util.LinkedHashMap[K, V](Math.min(maxSize, 128), loadFactor, true) {
     override def removeEldestEntry(eldest: java.util.Map.Entry[K, V]): Boolean = size() > maxSize
   }
 
