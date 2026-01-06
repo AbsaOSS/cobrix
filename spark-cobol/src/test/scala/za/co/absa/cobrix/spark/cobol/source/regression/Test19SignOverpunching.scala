@@ -167,5 +167,52 @@ class Test19SignOverpunching extends AnyWordSpec with SparkTestBase with BinaryF
         assertEqualsMultiline(actual, expected)
       }
     }
+
+    "Test relaxed overpunchiung" when {
+      val copybook =
+        """         01  R.
+           05  A    PIC S9(5)V9.
+    """
+      "The number is EBCDIC" in {
+        val binFileContents: Array[Byte] = Array[Byte](
+          0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xD0.toByte, 0xC4.toByte, 0x40
+        )
+
+        withTempBinFile("sign_overpunch", ".dat", binFileContents) { tmpFileName =>
+          val df = spark
+            .read
+            .format("cobol")
+            .option("copybook_contents", copybook)
+            .option("record_format", "F")
+            .option("strict_sign_overpunching", "false")
+            .option("pedantic", "true")
+            .load(tmpFileName)
+
+          val actual = df.toJSON.collect().mkString("[", ",", "]")
+          val expected = """[{"A":1230.4}]"""
+          assertEqualsMultiline(actual, expected)
+        }
+      }
+
+      "The number is ASCII" in {
+        val data = "123}D "
+        withTempTextFile("sign_overpunch", ".dat", StandardCharsets.US_ASCII, data) { tmpFileName =>
+          val df = spark
+            .read
+            .format("cobol")
+            .option("copybook_contents", copybook)
+            .option("record_format", "D")
+            .option("strict_sign_overpunching", "false")
+            .option("pedantic", "true")
+            .load(tmpFileName)
+
+          val expected = """[{"A":1230.4}]"""
+
+          val actual = df.toJSON.collect().mkString("[", ",", "]")
+
+          assertEqualsMultiline(actual, expected)
+        }
+      }
+    }
   }
 }

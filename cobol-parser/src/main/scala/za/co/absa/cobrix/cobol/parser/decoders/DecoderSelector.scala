@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser.decoders
 
-import java.nio.charset.{Charset, StandardCharsets}
 import za.co.absa.cobrix.cobol.parser.ast.datatype._
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.common.Constants.{maxIntegerPrecision, maxLongPrecision}
@@ -25,6 +24,7 @@ import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
+import java.nio.charset.{Charset, StandardCharsets}
 import scala.util.control.NonFatal
 
 object DecoderSelector {
@@ -128,14 +128,14 @@ object DecoderSelector {
       case None =>
         if (decimalType.explicitDecimal) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigDecimal(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            (bytes: Array[Byte]) => StringDecoders.decodeEbcdicBigDecimal(bytes, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigDecimal(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeAsciiBigDecimal(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
+            (bytes: Array[Byte]) => StringDecoders.decodeEbcdicBigNumber(bytes, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection, decimalType.scale, decimalType.scaleFactor)
         }
 //      case Some(COMP()) =>
 //        // COMP aka BINARY encoded number
@@ -207,24 +207,24 @@ object DecoderSelector {
       case None =>
         if (strictIntegralPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            (bytes: Array[Byte]) => StringDecoders.decodeEbcdicBigNumber(bytes, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else if (integralType.precision <= Constants.maxIntegerPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicInt(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            (bytes: Array[Byte]) => StringDecoders.decodeEbcdicInt(bytes, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiInt(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeAsciiInt(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else if (integralType.precision <= Constants.maxLongPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeEbcdicLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, !strictSignOverpunch)
           else
-            StringDecoders.decodeAsciiLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeAsciiLong(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            (bytes: Array[Byte]) => StringDecoders.decodeEbcdicBigNumber(bytes, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
           else
-            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection)
+            StringDecoders.decodeAsciiBigNumber(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         }
 //      case Some(Constants.compBinary1) =>
 //        // COMP aka BINARY encoded number
@@ -267,11 +267,11 @@ object DecoderSelector {
 
     if (isEbcdic) {
       bytes: Array[Byte] => {
-        StringDecoders.decodeEbcdicNumber(bytes, !isSigned, allowedSignOverpunch, improvedNullDetection)
+        StringDecoders.decodeEbcdicNumber(bytes, !isSigned, allowedSignOverpunch, !strictSignOverpunch, improvedNullDetection)
       }
     } else {
       bytes: Array[Byte] => {
-        StringDecoders.decodeAsciiNumber(bytes, !isSigned, allowedSignOverpunch, improvedNullDetection)
+        StringDecoders.decodeAsciiNumber(bytes, !isSigned, allowedSignOverpunch, !strictSignOverpunch, improvedNullDetection)
       }
     }
   }
