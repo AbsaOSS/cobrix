@@ -162,7 +162,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
@@ -235,7 +235,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
@@ -303,7 +303,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed integer
     */
@@ -321,7 +321,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed integer
     */
@@ -339,11 +339,11 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
     * @return A boxed long
     */
-  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, improvedNullDetection: Boolean, relaxedOvepunch: Boolean): java.lang.Long = {
+  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
       decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection).toLong
     } catch {
@@ -357,7 +357,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed long
     */
@@ -375,7 +375,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @param scale                 A decimal scale in case decimal number with implicit decimal point is expected
     * @param scaleFactor           Additional zeros to be added before of after the decimal point
@@ -395,7 +395,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @param scale                 A decimal scale in case decimal number with implicit decimal point is expected
     * @param scaleFactor           Additional zeros to be added before of after the decimal point
@@ -416,7 +416,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A big decimal containing a big integral number
     */
@@ -435,7 +435,7 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple published signs are allowed. The last is going to be effective
+    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A big decimal containing a big integral number
     */

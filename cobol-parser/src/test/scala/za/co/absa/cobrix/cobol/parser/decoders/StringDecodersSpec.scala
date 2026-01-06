@@ -785,28 +785,28 @@ class StringDecodersSpec extends AnyWordSpec {
 
   "decodeEbcdicLong()" should {
     "decode parsable longs" in {
-      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == 1000000000000000L)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == 1000000000000000L)
-      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == -1000000000000000L)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == -1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == -1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == -1000000000000000L)
     }
 
     "decode unsigned numbers with sign" in {
-      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = true, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == 1000000000000000L)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = true, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == 1000000000000000L)
-      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = true, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = true, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000"), isUnsigned = true, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000+"), isUnsigned = true, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == 1000000000000000L)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000"), isUnsigned = true, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000-"), isUnsigned = true, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
     }
 
     "return null on non-ints longs" in {
-      assert(decodeEbcdicLong(toEbcdic("+1000000000000000,0"), isUnsigned = true, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000.00+"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
-      assert(decodeEbcdicLong(toEbcdic("-1000000000000000,000"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
-      assert(decodeEbcdicLong(toEbcdic("1000000000000000.000-"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("+1000000000000000,0"), isUnsigned = true, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000.00+"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("-1000000000000000,000"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("1000000000000000.000-"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
     }
 
     "return null on unparsable longs" in {
-      assert(decodeEbcdicLong(toEbcdic("AAA"), isUnsigned = false, allowSignOverpunch = true, improvedNullDetection = false, relaxedOvepunch = false) == null)
+      assert(decodeEbcdicLong(toEbcdic("AAA"), isUnsigned = false, allowSignOverpunch = true, relaxedOvepunch = false, improvedNullDetection = false) == null)
     }
 
   }

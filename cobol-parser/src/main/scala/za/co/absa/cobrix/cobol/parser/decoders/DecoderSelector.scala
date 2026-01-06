@@ -217,7 +217,7 @@ object DecoderSelector {
             StringDecoders.decodeAsciiInt(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else if (integralType.precision <= Constants.maxLongPrecision) {
           if (isEbcidic)
-            StringDecoders.decodeEbcdicLong(_, !isSigned, isSigned || !strictSignOverpunch, improvedNullDetection, !strictSignOverpunch)
+            StringDecoders.decodeEbcdicLong(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
           else
             StringDecoders.decodeAsciiLong(_, !isSigned, isSigned || !strictSignOverpunch, !strictSignOverpunch, improvedNullDetection)
         } else {

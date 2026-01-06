@@ -168,7 +168,7 @@ class Test19SignOverpunching extends AnyWordSpec with SparkTestBase with BinaryF
       }
     }
 
-    "Test relaxed overpunchiung" when {
+    "Test relaxed sign overpunching" when {
       val copybook =
         """         01  R.
            05  A    PIC S9(5)V9.
