@@ -1945,7 +1945,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.9.7 released 7 January 2026.
+- #### 2.9.6 released 7 January 2026.
     - [#813](https://github.com/AbsaOSS/cobrix/pull/813) Fixed compatibility of the relaxed sign overpunching. Allow numbers
       with overpunched sign in unsigned numbers and allow multiple digits when overpunched sign when `strict_sign_overpunching = true`.
 
