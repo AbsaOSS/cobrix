@@ -162,11 +162,11 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  final def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): String = {
+  final def decodeEbcdicNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): String = {
     if (improvedNullDetection && isNumberNull(bytes))
       return null
 
@@ -178,7 +178,7 @@ object StringDecoders {
     while (i < bytes.length) {
       val b = bytes(i) & 0xFF
       var ch = ' '
-      if (sign != ' ' && !relaxedOvepunch) {
+      if (sign != ' ' && !relaxedOverpunch) {
         // Handle characters after a sign character is encountered
         if (b >= 0xF0 && b <= 0xF9) {
           ch = (b - 0xF0 + 0x30).toChar // unsigned
@@ -194,11 +194,11 @@ object StringDecoders {
       } else if (b >= 0xF0 && b <= 0xF9) {
         ch = (b - 0xF0 + 0x30).toChar // unsigned
       }
-      else if ((allowSignOverpunch || relaxedOvepunch) && b >= 0xC0 && b <= 0xC9) {
+      else if ((allowSignOverpunch || relaxedOverpunch) && b >= 0xC0 && b <= 0xC9) {
         ch = (b - 0xC0 + 0x30).toChar // positive sign punched
         sign = '+'
       }
-      else if ((allowSignOverpunch || relaxedOvepunch) && b >= 0xD0 && b <= 0xD9) {
+      else if ((allowSignOverpunch || relaxedOverpunch) && b >= 0xD0 && b <= 0xD9) {
         ch = (b - 0xD0 + 0x30).toChar // negative sign punched
         sign = '-'
       }
@@ -235,11 +235,11 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A string representation of the binary data
     */
-  final def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): String = {
+  final def decodeAsciiNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): String = {
     val allowedDigitChars = " 0123456789"
     val punchedSignChars = "{ABCDEFGHI}JKLMNOPQR"
 
@@ -271,7 +271,7 @@ object StringDecoders {
         } else if (char == '.' || char == ',') {
           buf.append('.')
         } else {
-          if (relaxedOvepunch) {
+          if (relaxedOverpunch) {
             if (punchedSignChars.contains(char)) {
               decodeOverpunchedSign(char)
             } else {
@@ -303,13 +303,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed integer
     */
-  final def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): Integer = {
+  final def decodeEbcdicInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection).toInt
+      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -321,13 +321,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed integer
     */
-  final def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): Integer = {
+  final def decodeAsciiInt(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): Integer = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection).toInt
+      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection).toInt
     } catch {
       case NonFatal(_) => null
     }
@@ -339,13 +339,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed long
     */
-  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
+  final def decodeEbcdicLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection).toLong
+      decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -357,13 +357,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A boxed long
     */
-  final def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
+  final def decodeAsciiLong(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): java.lang.Long = {
     try {
-      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection).toLong
+      decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection).toLong
     } catch {
       case NonFatal(_) => null
     }
@@ -375,15 +375,15 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @param scale                 A decimal scale in case decimal number with implicit decimal point is expected
     * @param scaleFactor           Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  final def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  final def decodeEbcdicBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -395,15 +395,15 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @param scale                 A decimal scale in case decimal number with implicit decimal point is expected
     * @param scaleFactor           Additional zeros to be added before of after the decimal point
     * @return A big decimal containing a big integral number
     */
-  final def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
+  final def decodeAsciiBigNumber(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean, scale: Int = 0, scaleFactor: Int = 0): BigDecimal = {
     try {
-      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection), scale, scaleFactor))
+      BigDecimal(BinaryUtils.addDecimalPoint(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection), scale, scaleFactor))
     } catch {
       case NonFatal(_) => null
     }
@@ -416,13 +416,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A big decimal containing a big integral number
     */
-  final def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
+  final def decodeEbcdicBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection))
+      BigDecimal(decodeEbcdicNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }
@@ -435,13 +435,13 @@ object StringDecoders {
     * @param bytes                 A byte array that represents the binary data
     * @param isUnsigned            If true, negative numbers will be considered invalid and return null
     * @param allowSignOverpunch    If true, sign overpunching is allowed in first or last position
-    * @param relaxedOvepunch       If true, multiple sign overpunching characters are allowed. The last one is going to be effective
+    * @param relaxedOverpunch      If true, multiple sign overpunching characters are allowed. The last one is going to be effective
     * @param improvedNullDetection If true, return null if all bytes are zero
     * @return A big decimal containing a big integral number
     */
-  final def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOvepunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
+  final def decodeAsciiBigDecimal(bytes: Array[Byte], isUnsigned: Boolean, allowSignOverpunch: Boolean, relaxedOverpunch: Boolean, improvedNullDetection: Boolean): BigDecimal = {
     try {
-      BigDecimal(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOvepunch, improvedNullDetection))
+      BigDecimal(decodeAsciiNumber(bytes, isUnsigned, allowSignOverpunch, relaxedOverpunch, improvedNullDetection))
     } catch {
       case NonFatal(_) => null
     }
