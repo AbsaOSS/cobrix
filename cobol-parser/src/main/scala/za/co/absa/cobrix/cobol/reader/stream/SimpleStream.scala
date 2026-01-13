@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.reader.stream
 
 
 /** This trait defines a simple abstraction for processing variable length record data. */
-trait SimpleStream {
+trait SimpleStream extends AutoCloseable {
   def size: Long
 
   def totalSize: Long
@@ -35,6 +35,4 @@ trait SimpleStream {
   def copyStream(): SimpleStream
 
   @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
-
-  @throws(classOf[Exception]) def close(): Unit
 }

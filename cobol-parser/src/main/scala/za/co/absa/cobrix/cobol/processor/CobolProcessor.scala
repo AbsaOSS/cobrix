@@ -21,8 +21,9 @@ import za.co.absa.cobrix.cobol.processor.impl.{CobolProcessorInPlace, CobolProce
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
+import za.co.absa.cobrix.cobol.utils.UsingUtils
 
-import java.io.{BufferedInputStream, BufferedOutputStream, FileOutputStream, OutputStream}
+import java.io.{BufferedOutputStream, FileOutputStream, OutputStream}
 import scala.collection.mutable
 
 
@@ -159,42 +160,11 @@ object CobolProcessor {
         case CobolProcessingStrategy.ToVariableLength => new CobolProcessorToRdw(readerParameters, copybook, copybookContents, options)
       }
 
-      val ifs = new FSStream(fileToProcess)
-      val ofs = new BufferedOutputStream(new FileOutputStream(outputFile))
-
-      var originalException: Throwable = null
-
-      val recordCount = try {
-        processor.process(ifs, ofs)(rawRecordProcessor)
-      } catch {
-        case ex: Throwable =>
-          originalException = ex
-          0L
-      } finally {
-        try {
-          ifs.close()
-        } catch {
-          case e: Throwable =>
-            if (originalException != null) {
-              originalException.addSuppressed(e)
-            } else {
-              originalException = e
-            }
-        }
-
-        try {
-          ofs.close()
-        } catch {
-          case e: Throwable =>
-            if (originalException != null) {
-              originalException.addSuppressed(e)
-            } else {
-              originalException = e
-            }
+      val recordCount = UsingUtils.using(new FSStream(fileToProcess)) { ifs =>
+        UsingUtils.using(new BufferedOutputStream(new FileOutputStream(outputFile))) { ofs =>
+          processor.process(ifs, ofs)(rawRecordProcessor)
         }
       }
-
-      if (originalException != null) throw originalException
 
       recordCount
     }

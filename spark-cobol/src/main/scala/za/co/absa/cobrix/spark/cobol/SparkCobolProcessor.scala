@@ -28,6 +28,7 @@ import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_ID
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
+import za.co.absa.cobrix.cobol.utils.UsingUtils
 import za.co.absa.cobrix.spark.cobol.reader.VarLenReader
 import za.co.absa.cobrix.spark.cobol.source.index.IndexBuilder
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
@@ -223,7 +224,6 @@ object SparkCobolProcessor {
         indexes.flatMap(indexEntry => {
           val filePathName = filesMap(indexEntry.fileId)
           val path = new Path(filePathName)
-          val fileSystem = path.getFileSystem(sconf.value)
           val fileName = path.getName
           val numOfBytes = if (indexEntry.offsetTo > 0L) indexEntry.offsetTo - indexEntry.offsetFrom else 0L
           val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
@@ -237,9 +237,7 @@ object SparkCobolProcessor {
 
       case _ =>
         spark.sparkContext.parallelize(listOfFiles).flatMap { inputFile =>
-          val hadoopConfig = sconf.value
           log.info(s"Going to process data from $inputFile")
-          val inputFs = new Path(inputFile).getFileSystem(hadoopConfig)
           val ifs = new FileStreamer(inputFile, sconf.value)
 
           CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs, None)
@@ -265,46 +263,15 @@ object SparkCobolProcessor {
 
       Future {
         val hadoopConfig = sconf.value
-        val inputFs = new Path(inputFIle).getFileSystem(hadoopConfig)
-        val ifs = new FileStreamer(inputFIle, sconf.value)
+
         val outputFile = new Path(outputPath, fileName)
         val outputFs = outputFile.getFileSystem(hadoopConfig)
-        val ofs = new BufferedOutputStream(outputFs.create(outputFile, true))
 
-        var originalException: Throwable = null
-
-        val recordCount = try {
-          cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
-        } catch {
-          case ex: Throwable =>
-            originalException = ex
-            0L
-        } finally {
-          // Ugly code to ensure no exceptions escape unnoticed.
-          try {
-            ifs.close()
-          } catch {
-            case e: Throwable =>
-              if (originalException != null) {
-                originalException.addSuppressed(e)
-              } else {
-                originalException = e
-              }
-          }
-
-          try {
-            ofs.close()
-          } catch {
-            case e: Throwable =>
-              if (originalException != null) {
-                originalException.addSuppressed(e)
-              } else {
-                originalException = e
-              }
+        val recordCount = UsingUtils.using(new FileStreamer(inputFIle, sconf.value)) { ifs =>
+          UsingUtils.using(new BufferedOutputStream(outputFs.create(outputFile, true))) { ofs =>
+            cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
           }
         }
-
-        if (originalException != null) throw originalException
 
         log.info(s"Writing to $outputFile succeeded!")
         recordCount
