@@ -60,7 +60,7 @@ jobs:
         run: sbt ++${{matrix.scala}} jacoco -DSPARK_VERSION=${{matrix.spark}}
       - name: Add coverage of 'cobol-parser' to PR
         id: jacocoParser
-        uses: madrapps/jacoco-report@v1.7.1
+        uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: >
             ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
@@ -75,7 +75,7 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
       - name: Add coverage of 'spark-cobol' to PR
         id: jacoco
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@v1.7.2
         with:
           paths: >
             ${{ github.workspace }}/spark-cobol/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
@@ -90,13 +90,13 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
       - name: Fail PR if changed files coverage for 'cobol-parser' is less than ${{ matrix.changedCobolParserOverride }}%
         if: ${{ steps.jacocoParser.outputs.coverage-changed-files < matrix.changedCobolParserOverride }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.4.1
         with:
           script: |
             core.setFailed('Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}% for 'cobol-parser'!')
       - name: Fail PR if changed files coverage for 'spark-cobol' is less than ${{ matrix.changed }}%
         if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changed }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v6.4.1
         with:
           script: |
             core.setFailed('Changed files coverage is less than ${{ matrix.changed }}% for 'spark-cobol!')
