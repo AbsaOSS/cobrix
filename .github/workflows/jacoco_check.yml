@@ -49,9 +49,9 @@ jobs:
             changedCobolParserOverride: 20
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6.0.2
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.1.0
         with:
           distribution: temurin
           java-version: 8
