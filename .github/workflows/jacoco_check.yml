@@ -60,7 +60,8 @@ jobs:
         run: sbt ++${{matrix.scala}} jacoco -DSPARK_VERSION=${{matrix.spark}}
       - name: Add coverage of 'cobol-parser' to PR
         id: jacocoParser
-        uses: madrapps/jacoco-report@v1.7.2
+        # gh api repos/madrapps/jacoco-report/commits/v1.7.2 --jq '.sha'
+        uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848
         with:
           paths: >
             ${{ github.workspace }}/cobol-parser/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml
@@ -75,7 +76,8 @@ jobs:
           echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
       - name: Add coverage of 'spark-cobol' to PR
         id: jacoco
-        uses: madrapps/jacoco-report@v1.7.2
+        # gh api repos/madrapps/jacoco-report/commits/v1.7.2 --jq '.sha'
+        uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848
         with:
           paths: >
             ${{ github.workspace }}/spark-cobol/target/scala-${{ matrix.scalaShort }}/jacoco/report/jacoco.xml

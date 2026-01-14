@@ -19,6 +19,7 @@ jobs:
         uses: actions/checkout@v6.0.2
 
       - name: Run FOSSA scan and upload build data
-        uses: fossa-contrib/fossa-action@v3.0.1
+        # gh api repos/fossa-contrib/fossa-action/commits/v3.0.1 --jq '.sha'
+        uses: fossa-contrib/fossa-action@3d2ef181b1820d6dcd1972f86a767d18167fa19b
         with:
           fossa-api-key: ${{secrets.FOSSA_API_KEY}}
