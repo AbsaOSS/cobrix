@@ -17,8 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
+import org.slf4j.{Logger, LoggerFactory}
 import org.apache.hadoop.fs.{ContentSummary, Path}
-import org.apache.log4j.Logger
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -39,7 +39,7 @@ import java.io.IOException
   */
 class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
 
-  private val logger = Logger.getLogger(FileStreamer.this.getClass)
+  private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val hadoopPath = new Path(filePath)
   private var byteIndex = startOffset
