@@ -31,7 +31,7 @@
 		<scala.compat.version>2.12</scala.compat.version>
 		<spark.version>3.5.7</spark.version>
 		<specs.version>2.4.16</specs.version>
-		<spark.cobol.version>2.9.6</spark.cobol.version>
+		<spark.cobol.version>2.9.7</spark.cobol.version>
         <scodec_core.version>1.11.10</scodec_core.version>
 	</properties>
 	
