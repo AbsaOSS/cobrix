@@ -52,6 +52,47 @@ class UsingUtilsSuite extends AnyWordSpec {
       assert(resource.closeCallCount == 1)
     }
 
+    "handle a null resource" in {
+      var resourceWasNull = false
+
+      UsingUtils.using(null: AutoCloseableSpy) { res =>
+        resourceWasNull = res == null
+      }
+
+      assert(resourceWasNull)
+    }
+
+    "handle a null resource and action throw" in {
+      var exceptionThrown = false
+      var resourceWasNull = false
+
+      try {
+        UsingUtils.using(null: AutoCloseableSpy) { res =>
+          resourceWasNull = res == null
+          throw new RuntimeException("Action throws")
+        }
+      } catch {
+        case ex: Throwable =>
+          exceptionThrown = true
+          assert(ex.getMessage.contains("Action throws"))
+      }
+
+      assert(exceptionThrown)
+      assert(resourceWasNull)
+    }
+
+    "handle a null return value" in {
+      var resourceWasNull = false
+
+      val result = UsingUtils.using(null: AutoCloseableSpy) { res =>
+        resourceWasNull = res == null
+        null: String
+      }
+
+      assert(resourceWasNull)
+      assert(result == null)
+    }
+
     "handle exceptions when a resource is created" in {
       var exceptionThrown = false
       var resource: AutoCloseableSpy = null

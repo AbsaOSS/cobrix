@@ -16,47 +16,52 @@
 
 package za.co.absa.cobrix.cobol.utils
 
-import scala.util.control.NonFatal
-
 object UsingUtils {
   /**
     * Executes the given action with a resource that implements the AutoCloseable interface, ensuring
     * proper closure of the resource. Any exception that occurs during the action or resource closure
-    * is handled appropriately, with suppressed exceptions added where relevant. Null resources are not supported.
+    * is handled appropriately.
     *
-    * @param resource a lazily evaluated resource that implements AutoCloseable
-    * @param action   a function to be executed using the provided resource
-    * @tparam T the type of the resource, which must extend AutoCloseable
+    * This is for use in Scala before Scala 2.13 introduced `Using` in `scala.util.Using` and works
+    * similarly to Java try-with-resources with the exception that it does not support multiple resources.
+    * But `using()` can be nested.
+    *
+    * Example usage:
+    * {{{
+    *   val result = UsingUtils.using(new AutoCloseableResource()) { resource =>
+    *     // Perform operations with the resource
+    *     // Return value of any type, including Unit, and null, or throw an exception.
+    *   }
+    * }}}
+    *
+    * @param resource a resource that implements AutoCloseable.
+    * @param action   an action to be executed using the provided resource.
+    * @tparam T the type of the resource, which must extend AutoCloseable.
     * @throws Throwable if either the action or resource closure fails. If both fail, the action's exception
-    *                   is thrown with the closure's exception added as suppressed
+    *                   is thrown with the closure's exception added as suppressed.
     */
-  def using[T <: AutoCloseable,U](resource: => T)(action: T => U): U = {
-    var thrownException: Option[Throwable] = None
-    var suppressedException: Option[Throwable] = None
+  def using[T <: AutoCloseable, U](resource: => T)(action: T => U): U = {
+    var actionException: Throwable = null
     val openedResource = resource
 
-    val result = try {
-      Option(action(openedResource))
+    try {
+      action(openedResource)
     } catch {
-      case NonFatal(ex) =>
-        thrownException = Option(ex)
-        None
+      case t: Throwable =>
+        actionException = t
+        throw t
     } finally
       if (openedResource != null) {
         try
           openedResource.close()
         catch {
-          case NonFatal(ex) => suppressedException = Option(ex)
+          case closeException: Throwable =>
+            if (actionException != null) {
+              actionException.addSuppressed(closeException)
+            } else {
+              throw closeException
+            }
         }
       }
-
-    (thrownException, suppressedException) match {
-      case (Some(thrown), Some(suppressed)) =>
-        thrown.addSuppressed(suppressed)
-        throw thrown
-      case (Some(thrown), None)     => throw thrown
-      case (None, Some(suppressed)) => throw suppressed
-      case (None, None)             => result.getOrElse(throw new IllegalArgumentException("Action returned null"))
-    }
   }
 }
