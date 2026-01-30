@@ -64,4 +64,63 @@ object UsingUtils {
         }
       }
   }
+
+  /**
+    * Implicits implementing resource management via for comprehension. Example usage:
+    * {{{
+    *   import za.co.absa.cobrix.cobol.utils.UsingUtils.Implicits._
+    *
+    *   for {
+    *     res1 <- new AutoCloseableResource()
+    *     res2 <- new AutoCloseableResource()
+    *   } {
+    *     // Perform operations with the resource
+    *   }
+    * }}}
+    *
+    * or
+    *
+    * {{{
+    *   import za.co.absa.cobrix.cobol.utils.UsingUtils.Implicits._
+    *
+    *   val result = for {
+    *     res1 <- new AutoCloseableResource()
+    *     res2 <- new AutoCloseableResource()
+    *   } yield {
+    *     // Perform operations with the resource, and return a value
+    *   }
+    * }}}
+    */
+  object Implicits {
+    implicit class ResourceWrapper[T <: AutoCloseable](private val resource: T) {
+      def foreach(f: T => Unit): Unit = using(resource)(f)
+
+      def map[U](body: T => U): U = using(resource)(body)
+
+      def flatMap[U](body: T => U): U = using(resource)(body)
+
+      def withFilter(p: T => Boolean): FilteredResourceWrapper[T] = new FilteredResourceWrapper[T](resource, p)
+    }
+  }
+
+  final class FilteredResourceWrapper[T <: AutoCloseable](private val resource: T,
+                                                          private val p: T => Boolean) {
+    def foreach(f: T => Unit): Unit =
+      using(resource) { r =>
+        if (p(r)) f(r) else ()
+      }
+
+    def map[U](body: T => U): U =
+      using(resource) { r =>
+        if (p(r)) body(r) else throw new NoSuchElementException("withFilter predicate is false")
+      }
+
+    def flatMap[U](body: T => U): U =
+      using(resource) { r =>
+        if (p(r)) body(r) else throw new NoSuchElementException("withFilter predicate is false")
+      }
+
+    def withFilter(p2: T => Boolean): FilteredResourceWrapper[T] =
+      new FilteredResourceWrapper[T](resource, r => p(r) && p2(r))
+  }
 }
