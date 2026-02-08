@@ -6,7 +6,7 @@
 [![Maven Central](https://img.shields.io/maven-central/v/za.co.absa.cobrix/cobol-parser_2.12?label=cobol-parser)](https://mvnrepository.com/artifact/za.co.absa.cobrix/cobol-parser)
 [![Maven Central](https://img.shields.io/maven-central/v/za.co.absa.cobrix/spark-cobol_2.12?label=spark-cobol)](https://mvnrepository.com/artifact/za.co.absa.cobrix/spark-cobol)
 
-Pain free Spark/Cobol files integration.
+Seamless integration of Spark with COBOL files.
 
 Seamlessly query your COBOL/EBCDIC binary files as Spark Dataframes and streams.   
 
@@ -14,33 +14,32 @@ Add mainframe as a source to your data engineering strategy.
 
 ## Motivation
 
-Among the motivations for this project, it is possible to highlight:
+Key motivations for this project include:
 
-- Lack of expertise in the Cobol ecosystem, which makes it hard to integrate mainframes into data engineering strategies.
+- Lack of expertise in the COBOL ecosystem, hindering the integration of mainframes into data engineering strategies.
 
-- Lack of support from the open-source community to initiatives in this field.
+- Limited open-source community support for initiatives in this domain.
 
-- The overwhelming majority (if not all) of tools to cope with this domain are proprietary.
+- Most, if not all, tools for this domain are proprietary.
 
-- Several institutions struggle daily to maintain their legacy mainframes, which prevents them from evolving to more modern approaches to data management.
+- Many institutions struggle daily to maintain legacy mainframes, impeding their evolution towards modern data management approaches.
 
-- Mainframe data can only take part in data science activities through very expensive investments.
+- Integrating mainframe data into data science activities often requires significant investment.
 
 
 ## Features
 
-- Supports primitive types (although some are "Cobol compiler specific").
+- Supports primitive data types (including some COBOL compiler-specific ones).
 
-- Supports REDEFINES, OCCURS and DEPENDING ON fields (e.g. unchecked unions and variable-size arrays).
+- Supports REDEFINES, OCCURS, and DEPENDING ON clauses (e.g., unchecked unions and variable-size arrays).
 
 - Supports nested structures and arrays.
 
-- Supports Hadoop (HDFS, S3, ...) as well as local file system.
+- Supports Hadoop-compatible file systems (HDFS, S3, etc.) and local file systems.
 
-- The COBOL copybooks parser doesn't have a Spark dependency and can be reused for integrating into other data processing engines.
+- The COBOL copybook parser has no Spark dependency, allowing its reuse for integration into other data processing engines.
 
-- Supports reading files compressed in Hadoop-compatible way (gzip, bzip2, etc), but with limited parallelism. 
-  Uncompressed files are preferred for performance. 
+- Supports reading files compressed using Hadoop-compatible formats (gzip, bzip2, etc.), though with limited parallelism. Uncompressed files are recommended for optimal performance. 
 
 ## Videos
 
@@ -61,7 +60,7 @@ Spark Summit 2019 (More detailed overview of performance optimizations): https:/
 
 ## Linking
 
-You can link against this library in your program at the following coordinates:
+You can link to this library in your program using the following coordinates:
 
 <table>
 <tr><th>Scala 2.11</th><th>Scala 2.12</th><th>Scala 2.13</th></tr>
@@ -131,29 +130,29 @@ jobs via `spark-submit` or `spark-shell`.
 ```sbt
 sbt ++{scala_version} jacoco
 ```
-Code coverage will be generated on path:
+Code coverage will be generated at:
 ```
 {project-root}/cobrix/{module}/target/scala-{scala_version}/jacoco/report/html
 ```
 
 ### Reading Cobol binary files from Hadoop/local and querying them 
 
-1. Create a Spark ```SQLContext```
+1. Create a Spark SQLContext.
 
-2. Start a ```sqlContext.read``` operation specifying ```za.co.absa.cobrix.spark.cobol.source``` as the format
+2. Initiate a sqlContext.read operation, specifying za.co.absa.cobrix.spark.cobol.source as the format.
 
-3. Inform the path to the copybook describing the files through ```... .option("copybook", "path_to_copybook_file")```. 
-   - By default the copybook is expected to be in the default Hadoop filesystem (HDFS, S3, etc). 
-   - You can specify that a copybook is located in the local file system by adding `file://` prefix. 
-   - For example, you can specify a local file like this `.option("copybook", "file:///home/user/data/copybook.cpy")`.
-   - Alternatively, instead of providing a path to a copybook file you can provide the contents of the copybook itself by using `.option("copybook_contents", "...copybook contents...")`. 
-   - You can store the copybook in the JAR itself at resources section in this case use `jar://` prefix, e.g.: `.option("copybook", "jar:///copybooks/copybook.cpy")`.
+3. Provide the path to the copybook describing the files via ```... .option("copybook", "path_to_copybook_file")```.
+- By default, the copybook is expected to be in the default Hadoop filesystem (HDFS, S3, etc.). 
+   - You can specify that a copybook is located in the local file system by adding the `file://` prefix. 
+   - For example, you can specify a local file as follows: `.option("copybook", "file:///home/user/data/copybook.cpy")`.
+   - Alternatively, instead of providing a path to a copybook file, you can provide its contents directly using `.option("copybook_contents", "...copybook contents...")`. 
+   - You can store the copybook within the JAR's resources section; in this case, use the `jar://` prefix, e.g.: `.option("copybook", "jar:///copybooks/copybook.cpy")`.
 
-4. Inform the path to the Hadoop directory containing the files: ```... .load("s3a://path_to_directory_containing_the_binary_files")``` 
+4. Provide the path to the Hadoop directory containing the files: ```... .load("s3a://path_to_directory_containing_the_binary_files")```. 
 
-5. Inform the query you would like to run on the Cobol Dataframe
+5. Specify the query you would like to run on the COBOL DataFrame.
 
-Below is an example whose full version can be found at ```za.co.absa.cobrix.spark.cobol.examples.SampleApp``` and ```za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample```
+A full example can be found in `za.co.absa.cobrix.spark.cobol.examples.SampleApp` and `za.co.absa.cobrix.spark.cobol.examples.CobolSparkExample`.
 
 ```scala
 val sparkBuilder = SparkSession.builder().appName("Example")
@@ -174,13 +173,11 @@ cobolDataframe
 
 The full example is available [here](https://github.com/AbsaOSS/cobrix/blob/master/spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample.scala)
 
-In some scenarios Spark is unable to find "cobol" data source by it's short name. In that case you can use the full path to the source class instead: `.format("za.co.absa.cobrix.spark.cobol.source")`
+In some scenarios, Spark is unable to find the "cobol" data source by its short name. In such cases, you can use the full path to the source class instead: `.format("za.co.absa.cobrix.spark.cobol.source")`.
 
-Cobrix assumes input data is encoded in EBCDIC. You can load ASCII files as well by specifying the following option:
-`.option("encoding", "ascii")`.
+Cobrix assumes input data is EBCDIC encoded. You can also load ASCII files by specifying the following option: `.option("encoding", "ascii")`.
 
-If the input file is a text file (CRLF / LF are used to split records), use
-`.option("is_text", "true")`.
+If the input file is a text file (where CRLF / LF are used to split records), use `.option("is_text", "true")`.
 
 Multisegment ASCII text files are supported using this option:
 `.option("record_format", "D")`.
@@ -188,21 +185,21 @@ Multisegment ASCII text files are supported using this option:
 Cobrix has better handling of special characters and partial records using its extension format:
 `.option("record_format", "D2")`.
 
-Read more on record formats at https://www.ibm.com/docs/en/zos/2.4.0?topic=files-selecting-record-formats-non-vsam-data-sets
+For more information on record formats, refer to: https://www.ibm.com/docs/en/zos/2.4.0?topic=files-selecting-record-formats-non-vsam-data-sets
 
 ### Streaming Cobol binary files from a directory
 
-1. Create a Spark ```StreamContext```
+1. Create a Spark `StreamContext`.
 
-2. Import the binary files/stream conversion manager: ```za.co.absa.spark.cobol.source.streaming.CobolStreamer._```
+2. Import the binary files/stream conversion manager: `za.co.absa.spark.cobol.source.streaming.CobolStreamer._`.
 
-3. Read the binary files contained in the path informed in the creation of the ```SparkSession``` as a stream: ```... streamingContext.cobolStream()```
+3. Read the binary files contained in the path informed in the creation of the `SparkSession` as a stream: `... streamingContext.cobolStream()`.
 
-4. Apply queries on the stream: ```... stream.filter("some_filter") ...```
+4. Apply queries on the stream: `... stream.filter("some_filter") ...`.
 
 5. Start the streaming job.
 
-Below is an example whose full version can be found at ```za.co.absa.cobrix.spark.cobol.examples.StreamingExample```
+A full example can be found in `za.co.absa.cobrix.spark.cobol.examples.StreamingExample`.
 
 ```scala
 val spark = SparkSession
@@ -230,15 +227,14 @@ streamingContext.awaitTermination()
 
 ### Using Cobrix from a Spark shell
 
-To query mainframe files interactively using `spark-shell` you need to provide jar(s) containing Corbrix and it's dependencies.
-This can be done either by downloading all the dependencies as separate jars or by creating an uber jar that contains all
-of the dependencies.
+To query mainframe files interactively using `spark-shell`, you need to provide JARs containing Cobrix and its dependencies.
+This can be done either by downloading all dependencies as separate JARs or by creating an uber JAR that contains all dependencies.
 
 #### Getting all Cobrix dependencies
 
-Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of Cobrix itself.
+Cobrix's `spark-cobol` data source depends on the COBOL parser, which is part of Cobrix itself.
 
-The jars that you need to get are:
+The JARs you need are:
 
 * spark-cobol_2.12-2.9.7.jar
 * cobol-parser_2.12-2.9.7.jar
@@ -247,7 +243,7 @@ The jars that you need to get are:
 
 > Versions older than 2.7.1 also need `antlr4-runtime-4.8.jar`.
 
-After that you can specify these jars in `spark-shell` command line. Here is an example:
+After that, you can specify these JARs in the `spark-shell` command line. Here is an example:
 ```
 $ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.7
 or 
@@ -292,10 +288,9 @@ scala>
 
 #### Creating an uber jar
 
-Gathering all dependencies manually maybe a tiresome task. A better approach would be to create a jar file that contains
-all required dependencies (an uber jar aka fat jar). 
+Gathering all dependencies manually can be a tiresome task. A better approach is to create a JAR file that contains all required dependencies (an uber JAR, also known as a fat JAR). 
 
-Creating an uber jar for Cobrix is very easy. Steps to build:
+Creating an uber JAR for Cobrix is very easy. Steps to build:
 - Install JDK 8
 - Install SBT
 - Clone Cobrix repository
@@ -313,21 +308,20 @@ Creating an uber jar for Cobrix is very easy. Steps to build:
     sbt -DSPARK_VERSION="3.4.4" ++2.13.17 assembly
     ```
 
-You can collect the uber jar of `spark-cobol` either at
-`spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/` depending on the Scala version you used.
+You can find the uber JAR of `spark-cobol` either at `spark-cobol/target/scala-2.11/` or in `spark-cobol/target/scala-2.12/`, depending on the Scala version you used.
 The fat jar will have '-bundle' suffix. You can also download pre-built bundles from https://github.com/AbsaOSS/cobrix/releases/tag/v2.7.3
 
-Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
+Then, run `spark-shell` or `spark-submit`, adding the fat JAR as an option.
 ```sh
 $ spark-shell --jars spark-cobol_2.12_3.3-2.9.8-SNAPSHOT-bundle.jar
 ```
 
-> <b>A note for building and running tests on Windows</b>
-> - `java.lang.UnsatisfiedLinkError: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat` is a Hadoop compatibility with
+> A note for building and running tests on Windows
+> - `java.lang.UnsatisfiedLinkError: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat` is a Hadoop compatibility issue with
 >   Windows issue. The workaround is described here: https://stackoverflow.com/questions/41851066/exception-in-thread-main-java-lang-unsatisfiedlinkerror-org-apache-hadoop-io
-> - When running assembly with `-DSPARK_VERSION=...` on Windows, it seems an sbt compatibility with Windows issue:
+> - When running assembly with `-DSPARK_VERSION=...` on Windows, it seems to be an sbt compatibility issue with Windows:
 >   https://stackoverflow.com/questions/59144913/run-sbt-1-2-8-project-with-java-d-options-on-windows
->   You can work around it by using default Spark version for a given Scala version:
+>   You can work around this by using the default Spark version for a given Scala version:
 >   ```sh
 >   sbt ++2.11.12 assembly
 >   sbt ++2.12.20 assembly
@@ -337,7 +331,7 @@ $ spark-shell --jars spark-cobol_2.12_3.3-2.9.8-SNAPSHOT-bundle.jar
 ## Other Features
 
 ### Loading several paths
-Currently, specifying multiple paths in `load()` is not supported. Use the following syntax: 
+Specifying multiple paths directly in `load()` is currently not supported. Instead, use the following syntax: 
 ```scala
     spark
       .read
@@ -348,9 +342,9 @@ Currently, specifying multiple paths in `load()` is not supported. Use the follo
 ```
 
 ### Spark SQL schema extraction
-This library also provides convenient methods to extract Spark SQL schemas and Cobol layouts from copybooks.  
+This library also provides convenient methods to extract Spark SQL schemas and COBOL layouts from copybooks.  
 
-If you want to extract a Spark SQL schema from a copybook by providing same options you provide to Spark: 
+If you want to extract a Spark SQL schema from a copybook by providing the same options you provide to Spark: 
 ```scala
 // Same options that you use for spark.read.format("cobol").option()
 val options = Map("schema_retention_policy" -> "keep_original")
@@ -361,7 +355,7 @@ val sparkSchema = cobolSchema.getSparkSchema.toString()
 println(sparkSchema)
 ```
 
-If you want to extract a Spark SQL schema from a copybook using the Cobol parser directly:
+If you want to extract a Spark SQL schema from a copybook using the COBOL parser directly:
 ```scala
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
@@ -384,9 +378,7 @@ println(copyBook.generateRecordLayoutPositions())
 ```
 
 ### Spark schema metadata
-When a copybook is converted to a Spark schema, some information is lost, such as length of string fields or
-minimum and maximum number of elements in arrays. To preserve this information, Cobrix adds metadata to Spark schema
-fields. The following metadata is added:
+When a copybook is converted to a Spark schema, some information, such as the length of string fields or the minimum and maximum number of elements in arrays, can be lost. To preserve this information, Cobrix adds metadata to Spark schema fields. The following metadata is added:
 
 | Metadata key | Description                                 |
 |--------------|---------------------------------------------|
@@ -401,18 +393,15 @@ df.schema.fields(0).metadata.getLong("maxLength")
 ```
 
 ### Fixed record length files
-Cobrix assumes files has fixed length (`F`) record format by default. The record length is determined by the length of
-the record defined by the copybook. But you can specify the record length explicitly:
+Cobrix assumes files have a fixed length (`F`) record format by default. The record length is determined by the length of the record defined by the copybook, but you can specify it explicitly:
 ```
 .option("record_format", "F")
 .option("record_length", "250")
 ```
 
-Fixed block record formats (`FB`) are also supported. The support is _experimental_, if you find any issues, please
-let us know. When the record format is 'FB' you can specify block length or number of records per
-block. As with 'F' if `record_length` is not specified, it will be determined from the copybook.
+Fixed block record formats (`FB`) are also supported. The support is _experimental_; if you find any issues, please let us know. When the record format is 'FB', you can specify block length or the number of records per block. As with 'F', if `record_length` is not specified, it will be determined from the copybook.
 
-Records that have BDWs, but not rdws can be read like this:
+Records that have BDWs but not RDWs can be read like this:
 ```
 .option("record_format", "FB")
 .option("record_length", "250")
@@ -440,11 +429,7 @@ More on fixed-length record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic
 
 ### Variable length records support
 
-Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4 byte
-record header known as _Record Descriptor Word_ (RDW). Such headers are created automatically when a variable record length
-file is copied from a mainframe. Another type of files are _variable blocked length_. Such files contain _Block Descriptor
-Word_ (BDW), as well as Record Descriptor Word (RDW) headers. Any such header can be either big-endian or little-endian.
-Also, quite often BDW headers need to be adjusted in order to be read properly. See the use cases section below.
+Cobrix supports variable record length files. The only requirement is that such a file should contain a standard 4-byte record header known as a Record Descriptor Word (RDW). Such headers are automatically created when a variable record length file is copied from a mainframe. Another type of files are _variable blocked length_. Such files contain a Block Descriptor Word (BDW), as well as Record Descriptor Word (RDW) headers. Any such header can be either big-endian or little-endian. Also, quite often BDW headers need to be adjusted in order to be read properly. See the use cases section below.
 
 To load variable length record file the following option should be specified:
 ```
@@ -458,10 +443,9 @@ To load variable blocked length record file the following option should be speci
 
 More on record formats: https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets
 
-The space used by the headers (both BDW and RDW) should not be mentioned in the copybook if this option is used. Please refer to the
-'Record headers support' section below. 
+The space used by the headers (both BDW and RDW) should not be mentioned in the copybook if this option is used. Please refer to the 'Record headers support' section below. 
 
-If a record of the copybook contains record lengths for each record you can use 'record_length_field' like this:
+If a record of the copybook contains record lengths for each record, you can use `record_length_field` like this:
 ```
 .option("record_format", "F")
 .option("record_length_field", "RECORD_LENGTH")
@@ -494,13 +478,11 @@ You can specify the default record size by defining the key "_":
 
 ### Use cases for various variable length formats
 
-In order to understand the file format it is often sufficient to look at the first 4 bytes of the file (un case of RDW only files),
-or the first 8 bytes of a file + lookup the offset of the block (in case of BDW + RDW)  
+To understand the file format, it is often sufficient to look at the first 4 bytes of the file (in the case of RDW-only files), or the first 8 bytes of a file plus look up the offset of the block (in the case of BDW + RDW).  
 
 #### V header examples (have only RDW headers)
 
-In order to determine if an RDW is a big- or little-endian, take a look at the first 4 bytes. If the first 2 bytes are zeros,
-it's a little-endian RDW header, otherwise it is a big-endian RDW header.
+To determine if an RDW is big- or little-endian, examine the first 4 bytes. If the first 2 bytes are zeros, it's a little-endian RDW header; otherwise, it is a big-endian RDW header.
 
 | Header example |                           Description                                  |       Options  |
 | -------------- |:---------------------------------------------------------------------- | :----------------
@@ -511,8 +493,7 @@ it's a little-endian RDW header, otherwise it is a big-endian RDW header.
 
 #### VB header examples (have both BDW and RDW headers)
 
-It is harder to determine if a BDW header is big- or little-endian since BDW header bytes can be all non-zero.
-But for VB format RDWs follow BDWs and endiness. You can determine the endiness from an RDW, and use the same option for BDW.
+It is harder to determine if a BDW header is big- or little-endian since BDW header bytes can be all non-zero. However, for the VB format, RDWs follow BDWs and endianness. You can determine the endianness from an RDW and apply the same option for BDW.
 
 |               Header example             |                           Description                           |       Options  |
 | ---------------------------------------- |:--------------------------------------------------------------- | :----------------
@@ -523,8 +504,7 @@ But for VB format RDWs follow BDWs and endiness. You can determine the endiness 
 
 ### Schema collapsing
 
-Mainframe data often contain only one root GROUP. In such cases such a GROUP can be considered something similar to XML rowtag.
-Cobrix allows either to collapse or to retain the GROUP. To turn this on use the following option:
+Mainframe data often contains only one root GROUP. In such cases, this GROUP can be considered similar to an XML rowtag. Cobrix allows either collapsing or retaining the GROUP. To enable this, use the following option:
 
 ```scala
 .option("schema_retention_policy", "collapse_root")
@@ -534,7 +514,7 @@ or
 .option("schema_retention_policy", "keep_original")
 ```
 
-Let's look at an example. Let's say we have a copybook that looks like this:
+Let's look at an example. Suppose we have a copybook that looks like this:
 ```cobol
        01  RECORD.
            05  ID                        PIC S9(4)  COMP.
@@ -569,11 +549,9 @@ You can experiment with this feature using built-in example in `za.co.absa.cobri
 
 ### Record Id fields generation
 
-For data that has record order dependency generation of "File_Id", "Record_Id", and "Record_Byte_Length" fields is
-supported. The values of the File_Id column will be unique for each file when a directory is specified as the source for
-data. The values of the Record_Id column will be unique and sequential record identifiers within the file.
+For data with record order dependency, the generation of "File_Id", "Record_Id", and "Record_Byte_Length" fields is supported. The values of the `File_Id` column will be unique for each file when a directory is specified as the data source. The values of the `Record_Id` column will be unique and sequential record identifiers within the file.
 
-Turn this feature on use
+To turn this feature on, use:
 ```
 .option("generate_record_id", true)
 ```
@@ -599,59 +577,45 @@ root
 
 ### Locality optimization for variable-length records parsing
 
-Variable-length records depend on headers to have their length calculated, which makes it hard to achieve parallelism while parsing.
+Variable-length records depend on headers to have their length calculated, which makes it challenging to achieve parallelism during parsing.
 
-Cobrix strives to overcome this drawback by performing a two-stages parsing. The first stage traverses the records retrieving their lengths
-and offsets into structures called indexes. Then, the indexes are distributed across the cluster, which allows for parallel variable-length
-records parsing.
+Cobrix strives to overcome this drawback by performing a two-stage parsing process. The first stage traverses the records, retrieving their lengths and offsets into structures called indexes. These indexes are then distributed across the cluster, enabling parallel parsing of variable-length records.
 
-However effective, this strategy may also suffer from excessive shuffling, since indexes may be sent to executors far from the actual data.
+However effective, this strategy may also suffer from excessive shuffling, as indexes may be sent to executors far from the actual data.
 
-The latter issue is overcome by extracting the preferred locations for each index directly from HDFS/S3/..., and then passing those locations to
-Spark during the creation of the RDD that distributes the indexes.
+This latter issue is overcome by extracting the preferred locations for each index directly from HDFS/S3/..., and then passing those locations to Spark during the creation of the RDD that distributes the indexes.
 
-When processing large collections, the overhead of collecting the locations is offset by the benefits of locality, thus, this feature is
-enabled by default, but can be disabled by the configuration below:
+When processing large collections, the overhead of collecting the locations is offset by the benefits of locality; thus, this feature is enabled by default but can be disabled by the configuration below:
 ```
 .option("improve_locality", false)
 ```
 
 ### Workload optimization for variable-length records parsing
 
-This feature works only for HDFS, not for any other of Hadoop filesystems.
+This feature works only for HDFS, not for any other Hadoop filesystems.
 
-When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse
-each record, i.e. the nodes where the record resides.
+When dealing with variable-length records, Cobrix strives to maximize locality by identifying the preferred locations in the cluster to parse each record—i.e., the nodes where the record resides.
 
-This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the
-partition for that record in one of those locations.
+This feature is implemented by querying HDFS about the locations of the blocks containing each record and instructing Spark to create the partition for that record in one of those locations.
 
-However, sometimes, new nodes can be added to the cluster after the Cobol file is stored, in which case those nodes would be ignored when
-processing the file since they do not contain any record.
+However, sometimes, new nodes can be added to the cluster after the COBOL file is stored, in which case those nodes would be ignored when processing the file since they do not contain any record.
 
-To overcome this issue, Cobrix also strives to re-balance the records among the new nodes at parsing time, as an attempt to maximize the
-utilization of the cluster. This is done through identifying the busiest nodes and sharing part of their burden with the new ones.
+To overcome this issue, Cobrix also strives to rebalance the records among the new nodes at parsing time, as an attempt to maximize the utilization of the cluster. This is done by identifying the busiest nodes and sharing part of their burden with the new ones.
 
-Since this is not an issue present in most cluster configurations, this feature is disabled by default, and can be enabled from the
-configuration below:
+Since this is not an issue present in most cluster configurations, this feature is disabled by default and can be enabled from the configuration below:
 ```
 .option("optimize_allocation", true)
 ```
 
-If however the option ```improve_locality``` is disabled, this option will also be disabled regardless of the value in ```optimize_allocation```.
+If, however, the option `improve_locality` is disabled, this option will also be disabled regardless of the value in `optimize_allocation`.
 
 ### Record headers support
 
-As you may already know a file in the mainframe world does not mean the same as in the PC world. On PCs we think of a file
-as a stream of bytes that we can open, read/write and close. On mainframes a file can be a set of records that we can query.
-Record is a blob of bytes, can have different size. Mainframe's 'filesystem' handles the mapping between logical records
-and physical location of data.
+As you may already know, a file in the mainframe world does not mean the same as in the PC world. On PCs, we think of a file as a stream of bytes that we can open, read/write, and close. On mainframes, a file can be a set of records that we can query. A record is a blob of bytes and can have different sizes. The mainframe's 'filesystem' handles the mapping between logical records and the physical location of data.
 
 > _Details are available at this [Wikipedia article](https://en.wikipedia.org/wiki/MVS) (look for MVS filesystem)._ 
 
-So usually a file cannot simply be 'copied' from a mainframe. When files are transferred using tools like XCOM each
-record is prepended with an additional *record header* or *RDW*. This header allows readers of a file in PC to restore the
-'set of records' nature of the file.
+So, a file cannot simply be 'copied' from a mainframe. When files are transferred using tools like XCOM, each record is prepended with an additional *record header* or *RDW*. This header allows readers of a file on a PC to restore the 'set of records' nature of the file.
 
 Mainframe files coming from IMS and copied through specialized tools contain records (the payload) having schema of DBs
 copybook warped with DB export tool headers wrapped with record headers. Like this:
@@ -660,32 +624,26 @@ RECORD_HEADERS ( TOOL_HEADERS ( PAYLOAD ) )
 
 > _Similar to Internet's TCP protocol   IP_HEADERS ( TCP_HEADERS ( PAYLOAD ) )._
 
-TOOL_HEADERS are application dependent. Often it contains the length of the payload. But this length is sometime
-not very reliable. RECORD_HEADERS contain the record length (including TOOL_HEADERS length) and are proved to be reliable.
+`TOOL_HEADERS` are application-dependent. Often, they contain the length of the payload, but this length is sometimes not very reliable. `RECORD_HEADERS` contain the record length (including `TOOL_HEADERS` length) and are proven to be reliable.
 
-For fixed record length files record headers can be ignored since we already know the record length. But for variable
-record length files and for multisegment files record headers can be considered the most reliable single point of truth
-about record length.
+For fixed record length files, record headers can be ignored since the record length is already known. However, for variable record length files and multisegment files, record headers can be considered the most reliable single point of truth about record length.
 
-You can instruct the reader to use 4 byte record headers to extract records from a mainframe file.
+You can instruct the reader to use 4-byte record headers to extract records from a mainframe file.
 
 ```
 .option("record_format", "V")
 ```
 
-This is very helpful for multisegment files when segments have different lengths. Since each segment has it's own
-copybook it is very convenient to extract segments one by one by combining `record_format = V` option with segment
-filter option.
+This is very helpful for multisegment files when segments have different lengths. Since each segment has its own copybook, it is very convenient to extract segments one by one by combining the `record_format = V` option with the segment filter option.
 
 ```
 .option("segment_field", "SEG-ID")
 .option("segment_filter", "1122334")
 ```
 
-In this example it is expected that the copybook has a field with the name 'SEG-ID'. The data source will read all
-segments, but will parse only ones that have `SEG-ID = "1122334"`.
+In this example, it is expected that the copybook has a field named 'SEG-ID'. The data source will read all segments but will parse only those that have `SEG-ID = "1122334"`.
 
-If you want to parse multiple segments, set the option 'segment_filter' to a comma separated list of the segment values.
+If you want to parse multiple segments, set the option 'segment_filter' to a comma-separated list of the segment values.
 For example:
 ```
 .option("segment_field", "SEG-ID")
@@ -695,9 +653,7 @@ will only parse the records with `SEG-ID = "1122334" OR SEG-ID = "1122335"`
 
 ### Custom record extractors
 
-Custom record extractors can be used for customizing splitting of input files into a set of records. Cobrix supports
-text files, fixed length binary files and binary files with RDWs. If your input file is not in one of the supported
-formats you can implement a custom record extractor interface and provide it to `spark-cobol` as a option:
+Custom record extractors can be used for customizing the splitting of input files into a set of records. Cobrix supports text files, fixed-length binary files, and binary files with RDWs. If your input file is not in one of the supported formats, you can implement a custom record extractor interface and provide it to `spark-cobol` as an option:
 
 ```
 .option("record_extractor", "com.example.record.header.parser")
@@ -710,22 +666,17 @@ class TextRecordExtractor(ctx: RawRecordExtractorParameters) extends Serializabl
                           }
 ```
 
-A record extractor is essentially iterator of records. Each returned record is an array of bytes parsable by the
-copybook.  
+A record extractor is essentially an iterator of records. Each returned record is an array of bytes parsable by the copybook.  
 
-A record extractor is invoked two times. First, it is invoked at the beginning each file to go thought the file and
-create a sparse index. The second time it is invoked by parallel processes starting from different records in the file.
-The starting record number is provided in constructor. The starting file offset is available from `inputStream`.
+A record extractor is invoked two times. First, it is invoked at the beginning of each file to go through the file and create a sparse index. The second time, it is invoked by parallel processes starting from different records in the file. The starting record number is provided in the constructor. The starting file offset is available from `inputStream`.
 
-RawRecordContext consists of the following fields that the custom record extractor will get from Cobrix
-in runtime:
+`RawRecordContext` consists of the following fields that the custom record extractor will get from Cobrix at runtime:
 * `startingRecordNumber` - A record number the input stream is pointing to.
 * `inputStream` - The input stream of bytes of the input file.
 * `copybook` - The parsed copybook of the input stream.
 * `additionalInfo` - An arbitrary info that can be passed as an option (see below).
 
-If your record extractor needs additional information in order to extract records properly, you can provide
-an arbitrary additional info to the record extracted at runtime by specifying this option:
+If your record extractor needs additional information to extract records properly, you can provide arbitrary additional info to the record extracted at runtime by specifying this option:
 
 Take a look at `CustomRecordExtractorMock` inside `spark-cobol` project to see how a custom record extractor can be built.
 
@@ -735,20 +686,15 @@ Take a look at `CustomRecordExtractorMock` inside `spark-cobol` project to see h
 
 ### Custom record header parsers (deprecated)
 
-Custom record header parsers are deprecated. Use custom record extractors instead. They are more flexible and easier to use. 
+Custom record header parsers are deprecated. Use custom record extractors instead, as they are more flexible and easier to use. 
 
-If your variable length file does not have RDW headers, but has fields that can be used for determining record lengths
-you can provide a custom record header parser that takes starting bytes of each record and returns record lengths.
-In order to do that you need to create a class inheriting `RecordHeaderParser` and `Serializable` traits and provide a
-fully qualified class name to the following option:
+If your variable-length file does not have RDW headers but has fields that can be used for determining record lengths, you can provide a custom record header parser that takes the starting bytes of each record and returns record lengths. To do that, you need to create a class inheriting `RecordHeaderParser` and `Serializable` traits and provide a fully qualified class name to the following option:
 ```
 .option("record_header_parser", "com.example.record.header.parser")
 ```
 
 ### RDDs
-Cobrix provides helper methods to convert `RDD[String]` or `RDD[Array[Byte]]` to `DataFrame` using a copybook.
-This can be used if you want to use a custom logic to split the input file into records as either ASCII strings
-or arrays of bytes, and then parse each record using a copybook.
+Cobrix provides helper methods to convert `RDD[String]` or `RDD[Array[Byte]]` to `DataFrame` using a copybook. This can be used if you want to apply custom logic to split the input file into records as either ASCII strings or arrays of bytes, and then parse each record using a copybook.
 
 An example of `RDD[Array[Byte]]`:
 ```scala
@@ -772,8 +718,7 @@ val df = Cobrix.fromRdd
     .loadText(rdd)
 ```
 
-When converting from an RDD some of the options like `record_format` or `generate_record_id` cannot be used since the
-data is assumed to be already split by records and the information about file names and relative order of records is not available.
+When converting from an RDD, some options like `record_format` or `generate_record_id` cannot be used since the data is assumed to be already split by records, and information about file names and the relative order of records is unavailable.
 
 ## EBCDIC code pages
 
@@ -791,15 +736,13 @@ The following code pages are supported:
 * `cp1364` - (experimental support) IBM EBCDIC Korean (2 byte code page)
 * `cp1388` - (experimental support) IBM EBCDIC Simplified Chinese (2 byte code page)
 
-By default, Cobrix uses common EBCDIC code page which contains only basic latin characters, numbers, and punctuation.
-You can specify the code page to use for all string fields by setting the `ebcdic_code_page` option to one of the
-following values:
+By default, Cobrix uses the common EBCDIC code page, which contains only basic Latin characters, numbers, and punctuation. You can specify the code page to use for all string fields by setting the `ebcdic_code_page` option to one of the following values:
 
 ```
 .option("ebcdic_code_page", "cp037")
 ```
 
-For multi-codepage files, you can specify the code page to use for each field by setting the `field_code_page:<code page>` option
+For multi-codepage files, you can specify the code page to use for each field by setting the `field_code_page:<code page>` option.
 ```
 .option("ebcdic_code_page", "cp037")
 .option("field_code_page:cp1256" -> "FIELD1")
@@ -807,7 +750,7 @@ For multi-codepage files, you can specify the code page to use for each field by
 ```
 
 ## Reading ASCII text file
-Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated with newlines.
+Cobrix is primarily designed to read binary files, but you can directly use some internal functions to read ASCII text files. In ASCII text files, records are separated by newlines.
 
 Working example 1:
 ```scala
@@ -823,7 +766,7 @@ Working example 1:
 
 Working example 2 - Using RDDs and helper methods:
 ```scala
-    // This is the way if you have data converted to an RDD[String] already.
+    // This is the way if you have data already converted to an `RDD[String]`.
     // You have full control on reading the input data records and converting them to `java.lang.String`.
     val df = Cobrix.fromRdd
         .copybookContents(copybook)
@@ -833,7 +776,7 @@ Working example 2 - Using RDDs and helper methods:
 
 Working example 3 - Using RDDs and record parsers directly:
 ```scala
-    // This is the most verbose way - creating dataframes from RDDs. But it gives full control on how text files are
+    // This is the most verbose way – creating dataframes from RDDs. However, it gives full control over how text files are
     // processed before parsing actual records
     val spark = SparkSession
       .builder()
@@ -900,13 +843,11 @@ root
  +----------+--------------+--------+
 ```
 
-There, Cobrix loaded all redefines for every record. Each record contains data from all of the segments. But only one redefine is valid for every segment. Filtering is described in the following section.
+Here, Cobrix loaded all redefines for every record. Each record contains data from all segments, but only one redefine is valid per segment. Filtering is described in the following section.
 
 ## Automatic segment redefines filtering
 
-When reading a multisegment file you can use Spark to clean up redefines that do not match segment ids. Cobrix will parse
-every redefined field for each segment. To increase performance you can specify which redefine corresponds to which
-segment id. This way Cobrix will parse only relevant segment redefined fields and leave the rest of the redefined fields null.
+When reading a multisegment file, you can use Spark to clean up redefines that do not match segment IDs. Cobrix will parse every redefined field for each segment. To increase performance, you can specify which redefine corresponds to which segment ID. This way, Cobrix will parse only relevant segment redefined fields and leave the rest of the redefined fields as null.
 
 ```
   .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...")
@@ -953,8 +894,7 @@ every redefine for each record.
 
 ## Group Filler dropping
 
-A FILLER is an anonymous field that is usually used for reserving space for new fields in a fixed record length data.
-Or it is used to remove a field from a copybook without affecting compatibility.
+A `FILLER` is an anonymous field typically used for reserving space for new fields in fixed-record-length data. Alternatively, it can be used to remove a field from a copybook without affecting compatibility.
 
 ```cobol
       05  COMPANY.
@@ -963,8 +903,7 @@ Or it is used to remove a field from a copybook without affecting compatibility.
           10  ADDRESS   PIC X(25).
           10  FILLER    PIC X(125).
 ``` 
-Such fields are dropped when imported into a Spark data frame by Cobrix. Some copybooks, however, have FILLER groups that
-contain non-filler fields. For example,
+Such fields are dropped when imported into a Spark DataFrame by Cobrix. Some copybooks, however, have `FILLER` groups that contain non-filler fields. For example,
 ```cobol
       05  FILLER.
           10  NAME      PIC X(15).
@@ -973,14 +912,12 @@ contain non-filler fields. For example,
           10  AMOUNT    PIC 9(10)V96.
           10  COMMENT   PIC X(40).
 ``` 
-By default Cobrix will retain such fields, but will rename each such filler to a unique name so each each individual struct
-can be specified unambiguously. For example, in this case the filler groups will be renamed to `FILLER_1` and `FILLER_2`.
-You can change this behaviour if you would like to drop such filler groups by providing this option:
+By default, Cobrix will retain such fields but will rename each filler to a unique name so that each individual struct can be specified unambiguously. For example, in this case, the filler groups will be renamed to `FILLER_1` and `FILLER_2`. You can change this behavior if you would like to drop such filler groups by providing this option:
 ```
 .option("drop_group_fillers", "true")
 ```
 
-In order to retain *value FILLERs* (e.g. non-group FILLERs) as well, use this option:
+In order to retain *value FILLERs* (e.g., non-group FILLERs) as well, use this option:
 ```
 .option("drop_value_fillers", "false")
 ```
@@ -988,13 +925,9 @@ In order to retain *value FILLERs* (e.g. non-group FILLERs) as well, use this op
 
 ## <a id="ims"/>Reading hierarchical data sets
 
-Let's imagine we have a multisegment file with 2 segments having parent-child relationships. Each segment has a different
-record type. The root record/segment contains company info, an address and a taxpayer number. The child segment contains
-a contact person for a company. Each company can have zero or more contact persons. So each root record can be followed by
-zero or more child records.
+Let's imagine we have a multisegment file with two segments having parent-child relationships. Each segment has a different record type. The root record/segment contains company information, an address, and a taxpayer number. The child segment contains a contact person for a company. Each company can have zero or more contact persons, so each root record can be followed by zero or more child records.
 
-To load such data in Spark the first thing you need to do is to create a copybook that contains all segment specific fields
-in redefined groups. Here is the copybook for our example:
+To load such data in Spark, the first thing you need to do is create a copybook that contains all segment-specific fields in redefined groups. Here is the copybook for our example:
 
 ```cobol
         01  COMPANY-DETAILS.
@@ -1014,14 +947,13 @@ in redefined groups. Here is the copybook for our example:
                10  CONTACT-PERSON    PIC X(28).
 ```
 
-The 'SEGMENT-ID' and 'COMPANY-ID' fields are present in all of the segments. The 'STATIC-DETAILS' group is present only in
-the root record. The 'CONTACTS' group is present only in child record. Notice that 'CONTACTS' redefine 'STATIC-DETAILS'.
+The 'SEGMENT-ID' and 'COMPANY-ID' fields are present in all segments. The 'STATIC-DETAILS' group is present only in the root record. The 'CONTACTS' group is present only in the child record. Notice that 'CONTACTS' redefines 'STATIC-DETAILS'.
 
-Because the records have different lengths use `record_format = V` or `record_format = VB` depending of the record format.
+Because the records have different lengths, use `record_format = V` or `record_format = VB` depending on the record format.
 
-If you load this file as is you will get the schema and the data similar to this.
+If you load this file as is, you will get a schema and data similar to this:
 
-#### Spark App:
+Spark App:
 ```scala
 val df = spark
   .read
@@ -1068,24 +1000,17 @@ df.show(10)
 +----------+----------+--------------------+--------------------+
 ```
 
-As you can see Cobrix loaded *all* redefines for *every* record. Each record contains data from all of the segments. But only
-one redefine is valid for every segment. So we need to split the data set into 2 datasets or tables. The distinguisher is
-the 'SEGMENT_ID' field. All company details will go into one data sets (segment id = 'C' [company]) while contacts will go in
-the second data set (segment id = 'P' [person]). While doing the split we can also collapse the groups so the table won't
-contain nested structures. This can be helpful to simplify the analysis of the data.
+As you can see, Cobrix loaded *all* redefines for *every* record. Each record contains data from all segments, but only one redefine is valid per segment. Therefore, we need to split the dataset into two datasets or tables. The distinguisher is the 'SEGMENT_ID' field. All company details will go into one dataset (segment ID = 'C' [company]), while contacts will go into the second dataset (segment ID = 'P' [person]). While doing the split, we can also collapse the groups so the table won't contain nested structures. This can be helpful to simplify the analysis of the data.
 
-While doing it you might notice that the taxpayer number field is actually a redefine. Depending on the 'TAXPAYER_TYPE'
-either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spark app as well.
+While doing so, you might notice that the taxpayer number field is actually a redefine. Depending on the 'TAXPAYER_TYPE', either 'TAXPAYER_NUM' or 'TAXPAYER_STR' is used. We can resolve this in our Spark app as well.
 
 ### <a id="autoims"/>Automatic reconstruction of hierarchical record structure
-Starting from `spark-cobol` version `1.1.0` hierarchical structure of multisegment records can be restored automatically. In order to do this you
-need to provide:
+Starting from `spark-cobol` version `1.1.0`, the hierarchical structure of multisegment records can be restored automatically. To do this, you need to provide:
 - A segment ID field that will be used to distinguish segment types.
-- A segmentId to redefine fields mapping that will be used to map each segment to a redefine field.
+- A segment ID to redefine fields mapping that will be used to map each segment to a redefine field.
 - A parent-child relationship between segments identified by segment redefine fields.
 
-When all of the above is specified Cobrix can reconstruct hierarchical nature of records by making child segments nested
-arrays of parent segments. Arbitrary levels of hierarchy and arbitrary number of segments is supported.
+When all of the above is specified, Cobrix can reconstruct the hierarchical nature of records by making child segments nested arrays of parent segments. Arbitrary levels of hierarchy and an arbitrary number of segments are supported.
 
 ```scala
 val df = spark
@@ -1129,7 +1054,7 @@ root
 
 ```
 
-Notice that contacts now is an array of structs. That is a company static details can contain zero or mor contacts.
+Notice that `CONTACTS` is now an array of structs, meaning a company's static details can contain zero or more contacts.
 A possible hierarchical record output is
 ```
 scala> import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -1165,8 +1090,7 @@ is available as a unit test `za/co/absa/cobrix/spark/cobol/source/integration/Te
  
 ### Manual reconstruction of hierarchical structure
 
-Alternatively, hierarchical record structure can be reconstructed manually by extracting each segment and joining
-segments together. This a is more complicated process, but it provides more control.
+Alternatively, a hierarchical record structure can be reconstructed manually by extracting and joining segments. This is a more complicated process but provides greater control.
 
 #### Getting the first segment
 ```scala
@@ -1212,7 +1136,7 @@ This looks like a valid and clean table containing the list of companies. Now le
       .select($"COMPANY_ID", $"CONTACTS.CONTACT_PERSON", $"CONTACTS.PHONE_NUMBER")
 ```
 
-The resulting data loons like this:
+The resulting data looks like this:
 ```
 dfContacts.show(10, truncate = false)
 +----------+--------------------+----------------+
@@ -1231,12 +1155,7 @@ dfContacts.show(10, truncate = false)
 +----------+--------------------+----------------+
 ```
 
-This looks good as well. The table contains the list of contact persons for companies. This data set contains the
-'COMPANY_ID' field which we can use later to join the tables. But often there are no such fields in data imported from
-hierarchical databases. If that is the case Cobrix can help you craft such fields automatically. Use 'segment_field' to
-specify a field that contain the segment id. Use 'segment_id_level0' to ask Cobrix to generate ids for the particular
-segments. We can use 'segment_id_level1' to generate child ids as well. If children records can contain children of their
-own we can use 'segment_id_level2' etc.
+This looks good as well. The table contains a list of contact persons for companies. This dataset contains the 'COMPANY_ID' field, which we can use later to join the tables. However, often there are no such fields in data imported from hierarchical databases. If that is the case, Cobrix can help you craft such fields automatically. Use 'segment_field' to specify a field that contains the segment ID. Use 'segment_id_level0' to ask Cobrix to generate IDs for particular segments. We can use 'segment_id_level1' to generate child IDs as well. If children records can contain children of their own, we can use 'segment_id_level2', etc.
 
 #### Generating segment ids
 
@@ -1252,8 +1171,7 @@ val df = spark
   .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
 ```
 
-Sometimes, the leaf level has many segments. In this case, you can use `_` as the list of segment ids to specify
-'the rest of segment ids', like this:
+Sometimes, the leaf level has many segments. In this case, you can use `_` as the list of segment IDs to specify 'the rest of segment IDs,' like this:
 
 ```scala
 val df = spark
@@ -1288,19 +1206,11 @@ df.show(10)
 +------------------+-----------------------+----------+----------+--------------------+--------------------+
 ```
 
-The data now contain 2 additional fields: 'Seg_Id0' and 'Seg_Id1'. The 'Seg_Id0' is an autogenerated id for each root
-record. It is also unique for a root record. After splitting the segments you can use Seg_Id0 to join both tables.
-The 'Seg_Id1' field contains a unique child id. It is equal to 'null' for all root records but uniquely identifies
-child records.
+The data now contains two additional fields: 'Seg_Id0' and 'Seg_Id1'. The 'Seg_Id0' is an auto-generated ID for each root record and is also unique for a root record. After splitting the segments, you can use 'Seg_Id0' to join both tables. The 'Seg_Id1' field contains a unique child ID and is equal to 'null' for all root records but uniquely identifies child records.
 
-You can now split these 2 segments and join them by Seg_Id0. The full example is available at
-`spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
+You can now split these 2 segments and join them by Seg_Id0. The full example is available at `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`.
 
-To run it from an IDE you'll need to change Scala and Spark dependencies from 'provided' to 'compile' so the
-jar file would contain all the dependencies. This is because Cobrix is a library to be used in Spark job projects.
-Spark jobs uber jars should not contain Scala and Spark dependencies since Hadoop clusters have their Scala and Spark
-dependencies provided by the infrastructure. Including Spark and Scala dependencies in an uber jar can produce
-binary incompatibilities when these jars are used in `spark-submit` and `spark-shell`.
+To run it from an IDE, you'll need to change Scala and Spark dependencies from 'provided' to 'compile' so the JAR file would contain all the dependencies. This is because Cobrix is a library to be used in Spark job projects. Spark jobs' uber JARs should not contain Scala and Spark dependencies since Hadoop clusters have their Scala and Spark dependencies provided by the infrastructure. Including Spark and Scala dependencies in an uber JAR can produce binary incompatibilities when these JARs are used in `spark-submit` and `spark-shell`.
 
 Here is our example tables to join:
 
@@ -1378,14 +1288,11 @@ dfJoined.show(13, truncate = false)
 +--------------------+----------+-------------+-------------------------+--------+----------+--------------------+----------------+
 ```
 
-Again, the full example is available at
-`spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`
+Again, the full example is available at `spark-cobol/src/main/scala/za/co/absa/cobrix/spark/cobol/examples/CobolSparkExample2.scala`.
 
 ## COBOL parser extensions
 
-Some encoding formats are not expressible by the standard copybook spec. Cobrix has extensions to help you decode 
-fields encoded in this way.   
-
+Some encoding formats are not expressible by the standard copybook specification. Cobrix has extensions to help you decode fields encoded in this way.
 ### Loading multiple paths
 
 Loading multiple paths in the standard way is not supported.
@@ -1397,7 +1304,7 @@ Loading multiple paths in the standard way is not supported.
    .load("/path1", "/paths2")
 ```
 
-But there is a Cobrix extension that allows you to load multiple paths:
+However, a Cobrix extension allows you to load multiple paths:
 ```scala
  val df = spark
    .read
@@ -1409,9 +1316,7 @@ But there is a Cobrix extension that allows you to load multiple paths:
 
 ### Parsing little-endian binary numbers
 
-Cobrix expects all binary numbers to be big-endian. If you have a binary number in the little-endian format, use 
-`COMP-9` (Cobrix extension) instead of `COMP` or `COMP-5` for the affected fields.
-
+Cobrix expects all binary numbers to be big-endian. If you have a binary number in the little-endian format, use `COMP-9` (Cobrix extension) instead of `COMP` or `COMP-5` for the affected fields.
 For example, `0x01 0x02` is `1 + 2*256 = 513` in big-endian (`COMP`) and `1*256 + 2 = 258` (`COMP-9`) in little-endian.   
 
 ```
@@ -1420,29 +1325,26 @@ For example, `0x01 0x02` is `1 + 2*256 = 513` in big-endian (`COMP`) and `1*256 
 ```
 
 ### Parsing 'unsigned packed' aka Easyextract numbers
-Unsigned backed numbers are encoded as BCD (`COMP-3`) without the sign nibble. For example, bytes `0x12 0x34` encode
-the number `1234`. As of `2.6.2` Cobrix supports decoding such numbers using an extension. Use `COMP-3U` for unsigned
-packed numbers.
+Unsigned packed numbers are encoded as BCD (`COMP-3`) without the sign nibble. For example, bytes `0x12 0x34` encode the number `1234`. As of `2.6.2`, Cobrix supports decoding such numbers using an extension. Use `COMP-3U` for unsigned packed numbers.
 
-The 'COMP-3U' usage 
+The `COMP-3U` usage 
 ```
   10 NUM  PIC X(4) COMP-3U.
 ```
-Note that when using `X` 4 refers to the number of bytes the field occupies. Here, the number of digits is 4*2 = 8. 
+Note that when using `X`, 4 refers to the number of bytes the field occupies. Here, the number of digits is 4*2 = 8. 
 
 ```
   10 NUM  PIC 9(8) COMP-3U.
 ```
-When using `9` 8 refers to the number of digits the number has. Here, the size of the field in bytes is 8/2 = 4.
+When using `9`, 8 refers to the number of digits the number has. Here, the size of the field in bytes is 8/2 = 4.
 
 ```
   10 NUM  PIC 9(6)V99 COMP-3U.
 ```
-You can have decimals when using COMP-3 as well.
+You can also have decimals when using `COMP-3`.
 
 ### Flattening schema with GROUPs and OCCURS
-Flattening could be helpful when migrating data from mainframe data with fields that have OCCURs (arrays) to a relational
-databases that do not support nested arrays.
+Flattening can be helpful when migrating data from mainframe systems with fields that have `OCCURS` (arrays) to relational databases that do not support nested arrays.
 
 Cobrix has a method that can flatten the schema automatically given a DataFrame produced by `spark-cobol`.
 
@@ -1512,7 +1414,7 @@ The output looks like this:
 
 ##### File reading options
 
-| Option (usage example)                 | Description                                                                                                    |
+Option (Usage Example)
 |----------------------------------------|:---------------------------------------------------------------------------------------------------------------|
 | .option("data_paths", "/path1,/path2") | Allows loading data from multiple unrelated paths on the same filesystem.                                      |
 | .option("file_start_offset", "0")      | Specifies the number of bytes to skip at the beginning of each file.                                           |
@@ -1522,7 +1424,7 @@ The output looks like this:
 
 ##### Copybook parsing options
 
-| Option (usage example)               | Description                                                                                                                                          |
+| Option (Usage Example)                 | Description                                                                                                    |
 |--------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("truncate_comments", "true") | Historically, COBOL parser ignores the first 6 characters and all characters after 72. When this option is `false`, no truncation is performed.      |
 | .option("comments_lbound", 6)        | By default each line starts with a 6 character comment. The exact number of characters can be tuned using this option.                               |
@@ -1530,7 +1432,7 @@ The output looks like this:
 
 ##### Data parsing options
 
-| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                       |
+| Option (Usage Example)               | Description                                                                                                                                                                                                                                                                      |
 |-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                              |
 | .option("display_pic_always_string", "false")             | If `true` fields that have `DISPLAY` format will always be converted to `string` type, even if such fields contain numbers, retaining leading and trailing zeros. Cannot be used together with `strict_integral_precision`.                                                       |
@@ -1548,7 +1450,7 @@ The output looks like this:
 
 ##### Modifier options
 
-| Option (usage example)                              | Description                                                                                                                                                                                                                                                                                           |
+| Option (Usage Example)                                    | Description                                                                                                                                                                                                                                                                       |
 |-----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("schema_retention_policy", "collapse_root") | When `collapse_root` (default) the root level record will be removed from the Spark schema. When `keep_original`, the root level GROUP will be present in the Spark schema                                                                                                                            |
 | .option("drop_group_fillers", "false")              | If `true`, all GROUP FILLERs will be dropped from the output schema. If `false` (default), such fields will be retained.                                                                                                                                                                              |
@@ -1563,7 +1465,7 @@ The output looks like this:
 
 ##### Fixed length record format options (for record_format = F or FB)
 
-| Option (usage example)            | Description                                                                                                                                                                                                                                                                             |
+| Option (Usage Example)                              | Description                                                                                                                                                                                                                                                                                           |
 |-----------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("record_format", "F")     | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                        |
 | .option("record_length", "100")   | Overrides the length of the record (in bypes). Normally, the size is derived from the copybook. But explicitly specifying record size can be helpful for debugging fixed-record length files.                                                                                           |
@@ -1572,7 +1474,7 @@ The output looks like this:
 
 ##### Variable record length files options (for record_format = V or VB)
 
-| Option (usage example)                                      | Description                                                                                                                                                                                                                                                                             |
+| Option (Usage Example)            | Description                                                                                                                                                                                                                                                                             |
 |-------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("record_format", "V")                               | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                        |
 | .option("is_record_sequence", "true")                       | _[deprecated]_ If 'true' the parser will look for 4 byte RDW headers to read variable record length files. Use `.option("record_format", "V")` instead.                                                                                                                                 |
@@ -1589,7 +1491,7 @@ The output looks like this:
 
 ##### ASCII files options (for record_format = D or D2)
 
-| Option (usage example)                             | Description                                                                                                                                                                                                                                                                                 |
+| Option (Usage Example)                                      | Description                                                                                                                                                                                                                                                                             |
 |----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("record_format", "D")                      | Record format from the [spec](https://www.ibm.com/docs/en/zos/2.3.0?topic=files-selecting-record-formats-non-vsam-data-sets). One of `F` (fixed length, default), `FB` (fixed block), V` (variable length RDW), `VB` (variable block BDW+RDW), `D` (ASCII text).                            |
 | .option("is_text", "true")                         | If 'true' the file will be considered a text file where records are separated by an end-of-line character. Currently, only ASCII files having UTF-8 charset can be processed this way. If combined with `record_format = D`, multisegment and hierarchical text record files can be loaded. |
@@ -1599,7 +1501,7 @@ The output looks like this:
 
 ##### Multisegment files options
 
-| Option (usage example)                                                                | Description                                                                                                                                                                                                                                                                                                                                                                        |
+| Option (Usage Example)                             | Description                                                                                                                                                                                                                                                                                 |
 |---------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("segment_field", "SEG-ID")                                                    | Specify a segment id field name. This is to ensure the splitting is done using root record boundaries for hierarchical datasets. The first record will be considered a root segment record.                                                                                                                                                                                        |
 | .option("redefine-segment-id-map:0", "REDEFINED_FIELD1 => SegmentId1,SegmentId2,...") | Specifies a mapping between redefined field names and segment id values. Each option specifies a mapping for a single segment. The numeric value for each mapping option must be incremented so the option keys are unique.                                                                                                                                                        |
@@ -1611,7 +1513,7 @@ The output looks like this:
 
 ##### Helper fields generation options    
 
-| Option (usage example)                     | Description                                                                                                                                                                         |
+| Option (Usage Example)                                                                | Description                                                                                                                                                                                                                                                                                                                                                                        |
 |--------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("segment_field", "SEG-ID")         | Specified the field in the copybook containing values of segment ids.                                                                                                               |
 | .option("segment_filter", "S0001")         | Allows to add a filter on the segment id that will be pushed down the reader. This is if the intent is to extract records only of a particular segments.                            |
@@ -1622,7 +1524,7 @@ The output looks like this:
 
 ##### Debug helper options
 
-| Option (usage example)                             | Description                                                                                                                                                                                                                                                                                                                         |
+| Option (Usage Example)                     | Description                                                                                                                                                                         |
 |----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | .option("pedantic", "false")                       | If 'true' Cobrix will throw an exception is an unknown option is encountered. If 'false' (default), unknown options will be logged as an error without failing Spark Application.                                                                                                                                                   |
 | .option("debug_layout_positions", "true")          | If 'true' Cobrix will generate and log layout positions table when reading data.                                                                                                                                                                                                                                                    |
@@ -1909,7 +1811,7 @@ For multisegment variable lengths tests:
 ```sbt
 sbt jacoco
 ```
-Code coverage will be generated on path:
+Code coverage will be generated at:
 ```
 {local-path}\fixed-width\target\scala-2.XY\jacoco\report\html
 ```
@@ -2538,7 +2440,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
   - Syntax check made more strict, added more diagnostic messages.
   - The "is_xcom" option is renamed to "is_record_sequence" since other tools provide such a header as well. The old option remains for compatibility.
 
-|            Option (usage example)          |                           Description |
+| Option (Usage Example)                             | Description                                                                                                                                                                                                                                                                                                                                                        |
 | ------------------------------------------ |:--------------------------------------------------------- |
 | .option("is_record_sequence", "true")      | Specifies that input files have byte record headers.      |
 
@@ -2569,8 +2471,8 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Acknowledgements
 
-- Thanks to the following people the project was made possible and for all the help along the way: 
-  - Andrew Baker, Francois Cillers, Adam Smyczek,  Jan Scherbaum, Peter Moon, Clifford Lategan, Rekha Gorantla, Mohit Suryavanshi, Niel Steyn
+
+Rekha Gorantla, Mohit Suryavanshi, Niel Steyn
 - Thanks to Tiago Requeijo, the author of the current ANTLR-based COBOL parser contributed to Cobrix.
 - Thanks to the authors of the original COBOL parser. When we started the project we had zero knowledge of COBOL and this parser was a good starting point:
   - Ian De Beer, Rikus de Milander (https://github.com/zenaptix-lab/copybookStreams)
