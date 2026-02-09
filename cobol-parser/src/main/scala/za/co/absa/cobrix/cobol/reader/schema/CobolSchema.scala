@@ -17,16 +17,15 @@
 package za.co.absa.cobrix.cobol.reader.schema
 
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC}
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
 import java.nio.charset.{Charset, StandardCharsets}
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import scala.collection.immutable.HashMap
 
 
@@ -40,6 +39,7 @@ import scala.collection.immutable.HashMap
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
+  * @param generateCorruptedFields If true, a corrupted record field will be appended to the end of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -52,6 +52,7 @@ class CobolSchema(val copybook: Copybook,
                   val inputFileNameField: String,
                   val generateRecordId: Boolean,
                   val generateRecordBytes: Boolean,
+                  val generateCorruptedFields: Boolean,
                   val generateSegIdFieldsCnt: Int = 0,
                   val segmentIdProvidedPrefix: String = "",
                   val metadataPolicy: MetadataPolicy = MetadataPolicy.Basic) extends Serializable {
@@ -143,6 +144,7 @@ object CobolSchema {
       readerParameters.inputFileNameColumn,
       readerParameters.generateRecordId,
       readerParameters.generateRecordBytes,
+      readerParameters.generateCorruptFields,
       segIdFieldCount,
       segmentIdPrefix,
       readerParameters.metadataPolicy
