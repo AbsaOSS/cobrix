@@ -58,6 +58,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param fileEndOffset           A number of bytes to skip at the end of each file
   * @param generateRecordId        If true, a record id field will be prepended to each record.
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
+  * @param generateCorruptFields   Generate '_corrupt_fields' field for fields that haven't converted successfully
   * @param schemaPolicy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
   * @param isDisplayAlwaysString   If true, all fields having DISPLAY format will remain strings and won't be converted to numbers.
@@ -111,6 +112,7 @@ case class ReaderParameters(
                              fileEndOffset:           Int = 0,
                              generateRecordId:        Boolean = false,
                              generateRecordBytes:     Boolean = false,
+                             generateCorruptFields:   Boolean = false,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              isDisplayAlwaysString:   Boolean = false,

@@ -17,9 +17,9 @@
 package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy, MetadataPolicy}
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy, MetadataPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -47,6 +47,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param variableLengthParams    VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
   * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
+  * @param generateCorruptFields   Generate '_corrupt_fields' field for fields that haven't converted successfully
   * @param schemaRetentionPolicy   A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
   * @param stringTrimmingPolicy    Specify if and how strings should be trimmed when parsed
   * @param isDisplayAlwaysString If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
@@ -87,6 +88,7 @@ case class CobolParameters(
                             variableLengthParams:    Option[VariableLengthParameters],
                             variableSizeOccurs:      Boolean,
                             generateRecordBytes:     Boolean,
+                            generateCorruptFields:   Boolean,
                             schemaRetentionPolicy:   SchemaRetentionPolicy,
                             stringTrimmingPolicy:    StringTrimmingPolicy,
                             isDisplayAlwaysString:   Boolean,

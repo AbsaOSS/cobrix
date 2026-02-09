@@ -66,6 +66,7 @@ object CobolParametersParser extends Logging {
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
   val PARAM_GENERATE_RECORD_BYTES     = "generate_record_bytes"
+  val PARAM_CORRUPTED_FIELDS          = "generate_corrupted_fields"
   val PARAM_SCHEMA_RETENTION_POLICY   = "schema_retention_policy"
   val PARAM_GROUP_FILLERS             = "drop_group_fillers"
   val PARAM_VALUE_FILLERS             = "drop_value_fillers"
@@ -286,6 +287,7 @@ object CobolParametersParser extends Logging {
       variableLengthParams,
       params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
+      params.getOrElse(PARAM_CORRUPTED_FIELDS, "false").toBoolean,
       schemaRetentionPolicy,
       stringTrimmingPolicy,
       params.getOrElse(PARAM_DISPLAY_PIC_ALWAYS_STRING, "false").toBoolean,
@@ -431,6 +433,7 @@ object CobolParametersParser extends Logging {
       fileEndOffset = varLenParams.fileEndOffset,
       generateRecordId = varLenParams.generateRecordId,
       generateRecordBytes = parameters.generateRecordBytes,
+      generateCorruptFields = parameters.generateCorruptFields,
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       isDisplayAlwaysString = parameters.isDisplayAlwaysString,

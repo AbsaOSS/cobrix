@@ -24,11 +24,11 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, 
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.getReaderProperties
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.getReaderProperties
 import za.co.absa.cobrix.spark.cobol.parameters.MetadataFields.{MAX_ELEMENTS, MAX_LENGTH, MIN_ELEMENTS}
 
 import scala.collection.mutable
@@ -44,6 +44,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
+  * @param generateCorruptedFields If true, a corrupted record field will be appended to the beginning of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -56,6 +57,7 @@ class CobolSchema(copybook: Copybook,
                   inputFileNameField: String = "",
                   generateRecordId: Boolean = false,
                   generateRecordBytes: Boolean = false,
+                  generateCorruptedFields: Boolean = false,
                   generateSegIdFieldsCnt: Int = 0,
                   segmentIdProvidedPrefix: String = "",
                   metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
@@ -66,6 +68,7 @@ class CobolSchema(copybook: Copybook,
     inputFileNameField,
     generateRecordId,
     generateRecordBytes,
+    generateCorruptedFields,
     generateSegIdFieldsCnt,
     segmentIdProvidedPrefix
   ) with Logging with Serializable {
@@ -126,7 +129,18 @@ class CobolSchema(copybook: Copybook,
       recordsWithRecordBytes
     }
 
-    StructType(recordsWithRecordId)
+    val recordsWithCorruptedFields = if (generateCorruptedFields) {
+      recordsWithRecordId :+ StructField(Constants.corruptedFieldsField, ArrayType(StructType(
+        Seq(
+          StructField(Constants.fieldNameColumn, StringType, nullable = false),
+          StructField(Constants.rawValueColumn, BinaryType, nullable = false)
+        )
+      ), containsNull = false), nullable = false)
+    } else {
+      recordsWithRecordId
+    }
+
+    StructType(recordsWithCorruptedFields)
   }
 
   private [cobrix] def getMaximumSegmentIdLength(segmentIdProvidedPrefix: String): Int = {
@@ -309,6 +323,7 @@ object CobolSchema {
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateRecordBytes,
+      schema.generateCorruptedFields,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
       schema.metadataPolicy
