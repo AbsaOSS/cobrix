@@ -19,8 +19,8 @@ package za.co.absa.cobrix.cobol.parser.ast.datatype
 
 sealed trait Usage
 
-//case class COMP() extends Usage
-//case class COMP0() extends Usage
+//case class COMP() extends Usage   // Use COMP4()
+//case class COMP0() extends Usage  // Use COMP4()
 case class COMP1() extends Usage {
   override def toString = "COMP-1"
 }
@@ -44,8 +44,8 @@ case class COMP5() extends Usage {
 case class COMP9() extends Usage {       // artificial little-endian binary
   override def toString = "COMP-9"
 }
-//case class DISPLAY() extends Usage {
+//case class DISPLAY() extends Usage { // Use None for the USAGE instead
 //  override def toString = "DISPLAY"
 //}
-//case class BINARY() extends Usage
+//case class BINARY() extends Usage  // Use COMP4()
 
