@@ -67,11 +67,14 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
       .filter(array => array.nonEmpty && array.length >= minimumRecordLength && array.length <= maximumRecordLength)
       .map(array => {
         val record = RecordExtractors.extractRecord[GenericRow](cobolSchema.getCobolSchema.ast,
-                                                                array,
-                                                                0,
-                                                                schemaRetentionPolicy,
-                                                                generateRecordBytes = readerParams.generateRecordBytes,
-                                                                handler = recordHandler)
+          array,
+          0,
+          schemaRetentionPolicy,
+          variableLengthOccurs = readerParams.variableSizeOccurs,
+          generateRecordId = readerParams.generateRecordId,
+          generateRecordBytes = readerParams.generateRecordBytes,
+          generateCorruptedFields = readerParams.generateCorruptFields,
+          handler = recordHandler)
         Row.fromSeq(record)
       })
 

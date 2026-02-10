@@ -18,10 +18,10 @@ package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
+import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
-import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordHandler, RecordExtractors}
 
 import scala.collection.immutable.HashMap
 import scala.collection.mutable.ListBuffer
@@ -99,6 +99,7 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
                 readerProperties.variableSizeOccurs,
                 readerProperties.generateRecordId,
                 readerProperties.generateRecordBytes,
+                readerProperties.generateCorruptFields,
                 segmentLevelIds,
                 fileId,
                 rawRecordIterator.getRecordIndex,

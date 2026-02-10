@@ -19,7 +19,6 @@ package za.co.absa.cobrix.cobol.reader.iterator
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
@@ -91,6 +90,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
       readerProperties.schemaPolicy,
       readerProperties.variableSizeOccurs,
       generateRecordBytes = readerProperties.generateRecordBytes,
+      generateCorruptedFields = readerProperties.generateCorruptFields,
       activeSegmentRedefine = activeSegmentRedefine,
       handler = handler
     )

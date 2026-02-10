@@ -90,7 +90,6 @@ case class Primitive(
     copy(dependingOnHandlers = newDependingOnHandlers)(parent)
   }
 
-
   /** Returns the binary size in bits for the field */
   def getBinarySizeBytes: Int = {
     dataType match {
@@ -110,6 +109,29 @@ case class Primitive(
     * @param record   A record in a binary format represented as a vector of bits
     */
   def decodeTypeValue(itOffset: Int, record: Array[Byte]): Any = {
+    val bytes = getRawValue(itOffset, record)
+
+    if (bytes == null) null else decode(bytes)
+  }
+
+  def isNull(itOffset: Int, record: Array[Byte]): Boolean = {
+    val bytes = getRawValue(itOffset, record)
+
+    if (bytes == null) {
+      true
+    } else {
+      var i = 0
+      while (i < bytes.length) {
+        if (bytes(i) != 0) {
+          return false
+        }
+        i += 1
+      }
+      true
+    }
+  }
+
+  def getRawValue(itOffset: Int, record: Array[Byte]): Array[Byte] = {
     val bytesCount = binaryProperties.dataSize
     val idx = itOffset
 
@@ -132,9 +154,7 @@ case class Primitive(
     } else {
       bytesCount
     }
-    val bytes = java.util.Arrays.copyOfRange(record, idx, idx + bytesToCopy)
-
-    decode(bytes)
+    java.util.Arrays.copyOfRange(record, idx, idx + bytesToCopy)
   }
 
 }
