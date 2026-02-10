@@ -23,7 +23,7 @@ import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-class Test39CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
+class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
   private val copybook =
     """      01  R.
                 03 ID      PIC 9(1).
@@ -37,7 +37,8 @@ class Test39CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
     0xF1, 0x40, 0x5C, 0x00, 0x06, 0xF1, 0xF2, 0xF3, // Record OK, no errors
     0xF2, 0xF1, 0xD3, 0x00, 0x05, 0xF4, 0xF5, 0xF6, // COMP-3 error
     0xF3, 0x00, 0x3C, 0xF1, 0x06, 0xF7, 0xF8, 0xF9, // COMP invalid value (negative)
-    0xF4, 0xC1, 0x4C, 0x00, 0xA0, 0xC1, 0xF5, 0xA3  // Errors in array
+    0xF4, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0xF0, // Null values okay
+    0xF5, 0xC1, 0x4C, 0x00, 0xA0, 0xC1, 0xF5, 0xA3  // Errors in array
   ).map(_.toByte)
 
   "Corrupted fields record generation" should {
@@ -81,6 +82,11 @@ class Test39CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
           |  "_corrupted_fields" : [ ]
           |}, {
           |  "ID" : 4,
+          |  "F3" : 0,
+          |  "F4" : [ null, null, 0 ],
+          |  "_corrupted_fields" : [ ]
+          |}, {
+          |  "ID" : 5,
           |  "F1" : "A",
           |  "F2" : 4,
           |  "F3" : 160,
