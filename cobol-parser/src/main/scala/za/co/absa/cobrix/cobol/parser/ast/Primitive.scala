@@ -114,23 +114,56 @@ case class Primitive(
     if (bytes == null) null else decode(bytes)
   }
 
-  def isNull(itOffset: Int, record: Array[Byte]): Boolean = {
-    val bytes = getRawValue(itOffset, record)
+  /**
+    * Checks if a value extracted from a given binary record at a specified offset is considered empty.
+    * A value is considered empty if it contains only null bytes or bytes equal to 0x40.
+    *
+    * @param itOffset The offset within the binary record where the value starts.
+    * @param record   The binary record represented as an array of bytes.
+    * @return `true` if the value is empty, otherwise `false`.
+    */
+  def isEmpty(itOffset: Int, record: Array[Byte]): Boolean = {
+    val bytesCount = binaryProperties.dataSize
+    val idx = itOffset
 
-    if (bytes == null) {
-      true
-    } else {
-      var i = 0
-      while (i < bytes.length) {
-        if (bytes(i) != 0) {
-          return false
-        }
-        i += 1
+    if (isString) {
+      // The length of a string can be smaller for varchar fields at the end of a record
+      if (idx > record.length) {
+        return true
       }
-      true
+    } else {
+      // Non-string field size should exactly fix the required bytes
+      if (idx + bytesCount > record.length) {
+        return true
+      }
     }
+
+    // Determine the actual number of bytes to copy based on the record size.
+    // Varchar fields can be trimmed by the record size.
+    val endIndex = if (idx + bytesCount > record.length) {
+      record.length
+    } else {
+      idx + bytesCount
+    }
+    var i = idx
+    while (i < endIndex) {
+      if (record(i) != 0 && record(i) != 0x40) {
+        return false
+      }
+      i += 1
+    }
+    true
   }
 
+  /**
+    * Extracts a raw byte array representation of a value from a binary record
+    * based on the specified offset and the field's properties.
+    *
+    * @param itOffset The offset within the binary record where the value starts.
+    * @param record   The binary record represented as an array of bytes.
+    * @return An array of bytes representing the value, or `null` if the offset
+    *         or size is invalid for the given binary record.
+    */
   def getRawValue(itOffset: Int, record: Array[Byte]): Array[Byte] = {
     val bytesCount = binaryProperties.dataSize
     val idx = itOffset

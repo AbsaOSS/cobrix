@@ -109,7 +109,7 @@ object RecordExtractors {
           var j = 0
           while (i < actualSize) {
             val value = s.decodeTypeValue(offset, data)
-            if (value == null && generateCorruptedFields && !s.isNull(offset, data)) {
+            if (value == null && generateCorruptedFields && !s.isEmpty(offset, data)) {
               corruptedFields += CorruptedField(s"${field.name}[$i]", s.getRawValue(offset,data))
             }
             offset += s.binaryProperties.dataSize
@@ -136,7 +136,7 @@ object RecordExtractors {
           }
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
-          if (value == null && generateCorruptedFields && !st.isNull(useOffset, data)) {
+          if (value == null && generateCorruptedFields && !st.isEmpty(useOffset, data)) {
             corruptedFields += CorruptedField(field.name, st.getRawValue(useOffset,data))
           }
           if (value != null && st.isDependee) {
