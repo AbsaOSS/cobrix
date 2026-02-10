@@ -17,15 +17,18 @@
 package za.co.absa.cobrix.cobol.reader.extractors.record
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP9}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
+import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.reflect.ClassTag
 
 
 object RecordExtractors {
+  private val corruptedFieldsGroup = getCorruptedFieldsGroup
 
   /**
     * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
@@ -37,6 +40,7 @@ object RecordExtractors {
     * @param variableLengthOccurs    If true, OCCURS DEPENDING ON data size will depend on the number of elements.
     * @param generateRecordId        If true, a record id field will be added as the first field of the record.
     * @param generateRecordBytes     If true, a record bytes field will be added at the beginning of each record.
+    * @param generateCorruptedFields If true, a corrupted record field will be appended to the end of the schema.
     * @param segmentLevelIds         Segment ids to put to the extracted record if id generation it turned on.
     * @param fileId                  A file id to be put to the extractor record if generateRecordId == true.
     * @param recordId                The record id to be saved to the record id field.
@@ -55,6 +59,7 @@ object RecordExtractors {
     variableLengthOccurs: Boolean = false,
     generateRecordId: Boolean = false,
     generateRecordBytes: Boolean = false,
+    generateCorruptedFields: Boolean = false,
     segmentLevelIds: List[String] = Nil,
     fileId: Int = 0,
     recordId: Long = 0,
@@ -64,6 +69,7 @@ object RecordExtractors {
     handler: RecordHandler[T]
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
+    val corruptedFields = new ListBuffer[CorruptedField]
 
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
 
@@ -103,6 +109,9 @@ object RecordExtractors {
           var j = 0
           while (i < actualSize) {
             val value = s.decodeTypeValue(offset, data)
+            if (value == null && generateCorruptedFields && !s.isNull(offset, data)) {
+              corruptedFields += CorruptedField(s"${field.name}[$i]", s.getRawValue(offset,data))
+            }
             offset += s.binaryProperties.dataSize
             values(j) = value
             i += 1
@@ -127,6 +136,9 @@ object RecordExtractors {
           }
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
+          if (value == null && generateCorruptedFields && !st.isNull(useOffset, data)) {
+            corruptedFields += CorruptedField(field.name, st.getRawValue(useOffset,data))
+          }
           if (value != null && st.isDependee) {
             val intStringVal: Either[Int, String] = value match {
               case v: Int => Left(v)
@@ -199,7 +211,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptedFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptedFields.toSeq, handler)
   }
 
   /**
@@ -419,7 +431,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptedFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, Seq.empty, handler)
   }
 
   /**
@@ -435,15 +447,16 @@ object RecordExtractors {
     * Combinations of the listed transformations are supported.
     * </p>
     *
-    * @param ast                    The parsed copybook
-    * @param records                The array of [[T]] object for each Group of the copybook
-    * @param generateRecordId       If true a record id field will be added as the first field of the record.
-    * @param generateRecordBytes    If true a record bytes field will be added at the beginning of the record.
-    * @param fileId                 The file id to be saved to the file id field
-    * @param recordId               The record id to be saved to the record id field
-    * @param recordByteLength       The length of the record
-    * @param generateInputFileField if true, a field containing input file name will be generated
-    * @param inputFileName          An input file name to put if its generation is needed
+    * @param ast                     The parsed copybook
+    * @param records                 The array of [[T]] object for each Group of the copybook
+    * @param generateRecordId        If true a record id field will be added as the first field of the record.
+    * @param generateRecordBytes     If true a record bytes field will be added at the beginning of the record.
+    * @param generateCorruptedFields If true, a corrupted record field will be appended to the end of the schema.
+    * @param fileId                  The file id to be saved to the file id field
+    * @param recordId                The record id to be saved to the record id field
+    * @param recordByteLength        The length of the record
+    * @param generateInputFileField  if true, a field containing input file name will be generated
+    * @param inputFileName           An input file name to put if its generation is needed
     * @return A [[T]] object corresponding to the record schema
     */
   private def applyRecordPostProcessing[T](
@@ -452,6 +465,7 @@ object RecordExtractors {
     policy: SchemaRetentionPolicy,
     generateRecordId: Boolean,
     generateRecordBytes: Boolean,
+    generateCorruptedFields: Boolean,
     segmentLevelIds: List[String],
     fileId: Int,
     recordId: Long,
@@ -459,6 +473,7 @@ object RecordExtractors {
     recordBytes: Array[Byte],
     generateInputFileField: Boolean,
     inputFileName: String,
+    corruptedFields: Seq[CorruptedField],
     handler: RecordHandler[T]
   ): Seq[Any] = {
     val outputRecords = new ListBuffer[Any]
@@ -491,7 +506,22 @@ object RecordExtractors {
         // Return rows as the original sequence of groups
         records.foreach(record => outputRecords.append(record))
     }
+
+    if (generateCorruptedFields) {
+      val corruptedFieldsRaw = corruptedFields.map(d =>  handler.create(Array[Any](d.fieldName, d.rawValue), corruptedFieldsGroup))
+      outputRecords.append(corruptedFieldsRaw)
+    }
+
     // toList() is a constant time operation, and List implements immutable Seq, which is exactly what is needed here.
     outputRecords.toList
+  }
+
+  private def getCorruptedFieldsGroup: Group = {
+    val corruptedFieldsInGroup = new mutable.ArrayBuffer[Statement]
+
+    corruptedFieldsInGroup += Primitive(15, "field_name", "field_name", 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
+    corruptedFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, compact = Some(COMP9())), decode = null, encode = null)(None)
+
+    Group(10, "_corrupted_fields", "_corrupted_fields", 0,  children = corruptedFieldsInGroup )(None)
   }
 }

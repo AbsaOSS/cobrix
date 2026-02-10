@@ -895,6 +895,10 @@ object CobolParametersParser extends Logging {
         throw new IllegalArgumentException(s"Option '$PARAM_GENERATE_RECORD_BYTES' cannot be used with 'segment-children:*' " +
           "since hierarchical records are composites of more than one raw record.")
       }
+      if (params.contains(PARAM_CORRUPTED_FIELDS)) {
+        throw new IllegalArgumentException(s"Option '$PARAM_CORRUPTED_FIELDS' cannot be used with 'segment-children:*' " +
+          "at the moment.")
+      }
     }
     if (!isRecordSequence && recordFormat != AsciiText && recordFormat != CobrixAsciiText && params.contains(PARAM_INPUT_FILE_COLUMN)) {
       val recordSequenceCondition = s"one of this holds: '$PARAM_RECORD_FORMAT' = V or '$PARAM_RECORD_FORMAT' = VB or '$PARAM_IS_RECORD_SEQUENCE' = true" +

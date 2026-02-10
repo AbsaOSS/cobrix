@@ -597,6 +597,11 @@ root
  |-- Record_Bytes: binary (nullable = false)
 ```
 
+You can generate `_corrupted_fields` that will contain original binary values of fields Cobrix was unable to decode:
+```
+.option("generate_corrupted_fields", "true")
+```
+
 ### Locality optimization for variable-length records parsing
 
 Variable-length records depend on headers to have their length calculated, which makes it hard to achieve parallelism while parsing.
@@ -1557,6 +1562,7 @@ The output looks like this:
 | .option("non_terminals", "GROUP1,GROUP2")           | Specifies groups to also be added to the schema as string fields. When this option is specified, the reader will add one extra data field after each matching group containing the string data for the group.                                                                                         |
 | .option("generate_record_id", false)                | Generate autoincremental 'File_Id', 'Record_Id' and 'Record_Byte_Length' fields. This is used for processing record order dependent data.                                                                                                                                                             |
 | .option("generate_record_bytes", false)             | Generate 'Record_Bytes', the binary field that contains raw contents of the original unparsed records.                                                                                                                                                                                                |
+| .option("generate_corrupted_fields", false)         | Generate `_corrupted_fields` field that contains values of fields Cobrix was unable to decode.                                                                                                                                                                                                        |
 | .option("with_input_file_name_col", "file_name")    | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length and ASCII files use `input_file_name()`. |
 | .option("metadata", "basic")                        | Specifies wat kind of metadata to include in the Spark schema: `false`, `basic`(default), or `extended` (PIC, usage, etc).                                                                                                                                                                            |
 | .option("debug", "hex")                             | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                             |
@@ -1945,19 +1951,26 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.9.8 will be released soon.
+  - [#723](https://github.com/AbsaOSS/cobrix/pull/723) Added the option to generate `corrupted_fields` field that contains field names and raw values
+    of fields that Cobrix couldn't decode.
+    ```scala
+    .option("generate_corrupted_fields", "true")
+    ```
+
 - #### 2.9.7 released 29 January 2026.
-    - [#816](https://github.com/AbsaOSS/cobrix/pull/816) Fixed the reliance on log4j libraries in the classpath. Cobrix can now be run on clusters that do not use Log4j for logging.
+  - [#816](https://github.com/AbsaOSS/cobrix/pull/816) Fixed the reliance on log4j libraries in the classpath. Cobrix can now be run on clusters that do not use Log4j for logging.
 
 - #### 2.9.6 released 7 January 2026.
-    - [#813](https://github.com/AbsaOSS/cobrix/pull/813) Fixed compatibility of the relaxed sign overpunching. Allow numbers
-      with overpunched sign in unsigned numbers and allow multiple digits when overpunched sign when `strict_sign_overpunching = true`.
+  - [#813](https://github.com/AbsaOSS/cobrix/pull/813) Fixed compatibility of the relaxed sign overpunching. Allow numbers
+    with overpunched sign in unsigned numbers and allow multiple digits when overpunched sign when `strict_sign_overpunching = true`.
 
 - #### 2.9.5 released 22 December 2025.
-    - [#809](https://github.com/AbsaOSS/cobrix/pull/809) Add support for reading compressed EBCDIC files. All compression 
-      supported by Hadoop (.gz, .bz2, etc) are also supported by Cobrix because Cobrix uses Hadoop compressed streams for
-      reading such files. 
-    - [#811](https://github.com/AbsaOSS/cobrix/pull/811) Add read properties hash code as index key to avoid false cache.
-      This makes index caching safe to use by default, so index caching is now turned on by default.
+  - [#809](https://github.com/AbsaOSS/cobrix/pull/809) Add support for reading compressed EBCDIC files. All compression 
+    supported by Hadoop (.gz, .bz2, etc) are also supported by Cobrix because Cobrix uses Hadoop compressed streams for
+    reading such files. 
+  - [#811](https://github.com/AbsaOSS/cobrix/pull/811) Add read properties hash code as index key to avoid false cache.
+     This makes index caching safe to use by default, so index caching is now turned on by default.
 - #### 2.9.4 released 26 November 2025.
   - [#805](https://github.com/AbsaOSS/cobrix/pull/805) Added the option to cache VRL indexes for better performance when same files are processed multiple times.
     ```scala
