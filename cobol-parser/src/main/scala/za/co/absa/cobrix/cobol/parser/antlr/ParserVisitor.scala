@@ -16,7 +16,6 @@
 
 package za.co.absa.cobrix.cobol.parser.antlr
 
-import java.nio.charset.Charset
 import org.antlr.v4.runtime.{ParserRuleContext, RuleContext}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
@@ -25,13 +24,14 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.encoding._
+import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.CommentPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.position.{Left, Position, Right}
 
+import java.nio.charset.Charset
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.util.matching.Regex
@@ -168,7 +168,7 @@ class ParserVisitor(enc: Encoding,
               int.copy(compact=usage)
             case x: AlphaNumeric if usageVal == COMP3U() =>
               Integral(x.pic, x.length*2, None, false, None, Some(COMP3U()), None, x.originalPic)
-            case x: AlphaNumeric if usageVal == COMP1() || usageVal == COMP4() =>
+            case x: AlphaNumeric if usageVal == COMP4() || usageVal == COMP9() =>
               val enc = if (decodeBinaryAsHex) HEX else RAW
               x.copy(compact=usage, enc=Some(enc))
             case x: AlphaNumeric =>

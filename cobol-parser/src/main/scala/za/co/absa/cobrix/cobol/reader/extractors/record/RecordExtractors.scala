@@ -17,8 +17,9 @@
 package za.co.absa.cobrix.cobol.reader.extractors.record
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP9}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -69,7 +70,7 @@ object RecordExtractors {
     handler: RecordHandler[T]
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
-    val corruptedFields = new ListBuffer[CorruptedField]
+    val corruptedFields = new ArrayBuffer[CorruptedField]
 
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
 
@@ -211,7 +212,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptedFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptedFields.toSeq, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptedFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptedFields, handler)
   }
 
   /**
@@ -431,7 +432,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptedFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, Seq.empty, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptedFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, null, handler)
   }
 
   /**
@@ -473,7 +474,7 @@ object RecordExtractors {
     recordBytes: Array[Byte],
     generateInputFileField: Boolean,
     inputFileName: String,
-    corruptedFields: Seq[CorruptedField],
+    corruptedFields: ArrayBuffer[CorruptedField],
     handler: RecordHandler[T]
   ): Seq[Any] = {
     val outputRecords = new ListBuffer[Any]
@@ -507,21 +508,33 @@ object RecordExtractors {
         records.foreach(record => outputRecords.append(record))
     }
 
-    if (generateCorruptedFields) {
-      val corruptedFieldsRaw = corruptedFields.map(d =>  handler.create(Array[Any](d.fieldName, d.rawValue), corruptedFieldsGroup))
-      outputRecords.append(corruptedFieldsRaw)
+    if (generateCorruptedFields && corruptedFields != null) {
+      // Ugly but efficient implementation of converting errors as an array field
+      val len = corruptedFields.length
+      val ar = new Array[Any](len)
+      var i = 0
+      while (i < len) {
+        val r = handler.create(Array[Any](corruptedFields(i).fieldName, corruptedFields(i).rawValue), corruptedFieldsGroup)
+        ar(i) = r
+        i += 1
+      }
+      outputRecords.append(ar)
     }
 
     // toList() is a constant time operation, and List implements immutable Seq, which is exactly what is needed here.
     outputRecords.toList
   }
 
+  /**
+    * Constructs a Group object representing corrupted fields. It is only needed for constructing records that require field names,
+    * such as JSON. Field sizes and encoding do not really matter
+    */
   private def getCorruptedFieldsGroup: Group = {
     val corruptedFieldsInGroup = new mutable.ArrayBuffer[Statement]
 
     corruptedFieldsInGroup += Primitive(15, "field_name", "field_name", 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
-    corruptedFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, compact = Some(COMP9())), decode = null, encode = null)(None)
+    corruptedFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
 
-    Group(10, "_corrupted_fields", "_corrupted_fields", 0,  children = corruptedFieldsInGroup )(None)
+    Group(10, "_corrupted_fields", "_corrupted_fields", 0,  children = corruptedFieldsInGroup, occurs = Some(10))(None)
   }
 }
