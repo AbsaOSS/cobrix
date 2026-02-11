@@ -1952,7 +1952,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.9.8 will be released soon.
-  - [#723](https://github.com/AbsaOSS/cobrix/pull/723) Added the option to generate `corrupt_fields` field that contains field names and raw values
+  - [#723](https://github.com/AbsaOSS/cobrix/pull/723) Added the option to generate `_corrupt_fields` field that contains field names and raw values
     of fields that Cobrix couldn't decode.
     ```scala
     .option("generate_corrupt_fields", "true")

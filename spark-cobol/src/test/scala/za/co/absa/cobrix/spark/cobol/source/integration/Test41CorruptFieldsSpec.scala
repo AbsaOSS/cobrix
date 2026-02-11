@@ -102,7 +102,7 @@ class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with Binary
           |""".stripMargin
 
       withTempBinFile("corrupt_fields1", ".dat", data) { tmpFileName =>
-        val df = getDataFrame(tmpFileName, Map("generate_corrupt_fields" -> "true"))
+        val df = getDataFrame(tmpFileName, Map(PARAM_CORRUPT_FIELDS -> "true"))
 
         val actualSchema = df.schema.treeString
         compareTextVertical(actualSchema, expectedSchema)
@@ -115,7 +115,7 @@ class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with Binary
 
     "throw an exception when working with a hierarchical data" in {
       val ex = intercept[IllegalArgumentException] {
-        getDataFrame("/tmp/dummy", Map("generate_corrupt_fields" -> "true", "segment-children:0" -> "COMPANY => DEPT,CUSTOMER"))
+        getDataFrame("/tmp/dummy", Map(PARAM_CORRUPT_FIELDS -> "true", "segment-children:0" -> "COMPANY => DEPT,CUSTOMER"))
       }
 
       assert(ex.getMessage.contains(s"Option '$PARAM_CORRUPT_FIELDS=true' cannot be used with 'segment-children:*'"))

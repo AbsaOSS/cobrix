@@ -154,7 +154,8 @@ case class Primitive(
 
   /**
     * Checks if a value extracted from a given binary record at a specified offset is considered empty.
-    * A value is considered empty if it contains only null bytes or bytes equal to 0x40.
+    * A value is considered empty if it contains only null bytes or bytes equal to a space character
+    * of the underlying encoding (e.g., 0x40 for EBCDIC, 0x20 for ASCII, 0x00 for binary).
     *
     * @param itOffset The offset within the binary record where the value starts.
     * @param record   The binary record represented as an array of bytes.
@@ -170,7 +171,7 @@ case class Primitive(
         return true
       }
     } else {
-      // Non-string field size should exactly fix the required bytes
+      // Non-string field size should exactly fit the required bytes
       if (idx + bytesCount > record.length) {
         return true
       }
@@ -212,7 +213,7 @@ case class Primitive(
         return null
       }
     } else {
-      // Non-string field size should exactly fix the required bytes
+      // Non-string field size should exactly fit the required bytes
       if (idx + bytesCount > record.length) {
         return null
       }
