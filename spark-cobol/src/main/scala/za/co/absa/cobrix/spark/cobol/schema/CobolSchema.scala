@@ -40,11 +40,11 @@ import scala.collection.mutable.ArrayBuffer
   * provides the corresponding Spark schema and also other properties for the Spark data source.
   *
   * @param copybook                A parsed copybook.
-  * @param schemaRetentionPolicy   pecifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param schemaRetentionPolicy   Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
-  * @param generateCorruptedFields If true, a corrupted record field will be appended to the beginning of the schema.
+  * @param generateCorruptFields   If true, a corrupt fields field will be appended to the end of the schema.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -57,7 +57,7 @@ class CobolSchema(copybook: Copybook,
                   inputFileNameField: String,
                   generateRecordId: Boolean,
                   generateRecordBytes: Boolean,
-                  generateCorruptedFields: Boolean,
+                  generateCorruptFields: Boolean,
                   generateSegIdFieldsCnt: Int,
                   segmentIdProvidedPrefix: String,
                   metadataPolicy: MetadataPolicy)
@@ -68,7 +68,7 @@ class CobolSchema(copybook: Copybook,
     inputFileNameField,
     generateRecordId,
     generateRecordBytes,
-    generateCorruptedFields,
+    generateCorruptFields,
     generateSegIdFieldsCnt,
     segmentIdProvidedPrefix
   ) with Logging with Serializable {
@@ -129,8 +129,8 @@ class CobolSchema(copybook: Copybook,
       recordsWithRecordBytes
     }
 
-    val recordsWithCorruptedFields = if (generateCorruptedFields) {
-      recordsWithRecordId :+ StructField(Constants.corruptedFieldsField, ArrayType(StructType(
+    val recordsWithCorruptFields = if (generateCorruptFields) {
+      recordsWithRecordId :+ StructField(Constants.corruptFieldsField, ArrayType(StructType(
         Seq(
           StructField(Constants.fieldNameColumn, StringType, nullable = false),
           StructField(Constants.rawValueColumn, BinaryType, nullable = false)
@@ -140,7 +140,7 @@ class CobolSchema(copybook: Copybook,
       recordsWithRecordId
     }
 
-    StructType(recordsWithCorruptedFields)
+    StructType(recordsWithCorruptFields)
   }
 
   private [cobrix] def getMaximumSegmentIdLength(segmentIdProvidedPrefix: String): Int = {
@@ -323,7 +323,7 @@ object CobolSchema {
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateRecordBytes,
-      schema.generateCorruptedFields,
+      schema.generateCorruptFields,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
       schema.metadataPolicy
@@ -347,7 +347,7 @@ object CobolSchema {
     private var inputFileNameField: String = ""
     private var generateRecordId: Boolean = false
     private var generateRecordBytes: Boolean = false
-    private var generateCorruptedFields: Boolean = false
+    private var generateCorruptFields: Boolean = false
     private var generateSegIdFieldsCnt: Int = 0
     private var segmentIdProvidedPrefix: String = ""
     private var metadataPolicy: MetadataPolicy = MetadataPolicy.Basic
@@ -382,8 +382,8 @@ object CobolSchema {
       this
     }
 
-    def withGenerateCorruptedFields(generateCorruptedFields: Boolean): CobolSchemaBuilder = {
-      this.generateCorruptedFields = generateCorruptedFields
+    def withGenerateCorruptFields(generateCorruptFields: Boolean): CobolSchemaBuilder = {
+      this.generateCorruptFields = generateCorruptFields
       this
     }
 
@@ -411,7 +411,7 @@ object CobolSchema {
         inputFileNameField,
         generateRecordId,
         generateRecordBytes,
-        generateCorruptedFields,
+        generateCorruptFields,
         generateSegIdFieldsCnt,
         segmentIdProvidedPrefix,
         metadataPolicy

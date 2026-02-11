@@ -64,7 +64,7 @@ object Constants {
   val recordIdField = "Record_Id"
   val recordByteLength = "Record_Byte_Length"
   val recordBytes = "Record_Bytes"
-  val corruptedFieldsField = "_corrupted_fields"
+  val corruptFieldsField = "_corrupt_fields"
   val fieldNameColumn = "field_name"
   val rawValueColumn = "raw_value"
 

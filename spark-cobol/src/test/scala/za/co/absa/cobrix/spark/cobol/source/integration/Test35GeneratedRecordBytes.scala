@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_BYTES
 import za.co.absa.cobrix.spark.cobol.Cobrix
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
@@ -115,7 +116,7 @@ class Test35GeneratedRecordBytes extends AnyWordSpec with SparkTestBase with Bin
             .load(fileName)
         }
 
-        assert(ex.getMessage.contains("Option 'generate_record_bytes' cannot be used with 'segment-children:*'"))
+        assert(ex.getMessage.contains(s"Option '$PARAM_GENERATE_RECORD_BYTES=true' cannot be used with 'segment-children:*'"))
       }
     }
   }

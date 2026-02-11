@@ -16,9 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.ast
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType, Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
-import za.co.absa.cobrix.cobol.parser.encoding.EncoderSelector
+import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, EncoderSelector}
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
@@ -62,6 +62,44 @@ case class Primitive(
 
   /** This is cached value specifying if the field is a string */
   private val isString = dataType.isInstanceOf[AlphaNumeric]
+
+  /** This is cached value to speedup checking for empty values */
+  private val spaceChar: Byte = {
+    dataType match {
+      case t: AlphaNumeric =>
+        t.enc match {
+          case Some(EBCDIC) => 0x40
+          case Some(ASCII) => 0x20
+          case Some(_) => 0
+          case None => 0x40
+        }
+      case t: Integral =>
+        t.compact match {
+          case Some(COMP3()) => 0x40
+          case Some(_) => 0
+          case None =>
+            t.enc match {
+              case Some(EBCDIC) => 0x40
+              case Some(ASCII) => 0x20
+              case Some(_) => 0
+              case None => 0x40
+            }
+        }
+      case t: Decimal =>
+        t.compact match {
+          case Some(COMP3()) => 0x40
+          case Some(_) => 0
+          case None =>
+            t.enc match {
+              case Some(EBCDIC) => 0x40
+              case Some(ASCII) => 0x20
+              case Some(_) => 0
+              case None => 0x40
+            }
+        }
+      case _ => 0
+    }
+  }
 
   /** Returns a string representation of the field */
   override def toString: String = {
@@ -147,7 +185,7 @@ case class Primitive(
     }
     var i = idx
     while (i < endIndex) {
-      if (record(i) != 0 && record(i) != 0x40) {
+      if (record(i) != 0 && record(i) != spaceChar) {
         return false
       }
       i += 1

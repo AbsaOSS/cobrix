@@ -18,12 +18,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_CORRUPTED_FIELDS
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_CORRUPT_FIELDS
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
-class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
+class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
   private val copybook =
     """      01  R.
                 03 ID      PIC 9(1).
@@ -41,7 +41,7 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
     0xF5, 0xC1, 0x4C, 0x00, 0xA0, 0xC1, 0xF5, 0xA3  // Errors in array
   ).map(_.toByte)
 
-  "Corrupted fields record generation" should {
+  "Corrupt fields record generation" should {
     "work when the option is turned on" in {
       val expectedSchema =
         """root
@@ -51,7 +51,7 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
           | |-- F3: integer (nullable = true)
           | |-- F4: array (nullable = true)
           | |    |-- element: integer (containsNull = true)
-          | |-- _corrupted_fields: array (nullable = false)
+          | |-- _corrupt_fields: array (nullable = false)
           | |    |-- element: struct (containsNull = false)
           | |    |    |-- field_name: string (nullable = false)
           | |    |    |-- raw_value: binary (nullable = false)
@@ -64,13 +64,13 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
           |  "F2" : 5,
           |  "F3" : 6,
           |  "F4" : [ 1, 2, 3 ],
-          |  "_corrupted_fields" : [ ]
+          |  "_corrupt_fields" : [ ]
           |}, {
           |  "ID" : 2,
           |  "F1" : "1",
           |  "F3" : 5,
           |  "F4" : [ 4, 5, 6 ],
-          |  "_corrupted_fields" : [ {
+          |  "_corrupt_fields" : [ {
           |    "field_name" : "F2",
           |    "raw_value" : "0w=="
           |  } ]
@@ -79,19 +79,19 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
           |  "F2" : 3,
           |  "F3" : 61702,
           |  "F4" : [ 7, 8, 9 ],
-          |  "_corrupted_fields" : [ ]
+          |  "_corrupt_fields" : [ ]
           |}, {
           |  "ID" : 4,
           |  "F3" : 0,
           |  "F4" : [ null, null, 0 ],
-          |  "_corrupted_fields" : [ ]
+          |  "_corrupt_fields" : [ ]
           |}, {
           |  "ID" : 5,
           |  "F1" : "A",
           |  "F2" : 4,
           |  "F3" : 160,
           |  "F4" : [ null, 5, null ],
-          |  "_corrupted_fields" : [ {
+          |  "_corrupt_fields" : [ {
           |    "field_name" : "F4[0]",
           |    "raw_value" : "wQ=="
           |  }, {
@@ -101,8 +101,8 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
           |} ]
           |""".stripMargin
 
-      withTempBinFile("corrupted_fields1", ".dat", data) { tmpFileName =>
-        val df = getDataFrame(tmpFileName, Map("generate_corrupted_fields" -> "true"))
+      withTempBinFile("corrupt_fields1", ".dat", data) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map("generate_corrupt_fields" -> "true"))
 
         val actualSchema = df.schema.treeString
         compareTextVertical(actualSchema, expectedSchema)
@@ -115,10 +115,10 @@ class Test41CorruptedFieldsSpec extends AnyWordSpec with SparkTestBase with Bina
 
     "throw an exception when working with a hierarchical data" in {
       val ex = intercept[IllegalArgumentException] {
-        getDataFrame("/tmp/dummy", Map("generate_corrupted_fields" -> "true", "segment-children:0" -> "COMPANY => DEPT,CUSTOMER"))
+        getDataFrame("/tmp/dummy", Map("generate_corrupt_fields" -> "true", "segment-children:0" -> "COMPANY => DEPT,CUSTOMER"))
       }
 
-      assert(ex.getMessage.contains(s"Option '$PARAM_CORRUPTED_FIELDS' cannot be used with 'segment-children:*'"))
+      assert(ex.getMessage.contains(s"Option '$PARAM_CORRUPT_FIELDS=true' cannot be used with 'segment-children:*'"))
     }
   }
 
