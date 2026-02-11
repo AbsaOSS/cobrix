@@ -37,7 +37,9 @@ class SparkSchemaSpec extends AnyFunSuite {
 
     val parsedSchema = CopybookParser.parseTree(copyBookContents)
 
-    val cobolSchema = new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, false, "",false, false)
+    val cobolSchema = CobolSchema.builder(parsedSchema)
+      .withSchemaRetentionPolicy(SchemaRetentionPolicy.CollapseRoot)
+      .build()
 
     val sparkSchema = cobolSchema.getSparkSchema
 

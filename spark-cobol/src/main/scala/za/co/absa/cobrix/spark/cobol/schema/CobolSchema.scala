@@ -52,15 +52,15 @@ import scala.collection.mutable.ArrayBuffer
   */
 class CobolSchema(copybook: Copybook,
                   schemaRetentionPolicy: SchemaRetentionPolicy,
-                  isDisplayAlwaysString: Boolean = false,
-                  strictIntegralPrecision: Boolean = false,
-                  inputFileNameField: String = "",
-                  generateRecordId: Boolean = false,
-                  generateRecordBytes: Boolean = false,
-                  generateCorruptedFields: Boolean = false,
-                  generateSegIdFieldsCnt: Int = 0,
-                  segmentIdProvidedPrefix: String = "",
-                  metadataPolicy: MetadataPolicy = MetadataPolicy.Basic)
+                  isDisplayAlwaysString: Boolean,
+                  strictIntegralPrecision: Boolean,
+                  inputFileNameField: String,
+                  generateRecordId: Boolean,
+                  generateRecordBytes: Boolean,
+                  generateCorruptedFields: Boolean,
+                  generateSegIdFieldsCnt: Int,
+                  segmentIdProvidedPrefix: String,
+                  metadataPolicy: MetadataPolicy)
   extends CobolReaderSchema(copybook,
     schemaRetentionPolicy,
     isDisplayAlwaysString,
@@ -336,5 +336,86 @@ object CobolSchema {
     val readerParameters = getReaderProperties(cobolParameters, None)
 
     CobolSchema.fromBaseReader(CobolReaderSchema.fromReaderParameters(copyBookContents, readerParameters))
+  }
+
+  def builder(copybook: Copybook): CobolSchemaBuilder = new CobolSchemaBuilder(copybook)
+
+  class CobolSchemaBuilder(copybook: Copybook) {
+    private var schemaRetentionPolicy: SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot
+    private var isDisplayAlwaysString: Boolean = false
+    private var strictIntegralPrecision: Boolean = false
+    private var inputFileNameField: String = ""
+    private var generateRecordId: Boolean = false
+    private var generateRecordBytes: Boolean = false
+    private var generateCorruptedFields: Boolean = false
+    private var generateSegIdFieldsCnt: Int = 0
+    private var segmentIdProvidedPrefix: String = ""
+    private var metadataPolicy: MetadataPolicy = MetadataPolicy.Basic
+
+    def withSchemaRetentionPolicy(schemaRetentionPolicy: SchemaRetentionPolicy): CobolSchemaBuilder = {
+      this.schemaRetentionPolicy = schemaRetentionPolicy
+      this
+    }
+
+    def withIsDisplayAlwaysString(isDisplayAlwaysString: Boolean): CobolSchemaBuilder = {
+      this.isDisplayAlwaysString = isDisplayAlwaysString
+      this
+    }
+
+    def withStrictIntegralPrecision(strictIntegralPrecision: Boolean): CobolSchemaBuilder = {
+      this.strictIntegralPrecision = strictIntegralPrecision
+      this
+    }
+
+    def withInputFileNameField(inputFileNameField: String): CobolSchemaBuilder = {
+      this.inputFileNameField = inputFileNameField
+      this
+    }
+
+    def withGenerateRecordId(generateRecordId: Boolean): CobolSchemaBuilder = {
+      this.generateRecordId = generateRecordId
+      this
+    }
+
+    def withGenerateRecordBytes(generateRecordBytes: Boolean): CobolSchemaBuilder = {
+      this.generateRecordBytes = generateRecordBytes
+      this
+    }
+
+    def withGenerateCorruptedFields(generateCorruptedFields: Boolean): CobolSchemaBuilder = {
+      this.generateCorruptedFields = generateCorruptedFields
+      this
+    }
+
+    def withGenerateSegIdFieldsCnt(generateSegIdFieldsCnt: Int): CobolSchemaBuilder = {
+      this.generateSegIdFieldsCnt = generateSegIdFieldsCnt
+      this
+    }
+
+    def withSegmentIdProvidedPrefix(segmentIdProvidedPrefix: String): CobolSchemaBuilder = {
+      this.segmentIdProvidedPrefix = segmentIdProvidedPrefix
+      this
+    }
+
+    def withMetadataPolicy(metadataPolicy: MetadataPolicy): CobolSchemaBuilder = {
+      this.metadataPolicy = metadataPolicy
+      this
+    }
+
+    def build(): CobolSchema = {
+      new CobolSchema(
+        copybook,
+        schemaRetentionPolicy,
+        isDisplayAlwaysString,
+        strictIntegralPrecision,
+        inputFileNameField,
+        generateRecordId,
+        generateRecordBytes,
+        generateCorruptedFields,
+        generateSegIdFieldsCnt,
+        segmentIdProvidedPrefix,
+        metadataPolicy
+      )
+    }
   }
 }
