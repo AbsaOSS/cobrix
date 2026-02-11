@@ -16,7 +16,7 @@
 
 package za.co.absa.cobrix.cobol.reader.extractors.record
 
-case class CorruptedField(
-                           fieldName: String,
-                           rawValue: Array[Byte]
-                         )
+case class CorruptField(
+                         fieldName: String,
+                         rawValue: Array[Byte]
+                       )

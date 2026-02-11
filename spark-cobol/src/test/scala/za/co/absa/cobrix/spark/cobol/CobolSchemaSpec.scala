@@ -297,7 +297,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assertEqualsMultiline(actualSchema, expectedSchema)
     }
 
-    "multi-segment keep-original with corrupted record generation" in {
+    "multi-segment keep-original with corrupt record generation" in {
       val expectedSchema =
         """root
           | |-- Seg_Id0: string (nullable = true)
@@ -306,13 +306,13 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- IntValue: integer (nullable = true)
           | |-- STRUCT2: struct (nullable = true)
           | |    |-- STR_FLD: string (nullable = true)
-          | |-- _corrupted_fields: array (nullable = false)
+          | |-- _corrupt_fields: array (nullable = false)
           | |    |-- element: struct (containsNull = false)
           | |    |    |-- field_name: string (nullable = false)
           | |    |    |-- raw_value: binary (nullable = false)
           |""".stripMargin.replaceAll("[\\r\\n]", "\n")
       val parsedSchema = CopybookParser.parseTree(copyBook)
-      val cobolSchema = CobolSchema.builder(parsedSchema).withSchemaRetentionPolicy(SchemaRetentionPolicy.KeepOriginal).withGenerateCorruptedFields(true).withGenerateSegIdFieldsCnt(2).build()
+      val cobolSchema = CobolSchema.builder(parsedSchema).withSchemaRetentionPolicy(SchemaRetentionPolicy.KeepOriginal).withGenerateCorruptFields(true).withGenerateSegIdFieldsCnt(2).build()
       val actualSchema = cobolSchema.getSparkSchema.treeString
 
       assertEqualsMultiline(actualSchema, expectedSchema)
@@ -869,20 +869,20 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(1).dataType.isInstanceOf[StructType])
     }
 
-    "create schema with corrupted fields using builder" in {
+    "create schema with corrupt fields using builder" in {
       val copybook: String =
         """       01  RECORD.
           |         05  STR1                  PIC X(10).
           |""".stripMargin
       val parsedCopybook = CopybookParser.parse(copybook)
       val cobolSchema = CobolSchema.builder(parsedCopybook)
-        .withGenerateCorruptedFields(true)
+        .withGenerateCorruptFields(true)
         .build()
 
       val sparkSchema = cobolSchema.getSparkSchema
 
       assert(sparkSchema.fields.length == 2)
-      assert(sparkSchema.fields(1).name == "_corrupted_fields")
+      assert(sparkSchema.fields(1).name == "_corrupt_fields")
       assert(sparkSchema.fields(1).dataType.isInstanceOf[ArrayType])
     }
 

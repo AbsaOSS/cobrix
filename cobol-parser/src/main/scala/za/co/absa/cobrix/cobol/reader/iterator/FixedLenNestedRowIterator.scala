@@ -90,7 +90,7 @@ class FixedLenNestedRowIterator[T: ClassTag](
       readerProperties.schemaPolicy,
       readerProperties.variableSizeOccurs,
       generateRecordBytes = readerProperties.generateRecordBytes,
-      generateCorruptedFields = readerProperties.generateCorruptFields,
+      generateCorruptFields = readerProperties.generateCorruptFields,
       activeSegmentRedefine = activeSegmentRedefine,
       handler = handler
     )

@@ -16,11 +16,12 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
+import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_BYTES
+import za.co.absa.cobrix.spark.cobol.source.base.{CobolTestBase, SparkTestBase}
+
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
-
-import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.spark.cobol.source.base.{CobolTestBase, SparkTestBase}
 
 //noinspection NameBooleanParameters
 class Test17HierarchicalSpec extends AnyWordSpec with SparkTestBase with CobolTestBase {
@@ -441,7 +442,7 @@ class Test17HierarchicalSpec extends AnyWordSpec with SparkTestBase with CobolTe
             .load(inpudDataPath)
         }
 
-        assert(ex.getMessage.contains("Option 'generate_record_bytes' cannot be used with 'segment-children:*'"))
+        assert(ex.getMessage.contains(s"Option '$PARAM_GENERATE_RECORD_BYTES=true' cannot be used with 'segment-children:*'"))
       }
     }
   }

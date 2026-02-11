@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 
 
 object RecordExtractors {
-  private val corruptedFieldsGroup = getCorruptedFieldsGroup
+  private val corruptFieldsGroup = getCorruptFieldsGroup
 
   /**
     * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
@@ -41,7 +41,7 @@ object RecordExtractors {
     * @param variableLengthOccurs    If true, OCCURS DEPENDING ON data size will depend on the number of elements.
     * @param generateRecordId        If true, a record id field will be added as the first field of the record.
     * @param generateRecordBytes     If true, a record bytes field will be added at the beginning of each record.
-    * @param generateCorruptedFields If true, a corrupted record field will be appended to the end of the schema.
+    * @param generateCorruptFields   If true, a corrupt fields field will be appended to the end of the schema.
     * @param segmentLevelIds         Segment ids to put to the extracted record if id generation it turned on.
     * @param fileId                  A file id to be put to the extractor record if generateRecordId == true.
     * @param recordId                The record id to be saved to the record id field.
@@ -53,24 +53,24 @@ object RecordExtractors {
     */
   @throws(classOf[IllegalStateException])
   def extractRecord[T: ClassTag](
-    ast: CopybookAST,
-    data: Array[Byte],
-    offsetBytes: Int = 0,
-    policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
-    variableLengthOccurs: Boolean = false,
-    generateRecordId: Boolean = false,
-    generateRecordBytes: Boolean = false,
-    generateCorruptedFields: Boolean = false,
-    segmentLevelIds: List[String] = Nil,
-    fileId: Int = 0,
-    recordId: Long = 0,
-    activeSegmentRedefine: String = "",
-    generateInputFileField: Boolean = false,
-    inputFileName: String = "",
-    handler: RecordHandler[T]
+                                  ast: CopybookAST,
+                                  data: Array[Byte],
+                                  offsetBytes: Int = 0,
+                                  policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
+                                  variableLengthOccurs: Boolean = false,
+                                  generateRecordId: Boolean = false,
+                                  generateRecordBytes: Boolean = false,
+                                  generateCorruptFields: Boolean = false,
+                                  segmentLevelIds: List[String] = Nil,
+                                  fileId: Int = 0,
+                                  recordId: Long = 0,
+                                  activeSegmentRedefine: String = "",
+                                  generateInputFileField: Boolean = false,
+                                  inputFileName: String = "",
+                                  handler: RecordHandler[T]
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
-    val corruptedFields = new ArrayBuffer[CorruptedField]
+    val corruptFields = new ArrayBuffer[CorruptField]
 
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
 
@@ -110,8 +110,8 @@ object RecordExtractors {
           var j = 0
           while (i < actualSize) {
             val value = s.decodeTypeValue(offset, data)
-            if (value == null && generateCorruptedFields && !s.isEmpty(offset, data)) {
-              corruptedFields += CorruptedField(s"${field.name}[$i]", s.getRawValue(offset,data))
+            if (value == null && generateCorruptFields && !s.isEmpty(offset, data)) {
+              corruptFields += CorruptField(s"${field.name}[$i]", s.getRawValue(offset,data))
             }
             offset += s.binaryProperties.dataSize
             values(j) = value
@@ -137,8 +137,8 @@ object RecordExtractors {
           }
         case st: Primitive =>
           val value = st.decodeTypeValue(useOffset, data)
-          if (value == null && generateCorruptedFields && !st.isEmpty(useOffset, data)) {
-            corruptedFields += CorruptedField(field.name, st.getRawValue(useOffset,data))
+          if (value == null && generateCorruptFields && !st.isEmpty(useOffset, data)) {
+            corruptFields += CorruptField(field.name, st.getRawValue(useOffset,data))
           }
           if (value != null && st.isDependee) {
             val intStringVal: Either[Int, String] = value match {
@@ -212,7 +212,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptedFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptedFields, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptFields, handler)
   }
 
   /**
@@ -432,7 +432,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptedFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, null, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, null, handler)
   }
 
   /**
@@ -452,7 +452,7 @@ object RecordExtractors {
     * @param records                 The array of [[T]] object for each Group of the copybook
     * @param generateRecordId        If true a record id field will be added as the first field of the record.
     * @param generateRecordBytes     If true a record bytes field will be added at the beginning of the record.
-    * @param generateCorruptedFields If true, a corrupted record field will be appended to the end of the schema.
+    * @param generateCorruptFields   If true,a corrupt fields field will be appended to the end of the schema.
     * @param fileId                  The file id to be saved to the file id field
     * @param recordId                The record id to be saved to the record id field
     * @param recordByteLength        The length of the record
@@ -461,21 +461,21 @@ object RecordExtractors {
     * @return A [[T]] object corresponding to the record schema
     */
   private def applyRecordPostProcessing[T](
-    ast: CopybookAST,
-    records: List[T],
-    policy: SchemaRetentionPolicy,
-    generateRecordId: Boolean,
-    generateRecordBytes: Boolean,
-    generateCorruptedFields: Boolean,
-    segmentLevelIds: List[String],
-    fileId: Int,
-    recordId: Long,
-    recordByteLength: Int,
-    recordBytes: Array[Byte],
-    generateInputFileField: Boolean,
-    inputFileName: String,
-    corruptedFields: ArrayBuffer[CorruptedField],
-    handler: RecordHandler[T]
+                                            ast: CopybookAST,
+                                            records: List[T],
+                                            policy: SchemaRetentionPolicy,
+                                            generateRecordId: Boolean,
+                                            generateRecordBytes: Boolean,
+                                            generateCorruptFields: Boolean,
+                                            segmentLevelIds: List[String],
+                                            fileId: Int,
+                                            recordId: Long,
+                                            recordByteLength: Int,
+                                            recordBytes: Array[Byte],
+                                            generateInputFileField: Boolean,
+                                            inputFileName: String,
+                                            corruptFields: ArrayBuffer[CorruptField],
+                                            handler: RecordHandler[T]
   ): Seq[Any] = {
     val outputRecords = new ListBuffer[Any]
 
@@ -508,13 +508,13 @@ object RecordExtractors {
         records.foreach(record => outputRecords.append(record))
     }
 
-    if (generateCorruptedFields && corruptedFields != null) {
+    if (generateCorruptFields && corruptFields != null) {
       // Ugly but efficient implementation of converting errors as an array field
-      val len = corruptedFields.length
+      val len = corruptFields.length
       val ar = new Array[Any](len)
       var i = 0
       while (i < len) {
-        val r = handler.create(Array[Any](corruptedFields(i).fieldName, corruptedFields(i).rawValue), corruptedFieldsGroup)
+        val r = handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue), corruptFieldsGroup)
         ar(i) = r
         i += 1
       }
@@ -526,15 +526,15 @@ object RecordExtractors {
   }
 
   /**
-    * Constructs a Group object representing corrupted fields. It is only needed for constructing records that require field names,
+    * Constructs a Group object representing corrupt fields. It is only needed for constructing records that require field names,
     * such as JSON. Field sizes and encoding do not really matter
     */
-  private def getCorruptedFieldsGroup: Group = {
-    val corruptedFieldsInGroup = new mutable.ArrayBuffer[Statement]
+  private def getCorruptFieldsGroup: Group = {
+    val corruptFieldsInGroup = new mutable.ArrayBuffer[Statement]
 
-    corruptedFieldsInGroup += Primitive(15, "field_name", "field_name", 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
-    corruptedFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
+    corruptFieldsInGroup += Primitive(15, "field_name", "field_name", 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
+    corruptFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
 
-    Group(10, "_corrupted_fields", "_corrupted_fields", 0,  children = corruptedFieldsInGroup, occurs = Some(10))(None)
+    Group(10, "_corrupt_fields", "_corrupt_fields", 0,  children = corruptFieldsInGroup, occurs = Some(10))(None)
   }
 }
