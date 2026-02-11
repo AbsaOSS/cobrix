@@ -17,14 +17,24 @@
 package za.co.absa.cobrix.spark.cobol.source.base.impl
 
 import org.apache.spark.sql.types.StructType
-import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
+import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
-import scala.collection.Seq
-
-class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(new Copybook(Group.root), SchemaRetentionPolicy.KeepOriginal, false, false, "", false, false) with Serializable {
+class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(
+  new Copybook(Group.root),
+  SchemaRetentionPolicy.KeepOriginal,
+  false,
+  false,
+  "",
+  false,
+  false,
+  false,
+  0,
+  "",
+  MetadataPolicy.Basic) with Serializable {
   override def getSparkSchema: StructType = sparkSchema
 
   override lazy val getRecordSize: Int = 40

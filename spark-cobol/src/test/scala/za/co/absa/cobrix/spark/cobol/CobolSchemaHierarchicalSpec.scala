@@ -18,7 +18,6 @@ package za.co.absa.cobrix.spark.cobol
 
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
 import scala.collection.immutable.HashMap
@@ -102,6 +101,6 @@ class CobolSchemaHierarchicalSpec extends AnyWordSpec {
 
   private def parseSchema(copybook: String, segmentRedefines: List[String], fieldParentMap: Map[String, String]): CobolSchema = {
     val parsedSchema = CopybookParser.parseTree(copybook, segmentRedefines = segmentRedefines, fieldParentMap = fieldParentMap)
-    new CobolSchema(parsedSchema, SchemaRetentionPolicy.CollapseRoot, false, false, "",false, false)
+    CobolSchema.builder(parsedSchema).build()
   }
 }

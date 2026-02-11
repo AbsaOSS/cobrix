@@ -16,8 +16,6 @@
 
 package za.co.absa.cobrix.spark.cobol.source.text
 
-import java.nio.charset.StandardCharsets
-
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.funsuite.AnyFunSuite
@@ -31,6 +29,8 @@ import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
+
+import java.nio.charset.StandardCharsets
 
 class Test02TextFilesOldSchool extends AnyFunSuite with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -52,7 +52,7 @@ class Test02TextFilesOldSchool extends AnyFunSuite with SparkTestBase with Binar
     withTempTextFile("text_ascii", ".txt", StandardCharsets.UTF_8, textFileContent) { tmpFileName =>
 
       val parsedCopybook = CopybookParser.parse(copybook, dataEncoding = ASCII, stringTrimmingPolicy = StringTrimmingPolicy.TrimNone)
-      val cobolSchema = new CobolSchema(parsedCopybook, SchemaRetentionPolicy.CollapseRoot, false, false, "", false)
+      val cobolSchema = CobolSchema.builder(parsedCopybook).build()
       val sparkSchema = cobolSchema.getSparkSchema
 
       val rddText = spark.sparkContext
@@ -61,7 +61,7 @@ class Test02TextFilesOldSchool extends AnyFunSuite with SparkTestBase with Binar
       val recordHandler = new RowHandler()
 
       val rddRow = rddText
-        .filter(str => str.length > 0)
+        .filter(str => str.nonEmpty)
         .map(str => {
           val record = RecordExtractors.extractRecord[GenericRow](parsedCopybook.ast,
             str.getBytes(),
