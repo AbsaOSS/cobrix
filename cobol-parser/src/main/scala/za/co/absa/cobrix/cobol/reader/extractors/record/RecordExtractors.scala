@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader.extractors.record
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -532,9 +533,9 @@ object RecordExtractors {
   private def getCorruptFieldsGroup: Group = {
     val corruptFieldsInGroup = new mutable.ArrayBuffer[Statement]
 
-    corruptFieldsInGroup += Primitive(15, "field_name", "field_name", 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
-    corruptFieldsInGroup += Primitive(15, "raw_value", "raw_value", 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
+    corruptFieldsInGroup += Primitive(15, Constants.fieldNameColumn, Constants.fieldNameColumn, 0, AlphaNumeric("X(50)", 50), decode = null, encode = null)(None)
+    corruptFieldsInGroup += Primitive(15, Constants.rawValueColumn, Constants.rawValueColumn, 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
 
-    Group(10, "_corrupt_fields", "_corrupt_fields", 0,  children = corruptFieldsInGroup, occurs = Some(10))(None)
+    Group(10, Constants.corruptFieldsField, Constants.corruptFieldsField, 0,  children = corruptFieldsInGroup, occurs = Some(10))(None)
   }
 }

@@ -906,7 +906,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(0).name == "file_name")
       assert(sparkSchema.fields(1).name == "Seg_Id0")
       assert(sparkSchema.fields(2).name == "NUM1")
-      assert(sparkSchema.fields(2).dataType.isInstanceOf[StringType])
+      assert(sparkSchema.fields(2).dataType == StringType)
     }
   }
 }
