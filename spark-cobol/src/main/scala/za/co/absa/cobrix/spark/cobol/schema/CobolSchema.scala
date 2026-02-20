@@ -135,7 +135,7 @@ class CobolSchema(copybook: Copybook,
           StructField(Constants.fieldNameColumn, StringType, nullable = false),
           StructField(Constants.rawValueColumn, BinaryType, nullable = false)
         )
-      ), containsNull = false), nullable = false)
+      ), containsNull = false), nullable = true)
     } else {
       recordsWithRecordId
     }

@@ -51,7 +51,7 @@ class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with Binary
           | |-- F3: integer (nullable = true)
           | |-- F4: array (nullable = true)
           | |    |-- element: integer (containsNull = true)
-          | |-- _corrupt_fields: array (nullable = false)
+          | |-- _corrupt_fields: array (nullable = true)
           | |    |-- element: struct (containsNull = false)
           | |    |    |-- field_name: string (nullable = false)
           | |    |    |-- raw_value: binary (nullable = false)

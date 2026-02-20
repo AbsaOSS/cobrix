@@ -306,7 +306,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
           | |    |-- IntValue: integer (nullable = true)
           | |-- STRUCT2: struct (nullable = true)
           | |    |-- STR_FLD: string (nullable = true)
-          | |-- _corrupt_fields: array (nullable = false)
+          | |-- _corrupt_fields: array (nullable = true)
           | |    |-- element: struct (containsNull = false)
           | |    |    |-- field_name: string (nullable = false)
           | |    |    |-- raw_value: binary (nullable = false)
