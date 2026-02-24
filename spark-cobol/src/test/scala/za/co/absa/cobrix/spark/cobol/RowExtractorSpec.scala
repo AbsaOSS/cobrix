@@ -141,11 +141,4 @@ class RowExtractorSpec extends AnyFunSuite {
     //account type
     assert(account(1).asInstanceOf[Int] === 0)
   }
-
-  test("Byte array to HEX conversion") {
-    assert(RecordExtractors.convertArrayToHex(null) == "")
-    assert(RecordExtractors.convertArrayToHex(Array.empty) == "")
-    assert(RecordExtractors.convertArrayToHex(Array(1)) == "01")
-    assert(RecordExtractors.convertArrayToHex(bytes) == "0006C5E7C1D4D7D3C5F4404000000F40404040404040404040404040404040404040404040404040003FF0F0F0F0F0F0F0F0F0F0F0F0F0F0F2F0F0F0F4F0F0F0F1F200000FF0F0F0F0F0F0F0F0F0F0F0F0F0F0F3F0F0F0F4F0F0F1F0F200001FF0F0F0F0F0F0F0F0F5F0F0F6F0F0F1F2F0F0F3F0F1F0F0F000002F")
-  }
 }

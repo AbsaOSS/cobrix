@@ -39,7 +39,7 @@ import scala.collection.immutable.HashMap
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
-  * @param corruptSchemaPolicy     Specifies a policy to handle corrupt fields. By default, null values will be produced and the original value is ignored. If the policy is set the '_corrput_fields' field will be generated.
+  * @param corruptSchemaPolicy     Specifies a policy to handle corrupt fields. By default, null values will be produced and the original value is ignored. If the policy is set the '_corrupt_fields' field will be generated.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)

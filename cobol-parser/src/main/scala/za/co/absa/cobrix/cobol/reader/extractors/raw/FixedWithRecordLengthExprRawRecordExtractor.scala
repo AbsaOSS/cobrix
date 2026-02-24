@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.reader.iterator.RecordLengthExpression
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
+import za.co.absa.cobrix.cobol.utils.StringUtils
 
 import scala.util.Try
 
@@ -127,7 +128,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
         case l: Long       => l.toInt
         case s: String     => Try{ s.toInt }.getOrElse(throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type, encountered: '$s'."))
         case d: BigDecimal => d.toInt
-        case null          => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)}).")
+        case null          => throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${StringUtils.convertArrayToHex(binaryDataStart)}).")
         case _             => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
       }
     } else {
@@ -136,7 +137,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
         case l: Long       => getRecordLengthFromMapping(l.toString)
         case d: BigDecimal => getRecordLengthFromMapping(d.toString())
         case s: String     => getRecordLengthFromMapping(s)
-        case null          => defaultRecordLength.getOrElse(throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${getBytesAsHexString(binaryDataStart)})."))
+        case null          => defaultRecordLength.getOrElse(throw new IllegalStateException(s"Null encountered as a record length field (offset: $byteIndex, raw value: ${StringUtils.convertArrayToHex(binaryDataStart)})."))
         case _             => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
       }
     }
@@ -148,10 +149,6 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
       case Some(len) => len
       case None => defaultRecordLength.getOrElse(throw new IllegalStateException(s"Record length value '$v' is not mapped to a record length."))
     }
-  }
-
-  final private def getBytesAsHexString(bytes: Array[Byte]): String = {
-    bytes.map("%02X" format _).mkString
   }
 
   private def fetchRecordUsingRecordLengthFieldExpression(expr: RecordLengthExpression): Option[Array[Byte]] = {

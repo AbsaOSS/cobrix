@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.utils.StringUtils
 
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
@@ -521,7 +522,7 @@ object RecordExtractors {
       var i = 0
       while (i < len) {
         val r = if (generateCorruptFieldsAsHex) {
-          val hex = convertArrayToHex(corruptFields(i).rawValue)
+          val hex = StringUtils.convertArrayToHex(corruptFields(i).rawValue)
           handler.create(Array[Any](corruptFields(i).fieldName, hex), corruptFieldsGroup)
         } else {
           handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue), corruptFieldsGroup)
@@ -536,20 +537,6 @@ object RecordExtractors {
     outputRecords.toList
   }
   
-  private[cobrix] def convertArrayToHex(a: Array[Byte]): String = {
-    if (a == null) return ""
-    val hexChars = new Array[Char](a.length * 2)
-    val hexArray = Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F')
-    var i = 0
-    while (i < a.length) {
-      val v = a(i) & 0xFF
-      hexChars(i * 2) = hexArray(v >>> 4)
-      hexChars(i * 2 + 1) = hexArray(v & 0x0F)
-      i += 1
-    }
-    new String(hexChars)
-  }
-
   /**
     * Constructs a Group object representing corrupt fields. It is only needed for constructing records that require field names,
     * such as JSON. Field sizes and encoding do not really matter

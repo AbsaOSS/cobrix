@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.encoding._
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.position.Position
+import za.co.absa.cobrix.cobol.utils.StringUtils
 
 import java.nio.charset.{Charset, StandardCharsets}
 import scala.util.control.NonFatal
@@ -94,7 +95,7 @@ object DecoderSelector {
       case UTF16 =>
         StringDecoders.decodeUtf16String(_, getStringStrimmingType(stringTrimmingPolicy), isUtf16BigEndian, improvedNullDetection)
       case HEX =>
-        StringDecoders.decodeHex
+        StringUtils.convertArrayToHex
       case RAW =>
         StringDecoders.decodeRaw
     }
