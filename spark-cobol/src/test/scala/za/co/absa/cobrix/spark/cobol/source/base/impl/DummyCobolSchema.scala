@@ -20,6 +20,7 @@ import org.apache.spark.sql.types.StructType
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
+import za.co.absa.cobrix.cobol.reader.parameters.CorruptFieldsPolicy.Disabled
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
 
@@ -31,7 +32,7 @@ class DummyCobolSchema(val sparkSchema: StructType) extends CobolSchema(
   "",
   false,
   false,
-  false,
+  Disabled,
   0,
   "",
   MetadataPolicy.Basic) with Serializable {

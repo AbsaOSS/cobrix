@@ -35,21 +35,22 @@ object RecordExtractors {
   /**
     * This method extracts a record from the specified array of bytes. The copybook for the record needs to be already parsed.
     *
-    * @param ast                     The parsed copybook.
-    * @param data                    The data bits containing the record.
-    * @param offsetBytes             The offset to the beginning of the record (in bits).
-    * @param policy                  A schema retention policy to be applied to the extracted record.
-    * @param variableLengthOccurs    If true, OCCURS DEPENDING ON data size will depend on the number of elements.
-    * @param generateRecordId        If true, a record id field will be added as the first field of the record.
-    * @param generateRecordBytes     If true, a record bytes field will be added at the beginning of each record.
-    * @param generateCorruptFields   If true, a corrupt fields field will be appended to the end of the schema.
-    * @param segmentLevelIds         Segment ids to put to the extracted record if id generation it turned on.
-    * @param fileId                  A file id to be put to the extractor record if generateRecordId == true.
-    * @param recordId                The record id to be saved to the record id field.
-    * @param activeSegmentRedefine   An active segment redefine (the one that will be parsed).
-    *                                All other segment redefines will be skipped.
-    * @param generateInputFileField  if true, a field containing input file name will be generated
-    * @param inputFileName           An input file name to put if its generation is needed
+    * @param ast                        The parsed copybook.
+    * @param data                       The data bits containing the record.
+    * @param offsetBytes                The offset to the beginning of the record (in bits).
+    * @param policy                     A schema retention policy to be applied to the extracted record.
+    * @param variableLengthOccurs       If true, OCCURS DEPENDING ON data size will depend on the number of elements.
+    * @param generateRecordId           If true, a record id field will be added as the first field of the record.
+    * @param generateRecordBytes        If true, a record bytes field will be added at the beginning of each record.
+    * @param generateCorruptFields      If true, a corrupt fields field will be appended to the end of the schema.
+    * @param generateCorruptFieldsAsHex If true, corrupt fields will be generated as hex strings, otherwise they will be generated as binary data. This parameter is only relevant if generateCorruptFields is true.
+    * @param segmentLevelIds            Segment ids to put to the extracted record if id generation it turned on.
+    * @param fileId                     A file id to be put to the extractor record if generateRecordId == true.
+    * @param recordId                   The record id to be saved to the record id field.
+    * @param activeSegmentRedefine      An active segment redefine (the one that will be parsed).
+    *                                   All other segment redefines will be skipped.
+    * @param generateInputFileField     if true, a field containing input file name will be generated
+    * @param inputFileName              An input file name to put if its generation is needed
     * @return An Array[Any] object corresponding to the record schema.
     */
   @throws(classOf[IllegalStateException])
@@ -62,6 +63,7 @@ object RecordExtractors {
                                   generateRecordId: Boolean = false,
                                   generateRecordBytes: Boolean = false,
                                   generateCorruptFields: Boolean = false,
+                                  generateCorruptFieldsAsHex: Boolean = false,
                                   segmentLevelIds: List[String] = Nil,
                                   fileId: Int = 0,
                                   recordId: Long = 0,
@@ -213,7 +215,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptFields, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptFields, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes, generateCorruptFields, generateCorruptFieldsAsHex, segmentLevelIds, fileId, recordId, data.length, data, generateInputFileField, inputFileName, corruptFields, handler)
   }
 
   /**
@@ -433,7 +435,7 @@ object RecordExtractors {
       policy
     }
 
-    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptFields = false,  Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, null, handler)
+    applyRecordPostProcessing(ast, records.toList, effectiveSchemaRetentionPolicy, generateRecordId, generateRecordBytes = false, generateCorruptFields = false, generateCorruptFieldsAsHex = false, Nil, fileId, recordId, recordLength, Array.empty[Byte], generateInputFileField = generateInputFileField, inputFileName, null, handler)
   }
 
   /**
@@ -449,16 +451,18 @@ object RecordExtractors {
     * Combinations of the listed transformations are supported.
     * </p>
     *
-    * @param ast                     The parsed copybook
-    * @param records                 The array of [[T]] object for each Group of the copybook
-    * @param generateRecordId        If true a record id field will be added as the first field of the record.
-    * @param generateRecordBytes     If true a record bytes field will be added at the beginning of the record.
-    * @param generateCorruptFields   If true,a corrupt fields field will be appended to the end of the schema.
-    * @param fileId                  The file id to be saved to the file id field
-    * @param recordId                The record id to be saved to the record id field
-    * @param recordByteLength        The length of the record
-    * @param generateInputFileField  if true, a field containing input file name will be generated
-    * @param inputFileName           An input file name to put if its generation is needed
+    * @param ast                        The parsed copybook
+    * @param records                    The array of [[T]] object for each Group of the copybook
+    * @param generateRecordId           If true a record id field will be added as the first field of the record.
+    * @param generateRecordBytes        If true a record bytes field will be added at the beginning of the record.
+    * @param generateCorruptFields      If true,a corrupt fields field will be appended to the end of the schema.
+    * @param generateCorruptFieldsAsHex If true, corrupt fields will be generated as hex strings, otherwise they will be generated as binary data. This parameter is only relevant if generateCorruptFields is true.
+    * @param segmentLevelIds            Segment ids to put to the extracted record if id generation it turned on.
+    * @param fileId                     The file id to be saved to the file id field
+    * @param recordId                   The record id to be saved to the record id field
+    * @param recordByteLength           The length of the record
+    * @param generateInputFileField     if true, a field containing input file name will be generated
+    * @param inputFileName              An input file name to put if its generation is needed
     * @return A [[T]] object corresponding to the record schema
     */
   private def applyRecordPostProcessing[T](
@@ -468,6 +472,7 @@ object RecordExtractors {
                                             generateRecordId: Boolean,
                                             generateRecordBytes: Boolean,
                                             generateCorruptFields: Boolean,
+                                            generateCorruptFieldsAsHex: Boolean = false,
                                             segmentLevelIds: List[String],
                                             fileId: Int,
                                             recordId: Long,
@@ -515,7 +520,11 @@ object RecordExtractors {
       val ar = new Array[Any](len)
       var i = 0
       while (i < len) {
-        val r = handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue), corruptFieldsGroup)
+        val r = if (generateCorruptFieldsAsHex) {
+          handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue.map("%02X" format _).mkString), corruptFieldsGroup)
+        } else {
+          handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue), corruptFieldsGroup)
+        }
         ar(i) = r
         i += 1
       }

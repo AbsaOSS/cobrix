@@ -869,7 +869,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields(1).dataType.isInstanceOf[StructType])
     }
 
-    "create schema with corrupt fields using builder" in {
+    "create schema with corrupt fields using builder with hex" in {
       val copybook: String =
         """       01  RECORD.
           |         05  STR1                  PIC X(10).
@@ -877,6 +877,7 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       val parsedCopybook = CopybookParser.parse(copybook)
       val cobolSchema = CobolSchema.builder(parsedCopybook)
         .withGenerateCorruptFields(true)
+        .withDecodeBinaryAsHex(true)
         .build()
 
       val sparkSchema = cobolSchema.getSparkSchema
@@ -884,6 +885,26 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
       assert(sparkSchema.fields.length == 2)
       assert(sparkSchema.fields(1).name == "_corrupt_fields")
       assert(sparkSchema.fields(1).dataType.isInstanceOf[ArrayType])
+      assert(sparkSchema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).dataType == StringType)
+    }
+
+    "create schema with corrupt fields using builder with binary" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  STR1                  PIC X(10).
+          |""".stripMargin
+      val parsedCopybook = CopybookParser.parse(copybook)
+      val cobolSchema = CobolSchema.builder(parsedCopybook)
+        .withGenerateCorruptFields(true)
+        .withDecodeBinaryAsHex(false)
+        .build()
+
+      val sparkSchema = cobolSchema.getSparkSchema
+
+      assert(sparkSchema.fields.length == 2)
+      assert(sparkSchema.fields(1).name == "_corrupt_fields")
+      assert(sparkSchema.fields(1).dataType.isInstanceOf[ArrayType])
+      assert(sparkSchema.fields(1).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields(1).dataType == BinaryType)
     }
 
     "create schema with various options" in {
