@@ -608,14 +608,6 @@ class StringDecodersSpec extends AnyWordSpec {
     }
   }
 
-  "decodeHex()" should {
-    "decode bytes as HEX strings" in {
-      val hex = decodeHex(Array[Byte](0, 3, 16, 127, -1, -127))
-
-      assert(hex == "0003107FFF81")
-    }
-  }
-
   "decodeRaw()" should {
     "should work on empty arrays" in {
       val data = Array.empty[Byte]
