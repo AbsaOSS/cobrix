@@ -400,6 +400,16 @@ object CobolParametersParser extends Logging {
     else
       None
 
+    val corruptFieldsPolicy = if (parameters.generateCorruptFields) {
+      if (parameters.decodeBinaryAsHex) {
+        CorruptFieldsPolicy.Hex
+      } else {
+        CorruptFieldsPolicy.Binary
+      }
+    } else {
+      CorruptFieldsPolicy.Disabled
+    }
+
     ReaderParameters(
       recordFormat = parameters.recordFormat,
       isEbcdic = parameters.isEbcdic,
@@ -433,7 +443,7 @@ object CobolParametersParser extends Logging {
       fileEndOffset = varLenParams.fileEndOffset,
       generateRecordId = varLenParams.generateRecordId,
       generateRecordBytes = parameters.generateRecordBytes,
-      generateCorruptFields = parameters.generateCorruptFields,
+      corruptFieldsPolicy = corruptFieldsPolicy,
       schemaPolicy = parameters.schemaRetentionPolicy,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       isDisplayAlwaysString = parameters.isDisplayAlwaysString,

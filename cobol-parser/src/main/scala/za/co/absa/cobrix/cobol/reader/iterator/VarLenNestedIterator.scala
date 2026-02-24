@@ -20,7 +20,7 @@ import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.parameters.{CorruptFieldsPolicy, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 
 import scala.collection.immutable.HashMap
@@ -60,6 +60,8 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
   private val generateInputFileName = readerProperties.inputFileNameColumn.nonEmpty
+  private val generateCorruptFields = readerProperties.corruptFieldsPolicy != CorruptFieldsPolicy.Disabled
+  private val generateCorruptFieldsAsHex = readerProperties.corruptFieldsPolicy == CorruptFieldsPolicy.Hex
 
   fetchNext()
 
@@ -99,7 +101,8 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
                 readerProperties.variableSizeOccurs,
                 readerProperties.generateRecordId,
                 readerProperties.generateRecordBytes,
-                readerProperties.generateCorruptFields,
+                generateCorruptFields,
+                generateCorruptFieldsAsHex,
                 segmentLevelIds,
                 fileId,
                 rawRecordIterator.getRecordIndex,

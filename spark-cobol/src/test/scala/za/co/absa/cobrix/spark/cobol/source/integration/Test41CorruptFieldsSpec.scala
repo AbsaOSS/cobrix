@@ -18,7 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.apache.spark.sql.DataFrame
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_CORRUPT_FIELDS
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.{PARAM_BINARY_AS_HEX, PARAM_CORRUPT_FIELDS}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -42,7 +42,7 @@ class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with Binary
   ).map(_.toByte)
 
   "Corrupt fields record generation" should {
-    "work when the option is turned on" in {
+    "work when the option is turned on as binary" in {
       val expectedSchema =
         """root
           | |-- ID: integer (nullable = true)
@@ -103,6 +103,77 @@ class Test41CorruptFieldsSpec extends AnyWordSpec with SparkTestBase with Binary
 
       withTempBinFile("corrupt_fields1", ".dat", data) { tmpFileName =>
         val df = getDataFrame(tmpFileName, Map(PARAM_CORRUPT_FIELDS -> "true"))
+
+        val actualSchema = df.schema.treeString
+        compareTextVertical(actualSchema, expectedSchema)
+
+        val actualData = SparkUtils.convertDataFrameToPrettyJSON(df.orderBy("ID"), 10)
+
+        compareTextVertical(actualData, expectedData)
+      }
+    }
+
+    "work when the option is turned on as hex" in {
+      val expectedSchema =
+        """root
+          | |-- ID: integer (nullable = true)
+          | |-- F1: string (nullable = true)
+          | |-- F2: integer (nullable = true)
+          | |-- F3: integer (nullable = true)
+          | |-- F4: array (nullable = true)
+          | |    |-- element: integer (containsNull = true)
+          | |-- _corrupt_fields: array (nullable = true)
+          | |    |-- element: struct (containsNull = false)
+          | |    |    |-- field_name: string (nullable = false)
+          | |    |    |-- raw_value: string (nullable = false)
+          |""".stripMargin
+
+      val expectedData =
+        """[ {
+          |  "ID" : 1,
+          |  "F1" : "",
+          |  "F2" : 5,
+          |  "F3" : 6,
+          |  "F4" : [ 1, 2, 3 ],
+          |  "_corrupt_fields" : [ ]
+          |}, {
+          |  "ID" : 2,
+          |  "F1" : "1",
+          |  "F3" : 5,
+          |  "F4" : [ 4, 5, 6 ],
+          |  "_corrupt_fields" : [ {
+          |    "field_name" : "F2",
+          |    "raw_value" : "D3"
+          |  } ]
+          |}, {
+          |  "ID" : 3,
+          |  "F2" : 3,
+          |  "F3" : 61702,
+          |  "F4" : [ 7, 8, 9 ],
+          |  "_corrupt_fields" : [ ]
+          |}, {
+          |  "ID" : 4,
+          |  "F3" : 0,
+          |  "F4" : [ null, null, 0 ],
+          |  "_corrupt_fields" : [ ]
+          |}, {
+          |  "ID" : 5,
+          |  "F1" : "A",
+          |  "F2" : 4,
+          |  "F3" : 160,
+          |  "F4" : [ null, 5, null ],
+          |  "_corrupt_fields" : [ {
+          |    "field_name" : "F4[0]",
+          |    "raw_value" : "C1"
+          |  }, {
+          |    "field_name" : "F4[2]",
+          |    "raw_value" : "A3"
+          |  } ]
+          |} ]
+          |""".stripMargin
+
+      withTempBinFile("corrupt_fields1", ".dat", data) { tmpFileName =>
+        val df = getDataFrame(tmpFileName, Map(PARAM_CORRUPT_FIELDS -> "true", PARAM_BINARY_AS_HEX -> "true"))
 
         val actualSchema = df.schema.treeString
         compareTextVertical(actualSchema, expectedSchema)

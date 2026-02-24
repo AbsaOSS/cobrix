@@ -18,7 +18,7 @@ package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.parameters.{CorruptFieldsPolicy, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
@@ -47,6 +47,8 @@ class FixedLenNestedRowIterator[T: ClassTag](
   private val segmentIdFilter = readerProperties.multisegment.flatMap(_.segmentIdFilter)
   private val segmentRedefineMap = readerProperties.multisegment.map(_.segmentIdRedefineMap).getOrElse(HashMap[String, String]())
   private val segmentRedefineAvailable = segmentRedefineMap.nonEmpty
+  private val generateCorruptFields = readerProperties.corruptFieldsPolicy != CorruptFieldsPolicy.Disabled
+  private val generateCorruptFieldsAsHex = readerProperties.corruptFieldsPolicy == CorruptFieldsPolicy.Hex
 
   override def hasNext: Boolean = {
     val correctOffset = if (singleRecordOnly) {
@@ -90,7 +92,8 @@ class FixedLenNestedRowIterator[T: ClassTag](
       readerProperties.schemaPolicy,
       readerProperties.variableSizeOccurs,
       generateRecordBytes = readerProperties.generateRecordBytes,
-      generateCorruptFields = readerProperties.generateCorruptFields,
+      generateCorruptFields = generateCorruptFields,
+      generateCorruptFieldsAsHex = generateCorruptFieldsAsHex,
       activeSegmentRedefine = activeSegmentRedefine,
       handler = handler
     )

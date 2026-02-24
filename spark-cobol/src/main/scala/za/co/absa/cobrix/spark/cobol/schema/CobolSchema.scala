@@ -25,7 +25,7 @@ import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
 import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.getReaderProperties
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, CorruptFieldsPolicy, Parameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
@@ -44,7 +44,7 @@ import scala.collection.mutable.ArrayBuffer
   * @param strictIntegralPrecision If true, Cobrix will not generate short/integer/long Spark data types, and always use decimal(n) with the exact precision that matches the copybook.
   * @param generateRecordId        If true, a record id field will be prepended to the beginning of the schema.
   * @param generateRecordBytes     If true, a record bytes field will be appended to the beginning of the schema.
-  * @param generateCorruptFields   If true, a corrupt fields field will be appended to the end of the schema.
+  * @param corruptFieldsPolicy     Specifies a policy to handle corrupt records. By default, null values will be produced and the original value is ignored. If the policy is set the '_corrput_fileds' field will be generated.
   * @param inputFileNameField      If non-empty, a source file name will be prepended to the beginning of the schema.
   * @param generateSegIdFieldsCnt  A number of segment ID levels to generate
   * @param segmentIdProvidedPrefix A prefix for each segment id levels to make segment ids globally unique (by default the current timestamp will be used)
@@ -57,7 +57,7 @@ class CobolSchema(copybook: Copybook,
                   inputFileNameField: String,
                   generateRecordId: Boolean,
                   generateRecordBytes: Boolean,
-                  generateCorruptFields: Boolean,
+                  corruptFieldsPolicy: CorruptFieldsPolicy,
                   generateSegIdFieldsCnt: Int,
                   segmentIdProvidedPrefix: String,
                   metadataPolicy: MetadataPolicy)
@@ -68,7 +68,7 @@ class CobolSchema(copybook: Copybook,
     inputFileNameField,
     generateRecordId,
     generateRecordBytes,
-    generateCorruptFields,
+    corruptFieldsPolicy,
     generateSegIdFieldsCnt,
     segmentIdProvidedPrefix
   ) with Logging with Serializable {
@@ -82,6 +82,7 @@ class CobolSchema(copybook: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
+    val generateCorruptFields = corruptFieldsPolicy != CorruptFieldsPolicy.Disabled
     val records = for (record <- copybook.getRootRecords) yield {
       val group = record.asInstanceOf[Group]
       val redefines = copybook.getAllSegmentRedefines
@@ -130,10 +131,15 @@ class CobolSchema(copybook: Copybook,
     }
 
     val recordsWithCorruptFields = if (generateCorruptFields) {
+      val rawFieldType = if (corruptFieldsPolicy == CorruptFieldsPolicy.Hex) {
+        StringType
+      } else {
+        BinaryType
+      }
       recordsWithRecordId :+ StructField(Constants.corruptFieldsField, ArrayType(StructType(
         Seq(
           StructField(Constants.fieldNameColumn, StringType, nullable = false),
-          StructField(Constants.rawValueColumn, BinaryType, nullable = false)
+          StructField(Constants.rawValueColumn, rawFieldType, nullable = false)
         )
       ), containsNull = false), nullable = true)
     } else {
@@ -323,7 +329,7 @@ object CobolSchema {
       schema.inputFileNameField,
       schema.generateRecordId,
       schema.generateRecordBytes,
-      schema.generateCorruptFields,
+      schema.corruptSchemaPolicy,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
       schema.metadataPolicy
@@ -343,6 +349,7 @@ object CobolSchema {
   class CobolSchemaBuilder(copybook: Copybook) {
     private var schemaRetentionPolicy: SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot
     private var isDisplayAlwaysString: Boolean = false
+    private var decodeBinaryAsHex: Boolean = false
     private var strictIntegralPrecision: Boolean = false
     private var inputFileNameField: String = ""
     private var generateRecordId: Boolean = false
@@ -359,6 +366,11 @@ object CobolSchema {
 
     def withIsDisplayAlwaysString(isDisplayAlwaysString: Boolean): CobolSchemaBuilder = {
       this.isDisplayAlwaysString = isDisplayAlwaysString
+      this
+    }
+
+    def withDecodeBinaryAsHex(decodeBinaryAsHex: Boolean): CobolSchemaBuilder = {
+      this.decodeBinaryAsHex = decodeBinaryAsHex
       this
     }
 
@@ -403,6 +415,11 @@ object CobolSchema {
     }
 
     def build(): CobolSchema = {
+      val corruptFieldsPolicy = if (generateCorruptFields) {
+        if (decodeBinaryAsHex) CorruptFieldsPolicy.Hex else CorruptFieldsPolicy.Binary
+      } else {
+        CorruptFieldsPolicy.Disabled
+      }
       new CobolSchema(
         copybook,
         schemaRetentionPolicy,
@@ -411,7 +428,7 @@ object CobolSchema {
         inputFileNameField,
         generateRecordId,
         generateRecordBytes,
-        generateCorruptFields,
+        corruptFieldsPolicy,
         generateSegIdFieldsCnt,
         segmentIdProvidedPrefix,
         metadataPolicy

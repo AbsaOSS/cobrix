@@ -20,7 +20,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.parameters.{CorruptFieldsPolicy, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.{CobolSchema => CobolReaderSchema}
 import za.co.absa.cobrix.spark.cobol.reader.RowHandler
 import za.co.absa.cobrix.spark.cobol.schema.CobolSchema
@@ -62,6 +62,8 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
 
     val minimumRecordLength = readerParams.minimumRecordLength
     val maximumRecordLength = readerParams.maximumRecordLength
+    val generateCorruptFields = readerParams.corruptFieldsPolicy != CorruptFieldsPolicy.Disabled
+    val generateCorruptFieldsAsHex = readerParams.corruptFieldsPolicy == CorruptFieldsPolicy.Hex
 
     val rddRow = rdd
       .filter(array => array.nonEmpty && array.length >= minimumRecordLength && array.length <= maximumRecordLength)
@@ -73,7 +75,8 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
           variableLengthOccurs = readerParams.variableSizeOccurs,
           generateRecordId = readerParams.generateRecordId,
           generateRecordBytes = readerParams.generateRecordBytes,
-          generateCorruptFields = readerParams.generateCorruptFields,
+          generateCorruptFields = generateCorruptFields,
+          generateCorruptFieldsAsHex = generateCorruptFieldsAsHex,
           handler = recordHandler)
         Row.fromSeq(record)
       })
