@@ -521,7 +521,8 @@ object RecordExtractors {
       var i = 0
       while (i < len) {
         val r = if (generateCorruptFieldsAsHex) {
-          handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue.map("%02X" format _).mkString), corruptFieldsGroup)
+          val hex = convertArrayToHex(corruptFields(i).rawValue)
+          handler.create(Array[Any](corruptFields(i).fieldName, hex), corruptFieldsGroup)
         } else {
           handler.create(Array[Any](corruptFields(i).fieldName, corruptFields(i).rawValue), corruptFieldsGroup)
         }
@@ -533,6 +534,20 @@ object RecordExtractors {
 
     // toList() is a constant time operation, and List implements immutable Seq, which is exactly what is needed here.
     outputRecords.toList
+  }
+  
+  private[cobrix] def convertArrayToHex(a: Array[Byte]): String = {
+    if (a == null) return ""
+    val hexChars = new Array[Char](a.length * 2)
+    val hexArray = Array('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F')
+    var i = 0
+    while (i < a.length) {
+      val v = a(i) & 0xFF
+      hexChars(i * 2) = hexArray(v >>> 4)
+      hexChars(i * 2 + 1) = hexArray(v & 0x0F)
+      i += 1
+    }
+    new String(hexChars)
   }
 
   /**
