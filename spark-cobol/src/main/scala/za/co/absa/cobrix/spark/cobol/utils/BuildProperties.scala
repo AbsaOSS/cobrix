@@ -20,14 +20,25 @@ import java.util.Properties
 
 object BuildProperties {
   private val properties = new Properties()
-  private val buildVersionKey = "build.version"
-  private val buildTimestampKey = "build.timestamp"
+  val buildVersionKey = "build.version"
+  val buildTimestampKey = "build.timestamp"
 
   /** Returns the version of the build. */
   lazy val buildVersion: String = properties.getProperty(buildVersionKey)
 
   /** Returns the version of the build. */
   lazy val buildTimestamp: String = properties.getProperty(buildTimestampKey)
+
+  /** Returns full version to refer to in the user interface. */
+  def getFullVersion: String = {
+    val version = buildVersion
+    if (version.contains("SNAPSHOT")) {
+      val builtAt = buildTimestamp
+      s"$version built $builtAt"
+    } else {
+      version
+    }
+  }
 
   loadConfig()
 
