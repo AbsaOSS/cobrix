@@ -16,22 +16,24 @@
 
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
-import java.io.FileNotFoundException
-import java.nio.file.{Files, Paths}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkConf
-import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
-import za.co.absa.cobrix.spark.cobol.utils.ResourceUtils.getClass
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, ReaderParameters}
 import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType}
+
+import java.io.FileNotFoundException
+import java.nio.file.{Files, Paths}
+import scala.collection.mutable.ListBuffer
 
 /**
   * This class provides methods for checking the Spark job options after parsed.
   */
 object CobolParametersValidator {
 
-  def checkSanity(params: CobolParameters) = {
+  def checkSanity(params: CobolParameters): Unit = {
     if (params.sourcePaths.isEmpty) {
       throw new IllegalArgumentException("Data source path must be specified.")
     }
@@ -111,6 +113,31 @@ object CobolParametersValidator {
       case (None, None, Some(fileNames)) =>
         for(fileName <-fileNames.split(","))
           validatePath(fileName)
+    }
+  }
+
+  def validateParametersForWriting(readerParameters: ReaderParameters): Unit = {
+    val issues = new ListBuffer[String]
+
+    if (readerParameters.recordFormat != RecordFormat.FixedLength && readerParameters.recordFormat != RecordFormat.VariableLength) {
+      issues += s"Only '${RecordFormat.FixedLength}' and '${RecordFormat.VariableLength}' values for 'record_format' are supported for writing, " +
+        s"provided value: '${readerParameters.recordFormat}'"
+    }
+
+    if (readerParameters.variableSizeOccurs) {
+      issues += "Variable size OCCURS ('variable_size_occurs = true') is not supported for writing"
+    }
+
+    if (readerParameters.startOffset != 0 || readerParameters.endOffset != 0) {
+      issues += "'record_start_offset' and 'record_end_offset' are not supported for writing"
+    }
+
+    if (readerParameters.fileStartOffset != 0 || readerParameters.fileEndOffset != 0) {
+      issues += "'file_start_offset' and 'file_end_offset' are not supported for writing"
+    }
+
+    if (issues.nonEmpty) {
+      throw new IllegalArgumentException(s"Writer validation issues: ${issues.mkString("; ")}")
     }
   }
 }
