@@ -85,6 +85,7 @@ class DefaultSource
     CobolParametersValidator.checkSanity(cobolParameters)
 
     val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+    CobolParametersValidator.validateParametersForWriting(readerParameters)
 
     val outputPath = new Path(path)
     val hadoopConf = sqlContext.sparkContext.hadoopConfiguration

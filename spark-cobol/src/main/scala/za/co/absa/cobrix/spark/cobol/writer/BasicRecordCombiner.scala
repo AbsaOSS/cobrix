@@ -21,6 +21,7 @@ import org.apache.spark.sql.DataFrame
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 
@@ -61,16 +62,45 @@ class BasicRecordCombiner extends RecordCombiner {
       (idx, position)
     }
 
-    val size = cobolSchema.getRecordSize
+    val hasRdw = readerParameters.recordFormat == RecordFormat.VariableLength
+    val isRdwBigEndian = readerParameters.isRdwBigEndian
+    val adjustment1 = if (readerParameters.isRdwPartRecLength) 4 else 0
+    val adjustment2 = readerParameters.rdwAdjustment
+
+    val size = if (hasRdw) {
+      cobolSchema.getRecordSize + 4
+    } else {
+      cobolSchema.getRecordSize
+    }
+
+    val startOffset = if (hasRdw) 4 else 0
 
     df.rdd.map { row =>
       val ar = new Array[Byte](size)
+
+      if (hasRdw) {
+        val recordLength = cobolSchema.getRecordSize + adjustment1 + adjustment2
+        if (isRdwBigEndian) {
+          ar(0) = ((recordLength >> 8) & 0xFF).toByte
+          ar(1) = (recordLength & 0xFF).toByte
+          // The last two bytes are reserved and defined by IBM as binary zeros on all platforms.
+          ar(2) = 0
+          ar(3) = 0
+        } else {
+          ar(0) = (recordLength & 0xFF).toByte
+          ar(1) = ((recordLength >> 8) & 0xFF).toByte
+          // This is non-standard. But so are little-endian RDW headers.
+          // As an advantage, it has no effect for small records but adds support for big records (> 64KB).
+          ar(2) = ((recordLength >> 16) & 0xFF).toByte
+          ar(3) = ((recordLength >> 24) & 0xFF).toByte
+        }
+      }
 
       sparkFieldPositions.foreach { case (cobolIdx, sparkIdx) =>
         if (!row.isNullAt(sparkIdx)) {
           val fieldStr = row.get(sparkIdx)
           val cobolField = cobolFields(cobolIdx)
-          Copybook.setPrimitiveField(cobolField, ar, fieldStr, 0)
+          Copybook.setPrimitiveField(cobolField, ar, fieldStr, startOffset)
         }
       }
 

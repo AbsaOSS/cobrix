@@ -19,12 +19,29 @@ package za.co.absa.cobrix.cobol.parser.recordformats
 sealed trait RecordFormat
 
 object RecordFormat {
-  case object FixedLength extends RecordFormat
-  case object FixedBlock extends RecordFormat
-  case object VariableLength extends RecordFormat
-  case object VariableBlock extends RecordFormat
-  case object AsciiText extends RecordFormat
-  case object CobrixAsciiText extends RecordFormat
+  case object FixedLength extends RecordFormat {
+    override def toString: String = "F"
+  }
+
+  case object FixedBlock extends RecordFormat {
+    override def toString: String = "FB"
+  }
+
+  case object VariableLength extends RecordFormat {
+    override def toString: String = "V"
+  }
+
+  case object VariableBlock extends RecordFormat {
+    override def toString: String = "VB"
+  }
+
+  case object AsciiText extends RecordFormat {
+    override def toString: String = "D"
+  }
+
+  case object CobrixAsciiText extends RecordFormat {
+    override def toString: String = "D2"
+  }
 
   def withNameOpt(s: String): Option[RecordFormat] = {
     s match {
