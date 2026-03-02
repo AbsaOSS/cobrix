@@ -437,18 +437,27 @@ object Copybook {
     * Nested field names can contain '.' to identify the exact field.
     * If the field name is unique '.' is not required.
     *
-    * @param field       The AST object of the field
-    * @param recordBytes Binary encoded data of the record
-    * @param startOffset An offset to the beginning of the field in the data (in bytes).
+    * @param field                    The AST object of the field
+    * @param recordBytes              Binary encoded data of the record
+    * @param configuredStartOffset    An offset to the beginning of the field in the data (in bytes).
+    * @param fieldStartOffsetOverride If this offset is 0 or negative use the field offset is defined by the copybook.
+    *                                 Otherwise, use the specified offset
     * @return The value of the field
     *
     */
-  def setPrimitiveField(field: Primitive, recordBytes: Array[Byte], value: Any, startOffset: Int = 0): Unit = {
+  def setPrimitiveField(field: Primitive, recordBytes: Array[Byte], value: Any, configuredStartOffset: Int = 0, fieldStartOffsetOverride: Int = 0): Unit = {
     field.encode match {
       case Some(encode) =>
         val fieldBytes = encode(value)
-        val startByte = field.binaryProperties.offset + startOffset
-        val endByte = field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize
+
+        val startByte = if (fieldStartOffsetOverride > 0)
+          fieldStartOffsetOverride
+        else
+          field.binaryProperties.offset + configuredStartOffset
+        val endByte = if (fieldStartOffsetOverride > 0)
+          fieldStartOffsetOverride + field.binaryProperties.actualSize
+        else
+          field.binaryProperties.offset + configuredStartOffset + field.binaryProperties.actualSize
 
         if (startByte < 0 || endByte > recordBytes.length) {
           throw new IllegalArgumentException(s"Cannot set value for field '${field.name}' because the field is out of bounds of the record.")
