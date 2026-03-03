@@ -82,7 +82,7 @@ class VariableLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase wit
       }
     }
 
-    "write simple variable -record-length EBCDIC data files with little-endian RDWs and RDW adjustment" in {
+    "write simple variable -record-length EBCDIC data files with little-endian RDWs and RDW being part of record length" in {
       withTempDirectory("cobol_writer1") { tempDir =>
         val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
 
