@@ -86,6 +86,11 @@ class BasicRecordCombiner extends RecordCombiner {
         s"RDW length $recordLengthLong exceeds 65535 and cannot be encoded in big-endian mode."
       )
     }
+    if (!isRdwBigEndian && recordLengthLong > Int.MaxValue.toLong) {
+      throw new IllegalArgumentException(
+        s"RDW length $recordLengthLong exceeds ${Int.MaxValue} and cannot be encoded safely."
+      )
+    }
     val recordLength = recordLengthLong.toInt
 
     df.rdd.map { row =>
