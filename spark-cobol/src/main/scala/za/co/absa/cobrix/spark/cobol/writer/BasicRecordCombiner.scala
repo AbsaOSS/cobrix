@@ -79,7 +79,18 @@ class BasicRecordCombiner extends RecordCombiner {
       val ar = new Array[Byte](size)
 
       if (hasRdw) {
-        val recordLength = cobolSchema.getRecordSize + adjustment1 + adjustment2
+        val recordLengthLong = cobolSchema.getRecordSize.toLong + adjustment1.toLong + adjustment2.toLong
+        if (recordLengthLong < 0) {
+          throw new IllegalArgumentException(
+            s"Invalid RDW length $recordLengthLong. Check 'is_rdw_part_of_record_length' and 'rdw_adjustment'."
+          )
+        }
+        if (isRdwBigEndian && recordLengthLong > 0xFFFFL) {
+          throw new IllegalArgumentException(
+            s"RDW length $recordLengthLong exceeds 65535 and cannot be encoded in big-endian mode."
+          )
+        }
+        val recordLength = recordLengthLong.toInt
         if (isRdwBigEndian) {
           ar(0) = ((recordLength >> 8) & 0xFF).toByte
           ar(1) = (recordLength & 0xFF).toByte
