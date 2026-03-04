@@ -32,7 +32,7 @@ object RecordCombinerSelector {
     * @return A `RecordCombiner` implementation suitable for combining records based on the given schema and parameters.
     */
   def selectCombiner(cobolSchema: CobolSchema, readerParameters: ReaderParameters): RecordCombiner = {
-    new BasicRecordCombiner
+    new NestedRecordCombiner
   }
 
 }

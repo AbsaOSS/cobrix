@@ -16,6 +16,7 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
+import org.apache.spark.sql.functions.{col, struct}
 import org.apache.spark.sql.types._
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.LoggerFactory
@@ -865,6 +866,23 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
         compareText(actualSchema, expectedSchema)
       }
     }
+  }
+
+  test("printRowUdf dumps a Spark record as a single field") {
+    val expectedData =
+      """[ {
+        |  "record" : "id=1, value=a"
+        |}, {
+        |  "record" : "id=2, value=b"
+        |}, {
+        |  "record" : "id=3, value=c"
+        |} ]""".stripMargin.replace("\r\n", "\n")
+
+    val df = List((1, "a"), (2, "b"), (3, "c")).toDF("id", "value")
+    val convertedDf = df.select(SparkUtils.printRowUdf(struct(df.columns.map(col): _*)).as("record"))
+    val actualData = SparkUtils.convertDataFrameToPrettyJSON(convertedDf)
+
+    assertResults(actualData, expectedData)
   }
 
   private def assertSchema(actualSchema: String, expectedSchema: String): Unit = {
