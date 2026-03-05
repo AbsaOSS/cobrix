@@ -585,10 +585,14 @@ object SparkUtils extends Logging {
       fields.mkString(", ")
     }
 
-    val result = rowToString(row)
-    // Side-effect: print to stdout so the content is visible during tests
-    //println(s"[printRowUdf] $result")
-    result
+    if (row == null) {
+      null
+    } else {
+      val result = rowToString(row)
+      // Side-effect: print to stdout so the content is visible during tests
+      //println(s"[printRowUdf] $result")
+      result
+    }
   }
 
 }
