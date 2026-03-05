@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.writer
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{ArrayType, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
+import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
@@ -30,6 +31,7 @@ import za.co.absa.cobrix.spark.cobol.writer.WriterAst._
 import scala.collection.mutable
 
 class NestedRecordCombiner extends RecordCombiner {
+
   import NestedRecordCombiner._
 
   override def combine(df: DataFrame, cobolSchema: CobolSchema, readerParameters: ReaderParameters): RDD[Array[Byte]] = {
@@ -69,6 +71,8 @@ class NestedRecordCombiner extends RecordCombiner {
 }
 
 object NestedRecordCombiner {
+  private val log = LoggerFactory.getLogger(this.getClass)
+
   def getFieldDefinition(field: Primitive): String = {
     val pic = field.dataType.originalPic.getOrElse(field.dataType.pic)
 
@@ -127,69 +131,78 @@ object NestedRecordCombiner {
   }
 
   /**
-   * Recursively walks the copybook group and the Spark StructType in lockstep, producing
-   * [[WriterAst]] nodes whose getters extract the correct value from a [[org.apache.spark.sql.Row]].
-   *
-   * @param group   A copybook Group node whose children will be processed.
-   * @param schema  The Spark StructType that corresponds to `group`.
-   * @param getter  A function that, given the "outer" Row, returns the Row that belongs to this group.
-   * @return        A [[GroupField]] covering all non-filler, non-redefines children found in both
-   *                the copybook and the Spark schema.
-   */
-  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter): GroupField = {
+    * Recursively walks the copybook group and the Spark StructType in lockstep, producing
+    * [[WriterAst]] nodes whose getters extract the correct value from a [[org.apache.spark.sql.Row]].
+    *
+    * @param group  A copybook Group node whose children will be processed.
+    * @param schema The Spark StructType that corresponds to `group`.
+    * @param getter A function that, given the "outer" Row, returns the Row that belongs to this group.
+    * @param path   The path to the field
+    * @return A [[GroupField]] covering all non-filler, non-redefines children found in both
+    *         the copybook and the Spark schema.
+    */
+  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter, path: String = ""): GroupField = {
     val children = group.children.withFilter { stmt =>
       stmt.redefines.isEmpty
-    }.flatMap {
-      case s if s.isFiller => Some(Filler(s.binaryProperties.actualSize))
-      case p: Primitive => buildPrimitiveNode(p, schema)
-      case g: Group     => buildGroupNode(g, schema)
+    }.map {
+      case s if s.isFiller => Filler(s.binaryProperties.actualSize)
+      case p: Primitive    => buildPrimitiveNode(p, schema, path)
+      case g: Group        => buildGroupNode(g, schema, path)
     }
     GroupField(children.toSeq, group, getter)
   }
 
   /**
-   * Builds a [[WriterAst]] node for a primitive copybook field, using the field's index in the
-   * supplied Spark schema to create a getter function.
-   *
-   * Returns `None` when the field is absent from the schema (e.g. filtered out during reading).
-   */
-  private def buildPrimitiveNode(p: Primitive, schema: StructType): Option[WriterAst] = {
+    * Builds a [[WriterAst]] node for a primitive copybook field, using the field's index in the
+    * supplied Spark schema to create a getter function.
+    *
+    * Returns `None` when the field is absent from the schema (e.g. filtered out during reading).
+    */
+  private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String = ""): WriterAst = {
     val fieldName = p.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
     }.map(_._2)
 
     fieldIndexOpt.map { idx =>
+      if (p.encode.isEmpty) {
+        val fieldDefinition = getFieldDefinition(p)
+        throw new IllegalArgumentException(s"Field '${p.name}' does not have an encoding defined in the copybook. " +
+          s"'PIC $fieldDefinition' is not yet supported.")
+      }
       if (p.occurs.isDefined) {
         // Array of primitives
         PrimitiveArray(p, row => row.getAs[mutable.WrappedArray[AnyRef]](idx))
       } else {
         PrimitiveField(p, row => row.get(idx))
       }
+    }.getOrElse {
+      log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be skipped.")
+      Filler(p.binaryProperties.actualSize)
     }
   }
 
   /**
-   * Builds a [[WriterAst]] node for a group copybook field.  For groups with OCCURS the getter
-   * extracts an array; for plain groups it extracts the nested Row.  In both cases the children
-   * are built by recursing into the nested Spark StructType.
-   *
-   * Returns `None` when the field is absent from the schema.
-   */
-  private def buildGroupNode(g: Group, schema: StructType): Option[WriterAst] = {
+    * Builds a [[WriterAst]] node for a group copybook field.  For groups with OCCURS the getter
+    * extracts an array; for plain groups it extracts the nested Row.  In both cases the children
+    * are built by recursing into the nested Spark StructType.
+    *
+    * Returns `None` when the field is absent from the schema.
+    */
+  private def buildGroupNode(g: Group, schema: StructType, path: String = ""): WriterAst = {
     val fieldName = g.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
     }.map(_._2)
 
-    fieldIndexOpt.flatMap { idx =>
+    fieldIndexOpt.map { idx =>
       if (g.occurs.isDefined) {
         // Array of structs – the element type must be a StructType
         schema(idx).dataType match {
           case ArrayType(elementType: StructType, _) =>
-            val childAst = buildGroupField(g, elementType, row => row)
-            Some(GroupArray(childAst, g, row => row.getAs[mutable.WrappedArray[AnyRef]](idx)))
-          case other =>
+            val childAst = buildGroupField(g, elementType, row => row, s"$path${g.name}.")
+            GroupArray(childAst, g, row => row.getAs[mutable.WrappedArray[AnyRef]](idx))
+          case other                                 =>
             throw new IllegalArgumentException(
               s"Expected ArrayType(StructType) for group field '${g.name}' with OCCURS, but got $other")
         }
@@ -198,13 +211,16 @@ object NestedRecordCombiner {
         schema(idx).dataType match {
           case nestedSchema: StructType =>
             val childGetter: GroupGetter = row => row.getAs[Row](idx)
-            val childAst = buildGroupField(g, nestedSchema, childGetter)
-            Some(GroupField(childAst.children, g, childGetter))
-          case other =>
+            val childAst = buildGroupField(g, nestedSchema, childGetter, s"$path${g.name}.")
+            GroupField(childAst.children, g, childGetter)
+          case other                    =>
             throw new IllegalArgumentException(
               s"Expected StructType for group field '${g.name}', but got $other")
         }
       }
+    }.getOrElse {
+      log.error(s"Field '$path${g.name}' is not found in Spark schema. Will be skipped.")
+      Filler(g.binaryProperties.actualSize)
     }
   }
 
@@ -219,9 +235,9 @@ object NestedRecordCombiner {
     * supplied.  The row array may contain fewer elements than the copybook allows — any
     * missing tail elements are silently skipped, leaving those bytes as zeroes.
     *
-    * @param ast         The [[WriterAst]] node to process.
-    * @param row         The Spark [[Row]] from which values are read.
-    * @param ar          The target byte array (record buffer).
+    * @param ast           The [[WriterAst]] node to process.
+    * @param row           The Spark [[Row]] from which values are read.
+    * @param ar            The target byte array (record buffer).
     * @param currentOffset RDW prefix length (0 for fixed-length records, 4 for variable).
     */
   private def writeToBytes(ast: WriterAst, row: Row, ar: Array[Byte], currentOffset: Int): Int = {
@@ -252,9 +268,9 @@ object NestedRecordCombiner {
       case PrimitiveArray(cobolField, arrayGetter) =>
         val arr = arrayGetter(row)
         if (arr != null) {
-          val maxElements   = cobolField.arrayMaxSize          // copybook upper bound
-          val elementSize   = cobolField.binaryProperties.dataSize
-          val baseOffset    = currentOffset
+          val maxElements = cobolField.arrayMaxSize // copybook upper bound
+          val elementSize = cobolField.binaryProperties.dataSize
+          val baseOffset = currentOffset
           val elementsToWrite = math.min(arr.length, maxElements)
 
           var i = 0
@@ -264,7 +280,7 @@ object NestedRecordCombiner {
               val elementOffset = baseOffset + i * elementSize
               // fieldStartOffsetOverride is the absolute position; pass it so
               // setPrimitiveField does not add binaryProperties.offset on top again.
-              Copybook.setPrimitiveField(cobolField, ar, value, fieldStartOffsetOverride = elementOffset )
+              Copybook.setPrimitiveField(cobolField, ar, value, fieldStartOffsetOverride = elementOffset)
             }
             i += 1
           }
@@ -275,10 +291,9 @@ object NestedRecordCombiner {
       case GroupArray(groupField: GroupField, cobolField, arrayGetter) =>
         val arr = arrayGetter(row)
         if (arr != null) {
-          val maxElements   = cobolField.arrayMaxSize
-          // Single-element size: actualSize spans all elements, so divide by maxElements.
-          val elementSize   = cobolField.binaryProperties.dataSize
-          val baseOffset    = currentOffset
+          val maxElements = cobolField.arrayMaxSize // copybook upper bound
+          val elementSize = cobolField.binaryProperties.dataSize
+          val baseOffset = currentOffset
           val elementsToWrite = math.min(arr.length, maxElements)
 
           var i = 0
