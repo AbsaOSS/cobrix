@@ -34,6 +34,14 @@ class NestedRecordCombiner extends RecordCombiner {
 
   import NestedRecordCombiner._
 
+  /**
+    * Converts Spark DataFrame to the RDD with data in mainframe format as arrays of bytes, each array being a record.
+    *
+    * @param df               The input DataFrame
+    * @param cobolSchema      The output COBOL schema
+    * @param readerParameters The reader properties which are actually writer properties parsed as spark-cobol options
+    * @return The RDD of records in mainframe format
+    */
   override def combine(df: DataFrame, cobolSchema: CobolSchema, readerParameters: ReaderParameters): RDD[Array[Byte]] = {
     val hasRdw = readerParameters.recordFormat == RecordFormat.VariableLength
     val isRdwBigEndian = readerParameters.isRdwBigEndian
@@ -64,15 +72,25 @@ class NestedRecordCombiner extends RecordCombiner {
         s"RDW length $recordLengthLong exceeds ${Int.MaxValue} and cannot be encoded safely."
       )
     }
-    val recordLength = recordLengthLong.toInt
-
-    processRDD(df.rdd, cobolSchema.copybook, df.schema, size, recordLength, startOffset, hasRdw, isRdwBigEndian)
+    processRDD(df.rdd, cobolSchema.copybook, df.schema, size, adjustment1 + adjustment2, startOffset, hasRdw, isRdwBigEndian, readerParameters.variableSizeOccurs)
   }
 }
 
 object NestedRecordCombiner {
   private val log = LoggerFactory.getLogger(this.getClass)
 
+  /**
+    * Generates a field definition string containing the PIC clause and USAGE clause for a primitive COBOL field.
+    *
+    * This method extracts the picture clause (PIC) and usage information from the field's data type
+    * and combines them into a single definition string. For integral and decimal types with compact
+    * encoding, it includes the USAGE clause; otherwise, the default DISPLAY usage is assumed or omitted.
+    *
+    * The purpose is to render COBOL field name and type in exceptions and log messages.
+    *
+    * @param field The primitive field whose definition string should be generated
+    * @return A string containing the PIC clause and optional USAGE clause, with any trailing whitespace trimmed
+    */
   def getFieldDefinition(field: Primitive): String = {
     val pic = field.dataType.originalPic.getOrElse(field.dataType.pic)
 
@@ -85,41 +103,101 @@ object NestedRecordCombiner {
     s"$pic $usage".trim
   }
 
+  /**
+    * Constructs a writer AST (Abstract Syntax Tree) from a copybook and Spark schema for serialization purposes.
+    *
+    * This method creates a hierarchical structure of WriterAst nodes that maps the copybook structure to the
+    * corresponding Spark schema. The resulting GroupField can be used to serialize Spark Rows into binary format
+    * according to the copybook specification. The AST contains getter functions that extract values from Rows
+    * and metadata needed to write those values to the correct byte positions in the output buffer.
+    *
+    * The purpose of WriterAst class hierarchy is to provide memory and CPU efficient way of creating binary
+    * records from Spark dataframes. It links Cobol schema and Spark schema in a single tree.
+    *
+    * @param copybook The copybook definition describing the binary record layout and field specifications
+    * @param schema   The Spark StructType schema that corresponds to the structure of the data to be written
+    * @return A GroupField representing the root of the writer AST, containing all non-filler, non-redefines
+    *         fields with their associated getter functions and position information for binary serialization
+    */
   def constructWriterAst(copybook: Copybook, schema: StructType): GroupField = {
     buildGroupField(getAst(copybook), schema, row => row, "", new mutable.HashMap[String, DependingOnField]())
   }
 
-  def processRDD(rdd: RDD[Row], copybook: Copybook, schema: StructType, recordSize: Int, recordLengthHeader: Int, startOffset: Int, hasRdw: Boolean, isRdwBigEndian: Boolean): RDD[Array[Byte]] = {
+  /**
+    * Processes an RDD of Spark Rows and converts them into an RDD of byte arrays according to the copybook specification.
+    *
+    * The resulting RDD can then be written to storage as files in mainframe format (usually, EBCDIC).
+    *
+    * Each Row is transformed into a fixed or variable-length byte array representation based on the copybook layout.
+    *
+    * Variable-record-length records supported are ones that have RDW headers (big-endian or little-endian).
+    * For variable-length records with OCCURS DEPENDING ON, the output may be trimmed to the actual bytes written.
+    *
+    * @param rdd                The input RDD containing Spark Rows to be converted to binary format
+    * @param copybook           The copybook definition that describes the binary record layout and field specifications
+    * @param schema             The Spark StructType schema that corresponds to the structure of the input Rows
+    * @param recordSize         The maximum size in bytes allocated for each output record
+    * @param recordLengthAdj    An adjustment value added to the bytes written when computing the RDW length field
+    * @param startOffset        The byte offset at which data writing should begin, typically 0 for fixed-length or 4 for RDW records
+    * @param hasRdw             A flag indicating whether to prepend a Record Descriptor Word header to each output record
+    * @param isRdwBigEndian     A flag indicating the byte order for the RDW header, true for big-endian, false for little-endian
+    * @param variableSizeOccurs A flag indicating whether OCCURS DEPENDING ON fields should use actual element counts rather than maximum sizes
+    * @return An RDD of byte arrays, where each array represents one record in binary format according to the copybook specification
+    */
+  private[cobrix] def processRDD(rdd: RDD[Row],
+                                 copybook: Copybook,
+                                 schema: StructType,
+                                 recordSize: Int,
+                                 recordLengthAdj: Int,
+                                 startOffset: Int,
+                                 hasRdw: Boolean,
+                                 isRdwBigEndian: Boolean,
+                                 variableSizeOccurs: Boolean): RDD[Array[Byte]] = {
     val writerAst = constructWriterAst(copybook, schema)
 
     rdd.mapPartitions { rows =>
       rows.map { row =>
         val ar = new Array[Byte](recordSize)
 
+        val bytesWritten = writeToBytes(writerAst, row, ar, startOffset, variableSizeOccurs)
+
         if (hasRdw) {
+          val recordLengthToWriteToRDW = bytesWritten + recordLengthAdj
+
           if (isRdwBigEndian) {
-            ar(0) = ((recordLengthHeader >> 8) & 0xFF).toByte
-            ar(1) = (recordLengthHeader & 0xFF).toByte
+            ar(0) = ((recordLengthToWriteToRDW >> 8) & 0xFF).toByte
+            ar(1) = (recordLengthToWriteToRDW & 0xFF).toByte
             // The last two bytes are reserved and defined by IBM as binary zeros on all platforms.
             ar(2) = 0
             ar(3) = 0
           } else {
-            ar(0) = (recordLengthHeader & 0xFF).toByte
-            ar(1) = ((recordLengthHeader >> 8) & 0xFF).toByte
+            ar(0) = (recordLengthToWriteToRDW & 0xFF).toByte
+            ar(1) = ((recordLengthToWriteToRDW >> 8) & 0xFF).toByte
             // This is non-standard. But so are little-endian RDW headers.
             // As an advantage, it has no effect for small records but adds support for big records (> 64KB).
-            ar(2) = ((recordLengthHeader >> 16) & 0xFF).toByte
-            ar(3) = ((recordLengthHeader >> 24) & 0xFF).toByte
+            ar(2) = ((recordLengthToWriteToRDW >> 16) & 0xFF).toByte
+            ar(3) = ((recordLengthToWriteToRDW >> 24) & 0xFF).toByte
           }
         }
 
-        writeToBytes(writerAst, row, ar, startOffset)
-
-        ar
+        if (!variableSizeOccurs || recordSize == bytesWritten + startOffset) {
+          ar
+        } else {
+          java.util.Arrays.copyOf(ar, bytesWritten + startOffset)
+        }
       }
     }
   }
 
+  /**
+    * Retrieves the appropriate AST (Abstract Syntax Tree) group from a copybook.
+    * If the root AST has exactly one child and that child is a Group, returns that child.
+    * Otherwise, returns the root AST itself. This normalization ensures consistent handling
+    * of copybook structures regardless of whether they have a single top-level group or multiple elements.
+    *
+    * @param copybook The copybook object containing the AST structure to extract from
+    * @return The normalized Group representing the copybook structure, either the single child group or the root AST
+    */
   def getAst(copybook: Copybook): Group = {
     val rootAst = copybook.ast
 
@@ -134,10 +212,11 @@ object NestedRecordCombiner {
     * Recursively walks the copybook group and the Spark StructType in lockstep, producing
     * [[WriterAst]] nodes whose getters extract the correct value from a [[org.apache.spark.sql.Row]].
     *
-    * @param group  A copybook Group node whose children will be processed.
-    * @param schema The Spark StructType that corresponds to `group`.
-    * @param getter A function that, given the "outer" Row, returns the Row that belongs to this group.
-    * @param path   The path to the field
+    * @param group       A copybook Group node whose children will be processed.
+    * @param schema      The Spark StructType that corresponds to `group`.
+    * @param getter      A function that, given the "outer" Row, returns the Row that belongs to this group.
+    * @param path        The path to the field
+    * @param dependeeMap A map of field names to their corresponding DependingOnField specs, used to resolve dependencies for OCCURS DEPENDING ON fields.
     * @return A [[GroupField]] covering all non-filler, non-redefines children found in both
     *         the copybook and the Spark schema.
     */
@@ -159,6 +238,19 @@ object NestedRecordCombiner {
     * Returns a filler when the field is absent from the schema (e.g. filtered out during reading).
     */
   private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): WriterAst = {
+    def addDependee(): DependingOnField = {
+      val spec = DependingOnField(p, p.binaryProperties.offset)
+      val uppercaseName = p.name.toUpperCase()
+      if (dependeeMap.contains(uppercaseName)) {
+        throw new IllegalArgumentException(s"Duplicate field name '${p.name}' found in copybook. " +
+          s"Field names must be unique (case-insensitive) when OCCURS DEPENDING ON is used. " +
+          s"Already found a dependee field with the same name at line ${dependeeMap(uppercaseName).cobolField.lineNumber}, " +
+          s"current field line number: ${p.lineNumber}.")
+      }
+      dependeeMap += (p.name.toUpperCase -> spec)
+      spec
+    }
+
     val fieldName = p.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
@@ -180,9 +272,7 @@ object NestedRecordCombiner {
         PrimitiveArray(p, row => row.getAs[mutable.WrappedArray[AnyRef]](idx), dependingOnField)
       } else {
         if (p.isDependee) {
-          val spec = DependingOnField(p, p.binaryProperties.offset)
-          dependeeMap += (p.name.toUpperCase -> spec)
-          PrimitiveDependeeField(spec)
+          PrimitiveDependeeField(addDependee())
         } else {
           PrimitiveField(p, row => row.get(idx))
         }
@@ -190,9 +280,7 @@ object NestedRecordCombiner {
     }.getOrElse {
       // Dependee fields need not to be defines in Spark schema.
       if (p.isDependee) {
-        val spec = DependingOnField(p, p.binaryProperties.offset)
-        dependeeMap += (p.name.toUpperCase -> spec)
-        PrimitiveDependeeField(spec)
+        PrimitiveDependeeField(addDependee())
       } else {
         log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
         Filler(p.binaryProperties.actualSize)
@@ -258,12 +346,15 @@ object NestedRecordCombiner {
     * supplied.  The row array may contain fewer elements than the copybook allows — any
     * missing tail elements are silently skipped, leaving those bytes as zeroes.
     *
-    * @param ast           The [[WriterAst]] node to process.
-    * @param row           The Spark [[Row]] from which values are read.
-    * @param ar            The target byte array (record buffer).
-    * @param currentOffset RDW prefix length (0 for fixed-length records, 4 for variable).
+    * @param ast                  The [[WriterAst]] node to process.
+    * @param row                  The Spark [[Row]] from which values are read.
+    * @param ar                   The target byte array (record buffer).
+    * @param currentOffset        RDW prefix length (0 for fixed-length records, 4 for variable).
+    * @param variableLengthOccurs A flag indicating whether size of OCCURS DEPENDING ON should match the number of elements
+    *                             and not always fixed.
+    * @throws IllegalArgumentException if a field value cannot be encoded according to the copybook definition.
     */
-  private def writeToBytes(ast: WriterAst, row: Row, ar: Array[Byte], currentOffset: Int): Int = {
+  private def writeToBytes(ast: WriterAst, row: Row, ar: Array[Byte], currentOffset: Int, variableLengthOccurs: Boolean): Int = {
     ast match {
       // ── Filler  ──────────────────────────────────────────────────────────────
       case Filler(size) => size
@@ -286,11 +377,14 @@ object NestedRecordCombiner {
         val nestedRow = getter(row)
         if (nestedRow != null) {
           var writtenBytes = 0
-          children.foreach(child =>
-            writtenBytes += writeToBytes(child, nestedRow, ar, currentOffset + writtenBytes)
-          )
+          children.foreach { child =>
+            val written = writeToBytes(child, nestedRow, ar, currentOffset + writtenBytes, variableLengthOccurs)
+            writtenBytes += written
+          }
+          writtenBytes
+        } else {
+          cobolField.binaryProperties.actualSize
         }
-        cobolField.binaryProperties.actualSize
 
       // ── Array of primitives  (OCCURS on a primitive field) ───────────────────
       case PrimitiveArray(cobolField, arrayGetter, dependingOn) =>
@@ -315,8 +409,22 @@ object NestedRecordCombiner {
           dependingOn.foreach(spec =>
             Copybook.setPrimitiveField(spec.cobolField, ar, elementsToWrite, fieldStartOffsetOverride = spec.baseOffset)
           )
+          if (variableLengthOccurs) {
+            // For variable-length OCCURS, the actual size is determined by the number of elements written.
+            elementSize * elementsToWrite
+          } else {
+            cobolField.binaryProperties.actualSize
+          }
+        } else {
+          if (variableLengthOccurs) {
+            dependingOn.foreach(spec =>
+              Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
+            )
+            0
+          } else {
+            cobolField.binaryProperties.actualSize
+          }
         }
-        cobolField.binaryProperties.actualSize
 
       // ── Array of groups  (OCCURS on a group field) ───────────────────────────
       case GroupArray(groupField: GroupField, cobolField, arrayGetter, dependingOn) =>
@@ -334,15 +442,29 @@ object NestedRecordCombiner {
               // Build an adjusted element offset so that each child's base offset
               // (which is relative to the group's base) lands at the correct position in ar.
               val elementStartOffset = baseOffset + i * elementSize
-              writeToBytes(groupField, elementRow, ar, elementStartOffset)
+              writeToBytes(groupField, elementRow, ar, elementStartOffset, variableLengthOccurs)
             }
             i += 1
           }
           dependingOn.foreach(spec =>
             Copybook.setPrimitiveField(spec.cobolField, ar, elementsToWrite, fieldStartOffsetOverride = spec.baseOffset)
           )
+          if (variableLengthOccurs) {
+            // For variable-length OCCURS, the actual size is determined by the number of elements written.
+            elementSize * elementsToWrite
+          } else {
+            cobolField.binaryProperties.actualSize
+          }
+        } else {
+          if (variableLengthOccurs) {
+            dependingOn.foreach(spec =>
+              Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
+            )
+            0
+          } else {
+            cobolField.binaryProperties.actualSize
+          }
         }
-        cobolField.binaryProperties.actualSize
     }
   }
 }

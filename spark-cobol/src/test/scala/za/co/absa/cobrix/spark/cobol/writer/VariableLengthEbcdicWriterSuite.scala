@@ -146,15 +146,18 @@ class VariableLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase wit
             .option("copybook_contents", copybookContents)
             .option("record_format", "FB")           // Not supported
             .option("variable_size_occurs", "true")  // Not supported
+            .option("occurs_mappings", "{\"DETAIL1\":{\"A\":0,\"B\":1},\"DETAIL2\":{\"A\":1,\"B\":2}}")
             .option("file_start_offset", "2")        // Not supported
             .option("record_end_offset", "4")        // Not supported
+            .option("segment_field", "A")
             .save(path.toString)
         }
 
         assert(exception.getMessage.contains("Writer validation issues: Only 'F' and 'V' values for 'record_format' are supported for writing, provided value: 'FB';"))
-        assert(exception.getMessage.contains("Variable size OCCURS ('variable_size_occurs = true') is not supported for writing"))
+        assert(exception.getMessage.contains("OCCURS mapping option ('occurs_mappings') is not supported for writing"))
         assert(exception.getMessage.contains("'record_start_offset' and 'record_end_offset' are not supported for writing"))
         assert(exception.getMessage.contains("'file_start_offset' and 'file_end_offset' are not supported for writing"))
+        assert(exception.getMessage.contains("Multi-segment options ('segment_field', 'segment_filter', etc) are not supported for writing"))
       }
     }
   }

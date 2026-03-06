@@ -124,8 +124,8 @@ object CobolParametersValidator {
         s"provided value: '${readerParameters.recordFormat}'"
     }
 
-    if (readerParameters.variableSizeOccurs) {
-      issues += "Variable size OCCURS ('variable_size_occurs = true') is not supported for writing"
+    if (readerParameters.occursMappings.nonEmpty) {
+      issues += "OCCURS mapping option ('occurs_mappings') is not supported for writing"
     }
 
     if (readerParameters.startOffset != 0 || readerParameters.endOffset != 0) {
@@ -134,6 +134,10 @@ object CobolParametersValidator {
 
     if (readerParameters.fileStartOffset != 0 || readerParameters.fileEndOffset != 0) {
       issues += "'file_start_offset' and 'file_end_offset' are not supported for writing"
+    }
+
+    if (readerParameters.multisegment.isDefined) {
+      issues += "Multi-segment options ('segment_field', 'segment_filter', etc) are not supported for writing"
     }
 
     if (issues.nonEmpty) {
