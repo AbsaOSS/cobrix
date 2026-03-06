@@ -156,7 +156,7 @@ object NestedRecordCombiner {
     * Builds a [[WriterAst]] node for a primitive copybook field, using the field's index in the
     * supplied Spark schema to create a getter function.
     *
-    * Returns `None` when the field is absent from the schema (e.g. filtered out during reading).
+    * Returns a filler when the field is absent from the schema (e.g. filtered out during reading).
     */
   private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String = ""): WriterAst = {
     val fieldName = p.name
@@ -177,7 +177,7 @@ object NestedRecordCombiner {
         PrimitiveField(p, row => row.get(idx))
       }
     }.getOrElse {
-      log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be skipped.")
+      log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
       Filler(p.binaryProperties.actualSize)
     }
   }
@@ -187,7 +187,7 @@ object NestedRecordCombiner {
     * extracts an array; for plain groups it extracts the nested Row.  In both cases the children
     * are built by recursing into the nested Spark StructType.
     *
-    * Returns `None` when the field is absent from the schema.
+    * Returns a filler when the field is absent from the schema.
     */
   private def buildGroupNode(g: Group, schema: StructType, path: String = ""): WriterAst = {
     val fieldName = g.name
@@ -219,7 +219,7 @@ object NestedRecordCombiner {
         }
       }
     }.getOrElse {
-      log.error(s"Field '$path${g.name}' is not found in Spark schema. Will be skipped.")
+      log.error(s"Field '$path${g.name}' is not found in Spark schema. Will be replaced by filler.")
       Filler(g.binaryProperties.actualSize)
     }
   }
