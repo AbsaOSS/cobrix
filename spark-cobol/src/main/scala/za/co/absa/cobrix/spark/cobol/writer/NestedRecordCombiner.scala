@@ -86,7 +86,7 @@ object NestedRecordCombiner {
   }
 
   def constructWriterAst(copybook: Copybook, schema: StructType): GroupField = {
-    buildGroupField(getAst(copybook), schema, row => row)
+    buildGroupField(getAst(copybook), schema, row => row, "", new mutable.HashMap[String, DependingOnField]())
   }
 
   def processRDD(rdd: RDD[Row], copybook: Copybook, schema: StructType, recordSize: Int, recordLengthHeader: Int, startOffset: Int, hasRdw: Boolean, isRdwBigEndian: Boolean): RDD[Array[Byte]] = {
@@ -141,13 +141,13 @@ object NestedRecordCombiner {
     * @return A [[GroupField]] covering all non-filler, non-redefines children found in both
     *         the copybook and the Spark schema.
     */
-  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter, path: String = ""): GroupField = {
+  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): GroupField = {
     val children = group.children.withFilter { stmt =>
       stmt.redefines.isEmpty
     }.map {
       case s if s.isFiller => Filler(s.binaryProperties.actualSize)
-      case p: Primitive    => buildPrimitiveNode(p, schema, path)
-      case g: Group        => buildGroupNode(g, schema, path)
+      case p: Primitive    => buildPrimitiveNode(p, schema, path, dependeeMap)
+      case g: Group        => buildGroupNode(g, schema, path, dependeeMap)
     }
     GroupField(children.toSeq, group, getter)
   }
@@ -158,7 +158,7 @@ object NestedRecordCombiner {
     *
     * Returns a filler when the field is absent from the schema (e.g. filtered out during reading).
     */
-  private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String = ""): WriterAst = {
+  private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): WriterAst = {
     val fieldName = p.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
@@ -172,13 +172,31 @@ object NestedRecordCombiner {
       }
       if (p.occurs.isDefined) {
         // Array of primitives
-        PrimitiveArray(p, row => row.getAs[mutable.WrappedArray[AnyRef]](idx))
+        val dependingOnField = p.dependingOn.map { dependingOn =>
+          dependeeMap.getOrElse(dependingOn.toUpperCase, throw new IllegalStateException(
+            s"Array field '${p.name}' depends on '$dependingOn' which is not found among previously processed fields."
+          ))
+        }
+        PrimitiveArray(p, row => row.getAs[mutable.WrappedArray[AnyRef]](idx), dependingOnField)
       } else {
-        PrimitiveField(p, row => row.get(idx))
+        if (p.isDependee) {
+          val spec = DependingOnField(p, p.binaryProperties.offset)
+          dependeeMap += (p.name.toUpperCase -> spec)
+          PrimitiveDependeeField(spec)
+        } else {
+          PrimitiveField(p, row => row.get(idx))
+        }
       }
     }.getOrElse {
-      log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
-      Filler(p.binaryProperties.actualSize)
+      // Dependee fields need not to be defines in Spark schema.
+      if (p.isDependee) {
+        val spec = DependingOnField(p, p.binaryProperties.offset)
+        dependeeMap += (p.name.toUpperCase -> spec)
+        PrimitiveDependeeField(spec)
+      } else {
+        log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
+        Filler(p.binaryProperties.actualSize)
+      }
     }
   }
 
@@ -189,7 +207,7 @@ object NestedRecordCombiner {
     *
     * Returns a filler when the field is absent from the schema.
     */
-  private def buildGroupNode(g: Group, schema: StructType, path: String = ""): WriterAst = {
+  private def buildGroupNode(g: Group, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): WriterAst = {
     val fieldName = g.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
@@ -200,8 +218,13 @@ object NestedRecordCombiner {
         // Array of structs – the element type must be a StructType
         schema(idx).dataType match {
           case ArrayType(elementType: StructType, _) =>
-            val childAst = buildGroupField(g, elementType, row => row, s"$path${g.name}.")
-            GroupArray(childAst, g, row => row.getAs[mutable.WrappedArray[AnyRef]](idx))
+            val dependingOnField = g.dependingOn.map { dependingOn =>
+              dependeeMap.getOrElse(dependingOn.toUpperCase, throw new IllegalStateException(
+                s"Array group '${g.name}' depends on '$dependingOn' which is not found among previously processed fields."
+              ))
+            }
+            val childAst = buildGroupField(g, elementType, row => row, s"$path${g.name}.", dependeeMap)
+            GroupArray(childAst, g, row => row.getAs[mutable.WrappedArray[AnyRef]](idx), dependingOnField)
           case other                                 =>
             throw new IllegalArgumentException(
               s"Expected ArrayType(StructType) for group field '${g.name}' with OCCURS, but got $other")
@@ -211,7 +234,7 @@ object NestedRecordCombiner {
         schema(idx).dataType match {
           case nestedSchema: StructType =>
             val childGetter: GroupGetter = row => row.getAs[Row](idx)
-            val childAst = buildGroupField(g, nestedSchema, childGetter, s"$path${g.name}.")
+            val childAst = buildGroupField(g, nestedSchema, childGetter, s"$path${g.name}.", dependeeMap)
             GroupField(childAst.children, g, childGetter)
           case other                    =>
             throw new IllegalArgumentException(
@@ -242,7 +265,7 @@ object NestedRecordCombiner {
     */
   private def writeToBytes(ast: WriterAst, row: Row, ar: Array[Byte], currentOffset: Int): Int = {
     ast match {
-      // ── Filler  ──────────────────────────────────────────────────────
+      // ── Filler  ──────────────────────────────────────────────────────────────
       case Filler(size) => size
 
       // ── Plain primitive ──────────────────────────────────────────────────────
@@ -252,6 +275,11 @@ object NestedRecordCombiner {
           Copybook.setPrimitiveField(cobolField, ar, value, 0, currentOffset)
         }
         cobolField.binaryProperties.actualSize
+
+      // ── Primitive which has an OCCURS DEPENDS ON ─────────────────────────────
+      case PrimitiveDependeeField(spec) =>
+        spec.baseOffset = currentOffset
+        spec.cobolField.binaryProperties.actualSize
 
       // ── Plain nested group ───────────────────────────────────────────────────
       case GroupField(children, cobolField, getter) =>
@@ -265,7 +293,7 @@ object NestedRecordCombiner {
         cobolField.binaryProperties.actualSize
 
       // ── Array of primitives  (OCCURS on a primitive field) ───────────────────
-      case PrimitiveArray(cobolField, arrayGetter) =>
+      case PrimitiveArray(cobolField, arrayGetter, dependingOn) =>
         val arr = arrayGetter(row)
         if (arr != null) {
           val maxElements = cobolField.arrayMaxSize // copybook upper bound
@@ -284,11 +312,14 @@ object NestedRecordCombiner {
             }
             i += 1
           }
+          dependingOn.foreach(spec =>
+            Copybook.setPrimitiveField(spec.cobolField, ar, elementsToWrite, fieldStartOffsetOverride = spec.baseOffset)
+          )
         }
         cobolField.binaryProperties.actualSize
 
       // ── Array of groups  (OCCURS on a group field) ───────────────────────────
-      case GroupArray(groupField: GroupField, cobolField, arrayGetter) =>
+      case GroupArray(groupField: GroupField, cobolField, arrayGetter, dependingOn) =>
         val arr = arrayGetter(row)
         if (arr != null) {
           val maxElements = cobolField.arrayMaxSize // copybook upper bound
@@ -307,6 +338,9 @@ object NestedRecordCombiner {
             }
             i += 1
           }
+          dependingOn.foreach(spec =>
+            Copybook.setPrimitiveField(spec.cobolField, ar, elementsToWrite, fieldStartOffsetOverride = spec.baseOffset)
+          )
         }
         cobolField.binaryProperties.actualSize
     }

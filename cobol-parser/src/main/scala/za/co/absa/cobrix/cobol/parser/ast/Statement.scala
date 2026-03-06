@@ -18,10 +18,6 @@ package za.co.absa.cobrix.cobol.parser.ast
 
 /** Trait for Cobol copybook AST element (a statement). */
 trait Statement {
-  val camelCased: String = {
-    camelCase(name)
-  }
-
   /** Returns the level of the AST element */
   def level: Int
 
@@ -94,15 +90,7 @@ trait Statement {
 
   /** Returns a string representation of the AST element */
   override def toString: String = {
-    s"${" " * 2 * level}$camelCased ${camelCase(redefines.getOrElse(""))}"
-  }
-
-  /** Returns this the name of this fields as a camel cased string */
-  def camelCase(s: String): String = {
-    s.replace(".", "")
-      .split("-")
-      .map(c => c.toLowerCase.capitalize)
-      .mkString
+    s"${" " * 2 * level}$name ${redefines.getOrElse("")}"
   }
 
   /** Returns the original AST element with updated binary properties */

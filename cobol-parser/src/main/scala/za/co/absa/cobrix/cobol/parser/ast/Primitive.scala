@@ -103,7 +103,7 @@ case class Primitive(
 
   /** Returns a string representation of the field */
   override def toString: String = {
-    s"${" " * 2 * level}$camelCased ${camelCase(redefines.getOrElse(""))} $dataType"
+    s"${" " * 2 * level}$name ${redefines.getOrElse("")} $dataType"
   }
 
   /** Returns true if the field is a child segment */
