@@ -416,14 +416,10 @@ object NestedRecordCombiner {
             cobolField.binaryProperties.actualSize
           }
         } else {
-          if (variableLengthOccurs) {
-            dependingOn.foreach(spec =>
-              Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
-            )
-            0
-          } else {
-            cobolField.binaryProperties.actualSize
-          }
+          dependingOn.foreach(spec =>
+            Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
+          )
+          if (variableLengthOccurs) 0 else cobolField.binaryProperties.actualSize
         }
 
       // ── Array of groups  (OCCURS on a group field) ───────────────────────────
@@ -456,14 +452,10 @@ object NestedRecordCombiner {
             cobolField.binaryProperties.actualSize
           }
         } else {
-          if (variableLengthOccurs) {
-            dependingOn.foreach(spec =>
-              Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
-            )
-            0
-          } else {
-            cobolField.binaryProperties.actualSize
-          }
+          dependingOn.foreach(spec =>
+            Copybook.setPrimitiveField(spec.cobolField, ar, 0, fieldStartOffsetOverride = spec.baseOffset)
+          )
+          if (variableLengthOccurs) 0 else cobolField.binaryProperties.actualSize
         }
     }
   }
