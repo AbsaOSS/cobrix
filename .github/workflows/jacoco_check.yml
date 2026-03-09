@@ -95,10 +95,10 @@ jobs:
         uses: actions/github-script@v6.4.1
         with:
           script: |
-            core.setFailed('Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}% for 'cobol-parser'!')
+            core.setFailed("Changed files coverage is less than ${{ matrix.changedCobolParserOverride }}% for 'cobol-parser'!")
       - name: Fail PR if changed files coverage for 'spark-cobol' is less than ${{ matrix.changed }}%
         if: ${{ steps.jacoco.outputs.coverage-changed-files < matrix.changed }}
         uses: actions/github-script@v6.4.1
         with:
           script: |
-            core.setFailed('Changed files coverage is less than ${{ matrix.changed }}% for 'spark-cobol!')
+            core.setFailed("Changed files coverage is less than ${{ matrix.changed }}% for 'spark-cobol'!")
