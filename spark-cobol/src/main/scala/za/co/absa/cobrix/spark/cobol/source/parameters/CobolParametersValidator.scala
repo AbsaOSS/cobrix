@@ -18,7 +18,6 @@ package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
-import org.apache.spark.SparkConf
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
@@ -53,27 +52,6 @@ object CobolParametersValidator {
     if (params.copybookPath.isEmpty && params.copybookContent.isEmpty && params.multiCopybookPath.isEmpty) {
       throw new IllegalArgumentException("Either, copybook path or copybook content must be specified.")
     }
-  }
-
-  /**
-    * Validates the provided Spark and Hadoop configuration objects and throws an exception
-    * if any inconsistency or issue is detected in the configurations.
-    *
-    * The method extracts essential parameters from the Spark configuration, validates these
-    * parameters alongside the Hadoop configuration object, and ensures that all required
-    * settings are present and correct. Conflicting or missing configurations are identified
-    * and result in exceptions being thrown.
-    *
-    * @param sparkConf  the Spark configuration object containing parameters necessary for
-    *                   this validation step.
-    * @param hadoopConf the Hadoop configuration object used to perform validation tasks
-    *                   related to Hadoop filesystem operations.
-    * @return this method does not return any value. It throws an exception if any validation fails.
-    */
-  def validateOrThrow(sparkConf: SparkConf, hadoopConf: Configuration): Unit = {
-    val parameters = Map[String, String](PARAM_COPYBOOK_PATH -> sparkConf.get(PARAM_COPYBOOK_PATH), PARAM_SOURCE_PATH -> sparkConf.get
-    (PARAM_SOURCE_PATH))
-    validateOrThrow(parameters, hadoopConf)
   }
 
   /**
