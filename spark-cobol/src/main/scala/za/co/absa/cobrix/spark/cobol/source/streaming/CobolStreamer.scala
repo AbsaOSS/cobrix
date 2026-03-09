@@ -20,12 +20,8 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 import org.apache.spark.streaming.StreamingContext
 import org.apache.spark.streaming.dstream.DStream
-import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
-import za.co.absa.cobrix.cobol.parser.encoding.codepage.CodePage
-import za.co.absa.cobrix.cobol.parser.policies.{FillerNamingPolicy, StringTrimmingPolicy}
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
 import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
@@ -43,10 +39,15 @@ object CobolStreamer {
   }
   
   implicit class Deserializer(@transient val ssc: StreamingContext) extends Serializable {
+    val parameters: Map[String, String] = Map[String, String](
+      PARAM_COPYBOOK_PATH -> ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH),
+      PARAM_SOURCE_PATH -> ssc.sparkContext.getConf.get(PARAM_SOURCE_PATH)
+    )
 
-    CobolParametersValidator.validateOrThrow(ssc.sparkContext.getConf, ssc.sparkContext.hadoopConfiguration)
-    val reader = CobolStreamer.getReader(ssc)
-    
+    CobolParametersValidator.validateOrThrow(parameters, ssc.sparkContext.hadoopConfiguration)
+
+    val reader: FixedLenReader = CobolStreamer.getReader(ssc)
+
     def cobolStream(): DStream[Row] = {
       ssc
         .binaryRecordsStream(ssc.sparkContext.getConf.get(PARAM_SOURCE_PATH), reader.getCobolSchema.getRecordSize)

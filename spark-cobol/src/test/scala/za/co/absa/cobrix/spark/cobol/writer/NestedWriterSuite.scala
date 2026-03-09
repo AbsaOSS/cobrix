@@ -51,11 +51,83 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
       |            10  CITY          PIC X(10).
       |         05  cnt-2             PIC 9(1).
       |         05  PEOPLE
-      |                 OCCURS 0 TO 3 DEPENDING ON CNT-2.
+      |                 OCCURS 0 TO 3 DEPENDING ON cnt-2.
       |            10 NAME           PIC X(14).
       |            10 FILLER         PIC X(1).
       |            10 PHONE-NUMBER   PIC X(12).
       |""".stripMargin
+
+  "getFieldDefinition" should {
+    "support alphanumeric PIC" in {
+      val copybookContents =
+        """       01  RECORD.
+            05  NAME       PIC X(10).
+        """
+
+      val copybook = CopybookParser.parse(copybookContents)
+      val nameField = copybook.getFieldByName("NAME").asInstanceOf[Primitive]
+
+      val actual = NestedRecordCombiner.getFieldDefinition(nameField)
+
+      assert(actual == "X(10)")
+    }
+
+    "support integral with COMP" in {
+      val copybookContents =
+        """       01  RECORD.
+            05  NAME       PIC 9(10) USAGE IS COMP.
+        """
+
+      val copybook = CopybookParser.parse(copybookContents)
+      val nameField = copybook.getFieldByName("NAME").asInstanceOf[Primitive]
+
+      val actual = NestedRecordCombiner.getFieldDefinition(nameField)
+
+      assert(actual == "9(10) COMP-4")
+    }
+
+    "support integral DISPLAY" in {
+      val copybookContents =
+        """       01  RECORD.
+            05  NAME       PIC 9(10).
+        """
+
+      val copybook = CopybookParser.parse(copybookContents)
+      val nameField = copybook.getFieldByName("NAME").asInstanceOf[Primitive]
+
+      val actual = NestedRecordCombiner.getFieldDefinition(nameField)
+
+      assert(actual == "9(10) USAGE IS DISPLAY")
+    }
+
+    "support decimal with COMP" in {
+      val copybookContents =
+        """       01  RECORD.
+            05  NAME       PIC S9(5)V99 USAGE IS COMP.
+        """
+
+      val copybook = CopybookParser.parse(copybookContents)
+      val nameField = copybook.getFieldByName("NAME").asInstanceOf[Primitive]
+
+      val actual = NestedRecordCombiner.getFieldDefinition(nameField)
+
+      assert(actual == "S9(5)V99 COMP-4")
+    }
+
+    "support decimal DISPLAY" in {
+      val copybookContents =
+        """       01  RECORD.
+            05  NAME       PIC S9(5)V99 USAGE IS DISPLAY.
+        """
+
+      val copybook = CopybookParser.parse(copybookContents)
+      val nameField = copybook.getFieldByName("NAME").asInstanceOf[Primitive]
+
+      val actual = NestedRecordCombiner.getFieldDefinition(nameField)
+
+      assert(actual == "S9(5)V99 USAGE IS DISPLAY")
+    }
+  }
 
   "writer" should {
     "write the dataframe with OCCURS" in {
@@ -287,6 +359,75 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
           println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
           println(s"Actual bytes:   ${bytes.map("%02X" format _).mkString(" ")}")
           //println(s"Actual bytes:   ${bytes.map("0x%02X" format _).mkString(", ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+
+    "write the dataframe with OCCURS DEPENDING ON and variable length occurs and null values" in {
+      val exampleJsons = Seq(
+        """{"ID":1,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US","CITY":"New York"}}""",
+        """{"ID":2,"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User","PHONE_NUMBER":"555-1235"}]}"""
+      )
+
+      import spark.implicits._
+
+      val df = spark.read.json(exampleJsons.toDS())
+        .select("ID", "NUMBERS", "PLACE", "PEOPLE")
+
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val path = new Path(tempDir, "writer3")
+
+        df.coalesce(1)
+          .orderBy("id")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithDependingOn)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "false")
+          .option("is_rdw_part_of_record_length", "true")
+          .option("variable_size_occurs", "true")
+          .save(path.toString)
+
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithDependingOn)
+//          .option("record_format", "V")
+//          .option("is_rdw_big_endian", "false")
+//          .option("is_rdw_part_of_record_length", "true")
+//          .option("variable_size_occurs", "true")
+//          .load(path.toString)
+//        println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x1B, 0x00, 0x00, 0x00, // RDW record 0
+          0xF0, 0xF1, 0x00, 0xF3, 0xF1, 0xF0, 0xF2, 0xF0, 0xF3, 0xF0, 0xE4, 0xE2, 0xD5, 0x85, 0xA6, 0x40, 0xE8, 0x96,
+          0x99, 0x92, 0x40, 0x40, 0xF0,
+          0x30, 0x00, 0x00, 0x00,
+          0xF0, 0xF2, 0x00, 0xF0, 0xE9, 0xC1, 0xC3, 0x81, 0x97, 0x85, 0x40, 0xE3, 0x96, 0xA6, 0x95, 0x40, 0xF1, 0xE3,
+          0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0x40, 0x40, 0x40, 0x40, 0x40, 0x00, 0xF5, 0xF5, 0xF5, 0xCA,
+          0xF1, 0xF2, 0xF3, 0xF5, 0x40, 0x40, 0x40, 0x40
+        ).map(_.toByte)
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("%02X" format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("0x%02X" format _).mkString(", ")}")
 
           assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
         }
