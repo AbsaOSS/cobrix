@@ -73,6 +73,7 @@ object CobolParametersParser extends Logging {
   val PARAM_FILLER_NAMING_POLICY      = "filler_naming_policy"
   val PARAM_STRICT_INTEGRAL_PRECISION = "strict_integral_precision"
   val PARAM_DISPLAY_PIC_ALWAYS_STRING = "display_pic_always_string"
+  val PARAM_STRICT_SCHEMA             = "strict_schema"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -289,6 +290,7 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
       params.getOrElse(PARAM_CORRUPT_FIELDS, "false").toBoolean,
       schemaRetentionPolicy,
+      params.getOrElse(PARAM_STRICT_SCHEMA, "true").toBoolean,
       stringTrimmingPolicy,
       params.getOrElse(PARAM_DISPLAY_PIC_ALWAYS_STRING, "false").toBoolean,
       params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean,
@@ -445,6 +447,7 @@ object CobolParametersParser extends Logging {
       generateRecordBytes = parameters.generateRecordBytes,
       corruptFieldsPolicy = corruptFieldsPolicy,
       schemaPolicy = parameters.schemaRetentionPolicy,
+      strictSchema = parameters.strictSchema,
       stringTrimmingPolicy = parameters.stringTrimmingPolicy,
       isDisplayAlwaysString = parameters.isDisplayAlwaysString,
       allowPartialRecords = parameters.allowPartialRecords,

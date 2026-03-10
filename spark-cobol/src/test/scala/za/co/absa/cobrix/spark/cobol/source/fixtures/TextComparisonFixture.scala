@@ -21,6 +21,18 @@ import org.scalatest.{Assertion, Suite}
 trait TextComparisonFixture {
   this: Suite =>
 
+  protected def compareBinary(actual: Array[Byte], expected: Array[Byte], clue: String = "Binary data does not match"): Assertion = {
+    if (!actual.sameElements(expected)) {
+      println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
+      println(s"Actual bytes:   ${actual.map("%02X" format _).mkString(" ")}")
+      //println(s"Actual bytes:   ${bytes.map("0x%02X" format _).mkString(", ")}")
+
+      assert(actual.sameElements(expected), clue)
+    } else {
+      succeed
+    }
+  }
+
   protected def compareText(actual: String, expected: String): Assertion = {
     if (actual.replaceAll("[\r\n]", "") != expected.replaceAll("[\r\n]", "")) {
       fail(renderTextDifference(actual, expected))

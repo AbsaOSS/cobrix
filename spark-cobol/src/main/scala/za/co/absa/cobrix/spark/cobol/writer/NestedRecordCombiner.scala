@@ -72,7 +72,7 @@ class NestedRecordCombiner extends RecordCombiner {
         s"RDW length $recordLengthLong exceeds ${Int.MaxValue} and cannot be encoded safely."
       )
     }
-    processRDD(df.rdd, cobolSchema.copybook, df.schema, size, adjustment1 + adjustment2, startOffset, hasRdw, isRdwBigEndian, readerParameters.variableSizeOccurs)
+    processRDD(df.rdd, cobolSchema.copybook, df.schema, size, adjustment1 + adjustment2, startOffset, hasRdw, isRdwBigEndian, readerParameters.variableSizeOccurs, readerParameters.strictSchema)
   }
 }
 
@@ -114,13 +114,14 @@ object NestedRecordCombiner {
     * The purpose of WriterAst class hierarchy is to provide memory and CPU efficient way of creating binary
     * records from Spark dataframes. It links Cobol schema and Spark schema in a single tree.
     *
-    * @param copybook The copybook definition describing the binary record layout and field specifications
-    * @param schema   The Spark StructType schema that corresponds to the structure of the data to be written
+    * @param copybook     The copybook definition describing the binary record layout and field specifications
+    * @param schema       The Spark StructType schema that corresponds to the structure of the data to be written
+    * @param strictSchema If true, each field in the copybook must exist in the Spark schema.
     * @return A GroupField representing the root of the writer AST, containing all non-filler, non-redefines
     *         fields with their associated getter functions and position information for binary serialization
     */
-  def constructWriterAst(copybook: Copybook, schema: StructType): GroupField = {
-    buildGroupField(getAst(copybook), schema, row => row, "", new mutable.HashMap[String, DependingOnField]())
+  def constructWriterAst(copybook: Copybook, schema: StructType, strictSchema: Boolean): GroupField = {
+    buildGroupField(getAst(copybook), schema, row => row, "", new mutable.HashMap[String, DependingOnField](), strictSchema)
   }
 
   /**
@@ -142,6 +143,7 @@ object NestedRecordCombiner {
     * @param hasRdw             A flag indicating whether to prepend a Record Descriptor Word header to each output record
     * @param isRdwBigEndian     A flag indicating the byte order for the RDW header, true for big-endian, false for little-endian
     * @param variableSizeOccurs A flag indicating whether OCCURS DEPENDING ON fields should use actual element counts rather than maximum sizes
+    * @param strictSchema       If true, each field in the copybook must exist in the Spark schema.
     * @return An RDD of byte arrays, where each array represents one record in binary format according to the copybook specification
     */
   private[cobrix] def processRDD(rdd: RDD[Row],
@@ -152,8 +154,9 @@ object NestedRecordCombiner {
                                  startOffset: Int,
                                  hasRdw: Boolean,
                                  isRdwBigEndian: Boolean,
-                                 variableSizeOccurs: Boolean): RDD[Array[Byte]] = {
-    val writerAst = constructWriterAst(copybook, schema)
+                                 variableSizeOccurs: Boolean,
+                                 strictSchema: Boolean): RDD[Array[Byte]] = {
+    val writerAst = constructWriterAst(copybook, schema, strictSchema)
 
     rdd.mapPartitions { rows =>
       rows.map { row =>
@@ -212,21 +215,22 @@ object NestedRecordCombiner {
     * Recursively walks the copybook group and the Spark StructType in lockstep, producing
     * [[WriterAst]] nodes whose getters extract the correct value from a [[org.apache.spark.sql.Row]].
     *
-    * @param group       A copybook Group node whose children will be processed.
-    * @param schema      The Spark StructType that corresponds to `group`.
-    * @param getter      A function that, given the "outer" Row, returns the Row that belongs to this group.
-    * @param path        The path to the field
-    * @param dependeeMap A map of field names to their corresponding DependingOnField specs, used to resolve dependencies for OCCURS DEPENDING ON fields.
+    * @param group        A copybook Group node whose children will be processed.
+    * @param schema       The Spark StructType that corresponds to `group`.
+    * @param getter       A function that, given the "outer" Row, returns the Row that belongs to this group.
+    * @param path         The path to the field
+    * @param dependeeMap  A map of field names to their corresponding DependingOnField specs, used to resolve dependencies for OCCURS DEPENDING ON fields.
+    * @param strictSchema If true, each field in the copybook must exist in the Spark schema.
     * @return A [[GroupField]] covering all non-filler, non-redefines children found in both
     *         the copybook and the Spark schema.
     */
-  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): GroupField = {
+  private def buildGroupField(group: Group, schema: StructType, getter: GroupGetter, path: String, dependeeMap: mutable.HashMap[String, DependingOnField], strictSchema: Boolean): GroupField = {
     val children = group.children.withFilter { stmt =>
       stmt.redefines.isEmpty
     }.map {
       case s if s.isFiller => Filler(s.binaryProperties.actualSize)
-      case p: Primitive    => buildPrimitiveNode(p, schema, path, dependeeMap)
-      case g: Group        => buildGroupNode(g, schema, path, dependeeMap)
+      case p: Primitive    => buildPrimitiveNode(p, schema, path, dependeeMap, strictSchema)
+      case g: Group        => buildGroupNode(g, schema, path, dependeeMap, strictSchema)
     }
     GroupField(children.toSeq, group, getter)
   }
@@ -237,7 +241,7 @@ object NestedRecordCombiner {
     *
     * Returns a filler when the field is absent from the schema (e.g. filtered out during reading).
     */
-  private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): WriterAst = {
+  private def buildPrimitiveNode(p: Primitive, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField], strictSchema: Boolean): WriterAst = {
     def addDependee(): DependingOnField = {
       val spec = DependingOnField(p, p.binaryProperties.offset)
       val uppercaseName = p.name.toUpperCase()
@@ -282,7 +286,10 @@ object NestedRecordCombiner {
       if (p.isDependee) {
         PrimitiveDependeeField(addDependee())
       } else {
-        log.error(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
+        if (strictSchema)
+          throw new IllegalArgumentException(s"Field '$path${p.name}' is not found in Spark schema.")
+        else
+          log.warn(s"Field '$path${p.name}' is not found in Spark schema. Will be replaced by filler.")
         Filler(p.binaryProperties.actualSize)
       }
     }
@@ -295,7 +302,7 @@ object NestedRecordCombiner {
     *
     * Returns a filler when the field is absent from the schema.
     */
-  private def buildGroupNode(g: Group, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField]): WriterAst = {
+  private def buildGroupNode(g: Group, schema: StructType, path: String, dependeeMap: mutable.HashMap[String, DependingOnField], strictSchema: Boolean): WriterAst = {
     val fieldName = g.name
     val fieldIndexOpt = schema.fields.zipWithIndex.find { case (field, _) =>
       field.name.equalsIgnoreCase(fieldName)
@@ -311,7 +318,7 @@ object NestedRecordCombiner {
                 s"Array group '${g.name}' depends on '$dependingOn' which is not found among previously processed fields."
               ))
             }
-            val childAst = buildGroupField(g, elementType, row => row, s"$path${g.name}.", dependeeMap)
+            val childAst = buildGroupField(g, elementType, row => row, s"$path${g.name}.", dependeeMap, strictSchema)
             GroupArray(childAst, g, row => row.getAs[mutable.WrappedArray[AnyRef]](idx), dependingOnField)
           case other                                 =>
             throw new IllegalArgumentException(
@@ -322,7 +329,7 @@ object NestedRecordCombiner {
         schema(idx).dataType match {
           case nestedSchema: StructType =>
             val childGetter: GroupGetter = row => row.getAs[Row](idx)
-            val childAst = buildGroupField(g, nestedSchema, childGetter, s"$path${g.name}.", dependeeMap)
+            val childAst = buildGroupField(g, nestedSchema, childGetter, s"$path${g.name}.", dependeeMap, strictSchema)
             GroupField(childAst.children, g, childGetter)
           case other                    =>
             throw new IllegalArgumentException(
@@ -330,7 +337,10 @@ object NestedRecordCombiner {
         }
       }
     }.getOrElse {
-      log.error(s"Field '$path${g.name}' is not found in Spark schema. Will be replaced by filler.")
+      if (strictSchema)
+        throw new IllegalArgumentException(s"Field '$path${g.name}' is not found in Spark schema.")
+      else
+        log.warn(s"Field '$path${g.name}' is not found in Spark schema. Will be replaced by filler.")
       Filler(g.binaryProperties.actualSize)
     }
   }

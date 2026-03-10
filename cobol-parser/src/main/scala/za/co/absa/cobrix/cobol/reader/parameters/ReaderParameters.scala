@@ -58,8 +58,9 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param fileEndOffset           A number of bytes to skip at the end of each file
   * @param generateRecordId        If true, a record id field will be prepended to each record.
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
-  * @param corruptFieldsPolicy   Specifies if '_corrupt_fields' field for fields that haven't converted successfully, and the type of raw values.
+  * @param corruptFieldsPolicy     Specifies if '_corrupt_fields' field for fields that haven't converted successfully, and the type of raw values.
   * @param schemaPolicy            Specifies a policy to transform the input schema. The default policy is to keep the schema exactly as it is in the copybook.
+  * @param strictSchema            If true, when writing files in mainframe format each field in the copybook must exist in the Spark schema.
   * @param stringTrimmingPolicy    Specifies if and how strings should be trimmed when parsed.
   * @param isDisplayAlwaysString   If true, all fields having DISPLAY format will remain strings and won't be converted to numbers.
   * @param allowPartialRecords     If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
@@ -114,6 +115,8 @@ case class ReaderParameters(
                              generateRecordBytes:     Boolean = false,
                              corruptFieldsPolicy:     CorruptFieldsPolicy = CorruptFieldsPolicy.Disabled,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
+
+                             strictSchema:            Boolean = true,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              isDisplayAlwaysString:   Boolean = false,
                              allowPartialRecords:     Boolean = false,
