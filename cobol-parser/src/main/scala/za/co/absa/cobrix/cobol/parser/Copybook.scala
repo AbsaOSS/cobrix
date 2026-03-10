@@ -90,7 +90,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   def getFieldValueByName(fieldName: String, recordBytes: Array[Byte], startOffset: Int = 0): Any = {
     val primitive = getPrimitiveFieldByName(fieldName)
 
-    extractPrimitiveField(primitive, recordBytes, startOffset)
+    getPrimitiveField(primitive, recordBytes, startOffset)
   }
 
   /**
@@ -201,23 +201,6 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     } else {
       cachedStatement
     }
-  }
-
-  /**
-    * Get value of a field of the copybook record by the AST object of the field
-    *
-    * Nested field names can contain '.' to identify the exact field.
-    * If the field name is unique '.' is not required.
-    *
-    * @param field The AST object of the field
-    * @param bytes Binary encoded data of the record
-    * @param startOffset An offset to the beginning of the field in the data (in bytes).
-    * @return The value of the field
-    *
-    */
-  def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
-    val slicedBytes = bytes.slice(field.binaryProperties.offset + startOffset, field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize)
-    field.decodeTypeValue(0, slicedBytes)
   }
 
   /** This routine is used for testing by generating a layout position information to compare with mainframe output */
@@ -429,6 +412,28 @@ object Copybook {
     val schema = BinaryPropertiesAdder().transform(newRoot)
 
     new Copybook(schema)
+  }
+
+  /**
+    * Get value of a field of the copybook record by the AST object of the field
+    *
+    * Nested field names can contain '.' to identify the exact field.
+    * If the field name is unique '.' is not required.
+    *
+    * @param field The AST object of the field
+    * @param bytes Binary encoded data of the record
+    * @param startOffset An offset to the beginning of the field in the data (in bytes).
+    * @return The value of the field
+    *
+    */
+  def getPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
+    val slicedBytes = bytes.slice(field.binaryProperties.offset + startOffset, field.binaryProperties.offset + startOffset + field.binaryProperties.actualSize)
+    field.decodeTypeValue(0, slicedBytes)
+  }
+
+  /** Same as getPrimitiveField(). The original method is left for backwards compatibility. */
+  def extractPrimitiveField(field: Primitive, bytes: Array[Byte], startOffset: Int = 0): Any = {
+    getPrimitiveField(field, bytes, startOffset)
   }
 
   /**

@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.extractors.raw
 
 import org.slf4j.LoggerFactory
+import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.reader.iterator.RecordLengthExpression
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
@@ -123,7 +124,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
 
   final private def getRecordLengthFromField(lengthAST: Primitive, binaryDataStart: Array[Byte]): Int = {
     val length = if (isLengthMapEmpty) {
-      ctx.copybook.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
+      Copybook.getPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
         case i: Int        => i
         case l: Long       => l.toInt
         case s: String     => Try{ s.toInt }.getOrElse(throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type, encountered: '$s'."))
@@ -132,7 +133,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
         case _             => throw new IllegalStateException(s"Record length value of the field ${lengthAST.name} must be an integral type.")
       }
     } else {
-      ctx.copybook.extractPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
+      Copybook.getPrimitiveField(lengthAST, binaryDataStart, readerProperties.startOffset) match {
         case i: Int        => getRecordLengthFromMapping(i.toString)
         case l: Long       => getRecordLengthFromMapping(l.toString)
         case d: BigDecimal => getRecordLengthFromMapping(d.toString())
@@ -165,7 +166,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
 
     expr.fields.foreach{
       case (name, field) =>
-        val obj = ctx.copybook.extractPrimitiveField(field, binaryDataStart, readerProperties.startOffset)
+        val obj = Copybook.getPrimitiveField(field, binaryDataStart, readerProperties.startOffset)
         try {
           obj match {
             case i: Int    => evaluator.setValue(name, i)
@@ -194,7 +195,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
 
   private def getSegmentId(data: Array[Byte]): Option[String] = {
     segmentIdField.map(field => {
-      val fieldValue = ctx.copybook.extractPrimitiveField(field, data, readerProperties.startOffset)
+      val fieldValue = Copybook.getPrimitiveField(field, data, readerProperties.startOffset)
       if (fieldValue == null) {
         log.error(s"An unexpected null encountered for segment id at $byteIndex")
         ""

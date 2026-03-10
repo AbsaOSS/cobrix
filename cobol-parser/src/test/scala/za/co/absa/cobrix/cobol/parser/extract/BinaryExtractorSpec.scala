@@ -17,12 +17,12 @@
 package za.co.absa.cobrix.cobol.parser.extract
 
 import org.scalatest.funsuite.AnyFunSuite
-import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, CobolType}
 import za.co.absa.cobrix.cobol.parser.ast.{BinaryProperties, Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.decoders.DecoderSelector
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, EncoderSelector}
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy
+import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 
 class BinaryExtractorSpec extends AnyFunSuite {
 
@@ -113,7 +113,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     0x00.toByte, 0x00.toByte, 0x2F.toByte
   )
 
-  val copybook = CopybookParser.parseTree(copyBookContents)
+  val copybook: Copybook = CopybookParser.parseTree(copyBookContents)
   val startOffset: Int = 0
 
   test("Test extract primitive field") {
@@ -121,7 +121,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     // using getFieldByName
     val statement = copybook.getFieldByName("ID")
     val field: Primitive = statement.asInstanceOf[Primitive]
-    val result: Any = copybook.extractPrimitiveField(field, bytes, startOffset)
+    val result: Any = Copybook.getPrimitiveField(field, bytes, startOffset)
     assert(result.asInstanceOf[Int] === 6)
 
     // traverse AST and extract all primitives to map
@@ -130,7 +130,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     def traverseAst(group: Group): Unit = {
       for (child <- group.children) {
         if (child.isInstanceOf[Primitive]) {
-          extractedData += (child.name -> copybook.extractPrimitiveField(child.asInstanceOf[Primitive],
+          extractedData += (child.name -> Copybook.extractPrimitiveField(child.asInstanceOf[Primitive],
             bytes, startOffset))
         } else {
           assert(child.isInstanceOf[Group] === true)
@@ -162,7 +162,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
 
     val primitive: Primitive = Primitive(level, name, name, lineNumber, dataType, redefines, isRedefined,
       occurs, to, dependingOn, Map(), isDependee, isFiller, DecoderSelector.getDecoder(dataType), EncoderSelector.getEncoder(dataType), binaryProperties)(None)
-    val result2: Any = copybook.extractPrimitiveField(primitive, bytes, startOffset)
+    val result2: Any = Copybook.extractPrimitiveField(primitive, bytes, startOffset)
     assert(result2.asInstanceOf[String] === "EXAMPLE4")
   }
 
