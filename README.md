@@ -1635,6 +1635,12 @@ The output looks like this:
 | .option("debug_ignore_file_size", "true")          | If 'true' no exception will be thrown if record size does not match file size. Useful for debugging copybooks to make them match a data file.                                                                                                                                                                                       |
 | .option("enable_self_checks", "true")              | If 'true' Cobrix will run self-checks to validate internal consistency. Note: Enabling this option may impact performance, especially for large datasets. It is recommended to disable this option in performance-critical environments. The only check implemented so far is custom record extractor indexing compatibility check. |
 
+##### Writer-only options
+
+| Option (usage example)           | Description                                                                                                                                                                                                                           |
+|----------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("strict_schema", "true") | If 'true' (default) Cobrix will throw an exception if a field exists in the copybook but not in the Spark schema. Array count fields (defined in DEPENDING ON clause) are auto-generated and never required to exist in Spark schema. |
+
 ##### Currently supported EBCDIC code pages
 
 | Option                                | Code page   | Description                                                                                                 |
@@ -1798,18 +1804,15 @@ df.write
 
 ### Current Limitations
 The writer is still in its early stages and has several limitations:
-- Nested GROUPs are not supported. Only flat copybooks can be used, for example:
-  ```cobol
-  01  RECORD.
-      05  FIELD_1       PIC X(1).
-      05  FIELD_2       PIC X(5).
-  ```
+- Nested GROUPs, OCCURS, OCCURS DEPENDING ON are supported.
+- Variable-size occurs are supported with `variable_size_occurs = true`.
+- Writing multi-segment files is not supported.
 - Supported types:
   - `PIC X(n)` alphanumeric.
   - `PIC S9(n)` numeric (integral and decimal) with `DISPLAY`, `COMP`/`COMP-4`/`COMP-5` (big-endian), `COMP-3`, and 
     `COMP-9` (Cobrix little-endian).
-- Only fixed record length output is supported (`record_format = F`).
-- `REDEFINES` and `OCCURS` are not supported.
+- Only fixed record length and variable record length with RDWs are supported (`record_format` is either `F` or `V`).
+- `REDEFINES` are ignored. Cobrix writes only the first field in a REDEFINES group.
 - Partitioning by DataFrame fields is not supported.
 
 ### Implementation details

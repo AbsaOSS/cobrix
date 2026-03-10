@@ -49,6 +49,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
   * @param generateCorruptFields   Generate '_corrupt_fields' field for fields that haven't converted successfully
   * @param schemaRetentionPolicy   A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
+  * @param strictSchema            If true, when writing files in mainframe format each field in the copybook must exist in the Spark schema.
   * @param stringTrimmingPolicy    Specify if and how strings should be trimmed when parsed
   * @param isDisplayAlwaysString   If true, all fields having DISPLAY format will remain strings and won't be converted to numbers
   * @param allowPartialRecords     If true, partial ASCII records can be parsed (in cases when LF character is missing for example)
@@ -90,6 +91,7 @@ case class CobolParameters(
                             generateRecordBytes:     Boolean,
                             generateCorruptFields:   Boolean,
                             schemaRetentionPolicy:   SchemaRetentionPolicy,
+                            strictSchema:            Boolean,
                             stringTrimmingPolicy:    StringTrimmingPolicy,
                             isDisplayAlwaysString:   Boolean,
                             allowPartialRecords:     Boolean,
