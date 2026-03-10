@@ -319,7 +319,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.9.10-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.10.0-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -334,9 +334,37 @@ $ spark-shell --jars spark-cobol_2.12_3.3-2.9.10-SNAPSHOT-bundle.jar
 >   sbt ++2.13.17 assembly
 >   ```
 
-## Other Features
+## Detailed Overview of Features
 
-### Loading several paths
+Converting mainframe files to Spark DataFrames consists of 3 main steps. Each step has its own options to `spark-cobol`:
+
+1. **Split files by records**. Input files need to be split into individual records. Each record is an array of bytes.
+   The split happens depending on the file format. The most important option here is `record_format` and it can be:
+    - `F` - fixed record length. Each record has the same size. By default the size is determined by the copybook,
+      but you can set this fixed size yourself via `record_length`.
+    - When `record_length_field` is defined the file has variable record length, and length of each record is defined by
+      that field. You can use expressions to specify adjustments between the value in the field and the actual record size.
+    - `V` - variable record length records with RDW headers. Each record in the file begins with 4 byte headers
+      determining record length. You can specify if RDW headers are big-endian or little-endian via `is_rdw_big_endian` 
+      option.
+    - `VB` - variable record length records with BDW+RDW headers.
+    - `FB` - fixed block record format. The file is split into blocks with BDW headers. Each record in a block has the
+      same length.
+    - `D` - is ASCII text format. Each record is split using the line ending character.
+    - If you use a non-standard format, you can implement your own raw record extractor and specify the fully qualified
+      class name via `record_extractor` option. A record extractor is essentially an iterator that gets an input stream of
+      bytes as input and outputs records as individual arrays of bytes.
+2. **Decode each record**. After files are split by records the copybook
+   is used to decode each record. The copybook defines the structure of the records and how they should be mapped to
+   DataFrame columns. The copybook can be specified via `copybook_contents` or `copybook` (path) options.
+3. **Process segments**. Segments define which part of the copybook to apply to each record. Depending on
+   if your file has one or multiple segments Cobrix can map segments to different fields in REDEFINES group.
+   See the section "Automatic segment redefines filtering" and below for more detailed information.
+
+Here is the diagram explaining the process:
+![](resources/conversion_steps.png)
+ 
+ ### Loading several paths
 Currently, specifying multiple paths in `load()` is not supported. Use the following syntax: 
 ```scala
     spark
