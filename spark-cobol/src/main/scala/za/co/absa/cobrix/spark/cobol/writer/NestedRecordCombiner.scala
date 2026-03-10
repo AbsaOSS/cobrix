@@ -278,7 +278,7 @@ object NestedRecordCombiner {
         }
       }
     }.getOrElse {
-      // Dependee fields need not to be defines in Spark schema.
+      // Dependee fields need not be defined in Spark schema.
       if (p.isDependee) {
         PrimitiveDependeeField(addDependee())
       } else {
@@ -369,6 +369,9 @@ object NestedRecordCombiner {
 
       // ── Primitive which has an OCCURS DEPENDS ON ─────────────────────────────
       case PrimitiveDependeeField(spec) =>
+        // NOTE: baseOffset is mutated here for each row. This is safe because rows
+        // are processed sequentially within mapPartitions, and the offset is always
+        // updated before being read in subsequent array-element writes.
         spec.baseOffset = currentOffset
         spec.cobolField.binaryProperties.actualSize
 

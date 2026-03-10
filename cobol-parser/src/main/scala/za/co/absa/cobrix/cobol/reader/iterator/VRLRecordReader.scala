@@ -18,10 +18,9 @@ package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.Primitive
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
 
@@ -143,7 +142,7 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   private def getSegmentId(data: Array[Byte]): Option[String] = {
     segmentIdField.map(field => {
-      val fieldValue = cobolSchema.extractPrimitiveField(field, data, readerProperties.startOffset)
+      val fieldValue = Copybook.getPrimitiveField(field, data, readerProperties.startOffset)
       if (fieldValue == null) {
         logger.error(s"An unexpected null encountered for segment id at $byteIndex")
         ""

@@ -99,14 +99,14 @@ object IndexGenerator extends Logging {
       } else {
         if (isValid) {
           if (isReallyHierarchical && rootRecordId.isEmpty) {
-            val curSegmentId = getSegmentId(copybook.get, segmentField.get, record)
+            val curSegmentId = getSegmentId(segmentField.get, record)
             if ((curSegmentId.nonEmpty && rootSegmentIds.isEmpty)
               || (rootSegmentIds.nonEmpty && rootSegmentIds.contains(curSegmentId))) {
               rootRecordId = curSegmentId
             }
           }
           if (canSplit && needSplit(recordsInChunk, bytesInChunk)) {
-            if (!isReallyHierarchical || isSegmentGoodForSplit(rootSegmentIds, copybook.get, segmentField.get, record)) {
+            if (!isReallyHierarchical || isSegmentGoodForSplit(rootSegmentIds, segmentField.get, record)) {
               val indexEntry = SparseIndexEntry(byteIndex, -1, fileId, recordIndex)
               val len = index.length
               // Do not add an entry if we are still at the same position as the previous entry.
@@ -157,15 +157,14 @@ object IndexGenerator extends Logging {
   }
 
   private def isSegmentGoodForSplit(rootSegmentIds: List[String],
-                                    copybook: Copybook,
                                     segmentField: Primitive,
                                     record: Array[Byte]): Boolean = {
-    val segmentId = getSegmentId(copybook, segmentField, record)
+    val segmentId = getSegmentId(segmentField, record)
     rootSegmentIds.contains(segmentId)
   }
 
-  private def getSegmentId(copybook: Copybook, segmentIdField: Primitive, data: Array[Byte]): String = {
-    val v = copybook.extractPrimitiveField(segmentIdField, data)
+  private def getSegmentId(segmentIdField: Primitive, data: Array[Byte]): String = {
+    val v = Copybook.getPrimitiveField(segmentIdField, data)
     if (v == null) "" else v.toString.trim
   }
 }
