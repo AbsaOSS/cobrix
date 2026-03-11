@@ -74,6 +74,7 @@ object RecordExtractors {
                                   handler: RecordHandler[T],
                                   recordsToExclude: Set[String] = Set.empty
   ): Seq[Any] = {
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
     val corruptFields = new ArrayBuffer[CorruptField]
 
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
