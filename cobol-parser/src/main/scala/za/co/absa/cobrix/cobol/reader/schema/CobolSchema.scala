@@ -55,13 +55,24 @@ class CobolSchema(val copybook: Copybook,
                   val corruptSchemaPolicy: CorruptFieldsPolicy,
                   val generateSegIdFieldsCnt: Int = 0,
                   val segmentIdProvidedPrefix: String = "",
-                  val metadataPolicy: MetadataPolicy = MetadataPolicy.Basic) extends Serializable {
+                  val metadataPolicy: MetadataPolicy = MetadataPolicy.Basic,
+                  val recordsToExclude: Set[String] = Set.empty) extends Serializable {
 
   val segmentIdPrefix: String = if (segmentIdProvidedPrefix.isEmpty) getDefaultSegmentIdPrefix else segmentIdProvidedPrefix
 
   def getCobolSchema: Copybook = copybook
 
-  lazy val getRecordSize: Int = copybook.getRecordSize
+  lazy val getRecordSize: Int = {
+    if (recordsToExclude.isEmpty) {
+      copybook.getRecordSize
+    } else {
+      val excludedSize = copybook.ast.children
+        .filter(r => recordsToExclude.contains(r.name.toUpperCase))
+        .map(_.binaryProperties.actualSize)
+        .sum
+      copybook.getRecordSize - excludedSize
+    }
+  }
 
   def isRecordFixedSize: Boolean = copybook.isRecordFixedSize
 
@@ -147,7 +158,8 @@ object CobolSchema {
       readerParameters.corruptFieldsPolicy,
       segIdFieldCount,
       segmentIdPrefix,
-      readerParameters.metadataPolicy
+      readerParameters.metadataPolicy,
+      readerParameters.recordsToExclude
     )
   }
 

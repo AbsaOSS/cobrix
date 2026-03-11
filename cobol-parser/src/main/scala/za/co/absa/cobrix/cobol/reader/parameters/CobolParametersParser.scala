@@ -60,6 +60,8 @@ object CobolParametersParser extends Logging {
   val PARAM_RECORD_END_OFFSET         = "record_end_offset"
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
   val PARAM_FILE_END_OFFSET           = "file_end_offset"
+  val PARAM_RECORD_HEADER_NAME        = "record_header_name"
+  val PARAM_RECORD_TRAILER_NAME       = "record_trailer_name"
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_TEXT                   = "is_text"
 
@@ -310,6 +312,8 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
       params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "false").toBoolean,
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
+      params.get(PARAM_RECORD_HEADER_NAME).map(_.trim).filter(_.nonEmpty),
+      params.get(PARAM_RECORD_TRAILER_NAME).map(_.trim).filter(_.nonEmpty),
       params.getMap
       )
     validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
@@ -412,6 +416,9 @@ object CobolParametersParser extends Logging {
       CorruptFieldsPolicy.Disabled
     }
 
+    val recordsToExclude = (parameters.recordHeaderName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
+      parameters.recordTrailerName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
+
     ReaderParameters(
       recordFormat = parameters.recordFormat,
       isEbcdic = parameters.isEbcdic,
@@ -470,6 +477,7 @@ object CobolParametersParser extends Logging {
       varLenParams.reAdditionalInfo,
       varLenParams.inputFileNameColumn,
       parameters.metadataPolicy,
+      recordsToExclude,
       parameters.options
       )
   }
@@ -981,6 +989,22 @@ object CobolParametersParser extends Logging {
     if (params.contains(PARAM_ENABLE_INDEXES) && !params(PARAM_ENABLE_INDEXES).toBoolean &&
       params.contains(PARAM_ENABLE_INDEX_CACHE) && params(PARAM_ENABLE_INDEX_CACHE).toBoolean)
       throw new IllegalArgumentException(s"When '$PARAM_ENABLE_INDEXES' = false, '$PARAM_ENABLE_INDEX_CACHE' cannot be true.")
+
+    if (params.contains(PARAM_RECORD_HEADER_NAME) && params.contains(PARAM_FILE_START_OFFSET)) {
+      throw new IllegalArgumentException(s"Options '$PARAM_RECORD_HEADER_NAME' and '$PARAM_FILE_START_OFFSET' cannot be used together.")
+    }
+
+    if (params.contains(PARAM_RECORD_TRAILER_NAME) && params.contains(PARAM_FILE_END_OFFSET)) {
+      throw new IllegalArgumentException(s"Options '$PARAM_RECORD_TRAILER_NAME' and '$PARAM_FILE_END_OFFSET' cannot be used together.")
+    }
+
+    if (params.contains(PARAM_RECORD_HEADER_NAME) && params.contains(PARAM_RECORD_TRAILER_NAME)) {
+      val headerName = params(PARAM_RECORD_HEADER_NAME).trim
+      val trailerName = params(PARAM_RECORD_TRAILER_NAME).trim
+      if (headerName.equalsIgnoreCase(trailerName)) {
+        throw new IllegalArgumentException(s"Options '$PARAM_RECORD_HEADER_NAME' and '$PARAM_RECORD_TRAILER_NAME' cannot refer to the same record ('$headerName').")
+      }
+    }
 
     if (validateRedundantOptions && unusedKeys.nonEmpty) {
       val unusedKeyStr = unusedKeys.mkString(",")

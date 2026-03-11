@@ -96,7 +96,8 @@ class FixedLenNestedRowIterator[T: ClassTag](
       generateCorruptFields = generateCorruptFields,
       generateCorruptFieldsAsHex = generateCorruptFieldsAsHex,
       activeSegmentRedefine = activeSegmentRedefine,
-      handler = handler
+      handler = handler,
+      recordsToExclude = readerProperties.recordsToExclude
     )
 
     // Advance byte index to the next record

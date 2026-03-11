@@ -24,8 +24,10 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.internal.Logging
+import za.co.absa.cobrix.cobol.parser.CopybookParser
+import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters, VariableLengthParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.reader._
 import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
@@ -156,18 +158,131 @@ object DefaultSource {
     * This method will probably be removed once the correct hierarchy for [[FixedLenReader]] is put in place.
     */
   def buildEitherReader(spark: SparkSession, cobolParameters: CobolParameters, hasCompressedFiles: Boolean): Reader = {
-    val reader = if (cobolParameters.isText && cobolParameters.variableLengthParams.isEmpty) {
-      createTextReader(cobolParameters, spark)
-    } else if (cobolParameters.variableLengthParams.isEmpty && !hasCompressedFiles) {
-      createFixedLengthReader(cobolParameters, spark)
+    val resolvedParameters = resolveHeaderTrailerOffsets(cobolParameters, spark)
+
+    val reader = if (resolvedParameters.isText && resolvedParameters.variableLengthParams.isEmpty) {
+      createTextReader(resolvedParameters, spark)
+    } else if (resolvedParameters.variableLengthParams.isEmpty && !hasCompressedFiles) {
+      createFixedLengthReader(resolvedParameters, spark)
     }
     else {
-      createVariableLengthReader(cobolParameters, spark)
+      createVariableLengthReader(resolvedParameters, spark)
     }
 
-    if (cobolParameters.debugLayoutPositions)
+    if (resolvedParameters.debugLayoutPositions)
       logger.info(s"Layout positions:\n${reader.getCobolSchema.copybook.generateRecordLayoutPositions()}")
     reader
+  }
+
+  /**
+    * Resolves record_header_name / record_trailer_name options into file_start_offset / file_end_offset
+    * by parsing the copybook and looking up the named root-level records.
+    */
+  private def resolveHeaderTrailerOffsets(parameters: CobolParameters, spark: SparkSession): CobolParameters = {
+    if (parameters.recordHeaderName.isEmpty && parameters.recordTrailerName.isEmpty) {
+      return parameters
+    }
+
+    val copybookContent = CopybookContentLoader.load(parameters, spark.sparkContext.hadoopConfiguration)
+    val copybook = if (copybookContent.size == 1)
+      CopybookParser.parseTree(copybookContent.head)
+    else
+      za.co.absa.cobrix.cobol.parser.Copybook.merge(copybookContent.map(CopybookParser.parseTree(_)))
+
+    val rootRecords = copybook.ast.children
+
+    var fileStartOffset = 0
+    var fileEndOffset = 0
+
+    parameters.recordHeaderName.foreach { headerName =>
+      val transformedHeaderName = CopybookParser.transformIdentifier(headerName)
+      val headerRecord = rootRecords.find(_.name.equalsIgnoreCase(transformedHeaderName))
+        .getOrElse(throw new IllegalArgumentException(
+          s"Record '$headerName' specified in '${PARAM_RECORD_HEADER_NAME}' is not found among the root-level (01) records of the copybook. " +
+            s"Available root records: ${rootRecords.map(_.name).mkString(", ")}"
+        ))
+
+      headerRecord match {
+        case _: Group => // OK
+        case _ => throw new IllegalArgumentException(
+          s"Record '$headerName' specified in '${PARAM_RECORD_HEADER_NAME}' is a primitive field, not a group record. " +
+            "The copybook might be flat (no 01-level groups)."
+        )
+      }
+
+      fileStartOffset = headerRecord.binaryProperties.offset + headerRecord.binaryProperties.actualSize
+    }
+
+    parameters.recordTrailerName.foreach { trailerName =>
+      val transformedTrailerName = CopybookParser.transformIdentifier(trailerName)
+      val trailerRecord = rootRecords.find(_.name.equalsIgnoreCase(transformedTrailerName))
+        .getOrElse(throw new IllegalArgumentException(
+          s"Record '$trailerName' specified in '${PARAM_RECORD_TRAILER_NAME}' is not found among the root-level (01) records of the copybook. " +
+            s"Available root records: ${rootRecords.map(_.name).mkString(", ")}"
+        ))
+
+      trailerRecord match {
+        case _: Group => // OK
+        case _ => throw new IllegalArgumentException(
+          s"Record '$trailerName' specified in '${PARAM_RECORD_TRAILER_NAME}' is a primitive field, not a group record. " +
+            "The copybook might be flat (no 01-level groups)."
+        )
+      }
+
+      fileEndOffset = trailerRecord.binaryProperties.actualSize
+    }
+
+    // Compute the data-only record length by subtracting excluded records from total
+    val excludedNames = (parameters.recordHeaderName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
+      parameters.recordTrailerName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
+    val totalSize = copybook.getRecordSize
+    val excludedSize = rootRecords
+      .filter(r => excludedNames.contains(r.name.toUpperCase))
+      .map(_.binaryProperties.actualSize)
+      .sum
+    val dataRecordLength = totalSize - excludedSize
+    val updatedRecordLength = if (parameters.recordLength.isEmpty && dataRecordLength > 0 && dataRecordLength < totalSize)
+      Some(dataRecordLength)
+    else
+      parameters.recordLength
+
+    val existingVarLen = parameters.variableLengthParams
+    val updatedVarLen = existingVarLen match {
+      case Some(vlp) =>
+        Some(vlp.copy(
+          fileStartOffset = if (parameters.recordHeaderName.isDefined) fileStartOffset else vlp.fileStartOffset,
+          fileEndOffset = if (parameters.recordTrailerName.isDefined) fileEndOffset else vlp.fileEndOffset
+        ))
+      case None if fileStartOffset > 0 || fileEndOffset > 0 =>
+        Some(VariableLengthParameters(
+          isRecordSequence = false,
+          bdw = None,
+          isRdwBigEndian = false,
+          isRdwPartRecLength = false,
+          rdwAdjustment = 0,
+          recordHeaderParser = None,
+          recordExtractor = None,
+          rhpAdditionalInfo = None,
+          reAdditionalInfo = "",
+          recordLengthField = "",
+          recordLengthMap = Map.empty,
+          fileStartOffset = fileStartOffset,
+          fileEndOffset = fileEndOffset,
+          generateRecordId = false,
+          isUsingIndex = false,
+          isIndexCachingAllowed = false,
+          inputSplitRecords = None,
+          inputSplitSizeMB = None,
+          inputSplitSizeCompressedMB = None,
+          improveLocality = false,
+          optimizeAllocation = false,
+          inputFileNameColumn = "",
+          occursMappings = parameters.occursMappings
+        ))
+      case other => other
+    }
+
+    parameters.copy(variableLengthParams = updatedVarLen, recordLength = updatedRecordLength)
   }
 
   /**

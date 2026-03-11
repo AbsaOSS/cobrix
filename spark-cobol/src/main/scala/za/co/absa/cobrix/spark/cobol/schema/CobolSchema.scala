@@ -60,7 +60,8 @@ class CobolSchema(copybook: Copybook,
                   corruptFieldsPolicy: CorruptFieldsPolicy,
                   generateSegIdFieldsCnt: Int,
                   segmentIdProvidedPrefix: String,
-                  metadataPolicy: MetadataPolicy)
+                  metadataPolicy: MetadataPolicy,
+                  recordsToExclude: Set[String] = Set.empty)
   extends CobolReaderSchema(copybook,
     schemaRetentionPolicy,
     isDisplayAlwaysString,
@@ -70,7 +71,9 @@ class CobolSchema(copybook: Copybook,
     generateRecordBytes,
     corruptFieldsPolicy,
     generateSegIdFieldsCnt,
-    segmentIdProvidedPrefix
+    segmentIdProvidedPrefix,
+    metadataPolicy,
+    recordsToExclude
   ) with Logging with Serializable {
 
   @throws(classOf[IllegalStateException])
@@ -83,7 +86,8 @@ class CobolSchema(copybook: Copybook,
   @throws(classOf[IllegalStateException])
   private def createSparkSchema(): StructType = {
     val generateCorruptFields = corruptFieldsPolicy != CorruptFieldsPolicy.Disabled
-    val records = for (record <- copybook.getRootRecords) yield {
+    val records = for (record <- copybook.getRootRecords
+                       if !recordsToExclude.contains(record.name.toUpperCase)) yield {
       val group = record.asInstanceOf[Group]
       val redefines = copybook.getAllSegmentRedefines
       parseGroup(group, redefines)
@@ -332,7 +336,8 @@ object CobolSchema {
       schema.corruptSchemaPolicy,
       schema.generateSegIdFieldsCnt,
       schema.segmentIdPrefix,
-      schema.metadataPolicy
+      schema.metadataPolicy,
+      schema.recordsToExclude
       )
   }
 
