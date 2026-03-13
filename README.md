@@ -75,13 +75,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.9.9</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.10.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.9.9</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.10.0</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.9.9</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.10.0</pre>
 </td>
 </tr>
 </table>
@@ -92,17 +92,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.9.9
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.10.0
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.9
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.10.0
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.9.9
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.10.0
 ```
 
 ## Usage
@@ -240,8 +240,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.9.9.jar
-* cobol-parser_2.12-2.9.9.jar
+* spark-cobol_2.12-2.10.0.jar
+* cobol-parser_2.12-2.10.0.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -249,9 +249,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.9.9
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.10.0
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.9.9.jar,cobol-parser_2.12-2.9.9.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.10.0.jar,cobol-parser_2.12-2.10.0.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -1982,6 +1982,25 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.10.0 released 11 March 2026.
+  - [#826](https://github.com/AbsaOSS/cobrix/pull/826) Added support for writing VRL files with RDW headers.
+    ```scala
+    df.write
+      .format("cobol")
+      .option("record_format", "V")
+      .save(path)
+    ```
+  - [#828](https://github.com/AbsaOSS/cobrix/pull/828) Added support for structs and arrays in EBCDIC writer.
+  - [#797](https://github.com/AbsaOSS/cobrix/pull/797) Added support for variable-sized OCCURS when writing EBCDIC files.
+    ```scala
+    df.write
+    .format("cobol")
+    .option("variable_size_occurs", "true")
+    .save(path)
+    ```
+  - [#833](https://github.com/AbsaOSS/cobrix/pull/833) Added strict schema check option for the EBCDIC writer 
+    (`.option("strict_schema", "true)` [default]).
+
 - #### 2.9.9 released 24 February 2026.
   - [#822](https://github.com/AbsaOSS/cobrix/pull/822) Allow '_corrupt_records' to extract data in HEX instead of binary data type.
     ```scala
