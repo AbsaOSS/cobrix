@@ -1994,9 +1994,9 @@ A: Update hadoop dll to version 3.2.2 or newer.
   - [#797](https://github.com/AbsaOSS/cobrix/pull/797) Added support for variable-sized OCCURS when writing EBCDIC files.
     ```scala
     df.write
-    .format("cobol")
-    .option("variable_size_occurs", "true")
-    .save(path)
+      .format("cobol")
+      .option("variable_size_occurs", "true")
+      .save(path)
     ```
   - [#833](https://github.com/AbsaOSS/cobrix/pull/833) Added strict schema check option for the EBCDIC writer 
     (`.option("strict_schema", "true)` [default]).
