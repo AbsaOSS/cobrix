@@ -109,7 +109,8 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
                 activeSegmentRedefine = segmentRedefine,
                 generateInputFileName,
                 dataStream.inputFileName,
-                handler
+                handler,
+                readerProperties.recordsToExclude
               ))
 
               recordFetched = true

@@ -149,7 +149,8 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
       recordIndex,
       generateInputFileName,
       dataStream.inputFileName,
-      handler
+      handler,
+      readerProperties.recordsToExclude
     )
   }
 

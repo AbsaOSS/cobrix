@@ -77,7 +77,8 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
           generateRecordBytes = readerParams.generateRecordBytes,
           generateCorruptFields = generateCorruptFields,
           generateCorruptFieldsAsHex = generateCorruptFieldsAsHex,
-          handler = recordHandler)
+          handler = recordHandler,
+          recordsToExclude = readerParams.recordsToExclude)
         Row.fromSeq(record)
       })
 

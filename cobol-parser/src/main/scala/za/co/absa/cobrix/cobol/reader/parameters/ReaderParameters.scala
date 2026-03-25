@@ -139,5 +139,6 @@ case class ReaderParameters(
                              reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = "",
                              metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic,
+                             recordsToExclude:       Set[String] = Set.empty,
                              options:                 Map[String, String] = Map.empty
                            )

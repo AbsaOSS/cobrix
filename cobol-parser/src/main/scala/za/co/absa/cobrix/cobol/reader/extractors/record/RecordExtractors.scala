@@ -71,7 +71,8 @@ object RecordExtractors {
                                   activeSegmentRedefine: String = "",
                                   generateInputFileField: Boolean = false,
                                   inputFileName: String = "",
-                                  handler: RecordHandler[T]
+                                  handler: RecordHandler[T],
+                                  recordsToExclude: Set[String] = Set.empty
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
     val corruptFields = new ArrayBuffer[CorruptField]
@@ -202,7 +203,7 @@ object RecordExtractors {
 
     val records: ListBuffer[T] = ListBuffer.empty[T]
 
-    for (record <- rootRecords) yield {
+    for (record <- rootRecords if !recordsToExclude.contains(record.name.toUpperCase)) yield {
       val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
       if (!record.isRedefined) {
         nextOffset += size
@@ -259,7 +260,8 @@ object RecordExtractors {
       recordId: Long = 0,
       generateInputFileField: Boolean = false,
       inputFileName: String = "",
-      handler: RecordHandler[T]
+      handler: RecordHandler[T],
+      recordsToExclude: Set[String] = Set.empty
   ): Seq[Any] = {
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
 
@@ -422,7 +424,7 @@ object RecordExtractors {
 
     val records: ListBuffer[T] = ListBuffer.empty[T]
 
-    rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty =>
+    rootRecords.collect { case grp: Group if grp.parentSegment.isEmpty && !recordsToExclude.contains(grp.name.toUpperCase) =>
       val (size, values) = getGroupValues(nextOffset, grp, segmentsData(0)._2, 0, segmentsData(0)._1 :: Nil)
       nextOffset += size
       records += values
