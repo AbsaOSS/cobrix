@@ -115,7 +115,6 @@ case class ReaderParameters(
                              generateRecordBytes:     Boolean = false,
                              corruptFieldsPolicy:     CorruptFieldsPolicy = CorruptFieldsPolicy.Disabled,
                              schemaPolicy:            SchemaRetentionPolicy = SchemaRetentionPolicy.CollapseRoot,
-
                              strictSchema:            Boolean = true,
                              stringTrimmingPolicy:    StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                              isDisplayAlwaysString:   Boolean = false,

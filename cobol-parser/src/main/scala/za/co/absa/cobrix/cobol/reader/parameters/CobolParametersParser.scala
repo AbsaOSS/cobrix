@@ -61,7 +61,9 @@ object CobolParametersParser extends Logging {
   val PARAM_FILE_START_OFFSET         = "file_start_offset"
   val PARAM_FILE_END_OFFSET           = "file_end_offset"
   val PARAM_RECORD_HEADER_NAME        = "record_header_name"
+  val PARAM_RECORD_HEADER_NAME2       = "file_header_field"
   val PARAM_RECORD_TRAILER_NAME       = "record_trailer_name"
+  val PARAM_RECORD_TRAILER_NAME2      = "file_trailer_field"
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_TEXT                   = "is_text"
 
@@ -312,8 +314,8 @@ object CobolParametersParser extends Logging {
       params.getOrElse(PARAM_DEBUG_LAYOUT_POSITIONS, "false").toBoolean,
       params.getOrElse(PARAM_ENABLE_SELF_CHECKS, "false").toBoolean,
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
-      params.get(PARAM_RECORD_HEADER_NAME).map(_.trim).filter(_.nonEmpty),
-      params.get(PARAM_RECORD_TRAILER_NAME).map(_.trim).filter(_.nonEmpty),
+      params.get(PARAM_RECORD_HEADER_NAME).orElse(params.get(PARAM_RECORD_HEADER_NAME2)) .map(_.trim).filter(_.nonEmpty),
+      params.get(PARAM_RECORD_TRAILER_NAME).orElse(params.get(PARAM_RECORD_TRAILER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       params.getMap
       )
     validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
@@ -416,8 +418,8 @@ object CobolParametersParser extends Logging {
       CorruptFieldsPolicy.Disabled
     }
 
-    val recordsToExclude = (parameters.recordHeaderName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
-      parameters.recordTrailerName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
+    val recordsToExclude = (parameters.fileHeaderField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
+      parameters.fileTrailerField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
 
     ReaderParameters(
       recordFormat = parameters.recordFormat,

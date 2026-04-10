@@ -117,6 +117,43 @@ class Test13cCopybookHeaderTrailerSpec extends AnyFunSuite with SparkTestBase wi
     }
   }
 
+  test("Test that file_header_field produces same results as manual file_start_offset with data-only copybook") {
+    // Copybook with only the data record (no header/trailer definitions)
+    val dataOnlyCopybook =
+      """       01  DATA-REC.
+        |           05  NAME           PIC X(6).
+        |           05  AMOUNT         PIC 9(4).
+        |""".stripMargin
+
+    withTempBinFile("test13c", ".dat", testData) { tempFile =>
+      val dfWithHeaderName = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybookContents)
+        .option("encoding", "ascii")
+        .option("file_header_field", "HEADER-REC")
+        .option("file_trailer_field", "TRAILER-REC")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tempFile)
+
+      val dfWithOffsets = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", dataOnlyCopybook)
+        .option("encoding", "ascii")
+        .option("file_start_offset", "10")
+        .option("file_end_offset", "8")
+        .option("schema_retention_policy", "collapse_root")
+        .load(tempFile)
+
+      val resultHeaderName = dfWithHeaderName.orderBy("NAME").collect().map(r => (r.getString(0).trim, r.getInt(1)))
+      val resultOffsets = dfWithOffsets.orderBy("NAME").collect().map(r => (r.getString(0).trim, r.getInt(1)))
+
+      assert(resultHeaderName.sameElements(resultOffsets),
+        s"Results should match. Header name: ${resultHeaderName.mkString(",")}. Offsets: ${resultOffsets.mkString(",")}")
+    }
+  }
+
   test("Test only record_header_name without trailer") {
     // When only header is excluded, each data record includes DATA-REC (10 bytes) + TRAILER-REC (8 bytes) = 18 bytes
     val testDataNoTrailer: Array[Byte] = Array[Byte](

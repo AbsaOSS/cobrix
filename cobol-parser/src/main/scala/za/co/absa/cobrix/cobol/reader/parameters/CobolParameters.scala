@@ -111,7 +111,7 @@ case class CobolParameters(
                             debugLayoutPositions:    Boolean,
                             enableSelfChecks:        Boolean,
                             metadataPolicy:          MetadataPolicy,
-                            recordHeaderName:        Option[String] = None,
-                            recordTrailerName:       Option[String] = None,
+                            fileHeaderField:         Option[String] = None,
+                            fileTrailerField:        Option[String] = None,
                             options:                 Map[String, String]
                           )

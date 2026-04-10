@@ -179,7 +179,7 @@ object DefaultSource {
     * by parsing the copybook and looking up the named root-level records.
     */
   private def resolveHeaderTrailerOffsets(parameters: CobolParameters, spark: SparkSession): CobolParameters = {
-    if (parameters.recordHeaderName.isEmpty && parameters.recordTrailerName.isEmpty) {
+    if (parameters.fileHeaderField.isEmpty && parameters.fileTrailerField.isEmpty) {
       return parameters
     }
 
@@ -194,7 +194,7 @@ object DefaultSource {
     var fileStartOffset = 0
     var fileEndOffset = 0
 
-    parameters.recordHeaderName.foreach { headerName =>
+    parameters.fileHeaderField.foreach { headerName =>
       val transformedHeaderName = CopybookParser.transformIdentifier(headerName)
       val headerRecord = rootRecords.find(_.name.equalsIgnoreCase(transformedHeaderName))
         .getOrElse(throw new IllegalArgumentException(
@@ -213,7 +213,7 @@ object DefaultSource {
       fileStartOffset = headerRecord.binaryProperties.offset + headerRecord.binaryProperties.actualSize
     }
 
-    parameters.recordTrailerName.foreach { trailerName =>
+    parameters.fileTrailerField.foreach { trailerName =>
       val transformedTrailerName = CopybookParser.transformIdentifier(trailerName)
       val trailerRecord = rootRecords.find(_.name.equalsIgnoreCase(transformedTrailerName))
         .getOrElse(throw new IllegalArgumentException(
@@ -233,8 +233,8 @@ object DefaultSource {
     }
 
     // Compute the data-only record length by subtracting excluded records from total
-    val excludedNames = (parameters.recordHeaderName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
-      parameters.recordTrailerName.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
+    val excludedNames = (parameters.fileHeaderField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
+      parameters.fileTrailerField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
     val totalSize = copybook.getRecordSize
     val excludedSize = rootRecords
       .filter(r => excludedNames.contains(r.name.toUpperCase))
@@ -250,8 +250,8 @@ object DefaultSource {
     val updatedVarLen = existingVarLen match {
       case Some(vlp) =>
         Some(vlp.copy(
-          fileStartOffset = if (parameters.recordHeaderName.isDefined) fileStartOffset else vlp.fileStartOffset,
-          fileEndOffset = if (parameters.recordTrailerName.isDefined) fileEndOffset else vlp.fileEndOffset
+          fileStartOffset = if (parameters.fileHeaderField.isDefined) fileStartOffset else vlp.fileStartOffset,
+          fileEndOffset = if (parameters.fileTrailerField.isDefined) fileEndOffset else vlp.fileEndOffset
         ))
       case None if fileStartOffset > 0 || fileEndOffset > 0 =>
         Some(VariableLengthParameters(
