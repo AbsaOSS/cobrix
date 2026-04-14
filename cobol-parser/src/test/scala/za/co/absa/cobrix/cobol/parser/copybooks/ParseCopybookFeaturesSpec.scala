@@ -19,7 +19,8 @@ package za.co.absa.cobrix.cobol.parser.copybooks
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.ast.Group
+import za.co.absa.cobrix.cobol.parser.ast.datatype.Decimal
+import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.policies.FillerNamingPolicy
 import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
@@ -307,6 +308,28 @@ class ParseCopybookFeaturesSpec extends AnyFunSuite with SimpleComparisonBase {
         |  5 CONTACT_PERSON                     R              5    142    148      7
         |    10 FIRST_NAME                                     6    142    147      6
         |  5 AMOUNT                                            7    149    156      8
+        |"""
+        .stripMargin.replace("\r\n", "\n")
+
+    assertEqualsMultiline(layout, expectedLayout)
+  }
+
+  test("Test parsing copybooks with scaled decimals") {
+    val copybookStr = "      10 N PIC SVPP9(5) COMP-3."
+
+    val copybook = CopybookParser.parseSimple(copybookStr)
+    val layout = copybook.generateRecordLayoutPositions()
+
+    val field = copybook.getFieldByName("N").asInstanceOf[Primitive]
+    val dataType = field.dataType.asInstanceOf[Decimal]
+
+    assert(dataType.scale == 5)
+    assert(dataType.scaleFactor == -2)
+
+    val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |10 N                                                  1      1      3      3
         |"""
         .stripMargin.replace("\r\n", "\n")
 
