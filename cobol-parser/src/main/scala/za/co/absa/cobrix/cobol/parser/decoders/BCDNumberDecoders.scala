@@ -92,10 +92,14 @@ object BCDNumberDecoders {
 
     var sign = ""
 
+    // Since when scaleFactor < 0 an additional zero is always added as '0.' we need to scale the original
+    // value left by 1 digit (Fixes: https://github.com/AbsaOSS/cobrix/issues/837)
+    val scaleDotPosition = if (scaleFactor < 0 && scale > 0) scale - 1 else scale
+
     val intendedDecimalPosition = if (mandatorySignNibble)
-      bytes.length * 2 - (scale + 1)
+      bytes.length * 2 - (scaleDotPosition + 1)
     else
-      bytes.length * 2 - scale
+      bytes.length * 2 - scaleDotPosition
 
     val additionalZeros = if (intendedDecimalPosition <= 0) {
       -intendedDecimalPosition + 1

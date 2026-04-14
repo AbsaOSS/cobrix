@@ -226,6 +226,26 @@ class BinaryDecoderSpec extends AnyFunSuite {
     assert (v2.contains("92233720368547757.98"))
   }
 
+  test("Test COMP-3 decimal with scale factor cases") {
+    val v1 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x06.toByte,0x54.toByte,0x7C.toByte), scale = 0, scaleFactor = 0, mandatorySignNibble = true)
+    assert (v1.contains("06547"))
+
+    val v2 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x06.toByte,0x54.toByte,0x7C.toByte), scale = 0, scaleFactor = -1, mandatorySignNibble = true)
+    assert (v2.contains("0.006547"))
+
+    val v3 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x06.toByte,0x54.toByte,0x7C.toByte), scale = 0, scaleFactor = -2, mandatorySignNibble = true)
+    assert (v3.contains("0.0006547"))
+
+    val v4 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x06.toByte,0x54.toByte,0x7C.toByte), scale = 5, scaleFactor = -1, mandatorySignNibble = true)
+    assert (v4.contains("0.006547"))
+
+    val v5 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x06.toByte,0x54.toByte,0x7C.toByte), scale = 5, scaleFactor = -2, mandatorySignNibble = true)
+    assert (v5.contains("0.0006547"))
+
+    val v6 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x16.toByte,0x54.toByte,0x7C.toByte), scale = 5, scaleFactor = -2, mandatorySignNibble = true)
+    assert (v6.contains("0.0016547"))
+  }
+
   test("Test COMP-3U decimal cases") {
     // A simple decimal number
     val v1 = BCDNumberDecoders.decodeBigBCDNumber(Array[Byte](0x15.toByte, 0x88.toByte, 0x40.toByte), scale = 2, scaleFactor = 0, mandatorySignNibble = false)

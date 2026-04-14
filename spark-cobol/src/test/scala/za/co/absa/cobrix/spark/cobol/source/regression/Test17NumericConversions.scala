@@ -281,6 +281,45 @@ class Test17NumericConversions extends AnyWordSpec with SparkTestBase with Binar
         }
       }
     }
+
+    "negative scale factor for DISPLAY AND COMP-3 numbers should be decoded correctly" when {
+      val copybook =
+        """      10 N1 PIC SVPP9(5) COMP-3.
+          |      10 N2 PIC SVPP9(5).
+          |""".stripMargin
+
+      withTempBinFile("scelad_commp3", ".dat", Array(0x06, 0x54, 0x7C, 0xF0, 0xF6, 0xF5, 0xF4, 0xF7).map(_.toByte)) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualSchema = df.schema.treeString
+        val actualData1 = df.collect()(0).getDecimal(0).toString
+        val actualData2 = df.collect()(0).getDecimal(1).toString
+
+        "schema should match" in {
+          val expectedSchema =
+            """root
+              | |-- N1: decimal(7,7) (nullable = true)
+              | |-- N2: decimal(7,7) (nullable = true)
+              |""".stripMargin
+
+          assertEqualsMultiline(actualSchema, expectedSchema)
+        }
+
+        "data should match" in {
+          val expectedData = "0.0006547"
+
+          assertEqualsMultiline(actualData1, expectedData)
+          assertEqualsMultiline(actualData2, expectedData)
+        }
+      }
+    }
+
   }
 
 }
