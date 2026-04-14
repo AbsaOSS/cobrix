@@ -298,8 +298,9 @@ class Test17NumericConversions extends AnyWordSpec with SparkTestBase with Binar
           .load(tmpFileName)
 
         val actualSchema = df.schema.treeString
-        val actualData1 = df.collect()(0).getDecimal(0).toString
-        val actualData2 = df.collect()(0).getDecimal(1).toString
+        val row = df.collect().head
+        val actualData1 = row.getDecimal(0).toString
+        val actualData2 = row.getDecimal(1).toString
 
         "schema should match" in {
           val expectedSchema =
