@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.spark.cobol.source.parameters
 
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedLength, VariableBlock}
 import za.co.absa.cobrix.cobol.reader.parameters.{MultisegmentParameters, ReaderParameters}
 
@@ -45,7 +46,7 @@ class CobolParametersValidatorSuite extends AnyWordSpec {
     "do not throw exceptions if the configuration is okay" in {
       val readParams = ReaderParameters(
         recordFormat = FixedLength,
-        variableSizeOccurs = true
+        variableSizeOccurs = VariableSizeOccursPolicy.ShiftRecord
       )
 
       CobolParametersValidator.validateParametersForWriting(readParams)

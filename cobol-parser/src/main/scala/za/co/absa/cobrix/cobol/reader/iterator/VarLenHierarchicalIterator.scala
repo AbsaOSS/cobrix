@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader.iterator
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Group
 import za.co.absa.cobrix.cobol.parser.headerparsers.RecordHeaderParser
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
@@ -143,7 +144,7 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
       parentChildrenMap,
       readerProperties.startOffset,
       readerProperties.schemaPolicy,
-      readerProperties.variableSizeOccurs,
+      readerProperties.variableSizeOccurs == VariableSizeOccursPolicy.ShiftRecord,
       readerProperties.generateRecordId,
       fileId,
       recordIndex,

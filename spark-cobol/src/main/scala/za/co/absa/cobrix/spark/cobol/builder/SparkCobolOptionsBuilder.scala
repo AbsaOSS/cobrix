@@ -72,7 +72,7 @@ class SparkCobolOptionsBuilder(copybookContent: String)(implicit spark: SparkSes
           array,
           0,
           schemaRetentionPolicy,
-          variableLengthOccurs = readerParams.variableSizeOccurs,
+          variableSizeOccurs = readerParams.variableSizeOccurs,
           generateRecordId = readerParams.generateRecordId,
           generateRecordBytes = readerParams.generateRecordBytes,
           generateCorruptFields = generateCorruptFields,

@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
@@ -142,7 +143,7 @@ object NestedRecordCombiner {
     * @param startOffset        The byte offset at which data writing should begin, typically 0 for fixed-length or 4 for RDW records
     * @param hasRdw             A flag indicating whether to prepend a Record Descriptor Word header to each output record
     * @param isRdwBigEndian     A flag indicating the byte order for the RDW header, true for big-endian, false for little-endian
-    * @param variableSizeOccurs A flag indicating whether OCCURS DEPENDING ON fields should use actual element counts rather than maximum sizes
+    * @param variableSizeOccurs Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size
     * @param strictSchema       If true, each field in the copybook must exist in the Spark schema.
     * @return An RDD of byte arrays, where each array represents one record in binary format according to the copybook specification
     */
@@ -154,7 +155,7 @@ object NestedRecordCombiner {
                                  startOffset: Int,
                                  hasRdw: Boolean,
                                  isRdwBigEndian: Boolean,
-                                 variableSizeOccurs: Boolean,
+                                 variableSizeOccurs: VariableSizeOccursPolicy,
                                  strictSchema: Boolean): RDD[Array[Byte]] = {
     val writerAst = constructWriterAst(copybook, schema, strictSchema)
 
@@ -162,10 +163,11 @@ object NestedRecordCombiner {
       rows.map { row =>
         val ar = new Array[Byte](recordSize)
 
-        val bytesWritten = writeToBytes(writerAst, row, ar, startOffset, variableSizeOccurs)
+        val bytesWritten = writeToBytes(writerAst, row, ar, startOffset, variableSizeOccurs != VariableSizeOccursPolicy.MaxSize)
+        val recordSizeWritten = if (variableSizeOccurs == VariableSizeOccursPolicy.ShiftRecord) bytesWritten else recordSize - startOffset
 
         if (hasRdw) {
-          val recordLengthToWriteToRDW = bytesWritten + recordLengthAdj
+          val recordLengthToWriteToRDW = recordSizeWritten + recordLengthAdj
 
           if (isRdwBigEndian) {
             ar(0) = ((recordLengthToWriteToRDW >> 8) & 0xFF).toByte
@@ -183,7 +185,7 @@ object NestedRecordCombiner {
           }
         }
 
-        if (!variableSizeOccurs || recordSize == bytesWritten + startOffset) {
+        if (variableSizeOccurs != VariableSizeOccursPolicy.ShiftRecord || recordSize == bytesWritten + startOffset) {
           ar
         } else {
           java.util.Arrays.copyOf(ar, bytesWritten + startOffset)

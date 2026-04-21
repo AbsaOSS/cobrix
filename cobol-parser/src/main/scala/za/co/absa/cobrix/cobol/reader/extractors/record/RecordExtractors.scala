@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.utils.StringUtils
@@ -40,7 +41,7 @@ object RecordExtractors {
     * @param data                       The data bits containing the record.
     * @param offsetBytes                The offset to the beginning of the record (in bits).
     * @param policy                     A schema retention policy to be applied to the extracted record.
-    * @param variableLengthOccurs       If true, OCCURS DEPENDING ON data size will depend on the number of elements.
+    * @param variableSizeOccurs       Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size.
     * @param generateRecordId           If true, a record id field will be added as the first field of the record.
     * @param generateRecordBytes        If true, a record bytes field will be added at the beginning of each record.
     * @param generateCorruptFields      If true, a corrupt fields field will be appended to the end of the schema.
@@ -60,7 +61,7 @@ object RecordExtractors {
                                   data: Array[Byte],
                                   offsetBytes: Int = 0,
                                   policy: SchemaRetentionPolicy = SchemaRetentionPolicy.KeepOriginal,
-                                  variableLengthOccurs: Boolean = false,
+                                  variableSizeOccurs: VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize,
                                   generateRecordId: Boolean = false,
                                   generateRecordBytes: Boolean = false,
                                   generateCorruptFields: Boolean = false,
@@ -125,10 +126,14 @@ object RecordExtractors {
           }
           values
       }
-      if (variableLengthOccurs) {
-        (offset - useOffset, arr)
-      } else {
-        (field.binaryProperties.actualSize, arr)
+
+      variableSizeOccurs match {
+        case VariableSizeOccursPolicy.MaxSize =>
+          (field.binaryProperties.actualSize, arr)
+        case VariableSizeOccursPolicy.ShiftRecord =>
+          (offset - useOffset, arr)
+        case VariableSizeOccursPolicy.PadRecord =>
+          (offset - useOffset, arr)
       }
     }
 

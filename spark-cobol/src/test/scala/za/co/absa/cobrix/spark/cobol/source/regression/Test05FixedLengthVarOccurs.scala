@@ -19,6 +19,7 @@ package za.co.absa.cobrix.spark.cobol.source.regression
 import org.apache.commons.io.Charsets
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -172,5 +173,71 @@ class Test05FixedLengthVarOccurs extends AnyFunSuite with SparkTestBase with Bin
       assertEqualsMultiline(actual, expected)
     }
   }
+
+  test("Test input data file having variable length occurs and padding") {
+    val copybook =
+      """
+           01 RECORD.
+              02 COUNT1 PIC 9(2).
+              02 COUNT2 PIC 9(2).
+              02 GROUP1 OCCURS 0 TO 5 TIMES DEPENDING ON COUNT1.
+                  03 TEXT   PIC X(2).
+              02 GROUP2 OCCURS 0 TO 5 TIMES DEPENDING ON COUNT2.
+                  03 FIELD  PIC 9.
+    """
+
+    withTempTextFile("text", ".dat", StandardCharsets.UTF_8, " 2 3ABCD123-------- 3 4EFGHIJ4567-----") { tmpFileName =>
+      val df = spark
+        .read
+        .format("cobol")
+        .option("copybook_contents", copybook)
+        .option("schema_retention_policy", "collapse_root")
+        .option("variable_size_occurs", "pad_record")
+        .option("encoding", "ascii")
+        .load(tmpFileName)
+
+      val expected =
+        """[ {
+          |  "COUNT1" : 2,
+          |  "COUNT2" : 3,
+          |  "GROUP1" : [ {
+          |    "TEXT" : "AB"
+          |  }, {
+          |    "TEXT" : "CD"
+          |  } ],
+          |  "GROUP2" : [ {
+          |    "FIELD" : 1
+          |  }, {
+          |    "FIELD" : 2
+          |  }, {
+          |    "FIELD" : 3
+          |  } ]
+          |}, {
+          |  "COUNT1" : 3,
+          |  "COUNT2" : 4,
+          |  "GROUP1" : [ {
+          |    "TEXT" : "EF"
+          |  }, {
+          |    "TEXT" : "GH"
+          |  }, {
+          |    "TEXT" : "IJ"
+          |  } ],
+          |  "GROUP2" : [ {
+          |    "FIELD" : 4
+          |  }, {
+          |    "FIELD" : 5
+          |  }, {
+          |    "FIELD" : 6
+          |  }, {
+          |    "FIELD" : 7
+          |  } ]
+          |} ]""".stripMargin.replace("\r\n", "\n")
+
+      val actual = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+      assertEqualsMultiline(actual, expected)
+    }
+  }
+
 
 }
