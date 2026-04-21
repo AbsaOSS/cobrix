@@ -150,11 +150,6 @@ object CobolParametersValidator {
         s"provided value: '${readerParameters.recordFormat}'"
     }
 
-    if (readerParameters.variableSizeOccurs &&
-      readerParameters.recordFormat == RecordFormat.FixedLength) {
-      log.warn("Option 'variable_size_occurs=true' is used with 'record_format=F' which means records can have variable length. It is highly recommended to use 'record_format=V' instead.")
-    }
-
     if (readerParameters.occursMappings.nonEmpty) {
       issues += "OCCURS mapping option ('occurs_mappings') is not supported for writing"
     }

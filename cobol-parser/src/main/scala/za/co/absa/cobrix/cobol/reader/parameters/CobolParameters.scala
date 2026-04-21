@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.reader.parameters
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy, MetadataPolicy}
+import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, FillerNamingPolicy, MetadataPolicy, VariableSizeOccursPolicy}
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
 
@@ -45,7 +45,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param minimumRecordLength     Minium record length for which the record is considered valid.
   * @param maximumRecordLength     Maximum record length for which the record is considered valid.
   * @param variableLengthParams    VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
-  * @param variableSizeOccurs      If true, OCCURS DEPENDING ON data size will depend on the number of elements
+  * @param variableSizeOccurs      Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
   * @param generateCorruptFields   Generate '_corrupt_fields' field for fields that haven't converted successfully
   * @param schemaRetentionPolicy   A copybook usually has a root group struct element that acts like a rowtag in XML. This can be retained in Spark schema or can be collapsed
@@ -87,7 +87,7 @@ case class CobolParameters(
                             minimumRecordLength:     Option[Int],
                             maximumRecordLength:     Option[Int],
                             variableLengthParams:    Option[VariableLengthParameters],
-                            variableSizeOccurs:      Boolean,
+                            variableSizeOccurs:      VariableSizeOccursPolicy,
                             generateRecordBytes:     Boolean,
                             generateCorruptFields:   Boolean,
                             schemaRetentionPolicy:   SchemaRetentionPolicy,

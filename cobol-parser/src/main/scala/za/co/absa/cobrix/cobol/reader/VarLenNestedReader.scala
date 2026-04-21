@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.reader
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.headerparsers.{RecordHeaderParser, RecordHeaderParserFactory}
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat.{FixedBlock, FixedLength, VariableBlock, VariableLength}
 import za.co.absa.cobrix.cobol.reader.extractors.raw._
 import za.co.absa.cobrix.cobol.reader.extractors.record.RecordHandler
@@ -79,11 +80,14 @@ class VarLenNestedReader[T: ClassTag](copybookContents: Seq[String],
         Some(new FixedBlockRawRecordExtractor(reParams, fbParams))
       case None if readerProperties.recordFormat == VariableBlock =>
         Some(new VariableBlockVariableRecordExtractor(reParams))
-      case None if readerProperties.variableSizeOccurs &&
+      case None if readerProperties.variableSizeOccurs != VariableSizeOccursPolicy.MaxSize &&
         readerProperties.recordHeaderParser.isEmpty &&
         !readerProperties.isRecordSequence &&
         readerProperties.lengthFieldExpression.isEmpty            =>
-        Some(new VarOccursRecordExtractor(reParams))
+        if (readerProperties.variableSizeOccurs == VariableSizeOccursPolicy.ShiftRecord)
+          Some(new VarOccursRecordExtractor(reParams))
+        else
+          Some(new FixedRecordLengthRawRecordExtractor(reParams, readerProperties.recordLength))
       case None if readerProperties.recordFormat == FixedLength   =>
         Some(new FixedRecordLengthRawRecordExtractor(reParams, readerProperties.recordLength))
       case None                                                   =>

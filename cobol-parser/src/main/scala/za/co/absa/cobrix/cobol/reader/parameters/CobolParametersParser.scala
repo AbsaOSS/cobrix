@@ -270,6 +270,8 @@ object CobolParametersParser extends Logging {
       )
     }
 
+    val variableSizeOccursPolicy = VariableSizeOccursPolicy(params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false"))
+
     val cobolParameters = CobolParameters(
       copybookPathOpt,
       copybookPaths,
@@ -290,7 +292,7 @@ object CobolParametersParser extends Logging {
       params.get(PARAM_MINIMUM_RECORD_LENGTH).map(_.toInt),
       params.get(PARAM_MAXIMUM_RECORD_LENGTH).map(_.toInt),
       variableLengthParams,
-      params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean,
+      variableSizeOccursPolicy,
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
       params.getOrElse(PARAM_CORRUPT_FIELDS, "false").toBoolean,
       schemaRetentionPolicy,
@@ -491,7 +493,7 @@ object CobolParametersParser extends Logging {
     val isSegmentIdGenerationEnabled = params.contains(PARAM_SEGMENT_ID_ROOT) || params.contains(s"${PARAM_SEGMENT_ID_LEVEL_PREFIX}0")
     val fileStartOffset = params.getOrElse(PARAM_FILE_START_OFFSET, "0").toInt
     val fileEndOffset = params.getOrElse(PARAM_FILE_END_OFFSET, "0").toInt
-    val varLenOccursEnabled = params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false").toBoolean
+    val variableSizeOccursPolicy = VariableSizeOccursPolicy(params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false"))
     val hasRecordExtractor = params.contains(PARAM_RECORD_EXTRACTOR)
     val isHierarchical = params.getMap.keys.exists(k => k.startsWith("segment-children"))
     val allowPartialRecords = params.getOrElse(PARAM_ALLOW_PARTIAL_RECORDS, "false").toBoolean
@@ -499,7 +501,7 @@ object CobolParametersParser extends Logging {
     // Fallback to basic Ascii when the format is 'D' or 'T', but no special Cobrix features are enabled
     val basicAscii = !allowPartialRecords && recordFormat == AsciiText
     val variableLengthAscii = (recordFormat == AsciiText && !basicAscii) || recordFormat == CobrixAsciiText
-    val nonTextVariableLengthOccurs = varLenOccursEnabled && !basicAscii
+    val nonTextVariableLengthOccurs = variableSizeOccursPolicy != VariableSizeOccursPolicy.MaxSize && !basicAscii
 
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM))) {
