@@ -549,6 +549,34 @@ But for VB format RDWs follow BDWs and endiness. You can determine the endiness 
 | `00 00 28 00`  `00 00 10 00` (BDW, RDW)  |  Little-endian BDW+RDW, no adjustments,<br/>BDW = `0x28 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "false")`<br/>`.option("is_rdw_big_endian", "false")`  |
 | `00 00 2C 00`  `00 00 10 00` (BDW, RDW)  |  Little-endian BDW+RDW, need -4 byte adjustment since BDW includes its own length,<br/>BDW = `0x2C - 4 = 40 byes`<br/>the record size: `0x10 = 16 bytes`    | `.option("record_format", "VB")`<br/>`.option("is_bdw_big_endian", "false")`<br/>`.option("is_rdw_big_endian", "false")`<br/>`.option("rdw_adjustment", -4)`  |
 
+### Variable-size OCCURS
+When copybooks contain the `OCCURS DEPENDING ON` clause, different mainframe systems may export such fields in different ways. 
+By default, Cobrix assumes that fields with OCCURS always occupy the maximum possible space in the record, regardless of the 
+actual number of elements present in the array. This means that the record size does not change based on the actual element 
+count — the array is treated as if it always contains the maximum number of elements. However, if your data uses true 
+variable-size OCCURS fields, you must explicitly select one of the supported options for handling variable-size arrays.
+
+Cobrix supports the following modes:
+
+- **Maximum size (default)**. Arrays always occupy space for the maximum number of elements defined in the copybook. 
+  The record size remains constant, even if fewer elements are present.
+  ```scala
+  .option("variable_size_occurs", "max_size") 
+  // Equivalent to "false" in older Cobrix versions; retained for backward compatibility.
+  ```
+- **Shift records**. If the number of elements in an array is less than the maximum, the field following the array starts 
+  immediately after the last actual element. All subsequent fields are shifted forward, and the record becomes variable in size. 
+  ```scala
+  .option("variable_size_occurs", "shift_record")
+  // Equivalent to "true" in older Cobrix versions; retained for backward compatibility.
+  ```
+- **Pad records**. This mode is similar to **Shift record**, in that fields following the array begin immediately after the
+  last actual element. However, the record is then padded so that its total size matches the size it would have if all 
+  arrays contained the maximum number of elements.
+  ```scala
+  .option("variable_size_occurs", "pad_record")
+  ```
+
 ### Schema collapsing
 
 Mainframe data often contain only one root GROUP. In such cases such a GROUP can be considered something similar to XML rowtag.
@@ -1563,21 +1591,21 @@ The output looks like this:
 
 ##### Data parsing options
 
-| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                       |
-|-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                              |
-| .option("display_pic_always_string", "false")             | If `true` fields that have `DISPLAY` format will always be converted to `string` type, even if such fields contain numbers, retaining leading and trailing zeros. Cannot be used together with `strict_integral_precision`.                                                       |
-| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, and others (see "Currently supported EBCDIC code pages" section.                                                                         |
-| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                     |
-| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                  |
-| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                       |
-| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                   |
-| .option("variable_size_occurs", "false")                  | If `false` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `true` the size of the field will shrink for each field that has less actual elements. |
-| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                             |
-| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                |
-| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                             |
-| .option("strict_integral_precision", "true")              | If `true`, Cobrix will not generate `short`/`integer`/`long` Spark data types, and always use `decimal(n)` with the exact precision that matches the copybook. Cannot be used together with `display_pic_always_string`.                                                          |
-| .option("binary_as_hex", "false")                         | By default fields that have `PIC X` and `USAGE COMP` are converted to `binary` Spark data type. If this option is set to `true`, such fields will be strings in HEX encoding.                                                                                                     |
+| Option (usage example)                                    | Description                                                                                                                                                                                                                                                                                                                                                                                                          |
+|-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("string_trimming_policy", "both")                 | Specifies if and how string fields should be trimmed. Available options: `both` (default), `none`, `left`, `right`, `keep_all`. `keep_all` - keeps control characters when decoding ASCII text files                                                                                                                                                                                                                 |
+| .option("display_pic_always_string", "false")             | If `true` fields that have `DISPLAY` format will always be converted to `string` type, even if such fields contain numbers, retaining leading and trailing zeros. Cannot be used together with `strict_integral_precision`.                                                                                                                                                                                          |
+| .option("ebcdic_code_page", "common")                     | Specifies a code page for EBCDIC encoding. Currently supported values: `common` (default), `common_extended`, `cp037`, `cp037_extended`, and others (see "Currently supported EBCDIC code pages" section.                                                                                                                                                                                                            |
+| .option("ebcdic_code_page_class", "full.class.specifier") | Specifies a user provided class for a custom code page to UNICODE conversion.                                                                                                                                                                                                                                                                                                                                        |
+| .option("field_code_page:cp825", "field1, field2")        | Specifies the code page for selected fields. You can add mo than 1 such option for multiple code page overrides.                                                                                                                                                                                                                                                                                                     |
+| .option("is_utf16_big_endian", "true")                    | Specifies if UTF-16 encoded strings (`National` / `PIC N` format) are big-endian (default).                                                                                                                                                                                                                                                                                                                          |
+| .option("floating_point_format", "IBM")                   | Specifies a floating-point format. Available options: `IBM` (default), `IEEE754`, `IBM_little_endian`, `IEEE754_little_endian`.                                                                                                                                                                                                                                                                                      |
+| .option("variable_size_occurs", "max_size")               | If `max_size` (default) fields that have `OCCURS 0 TO 100 TIMES DEPENDING ON` clauses always have the same size corresponding to the maximum array size (e.g. 100 in this example). If set to `shift_record` the size of the field will shrink for each field that has less actual elements. `pad_record` is same as `shift_record` but each record is padded to the maximum size so all records have the same size. |
+| .option("occurs_mapping", "{\"FIELD\": {\"X\": 1}}")      | If specified, as a JSON string, allows for String `DEPENDING ON` fields with a corresponding mapping.                                                                                                                                                                                                                                                                                                                |
+| .option("strict_sign_overpunching", "true")               | If `true` (default), sign overpunching will only be allowed for signed numbers. If `false`, overpunched positive sign will be allowed for unsigned numbers, but negative sign will result in null.                                                                                                                                                                                                                   |
+| .option("improved_null_detection", "true")                | If `true`(default), values that contain only 0x0 ror DISPLAY strings and numbers will be considered `null`s instead of empty strings.                                                                                                                                                                                                                                                                                |
+| .option("strict_integral_precision", "true")              | If `true`, Cobrix will not generate `short`/`integer`/`long` Spark data types, and always use `decimal(n)` with the exact precision that matches the copybook. Cannot be used together with `display_pic_always_string`.                                                                                                                                                                                             |
+| .option("binary_as_hex", "false")                         | By default fields that have `PIC X` and `USAGE COMP` are converted to `binary` Spark data type. If this option is set to `true`, such fields will be strings in HEX encoding.                                                                                                                                                                                                                                        |
 
 ##### Modifier options
 
@@ -1834,7 +1862,7 @@ df.write
 ### Current Limitations
 The writer is still in its early stages and has several limitations:
 - Nested GROUPs, OCCURS, OCCURS DEPENDING ON are supported.
-- Variable-size occurs are supported with `variable_size_occurs = true`.
+- Variable-size occurs are supported (`variable_size_occurs = true`). Recommended `record_format = "V"`.
 - Writing multi-segment files is not supported.
 - Supported types:
   - `PIC X(n)` alphanumeric.
@@ -1983,6 +2011,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.10.3 to be release soon.
+   - [#837](https://github.com/AbsaOSS/cobrix/pull/837) Fixed "PIC SVPP9(5) COMP-3" values decoding when the scale factor is negative.
+
 - #### 2.10.2 released 15 April 2026.
    - [#837](https://github.com/AbsaOSS/cobrix/pull/837) Fixed "PIC SVPP9(5) COMP-3" values decoding when the scale factor is negative.
 
