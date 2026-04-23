@@ -1781,7 +1781,7 @@ val count = CobolProcessor.builder
     // Change the field v
     // val newValue = ...
     // Write the changed value back
-    ctrx.copybook.setFieldValueByName("some_field", record, newValue, 0)
+    ctx.copybook.setFieldValueByName("some_field", record, newValue, 0)
     // Return the changed record     
     record
   }
@@ -2012,7 +2012,7 @@ A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
 - #### 2.10.3 to be release soon.
-   - [#837](https://github.com/AbsaOSS/cobrix/pull/837) Fixed "PIC SVPP9(5) COMP-3" values decoding when the scale factor is negative.
+   - [#839](https://github.com/AbsaOSS/cobrix/pull/839) Added `variable_size_occurs = "pad_record"` for fixed-size records where `OCCURS DEPENDING ON` arrays use variable physical storage and the remaining record is padded.
 
 - #### 2.10.2 released 15 April 2026.
    - [#837](https://github.com/AbsaOSS/cobrix/pull/837) Fixed "PIC SVPP9(5) COMP-3" values decoding when the scale factor is negative.

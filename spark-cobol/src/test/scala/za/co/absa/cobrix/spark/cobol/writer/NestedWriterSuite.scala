@@ -349,7 +349,7 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
       }
     }
 
-    "write the dataframe with OCCURS DEPENDING ON, fixed record length without" in {
+    "write the dataframe with OCCURS DEPENDING ON, fixed record length with record padding" in {
       val exampleJsons = Seq(
         """{"ID":1,"cnt1":3,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US","CITY":"New York"},"PEOPLE":[{"NAME":"John Doe","PHONE_NUMBER":"555-1234"},{"NAME": "Jane Smith","PHONE_NUMBER":"555-5678"}]}""",
         """{"ID":2,"cnt1":0,"NUMBERS":[],"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User","PHONE_NUMBER":"555-1235"}]}"""
@@ -415,7 +415,7 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
       }
     }
 
-    "write the dataframe with OCCURS DEPENDING ON, fixed record length with record padding" in {
+    "write the dataframe with OCCURS DEPENDING ON, fixed record length without record padding" in {
       val exampleJsons = Seq(
         """{"ID":1,"cnt1":3,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US","CITY":"New York"},"PEOPLE":[{"NAME":"John Doe","PHONE_NUMBER":"555-1234"},{"NAME": "Jane Smith","PHONE_NUMBER":"555-5678"}]}""",
         """{"ID":2,"cnt1":0,"NUMBERS":[],"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User","PHONE_NUMBER":"555-1235"}]}"""
