@@ -1755,11 +1755,11 @@ val builder = CobolProcessor.builder
 val processor = new RawRecordProcessor {
   override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
     // The transformation logic goes here
-    val value = copybook.getFieldValueByName("some_field", record, 0)
+    val value = ctx.copybook.getFieldValueByName("some_field", record, 0)
     // Change the field v
     // val newValue = ...
     // Write the changed value back
-    copybook.setFieldValueByName("some_field", record, newValue, 0)
+    ctx.copybook.setFieldValueByName("some_field", record, newValue, 0)
     // Return the changed record     
     record
   }
@@ -1777,11 +1777,11 @@ val count = CobolProcessor.builder
   .withProcessingStrategy(CobolProcessingStrategy.InPlace) // Or CobolProcessingStrategy.ToVariableLength
   .withRecordProcessor { (record: Array[Byte], ctx: CobolProcessorContext) =>
     // The transformation logic goes here
-    val value = copybook.getFieldValueByName("some_field", record, 0)
+    val value = ctx.copybook.getFieldValueByName("some_field", record, 0)
     // Change the field v
     // val newValue = ...
     // Write the changed value back
-    copybook.setFieldValueByName("some_field", record, newValue, 0)
+    ctrx.copybook.setFieldValueByName("some_field", record, newValue, 0)
     // Return the changed record     
     record
   }
