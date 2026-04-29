@@ -18,16 +18,22 @@ package za.co.absa.cobrix.cobol.reader.stream
 
 import java.io.{BufferedInputStream, File, FileInputStream, FileNotFoundException, IOException}
 
-class FSStream (fileName: String) extends SimpleStream {
+class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Long = 0L) extends SimpleStream {
   val bytesStream = new BufferedInputStream(new FileInputStream(fileName))
   private var isClosed = false
 
   private val fileSize: Long = new File(fileName).length()
+  private val effectiveSize: Long = fileSize - fileStartOffset - fileEndOffset
   private var byteIndex = 0L
 
-  override def size: Long = fileSize
+  // Skip the start offset if specified
+  if (fileStartOffset > 0) {
+    bytesStream.skip(fileStartOffset)
+  }
 
-  override def totalSize: Long = fileSize
+  override def size: Long = effectiveSize
+
+  override def totalSize: Long = effectiveSize
 
   override def offset: Long = byteIndex
 
@@ -36,8 +42,18 @@ class FSStream (fileName: String) extends SimpleStream {
   @throws(classOf[IOException])
   override def next(numberOfBytes: Int): Array[Byte] = {
     if (numberOfBytes <= 0) throw new IllegalArgumentException("Value of numberOfBytes should be greater than zero.")
-    val b = new Array[Byte](numberOfBytes)
-    val actual = bytesStream.read(b, 0, numberOfBytes)
+
+    // Check if we've reached the effective end of the stream
+    if (byteIndex >= effectiveSize) {
+      close()
+      return new Array[Byte](0)
+    }
+
+    // Calculate how many bytes we can actually read without exceeding effectiveSize
+    val bytesToRead = Math.min(numberOfBytes, (effectiveSize - byteIndex).toInt)
+
+    val b = new Array[Byte](bytesToRead)
+    val actual = bytesStream.read(b, 0, bytesToRead)
     if (actual <= 0) {
       close()
       new Array[Byte](0)
@@ -57,6 +73,6 @@ class FSStream (fileName: String) extends SimpleStream {
 
   @throws(classOf[FileNotFoundException])
   override def copyStream(): SimpleStream = {
-    new FSStream(fileName)
+    new FSStream(fileName, fileStartOffset, fileEndOffset)
   }
 }

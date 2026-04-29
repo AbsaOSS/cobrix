@@ -134,17 +134,17 @@ object CobolProcessor {
       this
     }
 
-    private[processor] def getCobolSchema(readerParameters: ReaderParameters): CobolSchema = {
+    def getCobolSchema(readerParameters: ReaderParameters): CobolSchema = {
       CobolSchema.fromReaderParameters(Seq(copybookContentsOpt.get), readerParameters)
     }
 
-    private[processor] def getReaderParameters: ReaderParameters = {
+    def getReaderParameters: ReaderParameters = {
       val cobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
 
       CobolParametersParser.getReaderProperties(cobolParameters, None)
     }
 
-    private[processor] def getOptions: Map[String, String] = caseInsensitiveOptions.toMap
+    private[cobrix] def getOptions: Map[String, String] = caseInsensitiveOptions.toMap
   }
 
   class CobolProcessorLoader(fileToProcess: String,
@@ -160,7 +160,10 @@ object CobolProcessor {
         case CobolProcessingStrategy.ToVariableLength => new CobolProcessorToRdw(readerParameters, copybook, copybookContents, options)
       }
 
-      val recordCount = UsingUtils.using(new FSStream(fileToProcess)) { ifs =>
+      val fileStartOffset = readerParameters.fileStartOffset
+      val fileEndOffset = readerParameters.fileEndOffset
+
+      val recordCount = UsingUtils.using(new FSStream(fileToProcess, fileStartOffset, fileEndOffset)) { ifs =>
         UsingUtils.using(new BufferedOutputStream(new FileOutputStream(outputFile))) { ofs =>
           processor.process(ifs, ofs)(rawRecordProcessor)
         }
