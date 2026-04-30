@@ -26,7 +26,7 @@ import za.co.absa.cobrix.cobol.processor.{CobolProcessingStrategy, CobolProcesso
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.index.entry.SparseIndexEntry
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_GENERATE_RECORD_ID
-import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.cobol.utils.UsingUtils
 import za.co.absa.cobrix.spark.cobol.reader.VarLenReader
@@ -147,17 +147,19 @@ object SparkCobolProcessor {
         throw new IllegalArgumentException("A RawRecordProcessor must be provided.")
       }
 
-      val cobolProcessor = CobolProcessor.builder
+      val cobolProcessorBuilder = CobolProcessor.builder
         .withCopybookContents(copybookContents)
         .withProcessingStrategy(cobolProcessingStrategy)
         .options(options)
-        .build()
+
+      val readerParameters = cobolProcessorBuilder.getReaderParameters
+      val cobolProcessor = cobolProcessorBuilder.build()
 
       val processor = new SparkCobolProcessor {
         private val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
 
         override def process(listOfFiles: Seq[String], outputPath: String): Long = {
-          getFileProcessorRdd(listOfFiles, outputPath, cobolProcessor, rawRecordProcessorOpt.get, sconf, numberOfThreads)
+          getFileProcessorRdd(listOfFiles, outputPath, cobolProcessor, readerParameters, rawRecordProcessorOpt.get, sconf, numberOfThreads)
             .reduce(_ + _)
         }
       }
@@ -185,6 +187,7 @@ object SparkCobolProcessor {
   private def getFileProcessorRdd(listOfFiles: Seq[String],
                                   outputPath: String,
                                   cobolProcessor: CobolProcessor,
+                                  readerParameters: ReaderParameters,
                                   rawRecordProcessor: SerializableRawRecordProcessor,
                                   sconf: SerializableConfiguration,
                                   numberOfThreads: Int
@@ -192,7 +195,7 @@ object SparkCobolProcessor {
     val groupedFiles = listOfFiles.grouped(numberOfThreads).toSeq
     val rdd = spark.sparkContext.parallelize(groupedFiles)
     rdd.map(group => {
-      processListOfFiles(group, outputPath, cobolProcessor, rawRecordProcessor, sconf, numberOfThreads)
+      processListOfFiles(group, outputPath, cobolProcessor, readerParameters, rawRecordProcessor, sconf, numberOfThreads)
     })
   }
 
@@ -248,6 +251,7 @@ object SparkCobolProcessor {
   private def processListOfFiles(listOfFiles: Seq[String],
                                  outputPath: String,
                                  cobolProcessor: CobolProcessor,
+                                 readerParameters: ReaderParameters,
                                  rawRecordProcessor: SerializableRawRecordProcessor,
                                  sconf: SerializableConfiguration,
                                  numberOfThreads: Int
@@ -255,11 +259,14 @@ object SparkCobolProcessor {
     val threadPool: ExecutorService = Executors.newFixedThreadPool(numberOfThreads)
     implicit val ec: ExecutionContext = ExecutionContext.fromExecutorService(threadPool)
 
-    val futures = listOfFiles.map { inputFIle =>
-      val fileName = new Path(inputFIle).getName
+    val futures = listOfFiles.map { inputFile =>
+      val fileName = new Path(inputFile).getName
       val outputPathFileName = new Path(outputPath, fileName).toString
 
-      log.info(s"Processing file: $inputFIle -> $outputPathFileName")
+      log.info(s"Processing file: $inputFile -> $outputPathFileName")
+
+      val fileStartOffset = readerParameters.fileStartOffset
+      val fileEndOffset = readerParameters.fileEndOffset
 
       Future {
         val hadoopConfig = sconf.value
@@ -267,7 +274,12 @@ object SparkCobolProcessor {
         val outputFile = new Path(outputPath, fileName)
         val outputFs = outputFile.getFileSystem(hadoopConfig)
 
-        val recordCount = UsingUtils.using(new FileStreamer(inputFIle, sconf.value)) { ifs =>
+        val maximumBytes = if (fileEndOffset > 0) {
+          FileUtils.getHadoopFileReadSize(inputFile, sconf.value, fileStartOffset, fileEndOffset)
+        } else
+          0L
+
+        val recordCount = UsingUtils.using(new FileStreamer(inputFile, sconf.value, fileStartOffset, maximumBytes)) { ifs =>
           UsingUtils.using(new BufferedOutputStream(outputFs.create(outputFile, true))) { ofs =>
             cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
           }
