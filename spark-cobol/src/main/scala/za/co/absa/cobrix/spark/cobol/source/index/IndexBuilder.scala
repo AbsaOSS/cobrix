@@ -230,20 +230,10 @@ private[cobol] object IndexBuilder extends Logging {
     val fileSystem = path.getFileSystem(config)
 
     val startOffset = fileStartOffset
-    val maximumBytes = if (fileEndOffset == 0) {
-      0
+    val maximumBytes = if (fileEndOffset > 0) {
+      FileUtils.getHadoopFileReadSize(filePath, config, fileStartOffset, fileEndOffset, Some(fileSystem))
     } else {
-      val fileSize = if (FileUtils.isCompressed(path, config)) {
-        FileUtils.getCompressedFileSize(path,config)
-      } else {
-        fileSystem.getFileStatus(path).getLen
-      }
-
-      val bytesToRead = fileSize - fileEndOffset - startOffset
-      if (bytesToRead < 0)
-        0
-      else
-        bytesToRead
+      0L
     }
 
     val inputStream = new FileStreamer(filePath, config, startOffset, maximumBytes)

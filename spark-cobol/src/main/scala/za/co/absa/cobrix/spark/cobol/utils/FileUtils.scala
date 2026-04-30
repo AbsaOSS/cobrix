@@ -253,6 +253,22 @@ object FileUtils extends Logging {
     size
   }
 
+  def getHadoopFileReadSize(fileName: String, config: Configuration, fileStartOffset: Long = 0, fileEndOffset: Long = 0, fileSystemOpt: Option[FileSystem] = None): Long = {
+    val path = new Path(fileName)
+    val fileSystem = fileSystemOpt.getOrElse(path.getFileSystem(config))
+    val fileSize = if (FileUtils.isCompressed(path, config)) {
+      FileUtils.getCompressedFileSize(path,config)
+    } else {
+      fileSystem.getFileStatus(path).getLen
+    }
+
+    val bytesToRead = fileSize - fileEndOffset - fileStartOffset
+    if (bytesToRead < 0)
+      0
+    else
+      bytesToRead
+  }
+
   private def isNonDivisible(fileStatus: FileStatus, divisor: Long) = fileStatus.getLen % divisor != 0
 
   /**
