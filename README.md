@@ -2011,6 +2011,9 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.10.4 will be released soon.
+   - [#841](https://github.com/AbsaOSS/cobrix/pull/841) Added support for file start and end offset options for in-place processing of files without converting to dataframes.
+
 - #### 2.10.3 released 27 April 2026.
    - [#839](https://github.com/AbsaOSS/cobrix/pull/839) Added `variable_size_occurs = "pad_record"` for fixed-size records where `OCCURS DEPENDING ON` arrays use variable physical storage and the remaining record is padded.
 
