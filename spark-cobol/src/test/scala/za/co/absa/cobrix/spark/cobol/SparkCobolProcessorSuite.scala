@@ -149,7 +149,51 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
       }
     }
 
-    "support file_start_offset and file_end_offset" in {
+    "support file_start_offset and file_end_offset with InPlace strategy" in {
+      val expected = """{"T":"0"}{"T":"1"}{"T":"2"}{"T":"3"}"""
+      withTempDirectory("spark_cobol_processor") { tempDir =>
+        val binData = Array(0x07, 0x07, 0x07, 0xF1, 0xF2, 0xF3, 0xF4, 0x08, 0x08).map(_.toByte)
+
+        val inputPath = new Path(tempDir, "input.dat").toString
+        val outputPath = new Path(tempDir, "output").toString
+        val outputFile = new Path(outputPath, "input.dat").toString
+
+        writeBinaryFile(inputPath, binData)
+
+        SparkCobolProcessor.builder
+          .withCopybookContents(copybook)
+          .withProcessingStrategy(CobolProcessingStrategy.InPlace)
+          .withRecordProcessor(new SerializableRawRecordProcessor {
+            override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
+              record.map(v => (v - 1).toByte)
+            }
+          })
+          .option("file_start_offset", "3")
+          .option("file_end_offset", "2")
+          .load(inputPath)
+          .save(outputPath)
+
+        val outputData = readBinaryFile(outputFile)
+
+        assert(outputData.sameElements(
+          Array(-16, -15, -14, -13).map(_.toByte)
+        ))
+
+        val actual = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("pedantic", "true")
+          .load(outputFile)
+          .toJSON
+          .collect()
+          .mkString
+
+        assert(actual == expected)
+      }
+    }
+
+    "support file_start_offset and file_end_offset with ToVariableLength strategy" in {
       val expected = """{"T":"0"}{"T":"1"}{"T":"2"}{"T":"3"}"""
       withTempDirectory("spark_cobol_processor") { tempDir =>
         val binData = Array(0x07, 0x07, 0x07, 0xF1, 0xF2, 0xF3, 0xF4, 0x08, 0x08).map(_.toByte)

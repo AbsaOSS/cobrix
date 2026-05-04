@@ -84,7 +84,7 @@ class CobolProcessorBuilderSuite extends AnyWordSpec with BinaryFileFixture {
       }
     }
 
-    "support file_start_offset when processing files" in {
+    "support file_start_offset when processing files for ToVariableLength strategy" in {
       withTempDirectory("cobol_processor") { tempDir =>
         val inputFile = Paths.get(tempDir, "input.dat").toString
         val outputFile = Paths.get(tempDir, "output.dat").toString
@@ -109,6 +109,35 @@ class CobolProcessorBuilderSuite extends AnyWordSpec with BinaryFileFixture {
         assert(count == 4)
         assert(outputData.sameElements(
           Array(0, 1, 0, 0, -16, 0, 1, 0, 0, -15, 0, 1, 0, 0, -14, 0, 1, 0, 0, -13).map(_.toByte)
+        ))
+      }
+    }
+
+    "support file_start_offset when processing files for InPlace strategy" in {
+      withTempDirectory("cobol_processor") { tempDir =>
+        val inputFile = Paths.get(tempDir, "input.dat").toString
+        val outputFile = Paths.get(tempDir, "output.dat").toString
+
+        writeBinaryFile(inputFile, Array(0x07, 0x07, 0x07, 0xF1, 0xF2, 0xF3, 0xF4, 0x08, 0x08).map(_.toByte))
+
+        val count = CobolProcessor.builder
+          .withCopybookContents(copybook)
+          .withProcessingStrategy(CobolProcessingStrategy.InPlace)
+          .withRecordProcessor(new RawRecordProcessor {
+            override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
+              record.map(v => (v - 1).toByte)
+            }
+          })
+          .option("file_start_offset", "3")
+          .option("file_end_offset", "2")
+          .load(inputFile)
+          .save(outputFile)
+
+        val outputData = readBinaryFile(outputFile)
+
+        assert(count == 4)
+        assert(outputData.sameElements(
+          Array(-16,-15,-14,-13).map(_.toByte)
         ))
       }
     }
