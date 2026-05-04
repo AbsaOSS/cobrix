@@ -23,12 +23,12 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
   private var isClosed = false
 
   private val fileSize: Long = new File(fileName).length()
-  private val effectiveSize: Long = fileSize - fileStartOffset - fileEndOffset
+  private val effectiveSize: Long = math.max(0L, fileSize - fileStartOffset - fileEndOffset)
   private var byteIndex = 0L
 
   // Skip the start offset if specified
   if (fileStartOffset > 0) {
-    bytesStream.skip(fileStartOffset)
+    skipFully(fileStartOffset)
   }
 
   override def size: Long = effectiveSize
@@ -74,5 +74,16 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
   @throws(classOf[FileNotFoundException])
   override def copyStream(): SimpleStream = {
     new FSStream(fileName, fileStartOffset, fileEndOffset)
+  }
+
+  private def skipFully(bytesToSkip: Long): Unit = {
+    var remaining = math.min(bytesToSkip, fileSize)
+    while (remaining > 0) {
+      val skipped = bytesStream.skip(remaining)
+      if (skipped <= 0) {
+        throw new IOException(s"Unable to skip $bytesToSkip bytes in $fileName.")
+      }
+      remaining -= skipped
+    }
   }
 }
