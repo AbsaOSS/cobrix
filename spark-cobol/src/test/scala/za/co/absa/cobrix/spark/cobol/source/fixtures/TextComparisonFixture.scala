@@ -21,10 +21,21 @@ import org.scalatest.{Assertion, Suite}
 trait TextComparisonFixture {
   this: Suite =>
 
+  private val ANSI_RED = "\u001B[31m"
+  private val ANSI_RESET = "\u001B[0m"
+
   protected def compareBinary(actual: Array[Byte], expected: Array[Byte], clue: String = "Binary data does not match"): Assertion = {
     if (!actual.sameElements(expected)) {
       println(s"Expected bytes: ${expected.map("%02X" format _).mkString(" ")}")
-      println(s"Actual bytes:   ${actual.map("%02X" format _).mkString(" ")}")
+      val actualFormatted = actual.zipWithIndex.map { case (byte, idx) =>
+        val formatted = "%02X" format byte
+        if (idx >= expected.length || byte != expected(idx)) {
+          s"$ANSI_RED$formatted$ANSI_RESET"
+        } else {
+          formatted
+        }
+      }.mkString(" ")
+      println(s"Actual bytes:   $actualFormatted")
       //println(s"Actual bytes:   ${bytes.map("0x%02X" format _).mkString(", ")}")
 
       assert(actual.sameElements(expected), clue)

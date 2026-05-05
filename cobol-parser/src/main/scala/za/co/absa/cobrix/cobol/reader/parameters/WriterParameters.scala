@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.parameters
 
 case class WriterParameters(
-                             nullStringsAsSpaces: Boolean = true,
+                             nullStringsAsSpaces: Boolean = false,
                              nullDisplayNumbersAsZeros: Boolean = false,
                              nullComp3NumbersAsZeros: Boolean = false
                            )
