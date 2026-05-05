@@ -138,6 +138,11 @@ object CobolParametersParser extends Logging {
   val PARAM_DEBUG_IGNORE_FILE_SIZE    = "debug_ignore_file_size"
   val PARAM_ENABLE_SELF_CHECKS        = "enable_self_checks"
 
+  // Parameters for the writer
+  val PARAM_WRITE_NULL_STRINGS_AS_SPACES           = "write_null_strings_as_spaces"
+  val PARAM_WRITE_NULL_DISPLAY_NUMBERS_AS_ZEROS    = "write_null_display_numbers_as_zeros"
+  val PARAM_WRITE_NULL_COMP3_NUMBERS_AS_ZEROS      = "write_null_comp3_numbers_as_zeros"
+
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "collapse_root")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
@@ -230,7 +235,7 @@ object CobolParametersParser extends Logging {
     policy
   }
 
-  def parse(params: Parameters, validateRedundantOptions: Boolean = true): CobolParameters = {
+  def parse(params: Parameters, validateRedundantOptions: Boolean = true, isWriter: Boolean = false): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
@@ -271,6 +276,12 @@ object CobolParametersParser extends Logging {
     }
 
     val variableSizeOccursPolicy = VariableSizeOccursPolicy(params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false"))
+
+    val writerParameters = if (isWriter) {
+      Some(parseWriterParameters(params: Parameters))
+    } else {
+      None
+    }
 
     val cobolParameters = CobolParameters(
       copybookPathOpt,
@@ -318,10 +329,19 @@ object CobolParametersParser extends Logging {
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
       params.get(PARAM_RECORD_HEADER_NAME).orElse(params.get(PARAM_RECORD_HEADER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       params.get(PARAM_RECORD_TRAILER_NAME).orElse(params.get(PARAM_RECORD_TRAILER_NAME2)) .map(_.trim).filter(_.nonEmpty),
+      writerParameters,
       params.getMap
       )
     validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
     cobolParameters
+  }
+
+  private def parseWriterParameters(parameters: Parameters): WriterParameters = {
+    WriterParameters(
+      nullStringsAsSpaces = parameters.getOrElse(PARAM_WRITE_NULL_STRINGS_AS_SPACES, "true").toBoolean,
+      nullDisplayNumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_DISPLAY_NUMBERS_AS_ZEROS, "false").toBoolean,
+      nullComp3NumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_COMP3_NUMBERS_AS_ZEROS, "false").toBoolean
+    )
   }
 
   def getIsEbcdic(params: Parameters, recordFormat: RecordFormat): Boolean = {
@@ -482,6 +502,7 @@ object CobolParametersParser extends Logging {
       varLenParams.inputFileNameColumn,
       parameters.metadataPolicy,
       recordsToExclude,
+      parameters.writerParameters,
       parameters.options
       )
   }
