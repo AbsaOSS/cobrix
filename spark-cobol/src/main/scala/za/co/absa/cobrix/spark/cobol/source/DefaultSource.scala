@@ -83,7 +83,7 @@ class DefaultSource
     val path = parameters.getOrElse("path",
       throw new IllegalArgumentException("Path is required for this data source."))
 
-    val cobolParameters = CobolParametersParser.parse(new Parameters(parameters))
+    val cobolParameters = CobolParametersParser.parse(new Parameters(parameters), isWriter = true)
     CobolParametersValidator.checkSanity(cobolParameters)
 
     val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
