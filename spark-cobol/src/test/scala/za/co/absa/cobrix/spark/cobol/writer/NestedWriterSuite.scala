@@ -23,6 +23,7 @@ import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
+import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
 
 class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFixture with TextComparisonFixture {
   private val copybookWithOccurs =
@@ -55,6 +56,28 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
       |            10 NAME           PIC X(14).
       |            10 FILLER         PIC X(1).
       |            10 PHONE-NUMBER   PIC X(12).
+      |""".stripMargin
+
+  private val copybookWithDependingOnWithComp3 =
+    """      01 RECORD.
+      |         05  ID               PIC 9(2).
+      |         05  FILLER           PIC 9(1).
+      |         05  NUM1             PIC S9(2).
+      |         05  NUM2             PIC S9(3) COMP-3.
+      |         05  CNT1             PIC 9(1).
+      |         05  NUMBERS          PIC 9(2)
+      |                 OCCURS 0 TO 5 DEPENDING ON CNT1.
+      |         05  PLACE.
+      |            10  COUNTRY-CODE  PIC X(2).
+      |            10  CITY          PIC X(10).
+      |         05  cnt-2             PIC 9(1).
+      |         05  PEOPLE
+      |                 OCCURS 0 TO 3 DEPENDING ON cnt-2.
+      |            10 NAME           PIC X(14).
+      |            10 FILLER         PIC X(1).
+      |            10 PHONE-NUMBER   PIC X(12).
+      |            10  DEC1          PIC 9V9.
+      |            10  DEC2          PIC S99V9 COMP-3.
       |""".stripMargin
 
   "getFieldDefinition" should {
@@ -623,8 +646,8 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
 
     "write the dataframe with OCCURS DEPENDING ON and variable length occurs and null values" in {
       val exampleJsons = Seq(
-        """{"ID":1,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US","CITY":"New York"}}""",
-        """{"ID":2,"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User","PHONE_NUMBER":"555-1235"}]}"""
+        """{"ID":1,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US"}}""",
+        """{"ID":2,"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User1","PHONE_NUMBER":"555-1235"},{"NAME":"Test User2"}]}"""
       )
 
       import spark.implicits._
@@ -672,12 +695,188 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
         // Expected EBCDIC data for sample test data
         val expected = Array(
           0x1B, 0x00, 0x00, 0x00, // RDW record 0
-          0xF0, 0xF1, 0x00, 0xF3, 0xF1, 0xF0, 0xF2, 0xF0, 0xF3, 0xF0, 0xE4, 0xE2, 0xD5, 0x85, 0xA6, 0x40, 0xE8, 0x96,
-          0x99, 0x92, 0x40, 0x40, 0xF0,
-          0x30, 0x00, 0x00, 0x00,
-          0xF0, 0xF2, 0x00, 0xF0, 0xE9, 0xC1, 0xC3, 0x81, 0x97, 0x85, 0x40, 0xE3, 0x96, 0xA6, 0x95, 0x40, 0xF1, 0xE3,
-          0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0x40, 0x40, 0x40, 0x40, 0x40, 0x00, 0xF5, 0xF5, 0xF5, 0xCA,
-          0xF1, 0xF2, 0xF3, 0xF5, 0x40, 0x40, 0x40, 0x40
+          0xF0, 0xF1, 0x00, 0xF3, 0xF1, 0xF0, 0xF2, 0xF0, 0xF3, 0xF0, 0xE4, 0xE2, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0xF0,
+          0x4B, 0x00, 0x00, 0x00, // RDW record 1
+          0xF0, 0xF2, 0x00, 0xF0, 0xE9, 0xC1, 0xC3, 0x81, 0x97, 0x85, 0x40, 0xE3, 0x96, 0xA6, 0x95, 0x40, 0xF2, 0xE3,
+          0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF1, 0x40, 0x40, 0x40, 0x40, 0x00, 0xF5, 0xF5, 0xF5, 0xCA,
+          0xF1, 0xF2, 0xF3, 0xF5, 0x40, 0x40, 0x40, 0x40,
+          0xE3, 0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF2, 0x40, 0x40, 0x40, 0x40, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+        ).map(_.toByte)
+
+        compareBinary(bytes, expected, "Written data should match expected EBCDIC encoding")
+      }
+    }
+
+    "write the dataframe with OCCURS DEPENDING ON and variable length occurs and null values and COMP-3 numbers" in {
+      val exampleJsons = Seq(
+        """{"ID":1,"NUM1":10,"NUM2":-100,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US"}}""",
+        """{"ID":2,"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User1","PHONE_NUMBER":"555-1235","DEC1":1.2,"DEC2":-10.2},{"NAME":"Test User2"}]}"""
+      )
+
+      import spark.implicits._
+
+      val df = spark.read.json(exampleJsons.toDS())
+        .select("ID", "NUM1", "NUM2", "NUMBERS", "PLACE", "PEOPLE")
+
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val path = new Path(tempDir, "writer3")
+
+        df.coalesce(1)
+          .orderBy("id")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithDependingOnWithComp3)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "false")
+          .option("is_rdw_part_of_record_length", "true")
+          .option("variable_size_occurs", "true")
+          .save(path.toString)
+
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithDependingOnWithComp3)
+//          .option("record_format", "V")
+//          .option("is_rdw_big_endian", "false")
+//          .option("is_rdw_part_of_record_length", "true")
+//          .option("variable_size_occurs", "true")
+//          .load(path.toString)
+//        println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x1F, 0x00, 0x00, 0x00, // RDW record 0
+          0xF0, 0xF1, // ID
+          0x00, // FILLER
+          0xF1, 0xC0, // 10 DISPLAY
+          0x10, 0x0D, // -100 COMP-3
+          0xF3, // CNT1
+          0xF1, 0xF0, 0xF2, 0xF0, 0xF3, 0xF0, // NUMBERS
+          0xE4, 0xE2, // COUNTRY-CODE
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // null as CITY
+          0xF0, // CNT2
+
+          0x57, 0x00, 0x00, 0x00, // RDW record 1
+          0xF0, 0xF2, // ID
+          0x00, // FILLER
+          0x00, 0x00, // null as DISPLAY
+          0x00, 0x00, // null as COMP-3
+          0xF0, // CNT1
+          0xE9, 0xC1, // COUNTRY-CODE
+          0xC3, 0x81, 0x97, 0x85, 0x40, 0xE3, 0x96, 0xA6, 0x95, 0x40, // CITY
+          0xF2, // CNT2
+          0xE3, 0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF1, 0x40, 0x40, 0x40, 0x40, // NAME
+          0x00, // FILLER
+          0xF5, 0xF5, 0xF5, 0xCA, 0xF1, 0xF2, 0xF3, 0xF5, 0x40, 0x40, 0x40, 0x40, // PHONE-NUMBER
+          0xF1, 0xF2, // 1.2 DISPLAY
+          0x10, 0x2D, //-10.2 COMP-3
+          0xE3, 0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF2, 0x40, 0x40, 0x40, 0x40, // NAME
+          0x00, // FILLER
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // null as PHONE-NUMBER
+          0x00, 0x00, // null decimal DISPLAY
+          0x00, 0x00 // null decimal COMP-3
+        ).map(_.toByte)
+
+        compareBinary(bytes, expected, "Written data should match expected EBCDIC encoding")
+      }
+    }
+
+    "write the dataframe with OCCURS DEPENDING ON and variable length occurs and null values and COMP-3 numbers with non-default null handlers" in {
+      val exampleJsons = Seq(
+        """{"ID":1,"NUM1":10,"NUM2":-100,"NUMBERS":[10,20,30],"PLACE":{"COUNTRY_CODE":"US"}}""",
+        """{"ID":2,"PLACE":{"COUNTRY_CODE":"ZA","CITY":"Cape Town"},"PEOPLE":[{"NAME":"Test User1","PHONE_NUMBER":"555-1235","DEC1":1.2,"DEC2":-10.2},{"NAME":"Test User2"}]}"""
+      )
+
+      import spark.implicits._
+
+      val df = spark.read.json(exampleJsons.toDS())
+        .select("ID", "NUM1", "NUM2", "NUMBERS", "PLACE", "PEOPLE")
+
+      withTempDirectory("cobol_writer3") { tempDir =>
+        val path = new Path(tempDir, "writer3")
+
+        df.coalesce(1)
+          .orderBy("id")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithDependingOnWithComp3)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "false")
+          .option("is_rdw_part_of_record_length", "true")
+          .option("variable_size_occurs", "true")
+          .option("write_null_strings_as_spaces", "true")
+          .option("write_null_display_numbers_as_zeros", "true")
+          .option("write_null_comp3_numbers_as_zeros", "true")
+          .save(path.toString)
+
+        val df2 = spark.read.format("cobol")
+          .option("copybook_contents", copybookWithDependingOnWithComp3)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "false")
+          .option("is_rdw_part_of_record_length", "true")
+          .option("variable_size_occurs", "true")
+          .load(path.toString)
+        println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x1F, 0x00, 0x00, 0x00, // RDW record 0
+          0xF0, 0xF1, // ID
+          0x00, // FILLER
+          0xF1, 0xC0, // 10 DISPLAY
+          0x10, 0x0D, // -100 COMP-3
+          0xF3, // CNT1
+          0xF1, 0xF0, 0xF2, 0xF0, 0xF3, 0xF0, // NUMBERS
+          0xE4, 0xE2, // COUNTRY-CODE
+          0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, // CITY
+          0xF0, // CNT2
+
+          0x57, 0x00, 0x00, 0x00, // RDW record 1
+          0xF0, 0xF2, // ID
+          0x00, // FILLER
+          0xF0, 0xF0, // null as DISPLAY
+          0x00, 0x0C, // null as COMP-3
+          0xF0, // CNT1
+          0xE9, 0xC1, // COUNTRY-CODE
+          0xC3, 0x81, 0x97, 0x85, 0x40, 0xE3, 0x96, 0xA6, 0x95, 0x40, // CITY
+          0xF2, // CNT2
+          0xE3, 0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF1, 0x40, 0x40, 0x40, 0x40, // NAME
+          0x00, // FILLER
+          0xF5, 0xF5, 0xF5, 0xCA, 0xF1, 0xF2, 0xF3, 0xF5, 0x40, 0x40, 0x40, 0x40, // PHONE-NUMBER
+          0xF1, 0xF2, // 1.2 DISPLAY
+          0x10, 0x2D, //-10.2 COMP-3
+          0xE3, 0x85, 0xA2, 0xA3, 0x40, 0xE4, 0xA2, 0x85, 0x99, 0xF2, 0x40, 0x40, 0x40, 0x40, // NAME
+          0x00, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, 0x40, // null as PHONE-NUMBER
+          0xF0, 0xF0, // null decimal DISPLAY
+          0x00, 0x0C // null decimal COMP-3
         ).map(_.toByte)
 
         compareBinary(bytes, expected, "Written data should match expected EBCDIC encoding")

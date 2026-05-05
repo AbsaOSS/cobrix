@@ -338,7 +338,7 @@ object CobolParametersParser extends Logging {
 
   private def parseWriterParameters(parameters: Parameters): WriterParameters = {
     WriterParameters(
-      nullStringsAsSpaces = parameters.getOrElse(PARAM_WRITE_NULL_STRINGS_AS_SPACES, "true").toBoolean,
+      nullStringsAsSpaces = parameters.getOrElse(PARAM_WRITE_NULL_STRINGS_AS_SPACES, "false").toBoolean,
       nullDisplayNumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_DISPLAY_NUMBERS_AS_ZEROS, "false").toBoolean,
       nullComp3NumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_COMP3_NUMBERS_AS_ZEROS, "false").toBoolean
     )

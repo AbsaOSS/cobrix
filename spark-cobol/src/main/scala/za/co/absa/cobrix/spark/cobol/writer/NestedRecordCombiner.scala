@@ -21,11 +21,11 @@ import org.apache.spark.sql.types.{ArrayType, StructType}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
-import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.reader.parameters.{ReaderParameters, WriterParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.writer.WriterAst._
 
@@ -73,7 +73,17 @@ class NestedRecordCombiner extends RecordCombiner {
         s"RDW length $recordLengthLong exceeds ${Int.MaxValue} and cannot be encoded safely."
       )
     }
-    processRDD(df.rdd, cobolSchema.copybook, df.schema, size, adjustment1 + adjustment2, startOffset, hasRdw, isRdwBigEndian, readerParameters.variableSizeOccurs, readerParameters.strictSchema)
+    processRDD(df.rdd,
+      cobolSchema.copybook,
+      df.schema,
+      size,
+      adjustment1 + adjustment2,
+      startOffset,
+      hasRdw,
+      isRdwBigEndian,
+      readerParameters.variableSizeOccurs,
+      readerParameters.strictSchema,
+      readerParameters.writerParameters.get)
   }
 }
 
@@ -156,14 +166,15 @@ object NestedRecordCombiner {
                                  hasRdw: Boolean,
                                  isRdwBigEndian: Boolean,
                                  variableSizeOccurs: VariableSizeOccursPolicy,
-                                 strictSchema: Boolean): RDD[Array[Byte]] = {
+                                 strictSchema: Boolean,
+                                 writerParameters: WriterParameters): RDD[Array[Byte]] = {
     val writerAst = constructWriterAst(copybook, schema, strictSchema)
 
     rdd.mapPartitions { rows =>
       rows.map { row =>
         val ar = new Array[Byte](recordSize)
 
-        val bytesWritten = writeToBytes(writerAst, row, ar, startOffset, variableSizeOccurs != VariableSizeOccursPolicy.MaxSize)
+        val bytesWritten = writeToBytes(writerAst, row, ar, startOffset, variableSizeOccurs != VariableSizeOccursPolicy.MaxSize, writerParameters)
         val recordSizeWritten = if (variableSizeOccurs == VariableSizeOccursPolicy.ShiftRecord) bytesWritten else recordSize - startOffset
 
         if (hasRdw) {
@@ -366,7 +377,12 @@ object NestedRecordCombiner {
     *                             and not always fixed.
     * @throws IllegalArgumentException if a field value cannot be encoded according to the copybook definition.
     */
-  private def writeToBytes(ast: WriterAst, row: Row, ar: Array[Byte], currentOffset: Int, variableLengthOccurs: Boolean): Int = {
+  private def writeToBytes(ast: WriterAst,
+                           row: Row,
+                           ar: Array[Byte],
+                           currentOffset: Int,
+                           variableLengthOccurs: Boolean,
+                           writerParameters: WriterParameters): Int = {
     ast match {
       // ── Filler  ──────────────────────────────────────────────────────────────
       case Filler(size) => size
@@ -374,9 +390,7 @@ object NestedRecordCombiner {
       // ── Plain primitive ──────────────────────────────────────────────────────
       case PrimitiveField(cobolField, getter) =>
         val value = getter(row)
-        if (value != null) {
-          Copybook.setPrimitiveField(cobolField, ar, value, 0, currentOffset)
-        }
+        setPrimitiveField(cobolField, writerParameters, ar, value, 0, currentOffset)
         cobolField.binaryProperties.actualSize
 
       // ── Primitive which has an OCCURS DEPENDS ON ─────────────────────────────
@@ -393,7 +407,7 @@ object NestedRecordCombiner {
         if (nestedRow != null) {
           var writtenBytes = 0
           children.foreach { child =>
-            val written = writeToBytes(child, nestedRow, ar, currentOffset + writtenBytes, variableLengthOccurs)
+            val written = writeToBytes(child, nestedRow, ar, currentOffset + writtenBytes, variableLengthOccurs, writerParameters)
             writtenBytes += written
           }
           writtenBytes
@@ -413,12 +427,10 @@ object NestedRecordCombiner {
           var i = 0
           while (i < elementsToWrite) {
             val value = arr(i)
-            if (value != null) {
-              val elementOffset = baseOffset + i * elementSize
-              // fieldStartOffsetOverride is the absolute position; pass it so
-              // setPrimitiveField does not add binaryProperties.offset on top again.
-              Copybook.setPrimitiveField(cobolField, ar, value, fieldStartOffsetOverride = elementOffset)
-            }
+            val elementOffset = baseOffset + i * elementSize
+            // fieldStartOffsetOverride is the absolute position; pass it so
+            // setPrimitiveField does not add binaryProperties.offset on top again.
+            setPrimitiveField(cobolField, writerParameters, ar, value, fieldStartOffsetOverride = elementOffset)
             i += 1
           }
           dependingOn.foreach(spec =>
@@ -453,7 +465,7 @@ object NestedRecordCombiner {
               // Build an adjusted element offset so that each child's base offset
               // (which is relative to the group's base) lands at the correct position in ar.
               val elementStartOffset = baseOffset + i * elementSize
-              writeToBytes(groupField, elementRow, ar, elementStartOffset, variableLengthOccurs)
+              writeToBytes(groupField, elementRow, ar, elementStartOffset, variableLengthOccurs, writerParameters)
             }
             i += 1
           }
@@ -472,6 +484,36 @@ object NestedRecordCombiner {
           )
           if (variableLengthOccurs) 0 else cobolField.binaryProperties.actualSize
         }
+    }
+  }
+
+  private def setPrimitiveField(field: Primitive,
+                                writerParameters: WriterParameters,
+                                recordBytes: Array[Byte],
+                                value: Any,
+                                configuredStartOffset: Int = 0,
+                                fieldStartOffsetOverride: Int = 0): Unit = {
+    if (value != null) {
+      Copybook.setPrimitiveField(field, recordBytes, value, configuredStartOffset, fieldStartOffsetOverride)
+    } else {
+      val fieldLength = field.binaryProperties.dataSize
+      val offset = if (fieldStartOffsetOverride != 0) fieldStartOffsetOverride else configuredStartOffset + field.binaryProperties.offset
+
+      field.dataType match {
+        case _: AlphaNumeric if writerParameters.nullStringsAsSpaces =>
+          // For string fields, nulls are treated as spaces if the option is set. Since the recordBytes array is initialized with zeroes,
+          // we need to explicitly set space bytes for the field's length.
+          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0x40.toByte)
+        case i: Integral if writerParameters.nullDisplayNumbersAsZeros && i.compact.isEmpty =>
+          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
+        case d: Decimal if writerParameters.nullDisplayNumbersAsZeros && d.compact.isEmpty =>
+          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
+        case i: Integral if writerParameters.nullComp3NumbersAsZeros && i.compact.exists(_.isInstanceOf[COMP3]) =>
+          Copybook.setPrimitiveField(field, recordBytes, 0, configuredStartOffset, fieldStartOffsetOverride)
+        case d: Decimal if writerParameters.nullComp3NumbersAsZeros && d.compact.exists(_.isInstanceOf[COMP3]) =>
+          Copybook.setPrimitiveField(field, recordBytes, new java.math.BigDecimal(0), configuredStartOffset, fieldStartOffsetOverride)
+        case _ => // Nothing to do
+      }
     }
   }
 }
