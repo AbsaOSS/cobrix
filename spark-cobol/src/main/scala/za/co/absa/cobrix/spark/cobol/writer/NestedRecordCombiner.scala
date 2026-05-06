@@ -390,7 +390,7 @@ object NestedRecordCombiner {
       // ── Plain primitive ──────────────────────────────────────────────────────
       case PrimitiveField(cobolField, getter) =>
         val value = getter(row)
-        setPrimitiveField(cobolField, writerParameters, ar, value, 0, currentOffset)
+        Copybook.setPrimitiveFieldNullAware(cobolField, writerParameters, ar, value, 0, currentOffset)
         cobolField.binaryProperties.actualSize
 
       // ── Primitive which has an OCCURS DEPENDS ON ─────────────────────────────
@@ -430,7 +430,7 @@ object NestedRecordCombiner {
             val elementOffset = baseOffset + i * elementSize
             // fieldStartOffsetOverride is the absolute position; pass it so
             // setPrimitiveField does not add binaryProperties.offset on top again.
-            setPrimitiveField(cobolField, writerParameters, ar, value, fieldStartOffsetOverride = elementOffset)
+            Copybook.setPrimitiveFieldNullAware(cobolField, writerParameters, ar, value, fieldStartOffsetOverride = elementOffset)
             i += 1
           }
           dependingOn.foreach(spec =>
@@ -484,36 +484,6 @@ object NestedRecordCombiner {
           )
           if (variableLengthOccurs) 0 else cobolField.binaryProperties.actualSize
         }
-    }
-  }
-
-  private def setPrimitiveField(field: Primitive,
-                                writerParameters: WriterParameters,
-                                recordBytes: Array[Byte],
-                                value: Any,
-                                configuredStartOffset: Int = 0,
-                                fieldStartOffsetOverride: Int = 0): Unit = {
-    if (value != null) {
-      Copybook.setPrimitiveField(field, recordBytes, value, configuredStartOffset, fieldStartOffsetOverride)
-    } else {
-      val fieldLength = field.binaryProperties.dataSize
-      val offset = if (fieldStartOffsetOverride != 0) fieldStartOffsetOverride else configuredStartOffset + field.binaryProperties.offset
-
-      field.dataType match {
-        case _: AlphaNumeric if writerParameters.nullStringsAsSpaces =>
-          // For string fields, nulls are treated as spaces if the option is set. Since the recordBytes array is initialized with zeroes,
-          // we need to explicitly set space bytes for the field's length.
-          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0x40.toByte)
-        case i: Integral if writerParameters.nullDisplayNumbersAsZeros && i.compact.isEmpty =>
-          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
-        case d: Decimal if writerParameters.nullDisplayNumbersAsZeros && d.compact.isEmpty =>
-          java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
-        case i: Integral if writerParameters.nullComp3NumbersAsZeros && i.compact.exists(_.isInstanceOf[COMP3]) =>
-          Copybook.setPrimitiveField(field, recordBytes, 0, configuredStartOffset, fieldStartOffsetOverride)
-        case d: Decimal if writerParameters.nullComp3NumbersAsZeros && d.compact.exists(_.isInstanceOf[COMP3]) =>
-          Copybook.setPrimitiveField(field, recordBytes, new java.math.BigDecimal(0), configuredStartOffset, fieldStartOffsetOverride)
-        case _ => // Nothing to do
-      }
     }
   }
 }

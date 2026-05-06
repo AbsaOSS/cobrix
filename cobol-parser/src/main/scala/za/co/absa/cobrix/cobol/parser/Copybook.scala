@@ -18,8 +18,10 @@ package za.co.absa.cobrix.cobol.parser
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.asttransform.BinaryPropertiesAdder
+import za.co.absa.cobrix.cobol.reader.parameters.WriterParameters
 
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.mutable
@@ -475,5 +477,80 @@ object Copybook {
       case None =>
         throw new IllegalStateException(s"Cannot set value for field '${field.name}' because it does not have an encoder defined.")
     }
+  }
+
+  /**
+    * Sets the value of a primitive field in the copybook record, with null-aware handling.
+    *
+    * When the value is non-null, delegates to setPrimitiveField to encode the value directly.
+    * When the value is null and the output encoding is EBCDIC, applies special null handling
+    * based on the field's data type and the writer parameters configuration:
+    * - AlphaNumeric fields are filled with EBCDIC space bytes (0x40) if nullStringsAsSpaces is enabled.
+    * - Display numeric (Integral or Decimal without compact encoding) fields are filled with EBCDIC zero bytes (0xF0) if nullDisplayNumbersAsZeros is enabled.
+    * - COMP-3 encoded numeric fields are set to zero if nullComp3NumbersAsZeros is enabled.
+    *
+    * For non-EBCDIC output or when no matching null-handling option is configured, null values
+    * result in no modification to the record bytes.
+    *
+    * @param field                    The AST object of the primitive field to set.
+    * @param writerParameters         The writer configuration parameters controlling null handling behavior.
+    * @param recordBytes              The mutable byte array representing the binary encoded record data.
+    * @param value                    The value to set for the field, or null to trigger null-aware handling.
+    * @param configuredStartOffset    An offset to the beginning of the field in the data (in bytes).
+    * @param fieldStartOffsetOverride If this offset is 0 or negative, the field offset defined by the copybook is used.
+    *                                 Otherwise, the specified offset is used.
+    * @return Unit
+    */
+  def setPrimitiveFieldNullAware(field: Primitive,
+                                writerParameters: WriterParameters,
+                                recordBytes: Array[Byte],
+                                value: Any,
+                                configuredStartOffset: Int = 0,
+                                fieldStartOffsetOverride: Int = 0): Unit = {
+    if (value != null) {
+      setPrimitiveField(field, recordBytes, value, configuredStartOffset, fieldStartOffsetOverride)
+    } else {
+      // Special handling of nulls is supported only in EBCDIC output for now.
+      if (writerParameters.isEbcdic) {
+        val (offset, fieldLength) = getFieldPositionAndSize(field, configuredStartOffset, fieldStartOffsetOverride)
+
+        field.dataType match {
+          case _: AlphaNumeric if writerParameters.nullStringsAsSpaces =>
+            // For string fields, nulls are treated as spaces if the option is set. Since the recordBytes array is initialized with zeroes,
+            // we need to explicitly set space bytes for the field's length.
+            java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0x40.toByte)
+          case i: Integral if writerParameters.nullDisplayNumbersAsZeros && i.compact.isEmpty =>
+            java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
+          case d: Decimal if writerParameters.nullDisplayNumbersAsZeros && d.compact.isEmpty =>
+            java.util.Arrays.fill(recordBytes, offset, offset + fieldLength, 0xF0.toByte)
+          case i: Integral if writerParameters.nullComp3NumbersAsZeros && i.compact.exists(_.isInstanceOf[COMP3]) =>
+            Copybook.setPrimitiveField(field, recordBytes, 0, configuredStartOffset, fieldStartOffsetOverride)
+          case d: Decimal if writerParameters.nullComp3NumbersAsZeros && d.compact.exists(_.isInstanceOf[COMP3]) =>
+            Copybook.setPrimitiveField(field, recordBytes, new java.math.BigDecimal(0), configuredStartOffset, fieldStartOffsetOverride)
+          case _ => // Nothing to do
+        }
+      }
+    }
+  }
+
+  /**
+    * Calculates the position (offset) and size of a field within binary record data.
+    *
+    * The field's offset is determined by either the fieldStartOffsetOverride (if non-zero)
+    * or by adding the configuredStartOffset to the field's binary properties offset.
+    * The field's size is taken directly from the field's binary properties data size.
+    *
+    * @param field                    The AST object of the field for which to determine position and size.
+    * @param configuredStartOffset    An offset to the beginning of the field in the data (in bytes).
+    * @param fieldStartOffsetOverride If this offset is non-zero, it is used as the field offset directly.
+    *                                 Otherwise, the field offset is computed from configuredStartOffset
+    *                                 plus the field's defined binary properties offset.
+    * @return A tuple where the first element is the field's offset (position) in bytes and
+    *         the second element is the field's size in bytes.
+    */
+  def getFieldPositionAndSize(field: Statement, configuredStartOffset: Int = 0, fieldStartOffsetOverride: Int = 0): (Int, Int) = {
+    val fieldLength = field.binaryProperties.dataSize
+    val offset = if (fieldStartOffsetOverride != 0) fieldStartOffsetOverride else configuredStartOffset + field.binaryProperties.offset
+    (offset, fieldLength)
   }
 }

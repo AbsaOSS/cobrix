@@ -1694,9 +1694,12 @@ The output looks like this:
 
 ##### Writer-only options
 
-| Option (usage example)           | Description                                                                                                                                                                                                                           |
-|----------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| .option("strict_schema", "true") | If 'true' (default) Cobrix will throw an exception if a field exists in the copybook but not in the Spark schema. Array count fields (defined in DEPENDING ON clause) are auto-generated and never required to exist in Spark schema. |
+| Option (usage example)                                  | Description                                                                                                                                                                                                                           |
+|---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("strict_schema", "true")                        | If 'true' (default) Cobrix will throw an exception if a field exists in the copybook but not in the Spark schema. Array count fields (defined in DEPENDING ON clause) are auto-generated and never required to exist in Spark schema. |
+| .option("write_null_strings_as_spaces", "false")        | If 'true' Cobrix will write `null` alphanumeric fields as spaces when writing output files.                                                                                                                                           |
+| .option("write_null_display_numbers_as_zeros", "false") | If 'true' Cobrix will write `null` numeric fields having DISPLAY format as serquence of zeros when writing output files.                                                                                                              |
+| .option("write_null_comp3_numbers_as_zeros", "false")   | If 'true' Cobrix will write `null` numeric fields having COMP-3 format as zeros when writing EBCDIC files.                                                                                                                            |
 
 ##### Currently supported EBCDIC code pages
 
@@ -1861,6 +1864,7 @@ df.write
 
 ### Current Limitations
 The writer is still in its early stages and has several limitations:
+- Only EBCDIC output files are supported. Outputting to ASCII is not supported at the moment.
 - Nested GROUPs, OCCURS, OCCURS DEPENDING ON are supported.
 - Variable-size occurs are supported (`variable_size_occurs = true`). Recommended `record_format = "V"`.
 - Writing multi-segment files is not supported.
@@ -2013,6 +2017,12 @@ A: Update hadoop dll to version 3.2.2 or newer.
 ## Changelog
 - #### 2.10.4 will be released soon.
    - [#841](https://github.com/AbsaOSS/cobrix/pull/841) Added support for file start and end offset options for in-place processing of files without converting to dataframes.
+   - [#842](https://github.com/AbsaOSS/cobrix/pull/842) Added support for controlling handling of nulls for various data types when writing EBCDIC files.
+     ```scala
+     .option("write_null_strings_as_spaces", "true")
+     .option("write_null_display_numbers_as_zeros", "true")
+     .option("write_null_comp3_numbers_as_zeros", "true")
+     ```
 
 - #### 2.10.3 released 27 April 2026.
    - [#839](https://github.com/AbsaOSS/cobrix/pull/839) Added `variable_size_occurs = "pad_record"` for fixed-size records where `OCCURS DEPENDING ON` arrays use variable physical storage and the remaining record is padded.
