@@ -278,7 +278,7 @@ object CobolParametersParser extends Logging {
     val variableSizeOccursPolicy = VariableSizeOccursPolicy(params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false"))
 
     val writerParameters = if (isWriter) {
-      Some(parseWriterParameters(params: Parameters))
+      Some(parseWriterParameters(params: Parameters, isEbcdic))
     } else {
       None
     }
@@ -336,8 +336,9 @@ object CobolParametersParser extends Logging {
     cobolParameters
   }
 
-  private def parseWriterParameters(parameters: Parameters): WriterParameters = {
+  private def parseWriterParameters(parameters: Parameters, isEbcdic: Boolean): WriterParameters = {
     WriterParameters(
+      isEbcdic = isEbcdic,
       nullStringsAsSpaces = parameters.getOrElse(PARAM_WRITE_NULL_STRINGS_AS_SPACES, "false").toBoolean,
       nullDisplayNumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_DISPLAY_NUMBERS_AS_ZEROS, "false").toBoolean,
       nullComp3NumbersAsZeros = parameters.getOrElse(PARAM_WRITE_NULL_COMP3_NUMBERS_AS_ZEROS, "false").toBoolean

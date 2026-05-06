@@ -824,14 +824,14 @@ class NestedWriterSuite extends AnyWordSpec with SparkTestBase with BinaryFileFi
           .option("write_null_comp3_numbers_as_zeros", "true")
           .save(path.toString)
 
-        val df2 = spark.read.format("cobol")
-          .option("copybook_contents", copybookWithDependingOnWithComp3)
-          .option("record_format", "V")
-          .option("is_rdw_big_endian", "false")
-          .option("is_rdw_part_of_record_length", "true")
-          .option("variable_size_occurs", "true")
-          .load(path.toString)
-        println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithDependingOnWithComp3)
+//          .option("record_format", "V")
+//          .option("is_rdw_big_endian", "false")
+//          .option("is_rdw_part_of_record_length", "true")
+//          .option("variable_size_occurs", "true")
+//          .load(path.toString)
+//        println(SparkUtils.convertDataFrameToPrettyJSON(df2))
 
         val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
 
