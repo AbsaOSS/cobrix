@@ -550,7 +550,7 @@ object Copybook {
     */
   def getFieldPositionAndSize(field: Statement, configuredStartOffset: Int = 0, fieldStartOffsetOverride: Int = 0): (Int, Int) = {
     val fieldLength = field.binaryProperties.dataSize
-    val offset = if (fieldStartOffsetOverride != 0) fieldStartOffsetOverride else configuredStartOffset + field.binaryProperties.offset
+    val offset = if (fieldStartOffsetOverride > 0) fieldStartOffsetOverride else configuredStartOffset + field.binaryProperties.offset
     (offset, fieldLength)
   }
 }
