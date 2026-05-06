@@ -1880,7 +1880,7 @@ The writer is still in its early stages and has several limitations:
 Handling of `PIC X(n)`:
 - Values are truncated when longer than n and right-padded when shorter.
 - The padding byte is EBCDIC space `0x40`.
-- `null` values in DataFrames are written as `0x00` bytes.
+- `null` values in DataFrames are written as `0x00` bytes by default. You can change the behavior using `write_null_strings_as_spaces` option.
 
 Handling of `FILLER`s
 - FILLER areas are populated with 0x00 bytes.
