@@ -129,7 +129,7 @@ object SparkUtils extends Logging {
           case _ =>
             val newFieldNamePrefix = s"${fieldNamePrefix}${i}"
             val newFieldName = getNewFieldName(s"$newFieldNamePrefix")
-            fields += expr(s"$path`${structField.name}`[$i]").as(newFieldName, structField.metadata)
+            fields += expr(s"${getArrayIndexExpr(fieldName, i)}").as(newFieldName, structField.metadata)
             stringFields += s"""expr("${getArrayIndexExpr(fieldName, i)} AS `$newFieldName`")"""
         }
         i += 1
@@ -197,7 +197,7 @@ object SparkUtils extends Logging {
           case _ =>
             val newFieldName = getNewFieldName(s"$fieldNamePrefix${field.name}")
             fields += expr(s"$path`${field.name}`").as(newFieldName, field.metadata)
-            if (path.contains('['))
+            if (path.contains('[') || path.contains('('))
               stringFields += s"""expr("$path`${field.name}` AS `$newFieldName`")"""
             else
               stringFields += s"""col("$path`${field.name}`").as("$newFieldName")"""
