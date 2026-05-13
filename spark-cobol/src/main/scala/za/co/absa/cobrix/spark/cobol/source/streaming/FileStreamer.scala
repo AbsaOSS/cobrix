@@ -38,7 +38,6 @@ import java.io.IOException
   * @note This class is not thread-safe and should only be accessed from a single thread
   */
 class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
-
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val hadoopPath = new Path(filePath)
@@ -124,6 +123,12 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
       }
     }
   }
+
+  @throws[IOException]
+  override def getSkippedStartBytes: Array[Byte] = Array.empty[Byte]
+
+  @throws[IOException]
+  override def getSkippedEndBytes: Array[Byte] = Array.empty[Byte]
 
   @throws[IOException]
   override def close(): Unit = {
