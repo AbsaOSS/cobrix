@@ -25,11 +25,7 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
   private val fileSize: Long = new File(fileName).length()
   private val effectiveSize: Long = math.max(0L, fileSize - fileStartOffset - fileEndOffset)
   private var byteIndex = 0L
-
-  // Skip the start offset if specified
-  if (fileStartOffset > 0) {
-    skipFully(fileStartOffset)
-  }
+  private var skipped: Boolean = false
 
   override def size: Long = effectiveSize
 
@@ -39,13 +35,50 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
 
   override def inputFileName: String = fileName
 
+  override def getSkippedStartBytes: Array[Byte] = {
+    if (skipped || fileStartOffset <= 0)
+      Array.empty[Byte]
+    else {
+      skipped = true
+      val b = new Array[Byte](fileStartOffset.toInt)
+      val actual = bytesStream.read(b, 0, fileStartOffset.toInt)
+      if (actual <= 0) {
+        Array.empty[Byte]
+      } else {
+        b.take(actual)
+      }
+    }
+  }
+
+  override def getSkippedEndBytes: Array[Byte] = {
+    if (byteIndex >= effectiveSize && !isClosed) {
+      val b = new Array[Byte](fileEndOffset.toInt)
+      val actual = bytesStream.read(b, 0, fileEndOffset.toInt)
+      if (actual <= 0) {
+        Array.empty[Byte]
+      } else {
+        b.take(actual)
+      }
+    } else {
+      close()
+      Array.empty[Byte]
+    }
+  }
+
+
   @throws(classOf[IOException])
   override def next(numberOfBytes: Int): Array[Byte] = {
     if (numberOfBytes <= 0) throw new IllegalArgumentException("Value of numberOfBytes should be greater than zero.")
 
+    if (!skipped && fileStartOffset > 0) {
+      // Skip the start offset if specified
+      skipFully(fileStartOffset)
+    }
+
     // Check if we've reached the effective end of the stream
     if (byteIndex >= effectiveSize) {
-      close()
+      if (fileEndOffset <= 0)
+        close()
       return new Array[Byte](0)
     }
 
@@ -77,6 +110,7 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
   }
 
   private def skipFully(bytesToSkip: Long): Unit = {
+    skipped = true
     var remaining = math.min(bytesToSkip, fileSize)
     while (remaining > 0) {
       val skipped = bytesStream.skip(remaining)

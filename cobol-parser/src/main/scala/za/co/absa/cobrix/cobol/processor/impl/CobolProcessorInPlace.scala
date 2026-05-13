@@ -21,7 +21,7 @@ import za.co.absa.cobrix.cobol.processor.{CobolProcessor, RawRecordProcessor}
 import za.co.absa.cobrix.cobol.reader.VarLenNestedReader
 import za.co.absa.cobrix.cobol.reader.extractors.raw.RawRecordExtractor
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
-import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
+import za.co.absa.cobrix.cobol.reader.stream.{FSStream, SimpleStream}
 
 import java.io.OutputStream
 
@@ -47,12 +47,15 @@ class CobolProcessorInPlace(readerParameters: ReaderParameters,
     val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream, None)
 
     try {
-      StreamProcessor.processStreamInPlace(copybook,
+      outputStream.write(inputStream.getSkippedStartBytes)
+      val recordsProcessed = StreamProcessor.processStreamInPlace(copybook,
         options,
         inputStream,
         recordExtractor,
         rawRecordProcessor,
         outputStream)
+      outputStream.write(inputStream.getSkippedEndBytes)
+      recordsProcessed
     } finally {
       inputStream.close()
     }

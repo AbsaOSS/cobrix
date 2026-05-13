@@ -137,7 +137,7 @@ class CobolProcessorBuilderSuite extends AnyWordSpec with BinaryFileFixture {
 
         assert(count == 4)
         assert(outputData.sameElements(
-          Array(-16,-15,-14,-13).map(_.toByte)
+          Array(7, 7, 7, -16,-15,-14,-13, 8, 8).map(_.toByte)
         ))
       }
     }
