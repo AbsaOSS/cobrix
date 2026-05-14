@@ -47,10 +47,6 @@ class ByteStreamMock(bytes: Array[Byte]) extends SimpleStream{
     }
   }
 
-  override def getSkippedStartBytes: Array[Byte] = Array.empty[Byte]
-
-  override def getSkippedEndBytes: Array[Byte] = Array.empty[Byte]
-
   override def close(): Unit = position = sz
 
   override def copyStream(): SimpleStream = {

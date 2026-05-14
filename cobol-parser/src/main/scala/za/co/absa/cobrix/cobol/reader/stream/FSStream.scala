@@ -35,7 +35,7 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
 
   override def inputFileName: String = fileName
 
-  override def getSkippedStartBytes: Array[Byte] = {
+  def getSkippedStartBytes: Array[Byte] = {
     if (skipped || fileStartOffset <= 0)
       Array.empty[Byte]
     else {
@@ -50,7 +50,7 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
     }
   }
 
-  override def getSkippedEndBytes: Array[Byte] = {
+  def getSkippedEndBytes: Array[Byte] = {
     if (byteIndex >= effectiveSize && !isClosed) {
       val b = new Array[Byte](fileEndOffset.toInt)
       val actual = bytesStream.read(b, 0, fileEndOffset.toInt)
