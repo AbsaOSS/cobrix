@@ -35,13 +35,27 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
 
   override def inputFileName: String = fileName
 
+  /**
+    * Reads and returns the bytes at the beginning of the file that precede the effective stream content.
+    *
+    * This method attempts to read the leading bytes (defined by the file start offset) that appear
+    * before the effective content of the stream. It only performs the read on the first invocation
+    * and if the file start offset is greater than zero. Subsequent calls will return an empty array
+    * since the skipped flag is set after the first successful read.
+    *
+    * @return an array of bytes containing the skipped start bytes, or an empty array if the bytes
+    *         have already been read, the file start offset is zero or negative, or no bytes could be read.
+    */
   def getSkippedStartBytes: Array[Byte] = {
-    if (skipped || fileStartOffset <= 0)
+    if (fileStartOffset > Int.MaxValue)
+      throw new IllegalArgumentException(s"fileStartOffset ($fileStartOffset) exceeds maximum supported value (${Int.MaxValue})")
+    val fileStartOffsetInt = fileStartOffset.toInt
+    if (skipped || fileStartOffsetInt <= 0)
       Array.empty[Byte]
     else {
       skipped = true
-      val b = new Array[Byte](fileStartOffset.toInt)
-      val actual = bytesStream.read(b, 0, fileStartOffset.toInt)
+      val b = new Array[Byte](fileStartOffsetInt)
+      val actual = bytesStream.read(b, 0, fileStartOffsetInt)
       if (actual <= 0) {
         Array.empty[Byte]
       } else {
@@ -50,17 +64,36 @@ class FSStream (fileName: String, fileStartOffset: Long = 0L, fileEndOffset: Lon
     }
   }
 
+  /**
+    * Reads and returns the bytes at the end of the file that follow the effective stream content.
+    *
+    * This method attempts to read the trailing bytes (defined by the file end offset) that appear
+    * after the effective content of the stream. It only performs the read when the byte index has
+    * reached or exceeded the effective size and the stream has not yet been closed. If the file end
+    * offset is zero or negative, the stream is closed and an empty array is returned.
+    *
+    * @return an array of bytes containing the skipped end bytes, or an empty array if the stream
+    *         has not yet reached the end of the effective content, the stream is already closed,
+    *         the file end offset is zero or negative, or no bytes could be read.
+    */
   def getSkippedEndBytes: Array[Byte] = {
+    if (fileEndOffset > Int.MaxValue)
+      throw new IllegalArgumentException(s"fileEndOffset ($fileEndOffset) exceeds maximum supported value (${Int.MaxValue})")
+    val fileEndOffsetInt = fileEndOffset.toInt
     if (byteIndex >= effectiveSize && !isClosed) {
-      val b = new Array[Byte](fileEndOffset.toInt)
-      val actual = bytesStream.read(b, 0, fileEndOffset.toInt)
-      if (actual <= 0) {
-        Array.empty[Byte]
+      if (fileEndOffsetInt > 0) {
+        val b = new Array[Byte](fileEndOffsetInt)
+        val actual = bytesStream.read(b, 0, fileEndOffsetInt)
+        if (actual <= 0) {
+          Array.empty[Byte]
+        } else {
+          b.take(actual)
+        }
       } else {
-        b.take(actual)
+        close()
+        Array.empty[Byte]
       }
     } else {
-      close()
       Array.empty[Byte]
     }
   }
