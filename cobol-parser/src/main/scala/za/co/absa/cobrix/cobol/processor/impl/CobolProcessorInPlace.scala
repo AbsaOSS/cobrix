@@ -47,14 +47,24 @@ class CobolProcessorInPlace(readerParameters: ReaderParameters,
     val recordExtractor = CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, inputStream, None)
 
     try {
-      outputStream.write(inputStream.getSkippedStartBytes)
+      inputStream match {
+        case stream: FSStream =>
+          outputStream.write(stream.getSkippedStartBytes)
+        case _                =>
+      }
+
       val recordsProcessed = StreamProcessor.processStreamInPlace(copybook,
         options,
         inputStream,
         recordExtractor,
         rawRecordProcessor,
         outputStream)
-      outputStream.write(inputStream.getSkippedEndBytes)
+
+      inputStream match {
+        case stream: FSStream =>
+          outputStream.write(stream.getSkippedEndBytes)
+        case _                =>
+      }
       recordsProcessed
     } finally {
       inputStream.close()

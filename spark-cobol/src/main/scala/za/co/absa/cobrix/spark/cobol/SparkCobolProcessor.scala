@@ -154,12 +154,13 @@ object SparkCobolProcessor {
 
       val readerParameters = cobolProcessorBuilder.getReaderParameters
       val cobolProcessor = cobolProcessorBuilder.build()
+      val retainStartAndEndOffsets = cobolProcessingStrategy == CobolProcessingStrategy.InPlace
 
       val processor = new SparkCobolProcessor {
         private val sconf = new SerializableConfiguration(spark.sparkContext.hadoopConfiguration)
 
         override def process(listOfFiles: Seq[String], outputPath: String): Long = {
-          getFileProcessorRdd(listOfFiles, outputPath, cobolProcessor, readerParameters, rawRecordProcessorOpt.get, sconf, numberOfThreads)
+          getFileProcessorRdd(listOfFiles, outputPath, cobolProcessor, readerParameters, rawRecordProcessorOpt.get, sconf, retainStartAndEndOffsets, numberOfThreads)
             .reduce(_ + _)
         }
       }
@@ -190,12 +191,13 @@ object SparkCobolProcessor {
                                   readerParameters: ReaderParameters,
                                   rawRecordProcessor: SerializableRawRecordProcessor,
                                   sconf: SerializableConfiguration,
+                                  retainStartAndEndOffsets: Boolean,
                                   numberOfThreads: Int
                                  )(implicit spark: SparkSession): RDD[Long] = {
     val groupedFiles = listOfFiles.grouped(numberOfThreads).toSeq
     val rdd = spark.sparkContext.parallelize(groupedFiles)
     rdd.map(group => {
-      processListOfFiles(group, outputPath, cobolProcessor, readerParameters, rawRecordProcessor, sconf, numberOfThreads)
+      processListOfFiles(group, outputPath, cobolProcessor, readerParameters, rawRecordProcessor, sconf, retainStartAndEndOffsets, numberOfThreads)
     })
   }
 
@@ -254,6 +256,7 @@ object SparkCobolProcessor {
                                  readerParameters: ReaderParameters,
                                  rawRecordProcessor: SerializableRawRecordProcessor,
                                  sconf: SerializableConfiguration,
+                                 retainStartAndEndOffsets: Boolean,
                                  numberOfThreads: Int
                                 ): Long = {
     val threadPool: ExecutorService = Executors.newFixedThreadPool(numberOfThreads)
@@ -281,7 +284,18 @@ object SparkCobolProcessor {
 
         val recordCount = UsingUtils.using(new FileStreamer(inputFile, sconf.value, fileStartOffset, maximumBytes)) { ifs =>
           UsingUtils.using(new BufferedOutputStream(outputFs.create(outputFile, true))) { ofs =>
-            cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
+            if (fileStartOffset > 0 && retainStartAndEndOffsets) {
+              val tempStream = new FileStreamer(inputFile, sconf.value)
+              ofs.write(tempStream.next(fileStartOffset))
+              tempStream.close()
+            }
+            val recordsProcessed = cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
+            if (fileEndOffset > 0 && retainStartAndEndOffsets) {
+              val tempStream = new FileStreamer(inputFile, sconf.value, maximumBytes + fileStartOffset)
+              ofs.write(tempStream.next(fileEndOffset))
+              tempStream.close()
+            }
+            recordsProcessed
           }
         }
 

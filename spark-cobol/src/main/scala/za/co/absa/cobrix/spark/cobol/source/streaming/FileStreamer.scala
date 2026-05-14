@@ -125,12 +125,6 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
   }
 
   @throws[IOException]
-  override def getSkippedStartBytes: Array[Byte] = Array.empty[Byte]
-
-  @throws[IOException]
-  override def getSkippedEndBytes: Array[Byte] = Array.empty[Byte]
-
-  @throws[IOException]
   override def close(): Unit = {
     wasOpened = true
     if (bufferedStream != null && !bufferedStream.isClosed) {

@@ -35,8 +35,4 @@ trait SimpleStream extends AutoCloseable {
   def copyStream(): SimpleStream
 
   @throws(classOf[Exception]) def next(numberOfBytes: Int): Array[Byte]
-
-  @throws(classOf[Exception]) def getSkippedStartBytes: Array[Byte]
-
-  @throws(classOf[Exception]) def getSkippedEndBytes: Array[Byte]
 }
