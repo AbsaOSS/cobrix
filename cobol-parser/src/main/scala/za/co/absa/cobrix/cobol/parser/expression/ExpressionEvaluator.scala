@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.expression
 
 import za.co.absa.cobrix.cobol.parser.expression.lexer.Lexer
-import za.co.absa.cobrix.cobol.parser.expression.parser.{ExtractVariablesBuilder, NumExprBuilderImpl, Parser}
+import za.co.absa.cobrix.cobol.parser.expression.parser.{ExtractVariablesBuilder, ExpressionBuilderImpl, Parser}
 
 import scala.collection.mutable
 
@@ -34,7 +34,7 @@ import scala.collection.mutable
   *   assert(evaluator.eval() == 549)
   *   }}}
   */
-class NumberExprEvaluator(expr: String) {
+class ExpressionEvaluator(expr: String) {
   private val tokens = new Lexer(expr).lex()
 
   private val vars = mutable.HashMap[String, Int]()
@@ -50,10 +50,17 @@ class NumberExprEvaluator(expr: String) {
     exprBuilder.getResult
   }
 
-  def eval(): Int = {
-    val exprBuilder = new NumExprBuilderImpl(vars.toMap, expr)
+  def evalInt(): Int = {
+    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, expr)
     Parser.parse(tokens, exprBuilder)
 
-    exprBuilder.getResult
+    exprBuilder.getIntResult
+  }
+
+  def evalBool(): Boolean = {
+    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, expr)
+    Parser.parse(tokens, exprBuilder)
+
+    exprBuilder.getBoolResult
   }
 }

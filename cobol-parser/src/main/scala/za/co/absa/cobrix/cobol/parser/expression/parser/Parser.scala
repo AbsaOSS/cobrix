@@ -91,6 +91,9 @@ object Parser {
           case DIV(pos) =>
             builder.addOperationDivide(pos)
             state = STATE0
+          case EQ(pos) =>
+            builder.addOperationEquals(pos)
+            state = STATE0
           case NAME(pos, s) =>
             builder.addFunction(s, pos)
           case NUM_LITERAL(pos, s) =>

@@ -23,6 +23,7 @@ trait NumExprBuilder {
   def addOperationMinus(pos: Int): Unit
   def addOperationMultiply(pos: Int): Unit
   def addOperationDivide(pos: Int): Unit
+  def addOperationEquals(pos: Int): Unit
 
   def addVariable(name: String, pos: Int): Unit
   def addFunction(name: String, pos: Int): Unit

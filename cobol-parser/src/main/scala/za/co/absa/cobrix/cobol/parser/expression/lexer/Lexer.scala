@@ -54,6 +54,7 @@ class Lexer(expression: String) {
       case '-' => Some(MINUS(pos))
       case '*' => Some(MULT(pos))
       case '/' => Some(DIV(pos))
+      case '=' => Some(EQ(pos))
       case _ => None
     }
 

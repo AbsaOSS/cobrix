@@ -17,13 +17,14 @@
 package za.co.absa.cobrix.cobol.expression
 
 import org.scalatest.wordspec.AnyWordSpec
-import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
+import za.co.absa.cobrix.cobol.parser.expression.exception.ExprSyntaxError
 
 class ExpressionEvaluatorSuite extends AnyWordSpec {
   "getVariables()" should {
     "return the list of variables in expressions" in {
       val expr = "d + b * c - a / d"
-      val vars = new NumberExprEvaluator(expr).getVariables
+      val vars = new ExpressionEvaluator(expr).getVariables
       assert(vars == Seq("a", "b", "c", "d"))
     }
   }
@@ -46,7 +47,7 @@ class ExpressionEvaluatorSuite extends AnyWordSpec {
       exprs.foreach {
         case (expr, expectedResult) =>
           s"$expr" in {
-            val actualResult = new NumberExprEvaluator(expr).eval()
+            val actualResult = new ExpressionEvaluator(expr).evalInt()
             assert(actualResult == expectedResult)
           }
       }
@@ -54,12 +55,45 @@ class ExpressionEvaluatorSuite extends AnyWordSpec {
 
     "evaluate expressions with variables" in {
       val expr = "10 * (a1 + 5) * bcd"
-      val evaluator = new NumberExprEvaluator(expr)
+      val evaluator = new ExpressionEvaluator(expr)
       evaluator.setValue("a1", 2)
       evaluator.setValue("bcd", 3)
 
-      val actualResult = evaluator.eval()
+      val actualResult = evaluator.evalInt()
       assert(actualResult == 210)
+    }
+
+    "evaluate boolean expressions" in {
+      val expr = "a1*2 = 4"
+      val evaluator = new ExpressionEvaluator(expr)
+      evaluator.setValue("a1", 2)
+
+      val actualResult = evaluator.evalBool()
+      assert(actualResult)
+    }
+
+    "fail when int expected but boolean returned" in {
+      val expr = "a1*2 = 4"
+      val evaluator = new ExpressionEvaluator(expr)
+      evaluator.setValue("a1", 2)
+
+      val ex = intercept[ExprSyntaxError] {
+        evaluator.evalInt()
+      }
+
+      assert(ex.getMessage == "The expression does not return a number in 'a1*2 = 4'.")
+    }
+
+    "fail when bool expected but int returned" in {
+      val expr = "a1*2"
+      val evaluator = new ExpressionEvaluator(expr)
+      evaluator.setValue("a1", 2)
+
+      val ex = intercept[ExprSyntaxError] {
+        evaluator.evalBool()
+      }
+
+      assert(ex.getMessage == "The expression does not return a boolean in 'a1*2'.")
     }
   }
 }

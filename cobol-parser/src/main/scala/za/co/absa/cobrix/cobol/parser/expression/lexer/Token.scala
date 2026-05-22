@@ -54,6 +54,10 @@ object Token {
     override def toString = "/"
   }
 
+  case class EQ(pos: Int) extends Token {
+    override def toString = "="
+  }
+
   case class NAME(pos: Int, s: String) extends Token
   {
     override def toString: String = s

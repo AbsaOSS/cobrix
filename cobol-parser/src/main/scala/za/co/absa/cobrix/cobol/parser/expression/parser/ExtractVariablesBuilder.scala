@@ -33,6 +33,8 @@ class ExtractVariablesBuilder(expr: String) extends NumExprBuilder {
 
   override def addOperationDivide(pos: Int): Unit = {}
 
+  override def addOperationEquals(pos: Int): Unit = {}
+
   override def addVariable(name: String, pos: Int): Unit = {
     variables += name
   }

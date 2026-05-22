@@ -19,7 +19,7 @@ package za.co.absa.cobrix.cobol.reader.validator
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.Copybook
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.reader.iterator.{RecordLengthExpression, RecordLengthField}
 import za.co.absa.cobrix.cobol.reader.parameters.MultisegmentParameters
 
@@ -65,7 +65,7 @@ object ReaderParametersValidator {
 
   @throws(classOf[IllegalStateException])
   def getLengthFieldExpr(recordLengthFieldExpr: String, recordLengthMap: Map[String, Int], cobolSchema: Copybook): Option[RecordLengthExpression] = {
-    val evaluator = new NumberExprEvaluator(recordLengthFieldExpr)
+    val evaluator = new ExpressionEvaluator(recordLengthFieldExpr)
     val vars = evaluator.getVariables
     val fields = vars.map { field =>
       val primitive = getLengthField(field, recordLengthMap, cobolSchema)
