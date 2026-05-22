@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.parser.ast.Primitive
-import za.co.absa.cobrix.cobol.parser.expression.NumberExprEvaluator
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 
 case class RecordLengthField(
                               field: Primitive,

@@ -21,15 +21,16 @@ import za.co.absa.cobrix.cobol.parser.expression.exception.ExprSyntaxError
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
 
-class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBuilder {
+class ExpressionBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBuilder {
   val ops = new ListBuffer[String]
-  val values = new ListBuffer[Int]
+  val valuesInt = new ListBuffer[Int]
+  val valuesBool = new ListBuffer[Boolean]
 
   override def openParen(pos: Int): Unit = ops += "("
 
   override def closeParen(pos: Int): Unit = {
     if (ops.isEmpty) {
-      if (values.size != 1) {
+      if (valuesInt.size != 1) {
         throw new ExprSyntaxError(s"Empty expression at $pos in '$expr'.")
       }
     } else {
@@ -68,11 +69,18 @@ class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBu
     ops += "/"
   }
 
+  override def addOperationEquals(pos: Int): Unit = {
+    while (ops.nonEmpty && "+-*/=".contains(ops.last)) {
+      eval()
+    }
+    ops += "="
+  }
+
   override def addVariable(name: String, pos: Int): Unit = {
     if (!vars.contains(name)) {
       throw new ExprSyntaxError(s"Unset variable '$name' used.")
     } else {
-      values += vars(name)
+      valuesInt += vars(name)
     }
   }
 
@@ -81,19 +89,36 @@ class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBu
   }
 
   override def addNumLiteral(num: Int, pos: Int): Unit = {
-    values += num
+    valuesInt += num
   }
 
-  def getResult: Int = {
+  def getIntResult: Int = {
     while (ops.nonEmpty) {
       eval()
     }
-    if (values.isEmpty) {
+    if (valuesInt.isEmpty && valuesBool.isEmpty) {
       throw new ExprSyntaxError(s"Empty expressions are not supported in '$expr'.")
-    } else if (values.size > 1) {
+    } else if (valuesInt.isEmpty) {
+      throw new ExprSyntaxError(s"The expression does not return a number in '$expr'.")
+    } else if (valuesInt.size > 1 || (valuesInt.nonEmpty && valuesBool.nonEmpty)) {
       throw new ExprSyntaxError(s"Malformed expression: '$expr'.")
     } else {
-      values.head
+      valuesInt.head
+    }
+  }
+
+  def getBoolResult: Boolean = {
+    while (ops.nonEmpty) {
+      eval()
+    }
+    if (valuesInt.isEmpty && valuesBool.isEmpty) {
+      throw new ExprSyntaxError(s"Empty expressions are not supported in '$expr'.")
+    } else if (valuesBool.isEmpty) {
+      throw new ExprSyntaxError(s"The expression does not return a boolean in '$expr'.")
+    } else if (valuesBool.size > 1 || (valuesInt.nonEmpty && valuesBool.nonEmpty)) {
+      throw new ExprSyntaxError(s"Malformed expression: '$expr'.")
+    } else {
+      valuesBool.head
     }
   }
 
@@ -105,37 +130,48 @@ class NumExprBuilderImpl(vars: Map[String, Int], expr: String) extends NumExprBu
     op match {
       case "(" => if (ops.nonEmpty && ops.last != "(") eval()
       case "+" =>
-        expectArguments(2)
+        expectIntArguments(2)
         val b = getInt
         val a = getInt
-        values += a + b
+        valuesInt += a + b
       case "-" =>
-        expectArguments(2)
+        expectIntArguments(2)
         val b = getInt
         val a = getInt
-        values += a - b
+        valuesInt += a - b
       case "*" =>
-        expectArguments(2)
+        expectIntArguments(2)
         val b = getInt
         val a = getInt
-        values += a * b
+        valuesInt += a * b
       case "/" =>
-        expectArguments(2)
+        expectIntArguments(2)
         val b = getInt
         val a = getInt
-        values += a / b
+        valuesInt += a / b
+      case "=" =>
+        expectIntArguments(2)
+        val b = getInt
+        val a = getInt
+        valuesBool += a == b
       case f => throw new ExprSyntaxError(s"Unsupported function '$f' in '$expr'.")
     }
   }
 
-  private def expectArguments(n: Int): Unit = {
-    if (values.size < n)
+  private def expectIntArguments(n: Int): Unit = {
+    if (valuesInt.size < n)
       throw new ExprSyntaxError(s"Expected more arguments in '$expr'.")
   }
 
   private def getInt: Int = {
-    val a = values.last
-    values.remove(values.size - 1)
+    val a = valuesInt.last
+    valuesInt.remove(valuesInt.size - 1)
+    a
+  }
+
+  private def getBool: Boolean = {
+    val a = valuesBool.last
+    valuesBool.remove(valuesBool.size - 1)
     a
   }
 }

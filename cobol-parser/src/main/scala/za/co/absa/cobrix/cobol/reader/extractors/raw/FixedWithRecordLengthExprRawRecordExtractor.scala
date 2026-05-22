@@ -180,7 +180,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
         }
     }
 
-    val recordLength = evaluator.eval()
+    val recordLength = evaluator.evalInt()
 
     val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
 
