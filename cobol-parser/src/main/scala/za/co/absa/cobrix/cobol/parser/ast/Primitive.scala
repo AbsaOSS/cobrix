@@ -19,6 +19,7 @@ package za.co.absa.cobrix.cobol.parser.ast
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, CobolType, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, DecoderSelector}
 import za.co.absa.cobrix.cobol.parser.encoding.{ASCII, EBCDIC, EncoderSelector}
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 
 /** An abstraction of the statements describing fields of primitive data types in the COBOL copybook
   *
@@ -53,6 +54,7 @@ case class Primitive(
                       dependingOnHandlers: Map[String, Int] = Map(),
                       isDependee: Boolean = false,
                       isFiller: Boolean = false,
+                      ruleExpression: Option[ExpressionEvaluator] = None,
                       decode: DecoderSelector.Decoder,
                       encode: Option[EncoderSelector.Encoder],
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
@@ -107,7 +109,10 @@ case class Primitive(
   }
 
   /** Returns true if the field is a child segment */
-  def isChildSegment: Boolean = false
+  override def isChildSegment: Boolean = false
+
+  /** Returns true if the field is enabled for the input binary record. Uses the rule expression to determine that. */
+  override def enabledForRecord(record: Array[Byte]): Boolean = true
 
   /** Returns the original field with updated binary properties */
   def withUpdatedBinaryProperties(newBinaryProperties: BinaryProperties): Primitive = {
@@ -124,8 +129,14 @@ case class Primitive(
     copy(isDependee = newIsDependee)(parent)
   }
 
+  /** Returns the original field with updated `dependingOnHandlers` */
   def withUpdatedDependingOnHandlers(newDependingOnHandlers: Map[String, Int]): Primitive = {
     copy(dependingOnHandlers = newDependingOnHandlers)(parent)
+  }
+
+  /** Returns the original field with updated `ruleExpression` */
+  def withUpdatedRuleExpression(newRuleExpression: Option[ExpressionEvaluator]): Primitive = {
+    copy(ruleExpression = newRuleExpression)(parent)
   }
 
   /** Returns the binary size in bits for the field */

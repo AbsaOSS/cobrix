@@ -16,6 +16,8 @@
 
 package za.co.absa.cobrix.cobol.parser.ast
 
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
+
 /** Trait for Cobol copybook AST element (a statement). */
 trait Statement {
   /** Returns the level of the AST element */
@@ -81,6 +83,12 @@ trait Statement {
 
   /** Returns true if the field is a child segment */
   def isChildSegment: Boolean
+
+  /** The expression for the field enablement. Usually used for redefined fields. */
+  def ruleExpression: Option[ExpressionEvaluator]
+
+  /** Returns true if the field is enabled for the input binary record. Uses the rule expression to determine that. */
+  def enabledForRecord(record: Array[Byte]): Boolean
 
   /** A binary properties of a field */
   val binaryProperties: BinaryProperties

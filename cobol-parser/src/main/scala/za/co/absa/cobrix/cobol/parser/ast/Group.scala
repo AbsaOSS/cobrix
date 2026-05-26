@@ -17,6 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.ast
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.Usage
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 
 import scala.collection.mutable
 
@@ -57,6 +58,7 @@ case class Group(
                   isFiller: Boolean = false,
                   groupUsage: Option[Usage] = None,
                   nonFillerSize: Int = 0,
+                  ruleExpression: Option[ExpressionEvaluator] = None,
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )
                 (val parent: Option[Group] = None)
@@ -81,7 +83,10 @@ case class Group(
   }
 
   /** Returns true if the field is a child segment */
-  def isChildSegment: Boolean = parentSegment.nonEmpty
+  override def isChildSegment: Boolean = parentSegment.nonEmpty
+
+  /** Returns true if the field is enabled for the input binary record. Uses the rule expression to determine that. */
+  override def enabledForRecord(record: Array[Byte]): Boolean = true
 
   /** Returns the original Group with updated children */
   def withUpdatedChildren(newChildren: mutable.ArrayBuffer[Statement]): Group = {
@@ -108,8 +113,14 @@ case class Group(
     copy(parentSegment = newParentSegmentOpt)(parent)
   }
 
+  /** Returns the original field with updated `dependingOnHandlers` */
   def withUpdatedDependingOnHandlers(newDependingOnHandlers: Map[String, Int]): Group = {
     copy(dependingOnHandlers = newDependingOnHandlers)(parent)
+  }
+
+  /** Returns the original field with updated `ruleExpression` */
+  def withUpdatedRuleExpression(newRuleExpression: Option[ExpressionEvaluator]): Group = {
+    copy(ruleExpression = newRuleExpression)(parent)
   }
 
 }

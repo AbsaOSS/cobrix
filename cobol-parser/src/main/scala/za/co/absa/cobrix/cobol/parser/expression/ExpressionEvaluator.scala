@@ -34,7 +34,7 @@ import scala.collection.mutable
   *   assert(evaluator.eval() == 549)
   *   }}}
   */
-class ExpressionEvaluator(expr: String) {
+class ExpressionEvaluator(val expr: String) {
   private val tokens = new Lexer(expr).lex()
 
   private val vars = mutable.HashMap[String, Int]()
