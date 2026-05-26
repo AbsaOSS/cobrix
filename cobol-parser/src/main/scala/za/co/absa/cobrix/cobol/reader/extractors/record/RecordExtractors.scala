@@ -77,6 +77,7 @@ object RecordExtractors {
   ): Seq[Any] = {
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
     val corruptFields = new ArrayBuffer[CorruptField]
+    val variables = new mutable.HashMap[String, Any]()
 
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
 
@@ -143,23 +144,36 @@ object RecordExtractors {
           if (grp.isSegmentRedefine && grp.name.compareToIgnoreCase(activeSegmentRedefine) != 0) {
             (grp.binaryProperties.actualSize, null)
           } else {
-            getGroupValues(useOffset, grp)
+            val extract = canExtract(grp, variables)
+            if (extract) {
+              getGroupValues(useOffset, grp)
+            } else {
+              (grp.binaryProperties.actualSize, null)
+            }
           }
         case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, data)
-          if (value == null && generateCorruptFields && !st.isEmpty(useOffset, data)) {
-            corruptFields += CorruptField(field.name, st.getRawValue(useOffset,data))
-          }
-          if (value != null && st.isDependee) {
-            val intStringVal: Either[Int, String] = value match {
-              case v: Int => Left(v)
-              case v: Number => Left(v.intValue())
-              case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
+          val extract = canExtract(st, variables)
+          if (extract) {
+            val value = st.decodeTypeValue(useOffset, data)
+            if (value == null && generateCorruptFields && !st.isEmpty(useOffset, data)) {
+              corruptFields += CorruptField(field.name, st.getRawValue(useOffset, data))
             }
-            dependFields += st.name -> intStringVal
+            if (st.isUsedInRules) {
+              variables += st.name -> value
+            }
+            if (value != null && st.isDependee) {
+              val intStringVal: Either[Int, String] = value match {
+                case v: Int    => Left(v)
+                case v: Number => Left(v.intValue())
+                case v: String => Right(v)
+                case v         => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
+              }
+              dependFields += st.name -> intStringVal
+            }
+            (st.binaryProperties.actualSize, value)
+          } else {
+            (st.binaryProperties.actualSize, null)
           }
-          (st.binaryProperties.actualSize, value)
       }
     }
 
@@ -208,12 +222,22 @@ object RecordExtractors {
 
     val records: ListBuffer[T] = ListBuffer.empty[T]
 
-    for (record <- rootRecords if !recordsToExclude.contains(record.name.toUpperCase)) yield {
-      val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
-      if (!record.isRedefined) {
-        nextOffset += size
+    if (recordsToExclude.isEmpty) {
+      for (record <- rootRecords) yield {
+        val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
+        if (!record.isRedefined) {
+          nextOffset += size
+        }
+        records += values
       }
-      records += values
+    } else {
+      for (record <- rootRecords if !recordsToExclude.contains(record.name.toUpperCase)) yield {
+        val (size, values) = getGroupValues(nextOffset, record.asInstanceOf[Group])
+        if (!record.isRedefined) {
+          nextOffset += size
+        }
+        records += values
+      }
     }
 
     val effectiveSchemaRetentionPolicy = if (isAstFlat) {
@@ -269,6 +293,7 @@ object RecordExtractors {
       recordsToExclude: Set[String] = Set.empty
   ): Seq[Any] = {
     val isAstFlat = ast.children.exists(_.isInstanceOf[Primitive])
+    val variables = new mutable.HashMap[String, Any]()
 
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
 
@@ -325,19 +350,32 @@ object RecordExtractors {
     def extractValue(field: Statement, useOffset: Int, data: Array[Byte], currentIndex: Int, parentSegmentIds: List[String]): (Int, Any) = {
       field match {
         case grp: Group =>
-          getGroupValues(useOffset, grp, data, currentIndex, parentSegmentIds)
-        case st: Primitive =>
-          val value = st.decodeTypeValue(useOffset, data)
-          if (value != null && st.isDependee) {
-            val intStringVal: Either[Int, String] = value match {
-              case v: Int => Left(v)
-              case v: Number => Left(v.intValue())
-              case v: String => Right(v)
-              case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
-            }
-            dependFields += st.name -> intStringVal
+          val extract = canExtract(grp, variables)
+          if (extract) {
+            getGroupValues(useOffset, grp, data, currentIndex, parentSegmentIds)
+          } else {
+            (grp.binaryProperties.actualSize, null)
           }
-          (st.binaryProperties.actualSize, value)
+        case st: Primitive =>
+          val extract = canExtract(st, variables)
+          if (extract) {
+            val value = st.decodeTypeValue(useOffset, data)
+            if (st.isUsedInRules) {
+              variables += st.name -> value
+            }
+            if (value != null && st.isDependee) {
+              val intStringVal: Either[Int, String] = value match {
+                case v: Int => Left(v)
+                case v: Number => Left(v.intValue())
+                case v: String => Right(v)
+                case v => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
+              }
+              dependFields += st.name -> intStringVal
+            }
+            (st.binaryProperties.actualSize, value)
+          } else {
+            (st.binaryProperties.actualSize, null)
+          }
       }
     }
 
@@ -555,5 +593,25 @@ object RecordExtractors {
     corruptFieldsInGroup += Primitive(15, Constants.rawValueColumn, Constants.rawValueColumn, 0, AlphaNumeric("X(50)", 50, enc = Some(RAW), compact = Some(COMP4())), decode = null, encode = null)(None)
 
     Group(10, Constants.corruptFieldsField, Constants.corruptFieldsField, 0,  children = corruptFieldsInGroup, occurs = Some(10))(None)
+  }
+
+  /** Applies redefine expression rules if defined. */
+  def canExtract(field: Statement, variables: mutable.Map[String, Any]): Boolean = {
+    field.ruleExpression match {
+      case Some(expr) =>
+        variables.foreach {
+          case (k, v) =>
+            if (v == null)
+              return false
+            expr.setValue(k, v.toString.toInt)
+        }
+        if (expr.evalBool()) {
+          true
+        } else {
+          false
+        }
+      case None =>
+        true
+    }
   }
 }

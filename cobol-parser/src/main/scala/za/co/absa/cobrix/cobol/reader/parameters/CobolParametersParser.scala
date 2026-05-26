@@ -451,7 +451,8 @@ object CobolParametersParser extends Logging {
     val ruleExpressionMap = parameters.redefineRuleExpressions map {
       case (field, exprStr) =>
         val expr = new ExpressionEvaluator(exprStr)
-        (field, expr)
+        val fixedField = CopybookParser.transformIdentifier(field).toUpperCase
+        (fixedField, expr)
     }
 
     ReaderParameters(
