@@ -25,6 +25,7 @@ import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPoint
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.encoding.{EBCDIC, Encoding}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
@@ -124,6 +125,7 @@ object CopybookParser extends Logging {
     * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754).
     * @param nonTerminals          A list of non-terminals that should be extracted as strings.
+    * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook.
     */
@@ -147,6 +149,7 @@ object CopybookParser extends Logging {
             floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
             nonTerminals: Seq[String] = Nil,
             occursHandlers: Map[String, Map[String, Int]] = Map(),
+            redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
             debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
             fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
     parseTree(dataEncoding,
@@ -169,6 +172,7 @@ object CopybookParser extends Logging {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
+      redefineRuleExpressions,
       debugFieldsPolicy,
       fieldCodePageMap)
   }
@@ -192,6 +196,7 @@ object CopybookParser extends Logging {
     * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
@@ -214,6 +219,7 @@ object CopybookParser extends Logging {
                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM,
                 nonTerminals: Seq[String] = Nil,
                 occursHandlers: Map[String, Map[String, Int]] = Map(),
+                redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
                 debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
                 fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
     parseTree(EBCDIC,
@@ -236,6 +242,7 @@ object CopybookParser extends Logging {
       floatingPointFormat,
       nonTerminals,
       occursHandlers,
+      redefineRuleExpressions,
       debugFieldsPolicy,
       fieldCodePageMap)
   }
@@ -259,6 +266,7 @@ object CopybookParser extends Logging {
     * @param isUtf16BigEndian      If true UTF-16 strings are considered big-endian.
     * @param floatingPointFormat   A format of floating-point numbers (IBM/IEEE754)
     * @param nonTerminals          A list of non-terminals that should be extracted as strings
+    * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
     * @return Seq[Group] where a group is a record inside the copybook
     */
@@ -283,6 +291,7 @@ object CopybookParser extends Logging {
                 floatingPointFormat: FloatingPointFormat,
                 nonTerminals: Seq[String],
                 occursHandlers: Map[String, Map[String, Int]],
+                redefineRuleExpressions: Map[String, ExpressionEvaluator],
                 debugFieldsPolicy: DebugFieldsPolicy,
                 fieldCodePageMap: Map[String, String]): Copybook = {
 
@@ -313,7 +322,9 @@ object CopybookParser extends Logging {
       // Add debugging fields if debug mode is enabled.
       DebugFieldsAdder(debugFieldsPolicy),
       // For each group calculates the number of non-filler items.
-      NonFillerCountSetter()
+      NonFillerCountSetter(),
+      // Sets isUsedInRules and rule expressions for each field
+      RuleExpressionSetter(redefineRuleExpressions)
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) {

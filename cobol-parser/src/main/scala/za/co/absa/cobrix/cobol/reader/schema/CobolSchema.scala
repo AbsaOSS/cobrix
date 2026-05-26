@@ -119,6 +119,7 @@ object CobolSchema {
         readerParameters.floatingPointFormat,
         readerParameters.nonTerminals,
         readerParameters.occursMappings,
+        readerParameters.redefineRuleExpressions,
         readerParameters.debugFieldsPolicy,
         readerParameters.fieldCodePage)
     else
@@ -143,6 +144,7 @@ object CobolSchema {
           readerParameters.floatingPointFormat,
           nonTerminals = readerParameters.nonTerminals,
           readerParameters.occursMappings,
+          readerParameters.redefineRuleExpressions,
           readerParameters.debugFieldsPolicy,
           readerParameters.fieldCodePage)
       ))

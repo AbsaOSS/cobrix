@@ -34,6 +34,7 @@ import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
   * @param dependingOn         A field which specifies size of the array in a record
   * @param dependingOnHandlers A map of handlers for the dependingOn field
   * @param isDependee          A flag indicating if the field is a dependee
+  * @param isUsedInRules       If true, the variable is used in redefine rule expressions
   * @param isFiller            A flag indicating if the field is a filler
   * @param decode              A decoder for the field to convert from raw data to a JVM data type
   * @param encode              An optional encoder for the field to convert from a JVM data type to raw data
@@ -53,6 +54,7 @@ case class Primitive(
                       dependingOn: Option[String] = None,
                       dependingOnHandlers: Map[String, Int] = Map(),
                       isDependee: Boolean = false,
+                      isUsedInRules: Boolean = false,
                       isFiller: Boolean = false,
                       ruleExpression: Option[ExpressionEvaluator] = None,
                       decode: DecoderSelector.Decoder,
@@ -127,6 +129,11 @@ case class Primitive(
   /** Returns the original field with updated `isDependee` flag */
   def withUpdatedIsDependee(newIsDependee: Boolean): Primitive = {
     copy(isDependee = newIsDependee)(parent)
+  }
+
+  /** Returns the original field with updated `isUsedInRules` flag */
+  def withUpdatedIsUsedInRules(newIsUsedInRules: Boolean): Primitive = {
+    copy(isUsedInRules = newIsUsedInRules)(parent)
   }
 
   /** Returns the original field with updated `dependingOnHandlers` */
