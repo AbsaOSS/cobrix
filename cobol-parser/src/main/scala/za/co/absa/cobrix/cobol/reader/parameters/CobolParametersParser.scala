@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.antlr.ParserJson
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies._
@@ -122,6 +123,8 @@ object CobolParametersParser extends Logging {
   val PARAM_INPUT_FILE_COLUMN         = "with_input_file_name_col"
   val PARAM_SEGMENT_REDEFINE_PREFIX   = "redefine_segment_id_map"
   val PARAM_SEGMENT_REDEFINE_PREFIX_ALT = "redefine-segment-id-map"
+  val PARAM_REDEFINE_RULE_PREFIX      = "redefine_rule"
+  val PARAM_REDEFINE_RULE_PREFIX_ALT  = "redefine-rule"
 
   // Indexed multisegment file processing
   val PARAM_ENABLE_INDEXES                   = "enable_indexes"
@@ -303,6 +306,7 @@ object CobolParametersParser extends Logging {
       params.get(PARAM_MINIMUM_RECORD_LENGTH).map(_.toInt),
       params.get(PARAM_MAXIMUM_RECORD_LENGTH).map(_.toInt),
       variableLengthParams,
+      getRedefineRuleExpressionMapping(params),
       variableSizeOccursPolicy,
       params.getOrElse(PARAM_GENERATE_RECORD_BYTES, "false").toBoolean,
       params.getOrElse(PARAM_CORRUPT_FIELDS, "false").toBoolean,
@@ -443,6 +447,12 @@ object CobolParametersParser extends Logging {
 
     val recordsToExclude = (parameters.fileHeaderField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet ++
       parameters.fileTrailerField.map(n => CopybookParser.transformIdentifier(n).toUpperCase).toSet)
+    
+    val ruleExpressionMap = parameters.redefineRuleExpressions map {
+      case (field, exprStr) =>
+        val expr = new ExpressionEvaluator(exprStr)
+        (field, expr)
+    }
 
     ReaderParameters(
       recordFormat = parameters.recordFormat,
@@ -454,6 +464,7 @@ object CobolParametersParser extends Logging {
       fieldCodePage = parameters.fieldCodePage,
       isUtf16BigEndian = parameters.isUtf16BigEndian,
       floatingPointFormat = parameters.floatingPointFormat,
+      redefineRuleExpressions = ruleExpressionMap,
       variableSizeOccurs = parameters.variableSizeOccurs,
       recordLength = parameters.recordLength,
       minimumRecordLength = parameters.minimumRecordLength.getOrElse(1),
@@ -743,6 +754,48 @@ object CobolParametersParser extends Logging {
           segmentIds.map(segmentId => (segmentId, CopybookParser.transformIdentifier(redefine)))
         } else {
           Nil
+        }
+    }
+  }
+
+  /**
+    * Parses the list of redefines rules their corresponding expressions.
+    *
+    * Example:
+    * For
+    * {{{
+    *   sprak.read
+    *     .option("redefine-rule:1", "COMPANY => RECORD_TYPE = 1")
+    *     .option("redefine-rule:2", "CONTACT => RECORD_TYPE = 2")
+    * }}}
+    *
+    * The corresponding mapping will be:
+    *
+    * {{{
+    *    "RECORD_TYPE = 1" -> "COMPANY"
+    *    "RECORD_TYPE = 2" -> "COMPANY"
+    * }}}
+    *
+    * @param params Parameters provided by spark.read.option(...)
+    * @return Returns a sequence of redefine rules
+    */
+  @throws(classOf[IllegalArgumentException])
+  def getRedefineRuleExpressionMapping(params: Parameters): Map[String, String] = {
+    params.getMap.flatMap {
+      case (k, v) =>
+        val keyNoCase = k.toLowerCase
+        if (keyNoCase.startsWith(PARAM_REDEFINE_RULE_PREFIX) ||
+          keyNoCase.startsWith(PARAM_REDEFINE_RULE_PREFIX_ALT)) {
+          params.markUsed(k)
+          val splitVal = v.split("\\=\\>")
+          if (splitVal.lengthCompare(2) != 0) {
+            throw new IllegalArgumentException(s"Illegal argument for the '$PARAM_REDEFINE_RULE_PREFIX' option: '$v'.")
+          }
+          val redefine = splitVal(0).trim
+          val rule = splitVal(1).trim
+          Option((CopybookParser.transformIdentifier(redefine), rule))
+        } else {
+          None
         }
     }
   }

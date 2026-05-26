@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.reader.parameters
 
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies._
@@ -37,6 +38,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param fieldCodePage           Specifies a mapping between a field name and the code page
   * @param isUtf16BigEndian        If true UTF-16 strings are considered big-endian.
   * @param floatingPointFormat     A format of floating-point numbers
+  * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
   * @param variableSizeOccurs      Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size
   * @param recordLength            Specifies the length of the record disregarding the copybook record size. Implied the file has fixed record length.
   * @param minimumRecordLength     Minium record length for which the record is considered valid.
@@ -92,6 +94,7 @@ case class ReaderParameters(
                              fieldCodePage:           Map[String, String] = Map.empty[String, String],
                              isUtf16BigEndian:        Boolean = true,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
+                             redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
                              variableSizeOccurs:      VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize,
                              recordLength:            Option[Int] = None,
                              minimumRecordLength:     Int = 1,

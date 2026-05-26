@@ -45,6 +45,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param minimumRecordLength     Minium record length for which the record is considered valid.
   * @param maximumRecordLength     Maximum record length for which the record is considered valid.
   * @param variableLengthParams    VariableLengthParameters containing the specifications for the consumption of variable-length Cobol records.
+  * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
   * @param variableSizeOccurs      Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size
   * @param generateRecordBytes     Generate 'record_bytes' field containing raw bytes of the original record
   * @param generateCorruptFields   Generate '_corrupt_fields' field for fields that haven't converted successfully
@@ -88,6 +89,7 @@ case class CobolParameters(
                             minimumRecordLength:     Option[Int],
                             maximumRecordLength:     Option[Int],
                             variableLengthParams:    Option[VariableLengthParameters],
+                            redefineRuleExpressions: Map[String, String],
                             variableSizeOccurs:      VariableSizeOccursPolicy,
                             generateRecordBytes:     Boolean,
                             generateCorruptFields:   Boolean,

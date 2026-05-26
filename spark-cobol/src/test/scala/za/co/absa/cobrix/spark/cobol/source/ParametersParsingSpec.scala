@@ -35,6 +35,17 @@ class ParametersParsingSpec extends AnyFunSuite {
     assert(segmentIdMapping.get("Q").isEmpty)
   }
 
+  test("Test redefine rule expression mapping") {
+    val config = HashMap[String,String] (
+      "redefine-rule:1" -> "COMPANY => RECORD_TYPE = 1",
+      "redefine_rule:2" -> "CONTACT => RECORD_TYPE = 2")
+
+    val ruleExpressions = CobolParametersParser.getRedefineRuleExpressionMapping(new Parameters(config))
+
+    assert(ruleExpressions("COMPANY") == "RECORD_TYPE = 1")
+    assert(ruleExpressions("CONTACT") == "RECORD_TYPE = 2")
+  }
+
   test("Test field - parent field mapping") {
     val config = HashMap[String,String] ("is_record_sequence"-> "true",
       "segment-children:1" -> "COMPANY => DEPT,CUSTOMER",
