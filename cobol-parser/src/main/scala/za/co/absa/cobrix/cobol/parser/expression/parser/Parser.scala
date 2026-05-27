@@ -23,10 +23,11 @@ import za.co.absa.cobrix.cobol.parser.expression.lexer.Token._
 import scala.collection.mutable.ListBuffer
 
 object Parser {
-  def parse(tokens: Array[Token], builder: NumExprBuilder): Unit = {
+  def parse(tokens: Array[Token], builder: ExpressionBuilder): Unit = {
     val STATE0 = 0
     val STATE1 = 1
     val MINUS_NUM = 3
+    val NOT_OP = 4
 
     var state = STATE0
 
@@ -52,6 +53,8 @@ object Parser {
             throw new ExprSyntaxError(s"Unexpected '+' at pos $pos")
           case MINUS(_) =>
             state = MINUS_NUM
+          case NOT(_) =>
+            state = NOT_OP
           case NAME(pos, s) =>
             if (i == tokens.length - 1 || !tokens(i + 1).isInstanceOf[OPEN_PARAN]) {
               builder.addVariable(s, pos)
@@ -62,11 +65,18 @@ object Parser {
           case NUM_LITERAL(pos, s) =>
             builder.addNumLiteral(s.toInt, pos)
             state = STATE1
+          case STRING_LITERAL(pos, s) =>
+            builder.addStringLiteral(s, pos)
+            state = STATE1
+          case NULL_LITERAL(pos) =>
+            builder.addNullLiteral(pos)
+            state = STATE1
           case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       } else if (state == STATE1) {
         token match {
-          case COMMA(_) =>
+          case COMMA(pos) =>
+            builder.addComma(pos)
             state = STATE0
           case OPEN_PARAN(pos) =>
             paranPos += pos
@@ -94,6 +104,27 @@ object Parser {
           case EQ(pos) =>
             builder.addOperationEquals(pos)
             state = STATE0
+          case GT(pos) =>
+            builder.addOperationGreaterThan(pos)
+            state = STATE0
+          case LT(pos) =>
+            builder.addOperationLessThan(pos)
+            state = STATE0
+          case GTE(pos) =>
+            builder.addOperationGreaterThanOrEqual(pos)
+            state = STATE0
+          case LTE(pos) =>
+            builder.addOperationLessThanOrEqual(pos)
+            state = STATE0
+          case NE(pos) =>
+            builder.addOperationNotEqual(pos)
+            state = STATE0
+          case AND(pos) =>
+            builder.addOperationAnd(pos)
+            state = STATE0
+          case OR(pos) =>
+            builder.addOperationOr(pos)
+            state = STATE0
           case NAME(pos, s) =>
             builder.addFunction(s, pos)
           case NUM_LITERAL(pos, s) =>
@@ -115,6 +146,38 @@ object Parser {
             builder.addNumLiteral(-s.toInt, pos)
             state = STATE1
           case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
+        }
+      } else if (state == NOT_OP) {
+        token match {
+          case NOT(_) =>
+            builder.addOperationNot(pos = token.pos)
+          case OPEN_PARAN(pos) =>
+            paranPos += pos
+            builder.addOperationNot(pos)
+            builder.openParen(pos)
+            state = STATE0
+          case NAME(pos, s) =>
+            builder.addOperationNot(pos)
+            if (i == tokens.length - 1 || !tokens(i + 1).isInstanceOf[OPEN_PARAN]) {
+              builder.addVariable(s, pos)
+              state = STATE1
+            } else {
+              builder.addFunction(s, pos)
+              state = STATE0
+            }
+          case NUM_LITERAL(pos, s) =>
+            builder.addOperationNot(pos)
+            builder.addNumLiteral(s.toInt, pos)
+            state = STATE1
+          case STRING_LITERAL(pos, s) =>
+            builder.addOperationNot(pos)
+            builder.addStringLiteral(s, pos)
+            state = STATE1
+          case NULL_LITERAL(pos) =>
+            builder.addOperationNot(pos)
+            builder.addNullLiteral(pos)
+            state = STATE1
+          case _ => throw new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       }
       i += 1

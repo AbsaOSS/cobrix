@@ -18,12 +18,14 @@ package za.co.absa.cobrix.cobol.parser.expression.parser
 
 import scala.collection.mutable.ListBuffer
 
-class ExtractVariablesBuilder(expr: String) extends NumExprBuilder {
+class ExtractVariablesBuilder(expr: String) extends ExpressionBuilder {
   private val variables = new ListBuffer[String]
 
   override def openParen(pos: Int): Unit = { }
 
   override def closeParen(pos: Int): Unit = { }
+
+  override def addComma(pos: Int): Unit = { }
 
   override def addOperationPlus(pos: Int): Unit = {}
 
@@ -35,6 +37,22 @@ class ExtractVariablesBuilder(expr: String) extends NumExprBuilder {
 
   override def addOperationEquals(pos: Int): Unit = {}
 
+  override def addOperationGreaterThan(pos: Int): Unit = {}
+
+  override def addOperationLessThan(pos: Int): Unit = {}
+
+  override def addOperationGreaterThanOrEqual(pos: Int): Unit = {}
+
+  override def addOperationLessThanOrEqual(pos: Int): Unit = {}
+
+  override def addOperationNotEqual(pos: Int): Unit = {}
+
+  override def addOperationAnd(pos: Int): Unit = {}
+
+  override def addOperationOr(pos: Int): Unit = {}
+
+  override def addOperationNot(pos: Int): Unit = {}
+
   override def addVariable(name: String, pos: Int): Unit = {
     variables += name
   }
@@ -42,6 +60,10 @@ class ExtractVariablesBuilder(expr: String) extends NumExprBuilder {
   override def addFunction(name: String, pos: Int): Unit = { }
 
   override def addNumLiteral(num: Int, pos: Int): Unit = { }
+
+  override def addStringLiteral(s: String, pos: Int): Unit = { }
+
+  override def addNullLiteral(pos: Int): Unit = { }
 
   def getResult: Seq[String] = {
     variables.distinct.sorted.toSeq

@@ -16,16 +16,27 @@
 
 package za.co.absa.cobrix.cobol.parser.expression.parser
 
-trait NumExprBuilder {
+trait ExpressionBuilder {
   def openParen(pos: Int): Unit
   def closeParen(pos: Int): Unit
+  def addComma(pos: Int): Unit
   def addOperationPlus(pos: Int): Unit
   def addOperationMinus(pos: Int): Unit
   def addOperationMultiply(pos: Int): Unit
   def addOperationDivide(pos: Int): Unit
   def addOperationEquals(pos: Int): Unit
+  def addOperationGreaterThan(pos: Int): Unit
+  def addOperationLessThan(pos: Int): Unit
+  def addOperationGreaterThanOrEqual(pos: Int): Unit
+  def addOperationLessThanOrEqual(pos: Int): Unit
+  def addOperationNotEqual(pos: Int): Unit
+  def addOperationAnd(pos: Int): Unit
+  def addOperationOr(pos: Int): Unit
+  def addOperationNot(pos: Int): Unit
 
   def addVariable(name: String, pos: Int): Unit
   def addFunction(name: String, pos: Int): Unit
   def addNumLiteral(num: Int, pos: Int): Unit
+  def addStringLiteral(s: String, pos: Int): Unit
+  def addNullLiteral(pos: Int): Unit
 }
