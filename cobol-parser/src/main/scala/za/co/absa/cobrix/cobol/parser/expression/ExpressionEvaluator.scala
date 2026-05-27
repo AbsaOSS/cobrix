@@ -38,9 +38,37 @@ class ExpressionEvaluator(val expr: String) extends Serializable {
   private val tokens = new Lexer(expr).lex()
 
   private val vars = mutable.HashMap[String, Int]()
+  private val stringVars = mutable.HashMap[String, String]()
+  private val nullVars = mutable.HashSet[String]()
 
   def setValue(varName: String, value: Int): Unit = {
+    nullVars -= varName
+    stringVars -= varName
     vars += varName -> value
+  }
+
+  def setValue(varName: String, value: java.lang.Integer): Unit = {
+    if (value == null) {
+      setNullValue(varName)
+    } else {
+      setValue(varName, value.intValue())
+    }
+  }
+
+  def setStringValue(varName: String, value: String): Unit = {
+    if (value == null) {
+      setNullValue(varName)
+    } else {
+      nullVars -= varName
+      vars -= varName
+      stringVars += varName -> value
+    }
+  }
+
+  def setNullValue(varName: String): Unit = {
+    vars -= varName
+    stringVars -= varName
+    nullVars += varName
   }
 
   def getVariables: Seq[String] = {
@@ -51,16 +79,23 @@ class ExpressionEvaluator(val expr: String) extends Serializable {
   }
 
   def evalInt(): Int = {
-    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, expr)
+    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
     Parser.parse(tokens, exprBuilder)
 
     exprBuilder.getIntResult
   }
 
   def evalBool(): Boolean = {
-    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, expr)
+    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
     Parser.parse(tokens, exprBuilder)
 
     exprBuilder.getBoolResult
+  }
+
+  def evalString(): String = {
+    val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
+    Parser.parse(tokens, exprBuilder)
+
+    exprBuilder.getStringResult
   }
 }

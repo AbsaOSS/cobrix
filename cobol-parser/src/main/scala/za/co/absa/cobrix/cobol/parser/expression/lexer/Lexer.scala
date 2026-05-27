@@ -35,12 +35,69 @@ class Lexer(expression: String) {
     tokens.clear()
 
     while (pos < expression.length) {
-      val ok = findOneCharTokens() || findWhiteSpace() || findName() || findNumLiteral()
+      val ok = findStringLiteral() || findTwoCharTokens() || findOneCharTokens() || findWhiteSpace() || findName() || findNumLiteral()
       if (!ok) {
         throw new ExprSyntaxError(s"Unexpected character '${expression(pos)}' at position: $pos")
       }
     }
     tokens.toArray
+  }
+
+  def findStringLiteral(): Boolean = {
+    if (expression(pos) != '\'') {
+      return false
+    }
+
+    val startPos = pos
+    pos += 1
+    val sb = new StringBuilder
+
+    while (pos < expression.length) {
+      if (expression(pos) == '\'') {
+        if (pos + 1 < expression.length && expression(pos + 1) == '\'') {
+          // Escaped quote: '' becomes '
+          sb.append('\'')
+          pos += 2
+        } else {
+          // End of string
+          pos += 1
+          tokens += STRING_LITERAL(startPos, sb.toString())
+          return true
+        }
+      } else {
+        sb.append(expression(pos))
+        pos += 1
+      }
+    }
+
+    throw new ExprSyntaxError(s"Unterminated string literal starting at position: $startPos")
+  }
+
+  def findTwoCharTokens(): Boolean = {
+    if (pos >= expression.length - 1) {
+      return false
+    }
+
+    val c1 = expression(pos)
+    val c2 = expression(pos + 1)
+
+    val found: Option[Token] = (c1, c2) match {
+      case ('>', '=') => Some(GTE(pos))
+      case ('<', '=') => Some(LTE(pos))
+      case ('!', '=') => Some(NE(pos))
+      case ('&', '&') => Some(AND(pos))
+      case ('|', '|') => Some(OR(pos))
+      case _ => None
+    }
+
+    found match {
+      case Some(t) =>
+        tokens += t
+        pos += 2
+        true
+      case None =>
+        false
+    }
   }
 
   def findOneCharTokens(): Boolean = {
@@ -55,6 +112,11 @@ class Lexer(expression: String) {
       case '*' => Some(MULT(pos))
       case '/' => Some(DIV(pos))
       case '=' => Some(EQ(pos))
+      case '>' => Some(GT(pos))
+      case '<' => Some(LT(pos))
+      case '!' => Some(NOT(pos))
+      case '&' => throw new ExprSyntaxError(s"Unexpected character '&' at position $pos. Did you mean '&&'?")
+      case '|' => throw new ExprSyntaxError(s"Unexpected character '|' at position $pos. Did you mean '||'?")
       case _ => None
     }
 
@@ -89,7 +151,12 @@ class Lexer(expression: String) {
       while (pos2 < expression.length && nameMidChars.contains(expression(pos2))) {
         pos2 += 1
       }
-      val token = NAME(pos, expression.substring(pos, pos2))
+      val name = expression.substring(pos, pos2)
+      val token = if (name.toLowerCase == "null") {
+        NULL_LITERAL(pos)
+      } else {
+        NAME(pos, name)
+      }
       tokens += token
       pos = pos2
       true

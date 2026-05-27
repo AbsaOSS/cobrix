@@ -132,5 +132,55 @@ class Test42RedefineRulesSpec extends AnyWordSpec with SparkTestBase with Binary
         }
       }
     }
+
+    "extract data according to the rules with allowed null values" when {
+      val data = Array(
+        0xF1, 0xF1, 0xF1,
+        0xF2, 0xF2, 0xF2,
+        0x00, 0xF3, 0xF3
+      ).map(_.toByte)
+
+      withTempBinFile("redefine_rules3", ".dat", data) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("redefine-rule:1", "G1 => in(ID, 1, null)")
+          .option("redefine-rule:2", "G2 => ID = 2 || ID = null")
+          .option("redefine-rule:3", "G3 => ID = 3 || ID = null")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "ID" : 1,
+              |  "G1" : {
+              |    "F1" : 11
+              |  }
+              |}, {
+              |  "ID" : 2,
+              |  "G2" : {
+              |    "F2" : "22"
+              |  }
+              |}, {
+              |  "G1" : {
+              |    "F1" : 33
+              |  },
+              |  "G2" : {
+              |    "F2" : "33"
+              |  },
+              |  "G3" : {
+              |    "F3" : 3
+              |  }
+              |} ]""".stripMargin
+
+          compareTextVertical(actualData, expectedData)
+        }
+      }
+    }
   }
 }

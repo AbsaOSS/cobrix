@@ -602,8 +602,13 @@ object RecordExtractors {
         variables.foreach {
           case (k, v) =>
             if (v == null)
-              return false
-            expr.setValue(k, v.toString.toInt)
+              expr.setNullValue(k)
+            else {
+              v match {
+                case s: String => expr.setStringValue(k, s)
+                case _ => expr.setValue(k, v.toString.toInt)
+              }
+            }
         }
         if (expr.evalBool()) {
           true

@@ -58,6 +58,38 @@ object Token {
     override def toString = "="
   }
 
+  case class GT(pos: Int) extends Token {
+    override def toString = ">"
+  }
+
+  case class LT(pos: Int) extends Token {
+    override def toString = "<"
+  }
+
+  case class GTE(pos: Int) extends Token {
+    override def toString = ">="
+  }
+
+  case class LTE(pos: Int) extends Token {
+    override def toString = "<="
+  }
+
+  case class NE(pos: Int) extends Token {
+    override def toString = "!="
+  }
+
+  case class AND(pos: Int) extends Token {
+    override def toString = "&&"
+  }
+
+  case class OR(pos: Int) extends Token {
+    override def toString = "||"
+  }
+
+  case class NOT(pos: Int) extends Token {
+    override def toString = "!"
+  }
+
   case class NAME(pos: Int, s: String) extends Token
   {
     override def toString: String = s
@@ -66,5 +98,15 @@ object Token {
   case class NUM_LITERAL(pos: Int, s: String) extends Token
   {
     override def toString: String = s
+  }
+
+  case class STRING_LITERAL(pos: Int, s: String) extends Token
+  {
+    override def toString: String = s"'$s'"
+  }
+
+  case class NULL_LITERAL(pos: Int) extends Token
+  {
+    override def toString: String = "null"
   }
 }
