@@ -71,6 +71,12 @@ object Parser {
           case NULL_LITERAL(pos) =>
             builder.addNullLiteral(pos)
             state = STATE1
+          case TRUE_LITERAL(pos) =>
+            builder.addTrueLiteral(pos)
+            state = STATE1
+          case FALSE_LITERAL(pos) =>
+            builder.addFalseLiteral(pos)
+            state = STATE1
           case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       } else if (state == STATE1) {
@@ -176,6 +182,14 @@ object Parser {
           case NULL_LITERAL(pos) =>
             builder.addOperationNot(pos)
             builder.addNullLiteral(pos)
+            state = STATE1
+          case TRUE_LITERAL(pos) =>
+            builder.addOperationNot(pos)
+            builder.addTrueLiteral(pos)
+            state = STATE1
+          case FALSE_LITERAL(pos) =>
+            builder.addOperationNot(pos)
+            builder.addFalseLiteral(pos)
             state = STATE1
           case _ => throw new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }

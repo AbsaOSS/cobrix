@@ -39,4 +39,6 @@ trait ExpressionBuilder {
   def addNumLiteral(num: Int, pos: Int): Unit
   def addStringLiteral(s: String, pos: Int): Unit
   def addNullLiteral(pos: Int): Unit
+  def addTrueLiteral(pos: Int): Unit
+  def addFalseLiteral(pos: Int): Unit
 }

@@ -203,6 +203,16 @@ class ExpressionBuilderImpl(vars: Map[String, Int], stringVars: Map[String, Stri
     valueTypes += NullType
   }
 
+  override def addTrueLiteral(pos: Int): Unit = {
+    valuesBool += true
+    valueTypes += BoolType
+  }
+
+  override def addFalseLiteral(pos: Int): Unit = {
+    valuesBool += false
+    valueTypes += BoolType
+  }
+
   def getIntResult: Int = {
     while (ops.nonEmpty) {
       eval()

@@ -481,5 +481,99 @@ class ExpressionEvaluatorSuite extends AnyWordSpec {
       e2.setStringValue("status", "C")
       assert(e2.evalInt() == 0)
     }
+
+    // Boolean literal tests
+    "evaluate true and false literals" in {
+      assert(new ExpressionEvaluator("true").evalBool())
+      assert(!new ExpressionEvaluator("false").evalBool())
+      assert(new ExpressionEvaluator("TRUE").evalBool())
+      assert(!new ExpressionEvaluator("FALSE").evalBool())
+    }
+
+    "use boolean literals in boolean operations" in {
+      assert(new ExpressionEvaluator("true && true").evalBool())
+      assert(!new ExpressionEvaluator("true && false").evalBool())
+      assert(new ExpressionEvaluator("true || false").evalBool())
+      assert(!new ExpressionEvaluator("false || false").evalBool())
+    }
+
+    "use NOT with boolean literals" in {
+      assert(!new ExpressionEvaluator("!true").evalBool())
+      assert(new ExpressionEvaluator("!false").evalBool())
+      assert(new ExpressionEvaluator("!!true").evalBool())
+    }
+
+    "use boolean literals in if() function" in {
+      val e = new ExpressionEvaluator("if(a > 10, true, false)")
+      e.setValue("a", 15)
+      assert(e.evalBool())
+
+      val e2 = new ExpressionEvaluator("if(a > 10, true, false)")
+      e2.setValue("a", 5)
+      assert(!e2.evalBool())
+    }
+
+    "use boolean literals with mixed expressions in if()" in {
+      val e = new ExpressionEvaluator("if(a > 10, true, b < 100)")
+      e.setValue("a", 5)
+      e.setValue("b", 50)
+      assert(e.evalBool())
+
+      val e2 = new ExpressionEvaluator("if(a > 10, true, b < 100)")
+      e2.setValue("a", 5)
+      e2.setValue("b", 200)
+      assert(!e2.evalBool())
+
+      val e3 = new ExpressionEvaluator("if(a > 10, true, b < 100)")
+      e3.setValue("a", 15)
+      e3.setValue("b", 200)
+      assert(e3.evalBool())
+    }
+
+    "combine boolean literals with comparisons" in {
+      val e = new ExpressionEvaluator("(a = 5 && true) || false")
+      e.setValue("a", 5)
+      assert(e.evalBool())
+
+      val e2 = new ExpressionEvaluator("(a = 5 && false) || false")
+      e2.setValue("a", 5)
+      assert(!e2.evalBool())
+    }
+
+    "return boolean literal from if() based on condition" in {
+      val e = new ExpressionEvaluator("if(status = 'OK', true, false)")
+      e.setStringValue("status", "OK")
+      assert(e.evalBool())
+
+      val e2 = new ExpressionEvaluator("if(status = 'OK', true, false)")
+      e2.setStringValue("status", "ERROR")
+      assert(!e2.evalBool())
+    }
+
+    "use boolean literals in nested if() functions" in {
+      val e = new ExpressionEvaluator("if(a > 10, true, if(a > 5, false, true))")
+      e.setValue("a", 15)
+      assert(e.evalBool())
+
+      val e2 = new ExpressionEvaluator("if(a > 10, true, if(a > 5, false, true))")
+      e2.setValue("a", 7)
+      assert(!e2.evalBool())
+
+      val e3 = new ExpressionEvaluator("if(a > 10, true, if(a > 5, false, true))")
+      e3.setValue("a", 3)
+      assert(e3.evalBool())
+    }
+
+    "evaluate expressions with boolean logical operations" in {
+      val e = new ExpressionEvaluator("(a > 5) && (b < 10)")
+      e.setValue("a", 10)
+      e.setValue("b", 5)
+      assert(e.evalBool()) // both true, so true = true
+
+      val e2 = new ExpressionEvaluator("(a > 5) || (b < 10)")
+      e2.setValue("a", 10)
+      e2.setValue("b", 15)
+      assert(e2.evalBool()) // true || false => true
+    }
   }
 }
