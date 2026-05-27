@@ -65,6 +65,10 @@ class ExtractVariablesBuilder(expr: String) extends ExpressionBuilder {
 
   override def addNullLiteral(pos: Int): Unit = { }
 
+  override def addTrueLiteral(pos: Int): Unit = { }
+
+  override def addFalseLiteral(pos: Int): Unit = { }
+
   def getResult: Seq[String] = {
     variables.distinct.sorted.toSeq
   }

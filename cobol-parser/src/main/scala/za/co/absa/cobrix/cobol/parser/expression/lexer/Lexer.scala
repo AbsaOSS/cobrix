@@ -152,10 +152,11 @@ class Lexer(expression: String) {
         pos2 += 1
       }
       val name = expression.substring(pos, pos2)
-      val token = if (name.toLowerCase == "null") {
-        NULL_LITERAL(pos)
-      } else {
-        NAME(pos, name)
+      val token = name.toLowerCase match {
+        case "null" => NULL_LITERAL(pos)
+        case "true" => TRUE_LITERAL(pos)
+        case "false" => FALSE_LITERAL(pos)
+        case _ => NAME(pos, name)
       }
       tokens += token
       pos = pos2

@@ -109,4 +109,14 @@ object Token {
   {
     override def toString: String = "null"
   }
+
+  case class TRUE_LITERAL(pos: Int) extends Token
+  {
+    override def toString: String = "true"
+  }
+
+  case class FALSE_LITERAL(pos: Int) extends Token
+  {
+    override def toString: String = "false"
+  }
 }
