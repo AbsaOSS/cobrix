@@ -17,7 +17,7 @@
 package za.co.absa.cobrix.cobol.parser.expression
 
 import za.co.absa.cobrix.cobol.parser.expression.lexer.Lexer
-import za.co.absa.cobrix.cobol.parser.expression.parser.{ExtractVariablesBuilder, ExpressionBuilderImpl, Parser}
+import za.co.absa.cobrix.cobol.parser.expression.parser.{ExpressionBuilderImpl, ExtractVariablesBuilder, Parser}
 
 import scala.collection.mutable
 
@@ -82,20 +82,32 @@ class ExpressionEvaluator(val expr: String) extends Serializable {
     val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
     Parser.parse(tokens, exprBuilder)
 
-    exprBuilder.getIntResult
+    val i = exprBuilder.getIntResult
+    clearValues()
+    i
   }
 
   def evalBool(): Boolean = {
     val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
     Parser.parse(tokens, exprBuilder)
 
-    exprBuilder.getBoolResult
+    val b = exprBuilder.getBoolResult
+    clearValues()
+    b
   }
 
   def evalString(): String = {
     val exprBuilder = new ExpressionBuilderImpl(vars.toMap, stringVars.toMap, nullVars.toSet, expr)
     Parser.parse(tokens, exprBuilder)
 
-    exprBuilder.getStringResult
+    val s = exprBuilder.getStringResult
+    clearValues()
+    s
+  }
+
+  private def clearValues(): Unit = {
+    vars.clear()
+    stringVars.clear()
+    nullVars.clear()
   }
 }

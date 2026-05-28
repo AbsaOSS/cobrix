@@ -21,6 +21,7 @@ import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP4}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 import za.co.absa.cobrix.cobol.parser.common.Constants
 import za.co.absa.cobrix.cobol.parser.encoding.RAW
+import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
@@ -29,6 +30,7 @@ import za.co.absa.cobrix.cobol.utils.StringUtils
 import scala.collection.mutable
 import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 
 object RecordExtractors {
@@ -599,24 +601,41 @@ object RecordExtractors {
   def canExtract(field: Statement, variables: mutable.Map[String, Any]): Boolean = {
     field.ruleExpression match {
       case Some(expr) =>
-        variables.foreach {
-          case (k, v) =>
-            if (v == null)
-              expr.setNullValue(k)
-            else {
-              v match {
-                case s: String => expr.setStringValue(k, s)
-                case _ => expr.setValue(k, v.toString.toInt)
-              }
-            }
+        expr.getVariables.foreach { k =>
+          variables.get(k) match {
+            case Some(v: Any)      => safeSetValue(expr, k, v)
+            case None | Some(null) => expr.setNullValue(k)
+          }
         }
-        if (expr.evalBool()) {
-          true
-        } else {
-          false
-        }
+        expr.evalBool()
       case None =>
         true
+    }
+  }
+
+  private def safeSetValue(expr: ExpressionEvaluator, varName: String, value: Any): Unit = {
+    try {
+      if (value == null) {
+        expr.setNullValue(varName)
+      } else {
+        value match {
+          case s: String => expr.setStringValue(varName, s)
+          case i: Int => expr.setValue(varName, i)
+          case i: java.lang.Integer => expr.setValue(varName, i)
+          case l: Long => expr.setValue(varName, l.toInt)
+          case l: java.lang.Long => expr.setValue(varName, l.toInt)
+          case d: java.math.BigDecimal => expr.setValue(varName, d.intValue())
+          case d: scala.math.BigDecimal => expr.setValue(varName, d.intValue)
+          case f: Float => expr.setValue(varName, f.toInt)
+          case f: Double => expr.setValue(varName, f.toInt)
+          case _ => expr.setValue(varName, value.toString.toInt)
+        }
+      }
+    } catch {
+      case NonFatal(_) =>
+        // No logging here because this runs inside RDD and on the critical path. Replacing
+        // unparsable values with null is a standard Spark behavior in this case.
+        expr.setNullValue(varName)
     }
   }
 }
