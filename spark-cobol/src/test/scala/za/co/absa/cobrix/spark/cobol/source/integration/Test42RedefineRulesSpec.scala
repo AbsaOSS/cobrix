@@ -182,5 +182,62 @@ class Test42RedefineRulesSpec extends AnyWordSpec with SparkTestBase with Binary
         }
       }
     }
+    "extract data according to the rules with string values" when {
+      val copybook =
+        """      01  R.
+                03 ID      PIC X(1).
+                03 G1.
+                   04 F1   PIC S9(2).
+                03 G2 REDEFINES G1.
+                   04 F2   PIC X(2).
+                03 G3 REDEFINES G1.
+                   04 F3   PIC 9(1).
+      """
+
+      val data = Array(
+        0xC1, 0xF1, 0xF1,
+        0xC2, 0xF2, 0xF2,
+        0x00, 0xF3, 0xF3
+      ).map(_.toByte)
+
+      withTempBinFile("redefine_rules3", ".dat", data) { tmpFileName =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "F")
+          .option("redefine-rule:1", "G1 => in(ID, 'A', null)")
+          .option("redefine-rule:2", "G2 => ID='B' && true")
+          .option("redefine-rule:3", "G3 => ID = 'C' || ID = null")
+          .option("pedantic", "true")
+          .load(tmpFileName)
+
+        val actualData = SparkUtils.prettyJSON(df.toJSON.collect().mkString("[", ",", "]"))
+
+        "data should match" in {
+          val expectedData =
+            """[ {
+              |  "ID" : "A",
+              |  "G1" : {
+              |    "F1" : 11
+              |  }
+              |}, {
+              |  "ID" : "B",
+              |  "G2" : {
+              |    "F2" : "22"
+              |  }
+              |}, {
+              |  "G1" : {
+              |    "F1" : 33
+              |  },
+              |  "G3" : {
+              |    "F3" : 3
+              |  }
+              |} ]""".stripMargin
+
+          compareTextVertical(actualData, expectedData)
+        }
+      }
+    }
   }
 }

@@ -18,12 +18,11 @@ package za.co.absa.cobrix.cobol.parser.asttransform
 
 import org.slf4j.LoggerFactory
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
+import za.co.absa.cobrix.cobol.parser.exceptions.RuleExpressionParsingException
 import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 
 class RuleExpressionSetter(
                             redefineRuleExpressions: Map[String, ExpressionEvaluator]
@@ -37,7 +36,31 @@ class RuleExpressionSetter(
     * @return The same AST with binary properties set for every field
     */
   final override def transform(ast: CopybookAST): CopybookAST = {
-    val ruleDrivenRedefines = redefineRuleExpressions.keys.toSet
+    // Collect all field names from the schema
+    val allFieldNames = collectAllFieldNames(ast)
+
+    // Validate that all target fields exist in the schema
+    val invalidTargets = redefineRuleExpressions.keys.toSet.diff(allFieldNames).toSeq.sorted
+    if (invalidTargets.nonEmpty) {
+      throw new RuleExpressionParsingException(
+        None,
+        msg = s"Target field(s) not found in schema: ${invalidTargets.mkString(", ")}"
+      )
+    }
+
+    // Validate that all variables used in rule expressions exist in the schema
+    val allVariables = redefineRuleExpressions.values.flatMap(_.getVariables).toSet
+    val invalidVariables = allVariables.diff(allFieldNames).toSeq.sorted
+    if (invalidVariables.nonEmpty) {
+      val field = redefineRuleExpressions.find { case (_, expr) =>
+        expr.getVariables.exists(invalidVariables.contains)
+      }.map(_._1)
+      throw new RuleExpressionParsingException(
+        fieldOpt = field,
+        msg = s"Rule expression variable(s) not found in schema: ${invalidVariables.mkString(", ")}"
+      )
+    }
+
     val dependeeFields = redefineRuleExpressions.values.flatMap { expr =>
       expr.getVariables
     }.toSet
@@ -75,6 +98,29 @@ class RuleExpressionSetter(
     }
 
     markRuleFields(ast)
+  }
+
+  /**
+    * Collects all field names from the AST recursively
+    *
+    * @param group The AST group to traverse
+    * @return Set of all field names in the schema
+    */
+  private def collectAllFieldNames(group: CopybookAST): Set[String] = {
+    val names = mutable.Set[String]()
+
+    def collectNames(statement: Statement): Unit = {
+      statement match {
+        case grp: Group =>
+          names += grp.name
+          grp.children.foreach(collectNames)
+        case primitive: Primitive =>
+          names += primitive.name
+      }
+    }
+
+    group.children.foreach(collectNames)
+    names.toSet
   }
 }
 

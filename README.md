@@ -1011,6 +1011,79 @@ df.show(10)
 In the above example invalid fields became `null` and the parsing is done faster because Cobrix does not need to process
 every redefine for each record.
 
+## Automatic filtering of arbitrary redefines
+
+Arbitrary redefines can be resolved using rule expressions. This doesn't have to be segment redefines, just any redefines.
+For example, for a copybook that looks like this: 
+```cobol
+        01  COMPANY-DETAILS.
+************** RECORD-TYPE CAN BE 'C' for company, and 'P' or 'E' for person.        
+            05  RECORD-TYPE          PIC X(1).
+            05  COMPANY-ID           PIC X(10).
+            05  COMPANY.
+               10  COMPANY-NAME      PIC X(15).
+               10  ADDRESS           PIC X(25).
+            05  PERSON REDEFINES COMPANY.
+               10  FIRST-NAME        PIC X(30).
+               10  LAST-NAME         PIC X(30).
+```
+
+The syntax is as follows: 
+
+```
+  .option("redefine_rule:1", "COMPANY => RECORD_TYPE = 'C'")
+  .option("redefine_rule:2", "PERSON => in(RECORD_TYPE, 'P', 'E')")
+```
+
+For the above example the load options will lok like this (last 2 options):
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook_contents", copybook)
+  .option("record_format", "V")
+  .option("redefine_rule:1", "COMPANY => RECORD_TYPE = 'C'")
+  .option("redefine_rule:2", "PERSON => in(RECORD_TYPE, 'P', 'E')")
+  .load("examples/multisegment_data/COMP.DETAILS.SEP30.DATA.dat")
+```
+
+The filtered data will look like this:
+```
+df.show(10)
++-----------+----------+--------------------+--------------------+
+|RECORD_TYPE|COMPANY_ID|             COMPANY|              PERSON|
++-----------+----------+--------------------+--------------------+
+|          C|9377942526|[Joan Q & Z,10 Sa...|                    |
+|          P|9377942526|                    |       [John, Smith]|
+|          C|3483483977|[Robotrd Inc.,2 P...|                    |
+|          E|3483483977|                    |      [Jane, Wanson]|
+|          E|3483483977|                    |      [Alex,Johnson]|
++-----------+----------+--------------------+--------------------+
+```
+
+#### Notes
+- Variable names in rule expressions are case-sensitive.
+- Variable names are required to be used after column sanitization (e.g. replacement of special characters with underscores),
+  otherwise expression `F-A = 1` is ambiguous since it is not clear if `F-A` is a variable name or an expression of subtraction. 
+  In this case the variable name should be `F_A` and the expression should be `F_A = 1`.
+- You can only reference variables that go _before_ the redefine field. This is because record decoding is forward only.
+- Use only field names themselves, not full paths, e.g. `COMPANY` instead of `RECODD.DETAILS.COMPANY` .
+- Only integral numeric literals are supported. Decimals are not supported.
+- The expression should return a boolean. For example: 
+  - `RECORD_TYPE = 'C'` is valid since it returns true for company records and false for person records.
+  - `in(RECORD_TYPE, 'P', 'E')` is valid since it returns true for person records and false for company records.
+  - `COMPANY_ID > 1000` is valid since it returns true for records with company id greater than 1000 and false otherwise.
+
+### Expressions supported
+- Comparison operators: `=`, `!=`, `>`, `<`, `>=`, `<=`.
+- Boolean logic: `&&` (and), `||` (or), `!` (not).
+- Integral literals: `123`, `0`, `-456` are valid, but `123.45` or `-123.45` are not valid.
+- String literals: `'abc'`, `'abc'`, `'123'` are valid. Always use single quote character.
+- Boolean literals: `true`, `false`.
+- Null literal: `null`. For example: `RECORD_TYPE = 'C' || RECORD_TYPE = null` is valid.
+- Functions:
+  - `in()` (one of from the list), for example: `in(RECORD_TYPE, 'P', 'E')` is valid since it returns true for person records and false for company records.
+  - `if()` (conditional function with 3 arguments), for example: `if(RECORD_TYPE = 'C', true, false)` is valid.
 
 ## Group Filler dropping
 
