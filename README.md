@@ -974,7 +974,7 @@ segment id. This way Cobrix will parse only relevant segment redefined fields an
   .option("redefine-segment-id-map:1", "REDEFINED_FIELD2 => SegmentId10,SegmentId11,...")
 ```
 
-For the above example the load options will lok like this (last 2 options):
+For the above example the load options will look like this (last 2 options):
 ```scala
 val df = spark
   .read
@@ -1030,12 +1030,12 @@ For example, for a copybook that looks like this:
 
 The syntax is as follows: 
 
-```
+```scala
   .option("redefine_rule:1", "COMPANY => RECORD_TYPE = 'C'")
   .option("redefine_rule:2", "PERSON => in(RECORD_TYPE, 'P', 'E')")
 ```
 
-For the above example the load options will lok like this (last 2 options):
+For the above example the load options will look like this (last 2 options):
 ```scala
 val df = spark
   .read
@@ -1067,7 +1067,7 @@ df.show(10)
   otherwise expression `F-A = 1` is ambiguous since it is not clear if `F-A` is a variable name or an expression of subtraction. 
   In this case the variable name should be `F_A` and the expression should be `F_A = 1`.
 - You can only reference variables that go _before_ the redefine field. This is because record decoding is forward only.
-- Use only field names themselves, not full paths, e.g. `COMPANY` instead of `RECODD.DETAILS.COMPANY` .
+- Use only field names themselves, not full paths, e.g. `COMPANY` instead of `RECORD.DETAILS.COMPANY` .
 - Only integral numeric literals are supported. Decimals are not supported.
 - The expression should return a boolean. For example: 
   - `RECORD_TYPE = 'C'` is valid since it returns true for company records and false for person records.

@@ -782,7 +782,8 @@ object CobolParametersParser extends Logging {
     */
   @throws(classOf[IllegalArgumentException])
   def getRedefineRuleExpressionMapping(params: Parameters): Map[String, String] = {
-    params.getMap.flatMap {
+    val redefineRules = new mutable.HashMap[String, String]
+    params.getMap.foreach {
       case (k, v) =>
         val keyNoCase = k.toLowerCase
         if (keyNoCase.startsWith(PARAM_REDEFINE_RULE_PREFIX) ||
@@ -794,11 +795,22 @@ object CobolParametersParser extends Logging {
           }
           val redefine = splitVal(0).trim
           val rule = splitVal(1).trim
-          Option((CopybookParser.transformIdentifier(redefine), rule))
-        } else {
-          None
+          if (redefine.isEmpty || rule.isEmpty) {
+            throw new IllegalArgumentException(
+              s"Illegal argument for the '$PARAM_REDEFINE_RULE_PREFIX' option: '$v'. " +
+                s"Both redefine field and rule expression must be non-empty."
+            )
+          }
+          val key = CopybookParser.transformIdentifier(redefine)
+          if (redefineRules.contains(key)) {
+            throw new IllegalArgumentException(
+              s"Duplicate redefine rule for field '$key' is not allowed."
+            )
+          }
+          redefineRules.put(key, rule)
         }
     }
+    redefineRules.toMap
   }
 
   /**

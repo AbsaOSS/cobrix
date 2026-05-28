@@ -77,7 +77,7 @@ object Parser {
           case FALSE_LITERAL(pos) =>
             builder.addFalseLiteral(pos)
             state = STATE1
-          case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
+          case _ => throw new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       } else if (state == STATE1) {
         token match {
@@ -90,7 +90,7 @@ object Parser {
             state = STATE0
           case CLOSE_PARAN(pos) =>
             if (paranPos.isEmpty) {
-              throw new ExprSyntaxError(s"Unmatched ')' at pos $pos")
+              throw throw new ExprSyntaxError(s"Unmatched ')' at pos $pos")
             }
             paranPos.remove(paranPos.size - 1)
             builder.closeParen(pos)
@@ -135,7 +135,7 @@ object Parser {
             builder.addFunction(s, pos)
           case NUM_LITERAL(pos, s) =>
             builder.addNumLiteral(s.toInt, pos)
-          case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
+          case _ => throw new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       } else if (state == MINUS_NUM) {
         token match {
@@ -151,7 +151,7 @@ object Parser {
           case NUM_LITERAL(pos, s) =>
             builder.addNumLiteral(-s.toInt, pos)
             state = STATE1
-          case _ => new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
+          case _ => throw new ExprSyntaxError(s"Unexpected '$token' at pos ${token.pos}")
         }
       } else if (state == NOT_OP) {
         token match {

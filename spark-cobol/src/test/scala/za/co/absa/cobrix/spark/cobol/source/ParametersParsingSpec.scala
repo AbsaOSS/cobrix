@@ -32,7 +32,7 @@ class ParametersParsingSpec extends AnyFunSuite {
     assert(segmentIdMapping("C") == "COMPANY")
     assert(segmentIdMapping("D") == "COMPANY")
     assert(segmentIdMapping("P") == "CONTACT")
-    assert(segmentIdMapping.get("Q").isEmpty)
+    assert(!segmentIdMapping.contains("Q"))
   }
 
   test("Test redefine rule expression mapping") {
@@ -44,6 +44,42 @@ class ParametersParsingSpec extends AnyFunSuite {
 
     assert(ruleExpressions("COMPANY") == "RECORD_TYPE = 1")
     assert(ruleExpressions("CONTACT") == "RECORD_TYPE = 2")
+  }
+
+  test("Test redefine rule expression must not duplicate") {
+    val config = HashMap[String,String] (
+      "redefine-rule:1" -> "COMPANY => RECORD_TYPE = 1",
+      "redefine_rule:2" -> "COMPANY => RECORD_TYPE = 2")
+
+    val ex = intercept[IllegalArgumentException] {
+      CobolParametersParser.getRedefineRuleExpressionMapping(new Parameters(config))
+    }
+
+    assert(ex.getMessage.contains("Duplicate redefine rule for field 'COMPANY' is not allowed."))
+  }
+
+  test("Test redefine rule target fields must not be empty") {
+    val config = HashMap[String,String] (
+      "redefine-rule:1" -> " => RECORD_TYPE = 1",
+      "redefine_rule:2" -> "CONTACT => RECORD_TYPE = 2")
+
+    val ex = intercept[IllegalArgumentException] {
+      CobolParametersParser.getRedefineRuleExpressionMapping(new Parameters(config))
+    }
+
+    assert(ex.getMessage.contains("Illegal argument for the 'redefine_rule' option: ' => RECORD_TYPE = 1'"))
+  }
+
+  test("Test redefine rule expressions must not me empty") {
+    val config = HashMap[String,String] (
+      "redefine-rule:1" -> "COMPANY => RECORD_TYPE = 1",
+      "redefine_rule:2" -> "CONTACT => ")
+
+    val ex = intercept[IllegalArgumentException] {
+      CobolParametersParser.getRedefineRuleExpressionMapping(new Parameters(config))
+    }
+
+    assert(ex.getMessage.contains("Illegal argument for the 'redefine_rule' option: 'CONTACT => '"))
   }
 
   test("Test field - parent field mapping") {
@@ -60,7 +96,7 @@ class ParametersParsingSpec extends AnyFunSuite {
     assert(fieldParents("OFFICE") == "DEPT")
     assert(fieldParents("CONTACT") == "CUSTOMER")
     assert(fieldParents("CONTRACT") == "CUSTOMER")
-    assert(fieldParents.get("COMPANY").isEmpty)
+    assert(!fieldParents.contains("COMPANY"))
   }
 
   test("Test field - parent field mapping (split)") {
