@@ -124,20 +124,22 @@ object FloatingPointDecoders {
     * @return a converted single precision floating point number
     */
   def decodeIbmSingleBigEndian(bytes: Array[Byte]): java.lang.Float = {
-    val b0 = bytes(0) & 0xFF
-    val b1 = bytes(1) & 0xFF
-    val b2 = bytes(2) & 0xFF
-    val b3 = bytes(3) & 0xFF
-
-    val fracInt = (b1 << 16) | (b2 << 8) | b3
-    if ((b0 | fracInt) == 0) return 0.0f
-
     try {
-      val fraction = fracInt.toFloat * (1.0f / (1 << 24))
-      val sign = if ((b0 & 0x80) != 0) -1.0f else 1.0f
-      val exp16 = (b0 & 0x7F) - 64
+      val b0 = bytes(0) & 0xFF
+      val b1 = bytes(1) & 0xFF
+      val b2 = bytes(2) & 0xFF
+      val b3 = bytes(3) & 0xFF
+      val fracInt = (b1 << 16) | (b2 << 8) | b3
 
-      sign * Math.scalb(fraction, exp16 * 4)
+      if ((b0 | fracInt) == 0) {
+        0.0f
+      } else {
+        val fraction = fracInt.toFloat * (1.0f / (1 << 24))
+        val sign = if ((b0 & 0x80) != 0) -1.0f else 1.0f
+        val exp16 = (b0 & 0x7F) - 64
+
+        sign * Math.scalb(fraction, exp16 * 4)
+      }
     } catch {
       case NonFatal(_) => null
     }

@@ -125,10 +125,10 @@ class FloatingPointDecodersSpec extends AnyWordSpec {
       assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), -3.75f)
     }
 
-    "decode IBM single precision / big-endian FP number infinity" in {
+    "decode IBM single precision / little-endian FP number infinity" in {
       val bytes = Array[Byte](
         0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0x7F.toByte)
-      assert(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes).isInfinite)
+      assert(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes).isInfinite)
     }
   }
 
