@@ -29,10 +29,52 @@ class FloatingPointDecodersSpec extends AnyWordSpec {
   }
 
   "decodeIbmSingleBigEndian()" should {
-    "decode IBM single precision / big-endian FP numbers" in {
+    "decode IBM single precision / big-endian FP number 1.0" in {
       val bytes = Array[Byte](
-        0x43.toByte, 0x14.toByte, 0x2E.toByte, 0xFC.toByte)
-      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 5.045883f)
+        0x41.toByte, 0x10.toByte, 0x00.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 1.0f)
+    }
+
+    "decode IBM single precision / big-endian FP number 1234.0" in {
+      val bytes = Array[Byte](
+        0x43.toByte, 0x4D.toByte, 0x20.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 1234.0f)
+    }
+
+    "decode IBM single precision / big-endian FP number -1234.0" in {
+      val bytes = Array[Byte](
+        0xC3.toByte, 0x4D.toByte, 0x20.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), -1234.0f)
+    }
+
+    "decode IBM single precision / big-endian FP number 4.5" in {
+      val bytes = Array[Byte](
+        0x41.toByte, 0x48.toByte, 0x00.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 4.5f)
+    }
+
+    "decode IBM single precision / big-endian FP number -3.75" in {
+      val bytes = Array[Byte](
+        0xC1.toByte, 0x3C.toByte, 0x00.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), -3.75f)
+    }
+
+    "decode IBM single precision / big-endian FP number 2.5" in {
+      val bytes = Array[Byte](
+        0x41.toByte, 0x28.toByte, 0x00.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 2.5f)
+    }
+
+    "decode IBM single precision / big-endian FP number 0" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes), 0f)
+    }
+
+    "decode IBM single precision / big-endian FP number infinity" in {
+      val bytes = Array[Byte](
+        0x7F.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte)
+      assert(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes).isInfinite)
     }
   }
 
@@ -53,10 +95,40 @@ class FloatingPointDecodersSpec extends AnyWordSpec {
   }
 
   "decodeIbmSingleLittleEndian()" should {
-    "decode IBM single precision / little-endian FP numbers" in {
+    "decode IBM single precision / little-endian FP number 1.0" in {
       val bytes = Array[Byte](
-        0xFC.toByte, 0x2E.toByte, 0x14.toByte, 0x43.toByte)
-      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), 5.045883f)
+        0x00.toByte, 0x00.toByte, 0x10.toByte, 0x41.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), 1.0f)
+    }
+
+    "decode IBM single precision / little-endian FP number 1234.0" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x20.toByte, 0x4D.toByte, 0x43.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), 1234.0f)
+    }
+
+    "decode IBM single precision / little-endian FP number -1234.0" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x20.toByte, 0x4D.toByte, 0xC3.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), -1234.0f)
+    }
+
+    "decode IBM single precision / little-endian FP number 4.5" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x00.toByte, 0x48.toByte, 0x41.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), 4.5f)
+    }
+
+    "decode IBM single precision / little-endian FP number -3.75" in {
+      val bytes = Array[Byte](
+        0x00.toByte, 0x00.toByte, 0x3C.toByte, 0xC1.toByte)
+      assertFloatEqual(FloatingPointDecoders.decodeIbmSingleLittleEndian(bytes), -3.75f)
+    }
+
+    "decode IBM single precision / big-endian FP number infinity" in {
+      val bytes = Array[Byte](
+        0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0x7F.toByte)
+      assert(FloatingPointDecoders.decodeIbmSingleBigEndian(bytes).isInfinite)
     }
   }
 

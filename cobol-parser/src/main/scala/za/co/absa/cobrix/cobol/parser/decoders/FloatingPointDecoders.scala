@@ -117,54 +117,27 @@ object FloatingPointDecoders {
   /**
     * Decode IBM single precision big endian encoded number.
     *
-    * The source code of this function is based on ibm2ieee NumPy library
-    * Copyright (c) 2018, Enthought, Inc.
-    *
-    * The source code for this method is distributed via 3-clause BSD license.
+    * The method correctly converts bytes in examples here:
+    *   https://www.ibm.com/docs/en/cobol-zos/6.3.0?topic=data-examples-numeric-internal-representation
     *
     * @param bytes An array of bytes
     * @return a converted single precision floating point number
     */
   def decodeIbmSingleBigEndian(bytes: Array[Byte]): java.lang.Float = {
+    val b0 = bytes(0) & 0xFF
+    val b1 = bytes(1) & 0xFF
+    val b2 = bytes(2) & 0xFF
+    val b3 = bytes(3) & 0xFF
+
+    val fracInt = (b1 << 16) | (b2 << 8) | b3
+    if ((b0 | fracInt) == 0) return 0.0f
+
     try {
-      val IBM32_SIGN_MASK = 0x80000000
-      val IBM32_EXPONENT_MASK = 0x80000000
-      val IBM32_FRACTURE_MASK = 0x00FFFFFF
-      val IBM32_MS_NIBBLE = 0x00F00000
+      val fraction = fracInt.toFloat * (1.0f / (1 << 24))
+      val sign = if ((b0 & 0x80) != 0) -1.0f else 1.0f
+      val exp16 = (b0 & 0x7F) - 64
 
-      val mantissa = (bytes(0) << 24) | ((bytes(1) & 255) << 16) | ((bytes(2) & 255) << 8) | (bytes(3) & 255)
-      val sign = mantissa & IBM32_SIGN_MASK
-      var fracture = mantissa & IBM32_FRACTURE_MASK
-      var exponent = (mantissa & IBM32_EXPONENT_MASK) >> 22
-
-      if (fracture == 0L) {
-        0.0f
-      } else {
-        var topNibble = fracture & IBM32_MS_NIBBLE
-        while (topNibble == 0) {
-          fracture <<= 4
-          exponent -= 4
-          topNibble = fracture & IBM32_MS_NIBBLE
-        }
-        val leadingZeros = ((BIT_COUNT_MAGIC >> (topNibble >> 19)) & 3).toInt
-        fracture <<= leadingZeros
-        val convertedExp = exponent + 131 - leadingZeros
-
-        if (convertedExp >=0 && convertedExp < 254) {
-          val ieee754Int = sign + (convertedExp << 23) + fracture
-          java.lang.Float.intBitsToFloat(ieee754Int)
-        } else if (convertedExp > 254) {
-          java.lang.Float.POSITIVE_INFINITY
-        } else if (convertedExp >= -32) {
-          val mask = ~(0xFFFFFFFD << (-1 - convertedExp))
-          val roundUp = if ((fracture & mask) > 0) 1 else 0
-          val convertedFract = ((fracture >> (-1 - convertedExp)) + roundUp) >> 1
-          val ieee754Int = sign + convertedFract
-          java.lang.Float.intBitsToFloat(ieee754Int)
-        } else {
-          0.0f
-        }
-      }
+      sign * Math.scalb(fraction, exp16 * 4)
     } catch {
       case NonFatal(_) => null
     }

@@ -114,7 +114,7 @@ class Test03IbmFloats extends AnyFunSuite with BeforeAndAfterAll with SparkTestB
     val f = df.select(col("F")).take(1)(0)(0).asInstanceOf[Float]
     val d = df.select(col("D")).take(1)(0)(0).asInstanceOf[Double]
 
-    assertFloatEqual(f, 5.045883f)
+    assertFloatEqual(f, 322.93652f)
     assertDoubleEqual(d, 322.936717)
   }
 
@@ -132,7 +132,7 @@ class Test03IbmFloats extends AnyFunSuite with BeforeAndAfterAll with SparkTestB
     val f = df.select(col("F")).take(1)(0)(0).asInstanceOf[Float]
     val d = df.select(col("D")).take(1)(0)(0).asInstanceOf[Double]
 
-    assertFloatEqual(f, 5.045883f)
+    assertFloatEqual(f, 322.93652f)
     assertDoubleEqual(d, 322.936717)
   }
 
