@@ -16,8 +16,9 @@
 
 package za.co.absa.cobrix.cobol.parser.encoding
 
-import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, COMP3U, COMP4, COMP9, CobolType, Decimal, Integral, Usage}
-import za.co.absa.cobrix.cobol.parser.decoders.BinaryUtils
+import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP3U, COMP4, COMP9, CobolType, Decimal, Integral, Usage}
+import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, FloatingPointFormat}
+import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
@@ -29,7 +30,8 @@ object EncoderSelector {
 
   def getEncoder(dataType: CobolType,
                  ebcdicCodePage: CodePage = new CodePageCommon,
-                 asciiCharset: Charset = StandardCharsets.US_ASCII): Option[Encoder] = {
+                 asciiCharset: Charset = StandardCharsets.US_ASCII,
+                 floatingPointFormat: FloatingPointFormat = FloatingPointFormat.IBM): Option[Encoder] = {
     dataType match {
       case alphaNumeric: AlphaNumeric if alphaNumeric.compact.isEmpty                       =>
         getStringEncoder(alphaNumeric.enc.getOrElse(EBCDIC), ebcdicCodePage, asciiCharset, alphaNumeric.length)
@@ -53,6 +55,10 @@ object EncoderSelector {
         Option(getDisplayEncoder(integralDisplay.precision, 0, 0, integralDisplay.signPosition, isExplicitDecimalPt = false, isSignSeparate = integralDisplay.isSignSeparate))
       case decimalDisplay: Decimal if decimalDisplay.compact.isEmpty =>
         Option(getDisplayEncoder(decimalDisplay.precision, decimalDisplay.scale, decimalDisplay.scaleFactor, decimalDisplay.signPosition, decimalDisplay.explicitDecimal, decimalDisplay.isSignSeparate))
+      case decimalComp1: Decimal if decimalComp1.compact.exists(_.isInstanceOf[COMP1]) =>
+        Option(getSingleFloatingPointEncoder(floatingPointFormat))
+      case decimalComp2: Decimal if decimalComp2.compact.exists(_.isInstanceOf[COMP2]) =>
+        Option(getDoubleFloatingPointEncoder(floatingPointFormat))
       case _ =>
         None
     }
@@ -142,6 +148,52 @@ object EncoderSelector {
         DisplayEncoders.encodeDisplayNumberSignSeparate(number, signPosition, numBytes, precision, scale, scaleFactor, explicitDecimalPoint = isExplicitDecimalPt)
       } else {
         DisplayEncoders.encodeDisplayNumberSignOverpunched(number, signPosition, numBytes, precision, scale, scaleFactor, explicitDecimalPoint = isExplicitDecimalPt)
+      }
+    }
+  }
+
+  def getSingleFloatingPointEncoder(floatingPointFormat: FloatingPointFormat): Encoder = {
+    (a: Any) => {
+      val number: java.lang.Float = a match {
+        case null                    => 0f
+        case f: Float                => f
+        case d: Double               => d.toFloat
+        case d: java.math.BigDecimal => d.floatValue()
+        case n: java.math.BigInteger => new java.math.BigDecimal(n).floatValue()
+        case n: Byte                 => n.toFloat
+        case n: Int                  => n.toFloat
+        case n: Long                 => n.toFloat
+        case x                       => x.toString.toFloat
+      }
+
+      floatingPointFormat match {
+        case FloatingPointFormat.IBM        => FloatingPointEncoders.encodeIbmSingleBigEndian(number)
+        case FloatingPointFormat.IBM_LE     => FloatingPointEncoders.encodeIbmSingleLittleEndian(number)
+        case FloatingPointFormat.IEEE754    => FloatingPointEncoders.encodeIeee754SingleBigEndian(number)
+        case FloatingPointFormat.IEEE754_LE => FloatingPointEncoders.encodeIeee754SingleLittleEndian(number)
+      }
+    }
+  }
+
+  def getDoubleFloatingPointEncoder(floatingPointFormat: FloatingPointFormat): Encoder = {
+    (a: Any) => {
+      val number: java.lang.Double = a match {
+        case null                    => 0d
+        case f: Float                => f.toDouble
+        case d: Double               => d
+        case d: java.math.BigDecimal => d.doubleValue()
+        case n: java.math.BigInteger => new java.math.BigDecimal(n).doubleValue()
+        case n: Byte                 => n.toDouble
+        case n: Int                  => n.toDouble
+        case n: Long                 => n.toDouble
+        case x                       => x.toString.toFloat
+      }
+
+      floatingPointFormat match {
+        case FloatingPointFormat.IBM        => FloatingPointEncoders.encodeIbmDoubleBigEndian(number)
+        case FloatingPointFormat.IBM_LE     => FloatingPointEncoders.encodeIbmDoubleLittleEndian(number)
+        case FloatingPointFormat.IEEE754    => FloatingPointEncoders.encodeIeee754DoubleBigEndian(number)
+        case FloatingPointFormat.IEEE754_LE => FloatingPointEncoders.encodeIeee754DoubleLittleEndian(number)
       }
     }
   }

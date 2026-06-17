@@ -497,6 +497,339 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
     }
   }
 
+
+  "write data frames with COMP-1 and COMP-2 fields" should {
+    val copybookWithComp12 =
+      """       01  RECORD.
+           05  A       PIC S9(1)      COMP.
+           05  B       PIC 9(4)V9(2)  COMP-1.
+           05  C       PIC 9(4)V9(4)  COMP-2.
+    """
+
+    val df = List[(Int, java.lang.Float, java.lang.Double)](
+      (1, 100.5f, 100.5),
+      (2, 800.4f, 800.4),
+      (3, -22.33f, -22.33),
+      (4, 0f, 0.0),
+      (5, Float.PositiveInfinity, Double.PositiveInfinity),
+      (6, Float.NegativeInfinity, Double.NegativeInfinity),
+      (7, Float.NaN, Double.NaN),
+      (8, null: java.lang.Float, null: java.lang.Double)
+    ).toDF("A", "B", "C")
+
+    "IEE754 Little-endian" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val path = new Path(tempDir, "writer1")
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithComp12)
+          .option("floating_point_format", "IEEE754_little_endian")
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x00, 0x01,                                      // 1
+          0x00, 0x00, 0xC9, 0x42,                          // 100.5f
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x59, 0x40,  // 100.5d
+
+          0x00, 0x02,                                      // 2
+          0x9A, 0x19, 0x48, 0x44,                          // 800.4f
+          0x33, 0x33, 0x33, 0x33, 0x33, 0x03, 0x89, 0x40,  // 800.4fd
+
+          0x00, 0x03,                                      // 3
+          0xD7, 0xA3, 0xB2, 0xC1,                          // -22.33f
+          0x14, 0xAE, 0x47, 0xE1, 0x7A, 0x54, 0x36, 0xC0,  // -22.33d
+
+          0x00, 0x04,                                      // 4
+          0x00, 0x00, 0x00, 0x00,                          // 0
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0
+
+          0x00, 0x05,                                      // 5
+          0x00, 0x00, 0x80, 0x7F,                          // +inf
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0x7F,  // +inf
+
+          0x00, 0x06,                                      // 6
+          0x00, 0x00, 0x80, 0xFF,                          // -inf
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF0, 0xFF,  // -inf
+
+          0x00, 0x07,                                      // 7
+          0x00, 0x00, 0xC0, 0x7F,                          // NaN
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF8, 0x7F,  // NaN
+
+          0x00, 0x08,                                      // 8
+          0x00, 0x00, 0x00, 0x00,                          // null
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00   // null
+        ).map(_.toByte)
+
+//         val df2 = spark.read.format("cobol")
+//           .option("copybook_contents", copybookWithComp12)
+//           .option("floating_point_format", "IEEE754_little_endian")
+//           .load(path.toString)
+//         //println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+//        df2.show(false)
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("0x%02X," format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("0x%02X," format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+
+    "IEE754 Big-endian" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val path = new Path(tempDir, "writer1")
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithComp12)
+          .option("floating_point_format", "IEEE754")
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x00, 0x01,                                      // 1
+          0x42, 0xC9, 0x00, 0x00,                          // 100.5f
+          0x40, 0x59, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00,  // 100.5d
+
+          0x00, 0x02,                                      // 2
+          0x44, 0x48, 0x19, 0x9A,                          // 800.4f
+          0x40, 0x89, 0x03, 0x33, 0x33, 0x33, 0x33, 0x33,  // 800.4fd
+
+          0x00, 0x03,                                      // 3
+          0xC1, 0xB2, 0xA3, 0xD7,                          // -22.33f
+          0xC0, 0x36, 0x54, 0x7A, 0xE1, 0x47, 0xAE, 0x14,  // -22.33d
+
+          0x00, 0x04,                                      // 4
+          0x00, 0x00, 0x00, 0x00,                          // 0
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0
+
+          0x00, 0x05,                                      // 5
+          0x7F, 0x80, 0x00, 0x00,                          // +inf
+          0x7F, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // +inf
+
+          0x00, 0x06,                                      // 6
+          0xFF, 0x80, 0x00, 0x00,                          // -inf
+          0xFF, 0xF0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // -inf
+
+          0x00, 0x07,                                      // 7
+          0x7F, 0xC0, 0x00, 0x00,                          // NaN
+          0x7F, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // NaN
+
+          0x00, 0x08,                                      // 8
+          0x00, 0x00, 0x00, 0x00,                          // null
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00   // null
+        ).map(_.toByte)
+
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithComp12)
+//          .option("floating_point_format", "IEEE754")
+//          .load(path.toString)
+//        //println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+//        df2.show(false)
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("0x%02X," format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("0x%02X," format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+
+    "IBM Little-endian" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val path = new Path(tempDir, "writer1")
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithComp12)
+          .option("floating_point_format", "IBM_little_endian")
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x00, 0x01,                                      // 1
+          0x00, 0x80, 0x64, 0x42,                          // 100.5f
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x64, 0x42,  // 100.5d
+
+          0x00, 0x02,                                      // 2
+          0x66, 0x06, 0x32, 0x43,                          // 800.4f
+          0x66, 0x66, 0x66, 0x66, 0x66, 0x06, 0x32, 0x43,  // 800.4fd
+
+          0x00, 0x03,                                      // 3
+          0x7A, 0x54, 0x16, 0xC2,                          // -22.33f
+          0x14, 0xAE, 0x47, 0xE1, 0x7A, 0x54, 0x16, 0xC2,  // -22.33d
+
+          0x00, 0x04,                                      // 4
+          0x00, 0x00, 0x00, 0x00,                          // 0
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0
+
+          0x00, 0x05,                                      // 5
+          0xFF, 0xFF, 0xFF, 0x7F,                          // +inf
+          0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F,  // +inf
+
+          0x00, 0x06,                                      // 7
+          0xFF, 0xFF, 0xFF, 0xFF,                          // -inf
+          0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // -inf
+
+          0x00, 0x07,                                      // 8
+          0xFF, 0xFF, 0xFF, 0xFF,                          // NaN
+          0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // NaN
+
+          0x00, 0x08,                                      // 8
+          0x00, 0x00, 0x00, 0x00,                          // null
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00   // null
+        ).map(_.toByte)
+
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithComp12)
+//          .option("floating_point_format", "IBM_little_endian")
+//          .load(path.toString)
+//        //println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+//        df2.show(false)
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("0x%02X," format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("0x%02X," format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+
+    "IBM Big-endian" in {
+      withTempDirectory("cobol_writer1") { tempDir =>
+        val path = new Path(tempDir, "writer1")
+
+        df.coalesce(1)
+          .orderBy("A")
+          .write
+          .format("cobol")
+          .mode(SaveMode.Overwrite)
+          .option("copybook_contents", copybookWithComp12)
+          .option("floating_point_format", "IBM")
+          .save(path.toString)
+
+        val fs = path.getFileSystem(spark.sparkContext.hadoopConfiguration)
+
+        assert(fs.exists(path), "Output directory should exist")
+        val files = fs.listStatus(path)
+          .filter(_.getPath.getName.startsWith("part-"))
+
+        assert(files.nonEmpty, "Output directory should contain part files")
+
+        val partFile = files.head.getPath
+        val data = fs.open(partFile)
+        val bytes = new Array[Byte](files.head.getLen.toInt)
+        data.readFully(bytes)
+        data.close()
+
+        // Expected EBCDIC data for sample test data
+        val expected = Array(
+          0x00, 0x01,                                      // 1
+          0x42, 0x64, 0x80, 0x00,                          // 100.5f
+          0x42, 0x64, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00,  // 100.5d
+
+          0x00, 0x02,                                      // 2
+          0x43, 0x32, 0x06, 0x66,                          // 800.4f
+          0x43, 0x32, 0x06, 0x66, 0x66, 0x66, 0x66, 0x66,  // 800.4fd
+
+          0x00, 0x03,                                      // 3
+          0xC2, 0x16, 0x54, 0x7A,                          // -22.33f
+          0xC2, 0x16, 0x54, 0x7A, 0xE1, 0x47, 0xAE, 0x14,  // -22.33d
+
+          0x00, 0x04,                                      // 4
+          0x00, 0x00, 0x00, 0x00,                          // 0
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // 0
+
+          0x00, 0x05,                                      // 5
+          0x7F, 0xFF, 0xFF, 0xFF,                          // +inf
+          0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // +inf
+
+          0x00, 0x06,                                      // 6
+          0xFF, 0xFF, 0xFF, 0xFF,                          // -inf
+          0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // -inf
+
+          0x00, 0x07,                                      // 7
+          0xFF, 0xFF, 0xFF, 0xFF,                          // NaN
+          0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // NaN
+
+          0x00, 0x08,                                      // 8
+          0x00, 0x00, 0x00, 0x00,                          // null
+          0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00   // null
+        ).map(_.toByte)
+
+//        val df2 = spark.read.format("cobol")
+//          .option("copybook_contents", copybookWithComp12)
+//          .option("floating_point_format", "IBM")
+//          .load(path.toString)
+//        //println(SparkUtils.convertDataFrameToPrettyJSON(df2))
+//       df2.show(false)
+
+        if (!bytes.sameElements(expected)) {
+          println(s"Expected bytes: ${expected.map("0x%02X," format _).mkString(" ")}")
+          println(s"Actual bytes:   ${bytes.map("0x%02X," format _).mkString(" ")}")
+
+          assert(bytes.sameElements(expected), "Written data should match expected EBCDIC encoding")
+        }
+      }
+    }
+  }
+
   def assertArraysEqual(actual: Array[Byte], expected: Array[Byte]): Assertion = {
     if (!actual.sameElements(expected)) {
       val actualHex = actual.map(b => f"0x$b%02X").mkString(", ")
