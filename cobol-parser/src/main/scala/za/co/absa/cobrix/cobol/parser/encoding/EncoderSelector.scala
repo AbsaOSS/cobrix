@@ -17,13 +17,12 @@
 package za.co.absa.cobrix.cobol.parser.encoding
 
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP1, COMP2, COMP3, COMP3U, COMP4, COMP9, CobolType, Decimal, Integral, Usage}
-import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, FloatingPointFormat}
 import za.co.absa.cobrix.cobol.parser.decoders.FloatingPointFormat.FloatingPointFormat
+import za.co.absa.cobrix.cobol.parser.decoders.{BinaryUtils, FloatingPointFormat}
 import za.co.absa.cobrix.cobol.parser.encoding.codepage.{CodePage, CodePageCommon}
 import za.co.absa.cobrix.cobol.parser.position.Position
 
 import java.nio.charset.{Charset, StandardCharsets}
-import java.util
 
 object EncoderSelector {
   type Encoder = Any => Array[Byte]
@@ -186,7 +185,7 @@ object EncoderSelector {
         case n: Byte                 => n.toDouble
         case n: Int                  => n.toDouble
         case n: Long                 => n.toDouble
-        case x                       => x.toString.toFloat
+        case x                       => x.toString.toDouble
       }
 
       floatingPointFormat match {
