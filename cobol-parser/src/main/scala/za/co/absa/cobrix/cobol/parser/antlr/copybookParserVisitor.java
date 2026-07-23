@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-// Generated from copybookParser.g4 by ANTLR 4.8
+// Generated from copybookParser.g4 by ANTLR 4.9.3
 package za.co.absa.cobrix.cobol.parser.antlr;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 

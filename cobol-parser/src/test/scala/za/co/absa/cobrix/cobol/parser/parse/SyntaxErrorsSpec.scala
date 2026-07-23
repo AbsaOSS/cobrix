@@ -17,11 +17,15 @@
 package za.co.absa.cobrix.cobol.parser.parse
 
 import org.scalatest.funsuite.AnyFunSuite
+import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.base.SimpleComparisonBase
+import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 
-class SyntaxErrorsSpec extends AnyFunSuite {
+class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
+  private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   test("Test handle group field having a PIC modifier") {
     val copyBookContents: String =
@@ -158,7 +162,7 @@ class SyntaxErrorsSpec extends AnyFunSuite {
   }
 
 
-  test ("Test parser tolerance for USAGE clause following PIC without a space"){
+  test("Test parser tolerance for USAGE clause following PIC without a space") {
     val copyBookContents: String =
       """      01 GROUP.
         |         02 FIELD1 PIC X(2).
@@ -315,6 +319,72 @@ class SyntaxErrorsSpec extends AnyFunSuite {
     assert(record.children(2).asInstanceOf[Primitive].dataType.pic == "9(16)V9(16)")
   }
 
+  test("Test field name is a reserved word") {
+    val copyBookContents: String =
+      """        01  RECORD.
+        |           10  SIGN      PIC X(1).
+        |           10  IS        PIC X(2).
+        |           10  TRAILING  PIC X(3).
+        |           10  FROM      PIC 9(1) SIGN IS TRAILING SEPARATE.
+        |           10  TO        PIC 9(2).
+        |           10  OF        PIC 9(3) REDEFINES TO.
+        |           10  NULL      PIC 9(1).
+        |           10  NULLS     PIC 9(3) REDEFINES NULL.
+        |           10  PICTURE   PIC 9(3).
+        |           10  PIC       PICTURE 9(3) REDEFINES PICTURE.
+        |           10  OCCURS    PIC X(1) OCCURS 0 TO 2 TIMES.
+        |""".stripMargin
 
+    val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |1 RECORD                                              1      1     19     19
+        |  10 SIGN                                             2      1      1      1
+        |  10 IS                                               3      2      3      2
+        |  10 TRAILING                                         4      4      6      3
+        |  10 FROM                                             5      7      8      2
+        |  10 TO                                r              6      9     11      3
+        |  10 OF                                R              7      9     11      3
+        |  10 NULL                              r              8     12     14      3
+        |  10 NULLS                             R              9     12     14      3
+        |  10 PICTURE                           r             10     15     17      3
+        |  10 PIC                               R             11     15     17      3
+        |  10 OCCURS                            []            12     18     19      2
+        |""".stripMargin
 
+    val parsedCopybook = CopybookParser.parseTree(copyBookContents)
+
+    val root = parsedCopybook.ast.children(0).asInstanceOf[Group]
+
+    assert(root.children(0).name == "SIGN")
+    assert(root.children(1).name == "IS")
+    assert(root.children(2).name == "TRAILING")
+    assert(root.children(3).name == "FROM")
+    assert(root.children(4).name == "TO")
+    assert(root.children(5).name == "OF")
+    assert(root.children(6).name == "NULL")
+    assert(root.children(7).name == "NULLS")
+    assert(root.children(8).name == "PICTURE")
+    assert(root.children(9).name == "PIC")
+    assert(root.children(10).name == "OCCURS")
+
+    val layout = parsedCopybook.generateRecordLayoutPositions()
+
+    assertEqualsMultiline(layout, expectedLayout)
+  }
+
+  test("The reserved word 'REDEFINES' is still not allowed") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED        PIC X(1).
+        |           10  REDEFINES    PIC X(1).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.toUpperCase.contains("REDEFINES"))
+  }
 }
