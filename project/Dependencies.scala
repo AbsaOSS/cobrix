@@ -18,7 +18,7 @@ import sbt._
 
 object Dependencies {
   private val scodecCoreVersion = "1.11.4"
-  private val antlrValue = "4.8"
+  private val antlrValue = "4.9.3"
   private val slf4jVersion = "1.7.25"
   private val jacksonVersion = "2.15.4"
 
