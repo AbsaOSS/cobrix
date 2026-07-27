@@ -84,7 +84,6 @@ class VRLRecordReader(cobolSchema: Copybook,
       val binaryData = recordExtractor match {
         case Some(extractor) =>
           if (extractor.hasNext) {
-            recordNextToFetch += 1
             Option(extractor.next())
           } else {
             None
@@ -100,10 +99,10 @@ class VRLRecordReader(cobolSchema: Copybook,
         case Some(data) if data.length < minimumRecordLength || data.length > maximumRecordLength =>
           recordFetched = false
         case Some(data) =>
-          recordNextToFetch += 1
           val segmentId = getSegmentId(data)
           val segmentIdStr = segmentId.getOrElse("")
 
+          recordNextToFetch += 1
           cachedValue = Some(segmentIdStr, data)
           recordFetched = true
       }

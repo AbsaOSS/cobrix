@@ -54,9 +54,10 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, rawRecordExtractor, startRecordId, startingFileOffset, readerProperties.recordLimit)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, rawRecordExtractor, startRecordId, startingFileOffset, None)
 
   private var recordIndex = startRecordId
+  private var rootRecordIndex = startRecordId
   private var cachedValue: Option[Seq[Any]] = _
   private val segmentRedefines = cobolSchema.getAllSegmentRedefines.toArray
 
@@ -98,6 +99,11 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
+    if (readerProperties.recordLimit.isDefined && readerProperties.recordLimit.get <= rootRecordIndex) {
+      dataStream.close()
+      return
+    }
+
     var recordFetched = false
     while (!recordFetched) {
       if (rawRecordIterator.hasNext) {
@@ -134,6 +140,8 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
         recordFetched = true
       }
     }
+    if (recordFetched)
+      rootRecordIndex = rootRecordIndex + 1
   }
 
   private def extractRow(records: ArrayBuffer[RawRecord]): Seq[Any] = {

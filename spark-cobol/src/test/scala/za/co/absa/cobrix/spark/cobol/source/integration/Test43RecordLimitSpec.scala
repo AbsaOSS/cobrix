@@ -117,6 +117,43 @@ class Test43RecordLimitSpec extends AnyWordSpec with SparkTestBase with BinaryFi
       }
     }
 
+    "limit of hierarchical data should work" in {
+      val rdwHierarchicalData = Array(
+        0x00, 0x02, 0x00, 0x00, 0xF0, 0x81,
+        0x00, 0x02, 0x00, 0x00, 0xF1, 0xC2,
+        0x00, 0x02, 0x00, 0x00, 0xF1, 0xC3,
+        0x00, 0x02, 0x00, 0x00, 0xF0, 0x84,
+        0x00, 0x02, 0x00, 0x00, 0xF0, 0x85,
+        0x00, 0x02, 0x00, 0x00, 0xF1, 0xC6
+      ).map(_.toByte)
+
+      val copybook =
+        """      01  R.
+          |          03 SEGMENT-ID  PIC 9(1).
+          |          03 SEGMENT0.
+          |            10 A         PIC X(1).
+          |          03 SEGMENT1 REDEFINES SEGMENT0.
+          |            10 B         PIC X(1).
+          |""".stripMargin
+
+      withTempBinFile("record_limit_rdw", ".dat", rdwHierarchicalData) { path =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "true")
+          .option("record_limit", "2")
+          .option("segment_field", "SEGMENT_ID")
+          .option("redefine_segment_id_map:1", "SEGMENT0 => 0")
+          .option("redefine_segment_id_map:2", "SEGMENT1 => 1")
+          .option("segment-children:1", "SEGMENT0 => SEGMENT1")
+          .load(path)
+
+        assert(df.count() == 2)
+      }
+    }
+
     "be accepted in pedantic mode" in {
       withTempBinFile("record_limit_pedantic", ".dat", "00010203".getBytes(StandardCharsets.US_ASCII)) { path =>
         val df = fixedLengthDataFrame(Seq(path), Map("pedantic" -> "true", "record_limit" -> "1"))
