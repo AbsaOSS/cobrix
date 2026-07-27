@@ -51,6 +51,7 @@ class VRLRecordReader(cobolSchema: Copybook,
   private var cachedValue: Option[RawRecord] = _
   private var byteIndex = startingFileOffset
   private var recordIndex = startRecordId - 1
+  private var recordNextToFetch = startRecordId
 
   final private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, cobolSchema)
   final private val minimumRecordLength = readerProperties.minimumRecordLength
@@ -74,13 +75,16 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
-    if (recordLimit.isDefined && recordLimit.get <= recordIndex)
+    if (recordLimit.isDefined && recordLimit.get <= recordNextToFetch) {
+      dataStream.close()
       return
+    }
     var recordFetched = false
     while (!recordFetched) {
       val binaryData = recordExtractor match {
         case Some(extractor) =>
           if (extractor.hasNext) {
+            recordNextToFetch += 1
             Option(extractor.next())
           } else {
             None
@@ -96,6 +100,7 @@ class VRLRecordReader(cobolSchema: Copybook,
         case Some(data) if data.length < minimumRecordLength || data.length > maximumRecordLength =>
           recordFetched = false
         case Some(data) =>
+          recordNextToFetch += 1
           val segmentId = getSegmentId(data)
           val segmentIdStr = segmentId.getOrElse("")
 
