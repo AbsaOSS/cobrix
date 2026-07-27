@@ -147,6 +147,8 @@ object CobolParametersParser extends Logging {
   val PARAM_WRITE_NULL_DISPLAY_NUMBERS_AS_ZEROS    = "write_null_display_numbers_as_zeros"
   val PARAM_WRITE_NULL_COMP3_NUMBERS_AS_ZEROS      = "write_null_comp3_numbers_as_zeros"
 
+  val MIN_RECORDS_FOR_INDEXES = 100000
+
   private def getSchemaRetentionPolicy(params: Parameters): SchemaRetentionPolicy = {
     val schemaRetentionPolicyName = params.getOrElse(PARAM_SCHEMA_RETENTION_POLICY, "collapse_root")
     val schemaRetentionPolicy = SchemaRetentionPolicy.withNameOpt(schemaRetentionPolicyName)
@@ -354,9 +356,9 @@ object CobolParametersParser extends Logging {
       MetadataPolicy(params.getOrElse(PARAM_METADATA, "basic")),
       params.get(PARAM_RECORD_HEADER_NAME).orElse(params.get(PARAM_RECORD_HEADER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       params.get(PARAM_RECORD_TRAILER_NAME).orElse(params.get(PARAM_RECORD_TRAILER_NAME2)) .map(_.trim).filter(_.nonEmpty),
+      recordLimit,
       writerParameters,
-      params.getMap,
-      recordLimit
+      params.getMap
       )
     validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
     cobolParameters
@@ -537,6 +539,7 @@ object CobolParametersParser extends Logging {
       varLenParams.inputFileNameColumn,
       parameters.metadataPolicy,
       recordsToExclude,
+      parameters.recordLimit,
       parameters.writerParameters,
       parameters.options
       )
@@ -562,6 +565,17 @@ object CobolParametersParser extends Logging {
     if (params.contains(PARAM_RECORD_LENGTH_FIELD) &&
       (params.contains(PARAM_IS_RECORD_SEQUENCE) || params.contains(PARAM_IS_XCOM))) {
       throw new IllegalArgumentException(s"Option '$PARAM_RECORD_LENGTH_FIELD' cannot be used together with '$PARAM_IS_RECORD_SEQUENCE' or '$PARAM_IS_XCOM'.")
+    }
+
+    val recordLimit = getRecordLimit(params: Parameters)
+    val enableIndexes = recordLimit match {
+      case Some(limit) if limit > MIN_RECORDS_FOR_INDEXES =>
+        params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean
+      case Some(limit) =>
+        logger.info(s"Indexes are disabled for $PARAM_RECORD_LIMIT=$limit")
+        false
+      case None =>
+        params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean
     }
 
     if (recordLengthFieldOpt.isDefined ||
@@ -591,7 +605,7 @@ object CobolParametersParser extends Logging {
         fileStartOffset,
         fileEndOffset,
         isRecordIdGenerationEnabled,
-        params.getOrElse(PARAM_ENABLE_INDEXES, "true").toBoolean,
+        enableIndexes,
         params.getOrElse(PARAM_ENABLE_INDEX_CACHE, "true").toBoolean,
         params.get(PARAM_INPUT_SPLIT_RECORDS).map(v => v.toInt),
         params.get(PARAM_INPUT_SPLIT_SIZE_MB).map(v => v.toInt),

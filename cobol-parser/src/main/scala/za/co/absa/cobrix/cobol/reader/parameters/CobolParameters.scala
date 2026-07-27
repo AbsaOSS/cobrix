@@ -117,7 +117,7 @@ case class CobolParameters(
                             metadataPolicy:          MetadataPolicy,
                             fileHeaderField:         Option[String] = None,
                             fileTrailerField:        Option[String] = None,
+                            recordLimit:             Option[Int] = None,
                             writerParameters:        Option[WriterParameters],
-                            options:                 Map[String, String],
-                            recordLimit:             Option[Int] = None
+                            options:                 Map[String, String]
                           )

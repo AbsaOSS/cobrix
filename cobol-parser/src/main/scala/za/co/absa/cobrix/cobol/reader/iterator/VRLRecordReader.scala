@@ -35,6 +35,7 @@ import za.co.absa.cobrix.cobol.reader.validator.ReaderParametersValidator
   * @param recordExtractor    A record extractor that can be used instead of the record header parser.
   * @param startRecordId      A starting record id value for this particular file/stream `dataStream`
   * @param startingFileOffset An offset of the file where parsing should be started
+  * @param recordLimit        An optional limit on the number of records to read
   */
 class VRLRecordReader(cobolSchema: Copybook,
                       dataStream: SimpleStream,
@@ -42,7 +43,8 @@ class VRLRecordReader(cobolSchema: Copybook,
                       recordHeaderParser: RecordHeaderParser,
                       recordExtractor: Option[RawRecordExtractor],
                       startRecordId: Long,
-                      startingFileOffset: Long) extends Iterator[(String, Array[Byte])] with Logging {
+                      startingFileOffset: Long,
+                      recordLimit: Option[Int]) extends Iterator[(String, Array[Byte])] with Logging {
 
   type RawRecord = (String, Array[Byte])
 
@@ -72,6 +74,8 @@ class VRLRecordReader(cobolSchema: Copybook,
 
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
+    if (recordLimit.isDefined && recordLimit.get <= recordIndex)
+      return
     var recordFetched = false
     while (!recordFetched) {
       val binaryData = recordExtractor match {

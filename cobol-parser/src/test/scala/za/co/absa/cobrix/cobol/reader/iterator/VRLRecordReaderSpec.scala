@@ -352,7 +352,8 @@ class VRLRecordReaderSpec extends AnyWordSpec {
                         recordHeaderParser,
                         recordExtractor,
                         0,
-                        0
+                        0,
+                        None
                         )
   }
 

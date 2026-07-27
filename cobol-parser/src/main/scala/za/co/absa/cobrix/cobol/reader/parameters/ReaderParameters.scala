@@ -81,6 +81,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param inputFileNameColumn     A column name to add to the dataframe. The column will contain input file name for each record similar to 'input_file_name()' function
   * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
   * @param recordsToExclude        A set of fields to exclude from decoding in normal (not header or footer) records.
+  * @param recordLimit             Maximum number of decoded output rows to return. Zero returns no rows; if not specified, all rows are returned.
   * @param writerParameters        If specified, contains parameters for the writer.
   * @param options                 Options passed to spark-cobol
   */
@@ -143,7 +144,8 @@ case class ReaderParameters(
                              reAdditionalInfo:        String = "",
                              inputFileNameColumn:     String = "",
                              metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic,
-                             recordsToExclude:       Set[String] = Set.empty,
+                             recordsToExclude:        Set[String] = Set.empty,
+                             recordLimit:             Option[Int] = None,
                              writerParameters:        Option[WriterParameters] = None,
                              options:                 Map[String, String] = Map.empty
                            )

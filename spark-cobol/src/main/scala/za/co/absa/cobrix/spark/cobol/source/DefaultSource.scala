@@ -283,7 +283,7 @@ object DefaultSource {
       case other => other
     }
 
-    parameters.copy(variableLengthParams = updatedVarLen, recordLength = updatedRecordLength)
+    parameters.copy(recordLength = updatedRecordLength, variableLengthParams = updatedVarLen)
   }
 
   /**

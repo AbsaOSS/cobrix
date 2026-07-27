@@ -34,7 +34,10 @@ class Test43RecordLimitSpec extends AnyWordSpec with SparkTestBase with BinaryFi
   private val rdwData = Array(
     0x00, 0x02, 0x00, 0x00, 0x30, 0x31,
     0x00, 0x02, 0x00, 0x00, 0x32, 0x33,
-    0x00, 0x02, 0x00, 0x00, 0x34, 0x35
+    0x00, 0x02, 0x00, 0x00, 0x34, 0x35,
+    0x00, 0x02, 0x00, 0x00, 0x36, 0x37,
+    0x00, 0x02, 0x00, 0x00, 0x38, 0x39,
+    0x00, 0x02, 0x00, 0x00, 0x3A, 0x3B
   ).map(_.toByte)
 
   "record_limit" should {
@@ -95,6 +98,22 @@ class Test43RecordLimitSpec extends AnyWordSpec with SparkTestBase with BinaryFi
           .load(path)
 
         assert(values(df) == Seq("01", "23"))
+      }
+    }
+
+    "limit variable-length RDW records which allows indexing" in {
+      withTempBinFile("record_limit_rdw", ".dat", rdwData) { path =>
+        val df = spark
+          .read
+          .format("cobol")
+          .option("copybook_contents", fixedLengthCopybook)
+          .option("encoding", "ascii")
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "true")
+          .option("record_limit", "1000000")
+          .load(path)
+
+        assert(df.count() == 6)
       }
     }
 

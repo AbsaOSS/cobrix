@@ -54,7 +54,7 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
   type RawData = Array[Byte]
   type RawRecord = (String, Array[Byte])
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, rawRecordExtractor, startRecordId, startingFileOffset)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, rawRecordExtractor, startRecordId, startingFileOffset, readerProperties.recordLimit)
 
   private var recordIndex = startRecordId
   private var cachedValue: Option[Seq[Any]] = _

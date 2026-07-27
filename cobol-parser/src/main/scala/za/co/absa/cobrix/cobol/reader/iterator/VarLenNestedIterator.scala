@@ -52,7 +52,7 @@ final class VarLenNestedIterator[T: ClassTag](cobolSchema: Copybook,
                                               segmentIdPrefix: String,
                                               handler: RecordHandler[T]) extends Iterator[Seq[Any]] {
 
-  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, recordExtractor, startRecordId, startingFileOffset)
+  private val rawRecordIterator = new VRLRecordReader(cobolSchema, dataStream, readerProperties, recordHeaderParser, recordExtractor, startRecordId, startingFileOffset, readerProperties.recordLimit)
 
   private var cachedValue: Option[Seq[Any]] = _
   private val segmentIdFilter = readerProperties.multisegment.flatMap(p => p.segmentIdFilter)
