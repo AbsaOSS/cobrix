@@ -100,6 +100,7 @@ final class VarLenHierarchicalIterator[T: ClassTag](cobolSchema: Copybook,
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
     if (readerProperties.recordLimit.isDefined && readerProperties.recordLimit.get <= rootRecordIndex) {
+      cachedValue = None
       dataStream.close()
       return
     }

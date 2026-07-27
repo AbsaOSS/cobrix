@@ -76,6 +76,7 @@ class VRLRecordReader(cobolSchema: Copybook,
   @throws(classOf[IllegalStateException])
   private def fetchNext(): Unit = {
     if (recordLimit.isDefined && recordLimit.get <= recordNextToFetch) {
+      cachedValue = None
       dataStream.close()
       return
     }
