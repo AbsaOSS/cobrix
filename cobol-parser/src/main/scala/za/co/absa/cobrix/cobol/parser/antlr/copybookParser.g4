@@ -30,7 +30,7 @@ literal:
     ;
 
 numericLiteral:
-    plusMinus? NUMERICLITERAL | ZERO | plusMinus? integerLiteral
+    plusMinus? NUMERICLITERAL | ZERO | plusMinus? integerLiteral | plusMinus? PRECISION_9_EXPLICIT_DOT
     ;
 
 integerLiteral:

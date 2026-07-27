@@ -214,6 +214,9 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
         |          10  FIELD    PIC +999.
         |          10  FIELD    PIC -9999.
         |          10  FIELD    PIC 99999+.
+        |          10  FIELD    PIC +999.9999.
+        |              88 VALUE1  VALUE +999.9999.
+        |              88 VALUE2  VALUE +951.22.
         |""".stripMargin
 
     //           10  FIELD    PIC 9(4)9-.  <-- is this valid?
