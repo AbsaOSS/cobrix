@@ -66,7 +66,8 @@ class CobolRelation(sourceDirs: Seq[String],
                     filesList: Array[FileWithOrder],
                     cobolReader: Reader,
                     localityParams: LocalityParameters,
-                    debugIgnoreFileSize: Boolean)
+                    debugIgnoreFileSize: Boolean,
+                    recordLimit: Option[Int] = None)
                    (@transient val sqlContext: SQLContext)
   extends BaseRelation
     with Serializable
@@ -79,7 +80,7 @@ class CobolRelation(sourceDirs: Seq[String],
   }
 
   override def buildScan(): RDD[Row] = {
-    cobolReader match {
+    val records = cobolReader match {
       case blockReader: FixedLenTextReader =>
         CobolScanners.buildScanForTextFiles(blockReader, sourceDirs, parseRecords, sqlContext)
       case blockReader: FixedLenReader =>
@@ -91,6 +92,8 @@ class CobolRelation(sourceDirs: Seq[String],
       case _ =>
         throw new IllegalStateException("Invalid reader object $cobolReader.")
     }
+
+    CobolRelation.applyRecordLimit(records, recordLimit)
   }
 
   private[source] def parseRecords(reader: FixedLenReader, records: RDD[Array[Byte]]): RDD[Row] = {
@@ -104,6 +107,14 @@ class CobolRelation(sourceDirs: Seq[String],
 }
 
 object CobolRelation {
+  private[source] def applyRecordLimit(records: RDD[Row], recordLimit: Option[Int]): RDD[Row] = {
+    recordLimit match {
+      case None => records
+      case Some(0) => records.sparkContext.emptyRDD[Row]
+      case Some(limit) => records.coalesce(1, shuffle = false).mapPartitions(_.take(limit))
+    }
+  }
+
   /**
     * Retrieves a list containing the files contained in the directory to be processed attached to numbers which serve
     * as their order.

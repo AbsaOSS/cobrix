@@ -166,6 +166,10 @@ object CobolParametersValidator {
       issues += "Multi-segment options ('segment_field', 'segment_filter', etc) are not supported for writing"
     }
 
+    if (readerParameters.options.contains(PARAM_RECORD_LIMIT)) {
+      issues += s"'$PARAM_RECORD_LIMIT' is supported only for reading"
+    }
+
     if (issues.nonEmpty) {
       throw new IllegalArgumentException(s"Writer validation issues: ${issues.mkString("; ")}")
     }

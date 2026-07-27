@@ -1685,9 +1685,21 @@ The output looks like this:
 | .option("generate_record_id", false)                | Generate autoincremental 'File_Id', 'Record_Id' and 'Record_Byte_Length' fields. This is used for processing record order dependent data.                                                                                                                                                             |
 | .option("generate_record_bytes", false)             | Generate 'Record_Bytes', the binary field that contains raw contents of the original unparsed records.                                                                                                                                                                                                |
 | .option("generate_corrupt_fields", false)           | Generate `_corrupt_fields` field that contains values of fields Cobrix was unable to decode.                                                                                                                                                                                                          |
+| .option("record_limit", "1000")                   | Caps decoded output to N rows globally across all input paths/files (zero returns no rows). This is a source-level global cap: `df.limit(N)` does not push down into Cobrix. While enabled Cobrix uses a single scan task and can avoid opening later input partitions/files once satisfied. Indexed reads may still build indexes first. |
 | .option("with_input_file_name_col", "file_name")    | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length and ASCII files use `input_file_name()`. |
 | .option("metadata", "basic")                        | Specifies wat kind of metadata to include in the Spark schema: `false`, `basic`(default), or `extended` (PIC, usage, etc).                                                                                                                                                                            |
 | .option("debug", "hex")                             | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                             |
+
+For example, to cap a Cobrix source read at 1,000 decoded rows:
+
+```scala
+val df = spark
+  .read
+  .format("cobol")
+  .option("copybook", "/path/to/copybook")
+  .option("record_limit", "1000")
+  .load("/path/to/data")
+```
 
 ##### Fixed length record format options (for record_format = F or FB)
 

@@ -29,7 +29,8 @@ class CobolParametersValidatorSuite extends AnyWordSpec {
         occursMappings = Map("A" -> Map("B" -> 1)),
         startOffset = 1,
         fileEndOffset = 2,
-        multisegment = Some(MultisegmentParameters("SEG", None, Seq.empty, "", Map.empty, Map.empty))
+        multisegment = Some(MultisegmentParameters("SEG", None, Seq.empty, "", Map.empty, Map.empty)),
+        options = Map("record_limit" -> "10")
       )
 
       val ex = intercept[IllegalArgumentException] {
@@ -41,6 +42,7 @@ class CobolParametersValidatorSuite extends AnyWordSpec {
       assert(ex.getMessage.contains("'record_start_offset' and 'record_end_offset' are not supported for writing"))
       assert(ex.getMessage.contains("'file_start_offset' and 'file_end_offset' are not supported for writing"))
       assert(ex.getMessage.contains("Multi-segment options ('segment_field', 'segment_filter', etc) are not supported for writing"))
+      assert(ex.getMessage.contains("'record_limit' is supported only for reading"))
     }
 
     "do not throw exceptions if the configuration is okay" in {

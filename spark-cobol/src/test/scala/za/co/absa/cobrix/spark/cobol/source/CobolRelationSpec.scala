@@ -69,7 +69,8 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
       filesList,
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false)(sqlContext)
+      debugIgnoreFileSize = false,
+      recordLimit = None)(sqlContext)
     val cobolData: RDD[Row] = relation.parseRecords(testReader, oneRowRDD)
 
     val cobolDataFrame = sqlContext.createDataFrame(cobolData, sparkSchema)
@@ -96,7 +97,8 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
       filesList,
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false)(sqlContext)
+      debugIgnoreFileSize = false,
+      recordLimit = None)(sqlContext)
 
     val caught = intercept[Exception] {
       relation.parseRecords(testReader, oneRowRDD).collect()
@@ -114,13 +116,59 @@ class CobolRelationSpec extends SparkCobolTestBase with Serializable {
       filesList,
       testReader,
       localityParams = localityParams,
-      debugIgnoreFileSize = false)(sqlContext)
+      debugIgnoreFileSize = false,
+      recordLimit = None)(sqlContext)
 
     val caught = intercept[SparkException] {
       relation.parseRecords(testReader, oneRowRDD).collect()
     }
 
     assert(caught.getMessage.contains("key not found: absentField"))
+  }
+
+  it should "apply an exact global record limit" in {
+    val records = sqlContext.sparkContext.parallelize(
+      Seq(Row(1), Row(2), Row(3), Row(4), Row(5), Row(6)), 3)
+
+    val limited = CobolRelation.applyRecordLimit(records, Some(3))
+
+    limited.getNumPartitions shouldBe 1
+    limited.collect().toSeq shouldBe Seq(Row(1), Row(2), Row(3))
+  }
+
+  it should "continue to a later partition to satisfy a record limit" in {
+    val records = sqlContext.sparkContext.parallelize(Seq(Row(1), Row(2), Row(3)), 3)
+
+    val limited = CobolRelation.applyRecordLimit(records, Some(2))
+
+    limited.collect().toSeq shouldBe Seq(Row(1), Row(2))
+  }
+
+  it should "preserve records unchanged when a record limit is absent" in {
+    val records = sqlContext.sparkContext.parallelize(Seq(Row(1), Row(2), Row(3)), 3)
+
+    val limited = CobolRelation.applyRecordLimit(records, None)
+
+    limited should be theSameInstanceAs records
+    limited.getNumPartitions shouldBe 3
+    limited.collect().toSet shouldBe Set(Row(1), Row(2), Row(3))
+  }
+
+  it should "return an empty RDD without evaluating parent partitions for a zero record limit" in {
+    val records = sqlContext.sparkContext.parallelize(Seq(1), 1).mapPartitions[Row] { _ =>
+      throw new RuntimeException("Parent partition should not be evaluated")
+    }
+
+    CobolRelation.applyRecordLimit(records, Some(0)).collect().isEmpty shouldBe true
+  }
+
+  it should "not evaluate later parent partitions once a record limit is met" in {
+    val records = sqlContext.sparkContext.parallelize(Seq(1, 2), 2).mapPartitionsWithIndex {
+      case (0, _) => Iterator(Row(1), Row(2))
+      case (_, _) => throw new RuntimeException("Later parent partition should not be evaluated")
+    }
+
+    CobolRelation.applyRecordLimit(records, Some(2)).collect().toSeq shouldBe Seq(Row(1), Row(2))
   }
 
   private def createTestData(): List[Map[String, Option[String]]] = {

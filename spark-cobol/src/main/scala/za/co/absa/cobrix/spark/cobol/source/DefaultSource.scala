@@ -74,7 +74,8 @@ class DefaultSource
       filesList,
       buildEitherReader(sqlContext.sparkSession, cobolParameters, hasCompressedFiles),
       LocalityParameters.extract(cobolParameters),
-      cobolParameters.debugIgnoreFileSize)(sqlContext)
+      cobolParameters.debugIgnoreFileSize,
+      cobolParameters.recordLimit)(sqlContext)
   }
 
   /** Writer relation */

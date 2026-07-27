@@ -20,6 +20,57 @@ import org.scalatest.wordspec.AnyWordSpec
 
 class CobolParametersParserSuite extends AnyWordSpec {
   "parse" should {
+    "leave record_limit undefined when it is absent" in {
+      val parsedParams = CobolParametersParser.parse(new Parameters(Map.empty[String, String]))
+
+      assert(parsedParams.recordLimit.isEmpty)
+    }
+
+    "parse a zero record_limit" in {
+      val parsedParams = CobolParametersParser.parse(new Parameters(Map("record_limit" -> "0")))
+
+      assert(parsedParams.recordLimit.contains(0))
+    }
+
+    "parse a positive record_limit" in {
+      val parsedParams = CobolParametersParser.parse(new Parameters(Map("record_limit" -> "100")))
+
+      assert(parsedParams.recordLimit.contains(100))
+    }
+
+    "reject a negative record_limit" in {
+      val exception = intercept[IllegalArgumentException] {
+        CobolParametersParser.parse(new Parameters(Map("record_limit" -> "-1")))
+      }
+
+      assert(exception.getMessage.contains("record_limit"))
+    }
+
+    "reject a malformed record_limit" in {
+      val exception = intercept[IllegalArgumentException] {
+        CobolParametersParser.parse(new Parameters(Map("record_limit" -> "invalid")))
+      }
+
+      assert(exception.getMessage.contains("record_limit"))
+    }
+
+    "reject an overflowing record_limit" in {
+      val exception = intercept[IllegalArgumentException] {
+        CobolParametersParser.parse(new Parameters(Map("record_limit" -> "2147483648")))
+      }
+
+      assert(exception.getMessage.contains("record_limit"))
+    }
+
+    "recognize record_limit in pedantic mode" in {
+      val parsedParams = CobolParametersParser.parse(new Parameters(Map(
+        "record_limit" -> "1",
+        "pedantic" -> "true"
+      )))
+
+      assert(parsedParams.recordLimit.contains(1))
+    }
+
     "parse writer parameters" in {
       val params =  new Parameters(Map(
         "write_null_strings_as_spaces" -> "false",

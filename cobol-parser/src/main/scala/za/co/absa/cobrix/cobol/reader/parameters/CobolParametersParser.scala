@@ -54,6 +54,7 @@ object CobolParametersParser extends Logging {
   val PARAM_RECORD_LENGTH             = "record_length"
   val PARAM_MINIMUM_RECORD_LENGTH     = "minimum_record_length"
   val PARAM_MAXIMUM_RECORD_LENGTH     = "maximum_record_length"
+  val PARAM_RECORD_LIMIT              = "record_limit"
   val PARAM_IS_RECORD_SEQUENCE        = "is_record_sequence"
   val PARAM_RECORD_LENGTH_FIELD       = "record_length_field"
   val PARAM_RECORD_LENGTH_MAP         = "record_length_map"
@@ -238,12 +239,32 @@ object CobolParametersParser extends Logging {
     policy
   }
 
+  private def getRecordLimit(params: Parameters): Option[Int] = {
+    params.get(PARAM_RECORD_LIMIT).map { value =>
+      val recordLimit = try {
+        value.toInt
+      } catch {
+        case NonFatal(ex) =>
+          throw new IllegalArgumentException(
+            s"Invalid value '$value' for '$PARAM_RECORD_LIMIT' option. It must be a non-negative 32-bit integer.", ex)
+      }
+
+      if (recordLimit < 0) {
+        throw new IllegalArgumentException(
+          s"Invalid value '$value' for '$PARAM_RECORD_LIMIT' option. It must be a non-negative 32-bit integer.")
+      }
+
+      recordLimit
+    }
+  }
+
   def parse(params: Parameters, validateRedundantOptions: Boolean = true, isWriter: Boolean = false): CobolParameters = {
     val schemaRetentionPolicy = getSchemaRetentionPolicy(params)
     val stringTrimmingPolicy = getStringTrimmingPolicy(params)
     val ebcdicCodePageName = params.getOrElse(PARAM_EBCDIC_CODE_PAGE, "common")
     val ebcdicCodePageClass = params.get(PARAM_EBCDIC_CODE_PAGE_CLASS)
     val asciiCharset = params.get(PARAM_ASCII_CHARSET)
+    val recordLimit = getRecordLimit(params)
 
     val recordFormatDefined = getRecordFormat(params)
 
@@ -334,7 +355,8 @@ object CobolParametersParser extends Logging {
       params.get(PARAM_RECORD_HEADER_NAME).orElse(params.get(PARAM_RECORD_HEADER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       params.get(PARAM_RECORD_TRAILER_NAME).orElse(params.get(PARAM_RECORD_TRAILER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       writerParameters,
-      params.getMap
+      params.getMap,
+      recordLimit
       )
     validateSparkCobolOptions(params, recordFormat, validateRedundantOptions)
     cobolParameters
