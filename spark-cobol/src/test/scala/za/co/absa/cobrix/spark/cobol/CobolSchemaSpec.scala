@@ -722,6 +722,23 @@ class CobolSchemaSpec extends AnyWordSpec with SimpleComparisonBase {
 
       assert(ex.getMessage == "Redundant or unrecognized option(s) to 'spark-cobol': dummy_option.")
     }
+
+    "do not fail fail on redundant options explicitly used from custom options namespaces" in {
+      val copybook: String =
+        """       01  RECORD.
+          |         05  DATA                PIC X(5).
+          |""".stripMargin
+
+      CobolSchema.fromSparkOptions(Seq(copybook),
+        Map(
+          "pedantic" -> "true",
+          "custom_test" -> "dummy_value",
+          "hidam_test" -> "dummy_value",
+          "db2_test" -> "dummy_value",
+          "_some_test" -> "dummy_value"
+        )
+      )
+    }
   }
 
   "getMaximumSegmentIdLength" should {

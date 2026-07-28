@@ -946,7 +946,12 @@ object CobolParametersParser extends Logging {
       if (params.isKeyUsed(key)) {
         None
       } else {
-        Some(key)
+        val lowercaseKey = key.toLowerCase
+        if (lowercaseKey.startsWith("custom") || lowercaseKey.startsWith("hidam_") || lowercaseKey.startsWith("db2_") || lowercaseKey.startsWith("_")) {
+          None
+        } else {
+          Some(key)
+        }
       }
     })
 

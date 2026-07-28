@@ -305,7 +305,7 @@ object CopybookParser extends Logging {
     validateFieldParentMap(correctedFieldParentMap)
 
     val transformers = Seq(
-      // Calculate sized of fields and their positions from the beginning of a record
+      // Calculate sizes of fields and their positions from the beginning of a record
       BinaryPropertiesAdder(),
       // Adds virtual primitive fields for GROUPs that can be parsed as concatenation of their children.
       NonTerminalsAdder(nonTerms, enc, stringTrimmingPolicy, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, strictSignOverpunch, improvedNullDetection),
