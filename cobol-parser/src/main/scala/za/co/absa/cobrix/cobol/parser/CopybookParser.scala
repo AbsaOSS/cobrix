@@ -127,6 +127,7 @@ object CopybookParser extends Logging {
     * @param nonTerminals          A list of non-terminals that should be extracted as strings.
     * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param customAstTransformers A list of custom AST transformers to be applied during parsing.
     * @return Seq[Group] where a group is a record inside the copybook.
     */
   def parse(copyBookContents: String,
@@ -151,7 +152,8 @@ object CopybookParser extends Logging {
             occursHandlers: Map[String, Map[String, Int]] = Map(),
             redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
             debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
-            fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
+            fieldCodePageMap: Map[String, String] = Map.empty[String, String],
+            customAstTransformers: Seq[AstTransformer] = Seq.empty): Copybook = {
     parseTree(dataEncoding,
       copyBookContents,
       dropGroupFillers,
@@ -174,7 +176,8 @@ object CopybookParser extends Logging {
       occursHandlers,
       redefineRuleExpressions,
       debugFieldsPolicy,
-      fieldCodePageMap)
+      fieldCodePageMap,
+      customAstTransformers)
   }
 
   /**
@@ -198,6 +201,7 @@ object CopybookParser extends Logging {
     * @param nonTerminals          A list of non-terminals that should be extracted as strings
     * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param customAstTransformers A list of custom AST transformers to be applied during parsing.
     * @return Seq[Group] where a group is a record inside the copybook
     */
   def parseTree(copyBookContents: String,
@@ -221,7 +225,8 @@ object CopybookParser extends Logging {
                 occursHandlers: Map[String, Map[String, Int]] = Map(),
                 redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
                 debugFieldsPolicy: DebugFieldsPolicy = DebugFieldsPolicy.NoDebug,
-                fieldCodePageMap: Map[String, String] = Map.empty[String, String]): Copybook = {
+                fieldCodePageMap: Map[String, String] = Map.empty[String, String],
+                customAstTransformers: Seq[AstTransformer] = Seq.empty): Copybook = {
     parseTree(EBCDIC,
       copyBookContents,
       dropGroupFillers,
@@ -244,7 +249,8 @@ object CopybookParser extends Logging {
       occursHandlers,
       redefineRuleExpressions,
       debugFieldsPolicy,
-      fieldCodePageMap)
+      fieldCodePageMap,
+      customAstTransformers)
   }
 
   /**
@@ -268,6 +274,7 @@ object CopybookParser extends Logging {
     * @param nonTerminals          A list of non-terminals that should be extracted as strings
     * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
     * @param debugFieldsPolicy     Specifies if debugging fields need to be added and what should they contain (false, hex, raw).
+    * @param customAstTransformers A list of custom AST transformers to be applied during parsing.
     * @return Seq[Group] where a group is a record inside the copybook
     */
   @throws(classOf[SyntaxErrorException])
@@ -293,7 +300,8 @@ object CopybookParser extends Logging {
                 occursHandlers: Map[String, Map[String, Int]],
                 redefineRuleExpressions: Map[String, ExpressionEvaluator],
                 debugFieldsPolicy: DebugFieldsPolicy,
-                fieldCodePageMap: Map[String, String]): Copybook = {
+                fieldCodePageMap: Map[String, String],
+                customAstTransformers: Seq[AstTransformer]): Copybook = {
 
     val schemaANTLR: CopybookAST = ANTLRParser.parse(copyBookContents, enc, stringTrimmingPolicy, isDisplayAlwaysString, commentPolicy, strictSignOverpunch, improvedNullDetection, strictIntegralPrecision, decodeBinaryAsHex, ebcdicCodePage, asciiCharset, isUtf16BigEndian, floatingPointFormat, fieldCodePageMap)
 
@@ -304,7 +312,7 @@ object CopybookParser extends Logging {
     val correctedFieldParentMap = transformIdentifierMap(fieldParentMap)
     validateFieldParentMap(correctedFieldParentMap)
 
-    val transformers = Seq(
+    val transformers = customAstTransformers ++ Seq(
       // Calculate sizes of fields and their positions from the beginning of a record
       BinaryPropertiesAdder(),
       // Adds virtual primitive fields for GROUPs that can be parsed as concatenation of their children.

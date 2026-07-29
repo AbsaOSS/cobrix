@@ -1635,6 +1635,49 @@ The output looks like this:
 +---+-------+----------+----------+----------+
 ```
 
+### Custom AST transformers
+When parsed copybooks need to be transformed in a regular way before processing data, a custom AST transformer can be
+used. This allows modifying data types on the fly, or adding/removing fields when necessary.
+
+In order to use a custom AST transformer, you need to implement the `AstTransformer` trait and provide your 
+transformation logic in the `transform` method. Then, you can specify your custom transformer class in the `ast_transformers`
+option when reading data.
+
+Example transformer:
+
+```scala
+package com.example
+
+import za.co.absa.cobrix.cobol.parser.asttransform.AstTransformer
+import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
+import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
+
+class MyTransformer1(readerParameters: ReaderParameters) extends AstTransformer {
+  override def transform(ast: CopybookAST): CopybookAST = {
+    // implementation goes here
+  }
+}
+```
+
+Example options that uses the transformer:
+```scala
+spark.read
+  .option("format", "cobol")
+  .option("copybook", someCopybook)
+  .option("ast_transformers", "com.example.MyTransformer1")
+  .load("/some/path")
+```
+
+You can chain multiple transformers by providing transformer classes as a comma-separated list.
+
+**Notes:**
+
+1. Transformers are applied before built-in transformers, so the AST might not be complete at that stage.
+2. Since the decoder and optionally an encoder are set at the AST building stage, if you want to insert new fields,
+   you need to define them as well. Use `DecoderSelector.getDecoder()` and [optionally] `EncoderSelector.getEncoder()`.
+3. Custom transformers run before binary properties are calculated. So inserting or removing fields changes the copybook
+   layout.
+
 ## Summary of all available options
 
 ##### File reading options
@@ -1688,6 +1731,7 @@ The output looks like this:
 | .option("record_limit", "1000")                     | Caps decoded output to N rows globally across all input paths/files (zero returns no rows). This is a source-level global cap: `df.limit(N)` does not push down into Cobrix. While enabled Cobrix uses a single scan task and can avoid opening later input partitions/files once satisfied. Indexed reads may still build indexes first. |
 | .option("with_input_file_name_col", "file_name")    | Generates a column containing input file name for each record (Similar to Spark SQL `input_file_name()` function). The column name is specified by the value of the option. This option only works for variable record length files. For fixed record length and ASCII files use `input_file_name()`.                                     |
 | .option("metadata", "basic")                        | Specifies wat kind of metadata to include in the Spark schema: `false`, `basic`(default), or `extended` (PIC, usage, etc).                                                                                                                                                                                                                |
+| .option("ast_transformers", "...")                  | Specifies a comma-separated list of custom AST transformers to be used to process AST of copybooks just after they are parsed.                                                                                                                                                                                                            |
 | .option("debug", "hex")                             | If specified, each primitive field will be accompanied by a debug field containing raw bytes from the source file. Possible values: `none` (default), `hex`, `binary`, `string` (ASCII only). The legacy value `true` is supported and will generate debug fields in HEX.                                                                 |
 
 For example, to cap a Cobrix source read at 1,000 decoded rows:
@@ -1815,7 +1859,7 @@ val df = spark
 
 `common_extended`, `cp037_extended` are code pages supporting non-printable characters that converts to ASCII codes below 32.
 
-## EBCDIC Processor (experimental)
+## EBCDIC Processor
 The EBCDIC processor allows processing files by replacing value of fields without changing the underlying format (`CobolProcessingStrategy.InPlace`)
 or with conversion of the input format to variable-record-length format with big-endian RDWs (`CobolProcessingStrategy.ToVariableLength`).
 
@@ -1871,7 +1915,7 @@ val count = CobolProcessor.builder
 ```
 
 
-## EBCDIC Spark Processor (experimental)
+## EBCDIC Spark Processor
 This allows in-place processing of data retaining original format in parallel uring RDDs under the hood.
 
 Here is an example usage:
@@ -1898,7 +1942,7 @@ SparkCobolProcessor.builder
   .save(outputPath)
 ```
 
-## EBCDIC Spark raw record RDD generator (experimental)
+## EBCDIC Spark raw record RDD generator
 You can process raw records of a mainframe file as an `RDD[Array[Byte]]`. This can be useful for custom processing without converting
 to Spark data types. You can still access fields via parsed copybooks.
 
@@ -1927,7 +1971,7 @@ val segmentRdds RDD[String] = recordsRdd.flatMap { record =>
 segmentRdds.distinct.collect.sorted.foreach(println)
 ```
 
-## EBCDIC Writer (experimental)
+## EBCDIC Writer
 
 Cobrix's EBCDIC writer is an experimental feature that allows writing Spark DataFrames as EBCDIC mainframe files.
 

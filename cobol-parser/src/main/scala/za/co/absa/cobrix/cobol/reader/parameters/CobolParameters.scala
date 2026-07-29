@@ -69,6 +69,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param writerParameters        Parameters set only for the writer of files in mainfraame format
   * @param options                 Options passed to 'spark-cobol'.
   * @param recordLimit             Maximum number of decoded output rows to return. Zero returns no rows; if not specified, all rows are returned.
+  * @param astTransformerClasses   A comma-separated list of fully qualified classes extending [[za.co.absa.cobrix.cobol.parser.asttransform.AstTransformer]]
   */
 case class CobolParameters(
                             copybookPath:            Option[String],
@@ -118,6 +119,7 @@ case class CobolParameters(
                             fileHeaderField:         Option[String] = None,
                             fileTrailerField:        Option[String] = None,
                             recordLimit:             Option[Int] = None,
+                            astTransformerClasses:   Seq[String],
                             writerParameters:        Option[WriterParameters],
                             options:                 Map[String, String]
                           )

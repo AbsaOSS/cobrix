@@ -82,6 +82,7 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param metadataPolicy          Specifies the policy of metadat fields to be added to the Spark schema
   * @param recordsToExclude        A set of fields to exclude from decoding in normal (not header or footer) records.
   * @param recordLimit             Maximum number of decoded output rows to return. Zero returns no rows; if not specified, all rows are returned.
+  * @param astTransformerClasses   A comma-separated list of fully qualified classes extending [[za.co.absa.cobrix.cobol.parser.asttransform.AstTransformer]]
   * @param writerParameters        If specified, contains parameters for the writer.
   * @param options                 Options passed to spark-cobol
   */
@@ -146,6 +147,7 @@ case class ReaderParameters(
                              metadataPolicy:          MetadataPolicy = MetadataPolicy.Basic,
                              recordsToExclude:        Set[String] = Set.empty,
                              recordLimit:             Option[Int] = None,
+                             astTransformerClasses:   Seq[String] = Seq.empty,
                              writerParameters:        Option[WriterParameters] = None,
                              options:                 Map[String, String] = Map.empty
                            )

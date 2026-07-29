@@ -80,6 +80,7 @@ object CobolParametersParser extends Logging {
   val PARAM_STRICT_INTEGRAL_PRECISION = "strict_integral_precision"
   val PARAM_DISPLAY_PIC_ALWAYS_STRING = "display_pic_always_string"
   val PARAM_STRICT_SCHEMA             = "strict_schema"
+  val PARAM_AST_TRANSFORMERS          = "ast_transformers"
 
   val PARAM_GROUP_NOT_TERMINALS       = "non_terminals"
   val PARAM_OCCURS_MAPPINGS           = "occurs_mappings"
@@ -309,6 +310,9 @@ object CobolParametersParser extends Logging {
       None
     }
 
+    val astTransformerClasses = params.get(PARAM_AST_TRANSFORMERS)
+      .map(_.split(',').map(_.trim).filter(_.nonEmpty).toSeq).getOrElse(Seq.empty)
+
     val cobolParameters = CobolParameters(
       copybookPathOpt,
       copybookPaths,
@@ -357,6 +361,7 @@ object CobolParametersParser extends Logging {
       params.get(PARAM_RECORD_HEADER_NAME).orElse(params.get(PARAM_RECORD_HEADER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       params.get(PARAM_RECORD_TRAILER_NAME).orElse(params.get(PARAM_RECORD_TRAILER_NAME2)) .map(_.trim).filter(_.nonEmpty),
       recordLimit,
+      astTransformerClasses,
       writerParameters,
       params.getMap
       )
@@ -540,6 +545,7 @@ object CobolParametersParser extends Logging {
       parameters.metadataPolicy,
       recordsToExclude,
       parameters.recordLimit,
+      parameters.astTransformerClasses,
       parameters.writerParameters,
       parameters.options
       )

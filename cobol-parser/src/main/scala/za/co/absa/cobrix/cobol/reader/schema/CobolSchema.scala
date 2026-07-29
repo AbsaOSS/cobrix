@@ -22,6 +22,7 @@ import za.co.absa.cobrix.cobol.parser.policies.MetadataPolicy
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.reader.parameters.{CorruptFieldsPolicy, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaRetentionPolicy
+import za.co.absa.cobrix.cobol.utils.AstTransformerUtils
 
 import java.nio.charset.{Charset, StandardCharsets}
 import java.time.ZonedDateTime
@@ -98,6 +99,8 @@ object CobolSchema {
       case None               => StandardCharsets.UTF_8
     }
 
+    val customAstTransformers = readerParameters.astTransformerClasses.map(className => AstTransformerUtils.loadAstTransformer(className, readerParameters))
+
     val schema = if (copyBookContents.size == 1)
       CopybookParser.parseTree(encoding,
         copyBookContents.head,
@@ -121,7 +124,8 @@ object CobolSchema {
         readerParameters.occursMappings,
         readerParameters.redefineRuleExpressions,
         readerParameters.debugFieldsPolicy,
-        readerParameters.fieldCodePage)
+        readerParameters.fieldCodePage,
+        customAstTransformers)
     else
       Copybook.merge(copyBookContents.map(cpb =>
         CopybookParser.parseTree(encoding,
@@ -146,7 +150,8 @@ object CobolSchema {
           readerParameters.occursMappings,
           readerParameters.redefineRuleExpressions,
           readerParameters.debugFieldsPolicy,
-          readerParameters.fieldCodePage)
+          readerParameters.fieldCodePage,
+          customAstTransformers)
       ))
     val segIdFieldCount = readerParameters.multisegment.map(p => p.segmentLevelIds.size).getOrElse(0)
     val segmentIdPrefix = readerParameters.multisegment.map(p => p.segmentIdPrefix).getOrElse("")
