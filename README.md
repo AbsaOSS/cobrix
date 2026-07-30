@@ -1662,7 +1662,7 @@ class MyTransformer1(readerParameters: ReaderParameters) extends AstTransformer 
 Example options that uses the transformer:
 ```scala
 spark.read
-  .option("format", "cobol")
+  .format("cobol")
   .option("copybook", someCopybook)
   .option("ast_transformers", "com.example.MyTransformer1")
   .load("/some/path")
