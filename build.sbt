@@ -150,6 +150,8 @@ lazy val assemblySettings = Seq(
   assembly / assemblyShadeRules:= Seq(
     // Spark may rely on a different version of ANTLR runtime. Renaming the package helps avoid the binary incompatibility
     ShadeRule.rename("org.antlr.**" -> "za.co.absa.cobrix.cobol.parser.shaded.org.antlr.@1").inAll,
+    // Environments might rely on different versions of GPG support
+    ShadeRule.rename("org.bouncycastle.**" -> "za.co.absa.cobrix.cobol.parser.shaded.org.bouncycastle.@1").inAll,
     // The SLF4j API and implementation are provided by Spark
     ShadeRule.zap("org.slf4j.**").inAll
   ),

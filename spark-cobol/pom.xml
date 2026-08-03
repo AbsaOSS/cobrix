@@ -49,6 +49,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- GPG support -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpg-jdk18on</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>

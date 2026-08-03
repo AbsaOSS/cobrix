@@ -21,6 +21,7 @@ object Dependencies {
   private val antlrValue = "4.9.3"
   private val slf4jVersion = "1.7.25"
   private val jacksonVersion = "2.15.4"
+  private val bouncycastleVersion = "1.84"
 
   private val scalatestVersion = "3.2.19"
   private val mockitoVersion = "4.11.0"
@@ -55,6 +56,9 @@ object Dependencies {
     // provided
     "org.apache.spark" %% "spark-sql"        % sparkVersion(scalaVersion) % Provided,
     "org.apache.spark" %% "spark-streaming"  % sparkVersion(scalaVersion) % Provided,
+
+    // libraries
+    "org.bouncycastle" % "bcpg-jdk18on"      % bouncycastleVersion,
 
     // test
     "org.scalatest"    %% "scalatest"        % scalatestVersion           % Test,

@@ -37,7 +37,12 @@ import java.io.IOException
   * @param hadoopConfig Hadoop configuration.
   * @note This class is not thread-safe and should only be accessed from a single thread
   */
-class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: Long = 0L, maximumBytes: Long = 0L) extends SimpleStream {
+class FileStreamer(filePath: String,
+                   hadoopConfig: Configuration,
+                   startOffset: Long = 0L,
+                   maximumBytes: Long = 0L,
+                   gpgKeyringAsc: Option[String] = None,
+                   gpgPassphrase: Option[String] = None) extends SimpleStream {
   private val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val hadoopPath = new Path(filePath)
@@ -50,7 +55,10 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
   private var wasOpened = false
   private var bufferedStream: BufferedFSDataInputStream = _
 
-  private lazy val isCompressedStream = FileUtils.isCompressed(hadoopPath, hadoopConfig)
+  private lazy val isCompressedStream = {
+    ensureOpened()
+    bufferedStream.isCompressed
+  }
 
   private lazy val fileSize = getHadoopFileSize(hadoopPath)
 
@@ -134,13 +142,13 @@ class FileStreamer(filePath: String, hadoopConfig: Configuration, startOffset: L
   }
 
   override def copyStream(): SimpleStream = {
-    new FileStreamer(filePath, hadoopConfig, startOffset, maximumBytes)
+    new FileStreamer(filePath, hadoopConfig, startOffset, maximumBytes, gpgKeyringAsc, gpgPassphrase)
   }
 
   @throws[IOException]
   private def ensureOpened(): Unit = {
     if (!wasOpened) {
-      bufferedStream = new BufferedFSDataInputStream(new Path(filePath), hadoopConfig, startOffset, Constants.defaultStreamBufferInMB, maximumBytes)
+      bufferedStream = new BufferedFSDataInputStream(new Path(filePath), hadoopConfig, startOffset, Constants.defaultStreamBufferInMB, maximumBytes, gpgKeyringAsc, gpgPassphrase)
       wasOpened = true
     }
   }

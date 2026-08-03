@@ -17,14 +17,23 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
-import za.co.absa.cobrix.spark.cobol.utils.FileUtils
+import org.apache.hadoop.fs.statistics.IOStatisticsSource
+import org.apache.hadoop.fs.{FSDataInputStream, Path, Seekable}
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils, ResourceUtils}
 
 import java.io.{IOException, InputStream}
 
-class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, startOffset: Long, bufferSizeInMegabytes: Int, maximumBytes: Long ) {
+class BufferedFSDataInputStream(filePath: Path,
+                                hadoopConfig: Configuration,
+                                startOffset: Long,
+                                bufferSizeInMegabytes: Int,
+                                maximumBytes: Long,
+                                gpgKeyringAsc1: Option[String],
+                                gpgPassphrase: Option[String]) {
   val bytesInMegabyte: Int = 1048576
   private var isCompressedStream = false
+
+  val gpgKeyringAsc: Option[String] = Some(ResourceUtils.readResourceAsString("/test/test_gpg_key.asc"))
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
     throw new IllegalArgumentException(s"Invalid buffer size $bufferSizeInMegabytes MB.")
@@ -121,20 +130,27 @@ class BufferedFSDataInputStream(filePath: Path, hadoopConfig: Configuration, sta
 
   private def openStream(): InputStream = {
     val fileSystem = filePath.getFileSystem(hadoopConfig)
-    val codec = FileUtils.getCompressionCodec(filePath, hadoopConfig)
-    val fsIn: FSDataInputStream = fileSystem.open(filePath)
 
-    val baseStream = if (codec != null) {
-      isCompressedStream = true
-      codec.createInputStream(fsIn)
-    } else {
-      // No compression detected
-      fsIn
+    val baseStream = gpgKeyringAsc match {
+      case Some(keyring) =>
+        isCompressedStream = true
+        GpgUtils.decryptStream(fileSystem.open(filePath), keyring, gpgPassphrase.map(_.toCharArray).getOrElse(Array.emptyCharArray))
+      case None =>
+        val codec = FileUtils.getCompressionCodec(filePath, hadoopConfig)
+        val fsIn: FSDataInputStream = fileSystem.open(filePath)
+
+        if (codec != null) {
+          isCompressedStream = true
+          codec.createInputStream(fsIn)
+        } else {
+          // No compression detected
+          fsIn
+        }
     }
 
     if (startOffset > 0) {
-      if (codec == null) {
-        fsIn.seek(startOffset)
+      if (!isCompressedStream) {
+        baseStream.asInstanceOf[FSDataInputStream].seek(startOffset)
       } else {
         var toSkip = startOffset
         while (toSkip > 0) {
