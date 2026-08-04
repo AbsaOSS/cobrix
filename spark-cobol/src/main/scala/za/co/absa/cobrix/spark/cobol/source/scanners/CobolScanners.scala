@@ -48,8 +48,8 @@ private[source] object CobolScanners extends Logging {
       val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
       logger.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-      val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes)
-      val headerStream = new FileStreamer(filePathName, sconf.value)
+      val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes, reader.getReaderProperties.gpgPrivateKey, reader.getReaderProperties.gpgPrivateKeyPassphrase)
+      val headerStream = new FileStreamer(filePathName, sconf.value, 0L, 0L, reader.getReaderProperties.gpgPrivateKey, reader.getReaderProperties.gpgPrivateKeyPassphrase)
       reader.getRowIterator(dataStream, headerStream, indexEntry.offsetFrom, indexEntry.fileId, indexEntry.recordIndex)
     })
   }
@@ -80,8 +80,8 @@ private[source] object CobolScanners extends Logging {
 
             fileSize - reader.getReaderProperties.fileEndOffset - startFileOffset
           }
-          val dataStream = new FileStreamer(filePath, sconf.value, startFileOffset, maximumFileBytes)
-          val headerStream = new FileStreamer(filePath, sconf.value, startFileOffset)
+          val dataStream = new FileStreamer(filePath, sconf.value, startFileOffset, maximumFileBytes, reader.getReaderProperties.gpgPrivateKey, reader.getReaderProperties.gpgPrivateKeyPassphrase)
+          val headerStream = new FileStreamer(filePath, sconf.value, startFileOffset, 0L, reader.getReaderProperties.gpgPrivateKey, reader.getReaderProperties.gpgPrivateKeyPassphrase)
           reader.getRowIterator(dataStream, headerStream, startFileOffset, fileOrder, 0L)
         })
       })

@@ -28,21 +28,6 @@ import scala.collection.JavaConverters._
 
 object GpgUtils {
   /**
-    * The BouncyCastle security provider used for all PGP cryptographic operations.
-    *
-    * The provider instance is registered on demand and passed explicitly to the JCE builders so that the
-    * code does not depend on the "BC" provider alias being present in the JVM security provider list.
-    * This is required when the BouncyCastle classes are shaded/relocated.
-    */
-  private lazy val bcProvider: Provider = {
-    Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).getOrElse {
-      val provider = new BouncyCastleProvider
-      Security.addProvider(provider)
-      provider
-    }
-  }
-
-  /**
     * Decrypts a PGP encrypted stream using a secret key from the provided ASCII armored keychain.
     *
     * The method looks up the public key encrypted session keys contained in the input stream and matches them
@@ -84,6 +69,21 @@ object GpgUtils {
       .build(privateKey)
 
     getLiteralDataStream(encryptedData.getDataStream(decryptorFactory))
+  }
+
+  /**
+    * The BouncyCastle security provider used for all PGP cryptographic operations.
+    *
+    * The provider instance is registered on demand and passed explicitly to the JCE builders so that the
+    * code does not depend on the "BC" provider alias being present in the JVM security provider list.
+    * This is required when the BouncyCastle classes are shaded/relocated.
+    */
+  private lazy val bcProvider: Provider = {
+    Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).getOrElse {
+      val provider = new BouncyCastleProvider
+      Security.addProvider(provider)
+      provider
+    }
   }
 
   /**

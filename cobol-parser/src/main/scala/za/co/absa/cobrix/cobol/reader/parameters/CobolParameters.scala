@@ -38,6 +38,8 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param asciiCharset            A charset for ASCII data
   * @param fieldCodePage           Specifies a mapping between a field name and the code page
   * @param isUtf16BigEndian        If true UTF-16 is considered big-endian.
+  * @param gpgPrivateKey           GPG private key content
+  * @param gpgPrivateKeyPassphrase GPG private key passphrase
   * @param floatingPointFormat     A format of floating-point numbers
   * @param recordStartOffset       A number of bytes to skip at the beginning of the record before parsing a record according to a copybook
   * @param recordEndOffset         A number of bytes to skip at the end of each record
@@ -84,6 +86,8 @@ case class CobolParameters(
                             asciiCharset:            Option[String],
                             fieldCodePage:           Map[String, String],
                             isUtf16BigEndian:        Boolean,
+                            gpgPrivateKey:           Option[String],
+                            gpgPrivateKeyPassphrase: Option[String],
                             floatingPointFormat:     FloatingPointFormat,
                             recordStartOffset:       Int,
                             recordEndOffset:         Int,

@@ -205,7 +205,7 @@ private[cobol] object IndexBuilder extends Logging {
 
     logger.info(s"Going to generate index for the file: $filePath")
 
-    val (inputStream, headerStream, maximumBytes) = getStreams(filePath, startOffset, endOffset, config)
+    val (inputStream, headerStream, maximumBytes) = getStreams(filePath, startOffset, endOffset, reader.getReaderProperties.gpgPrivateKey, reader.getReaderProperties.gpgPrivateKeyPassphrase, config)
     val index = try {
       reader.generateIndex(inputStream, headerStream, fileOrder, reader.isRdwBigEndian)
     } finally {
@@ -225,6 +225,8 @@ private[cobol] object IndexBuilder extends Logging {
   private[cobol] def getStreams(filePath: String,
                                 fileStartOffset: Long,
                                 fileEndOffset: Long,
+                                gpgPrivateKey: Option[String],
+                                gpgPrivateKeyPassphrase: Option[String],
                                 config: Configuration): (SimpleStream, SimpleStream, Long) = {
     val path = new Path(filePath)
     val fileSystem = path.getFileSystem(config)
@@ -236,8 +238,8 @@ private[cobol] object IndexBuilder extends Logging {
       0L
     }
 
-    val inputStream = new FileStreamer(filePath, config, startOffset, maximumBytes)
-    val headerStream = new FileStreamer(filePath, config)
+    val inputStream = new FileStreamer(filePath, config, startOffset, maximumBytes, gpgPrivateKey, gpgPrivateKeyPassphrase)
+    val headerStream = new FileStreamer(filePath, config, 0L, 0L, gpgPrivateKey, gpgPrivateKeyPassphrase)
 
     (inputStream, headerStream, maximumBytes)
   }
@@ -252,7 +254,7 @@ private[cobol] object IndexBuilder extends Logging {
     val endOffset = readerProperties.fileEndOffset
 
     readerProperties.recordExtractor.foreach { recordExtractorClass =>
-      val (dataStream, headerStream, _) = getStreams(filePath, startOffset, endOffset, config)
+      val (dataStream, headerStream, _) = getStreams(filePath, startOffset, endOffset, readerProperties.gpgPrivateKey, readerProperties.gpgPrivateKeyPassphrase, config)
 
       try {
         val extractorOpt = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(0, dataStream, headerStream)
@@ -274,7 +276,7 @@ private[cobol] object IndexBuilder extends Logging {
               headerStream.close()
 
               // Getting new streams and record extractor that points directly to the second record
-              val (dataStream2, headerStream2, _) = getStreams(filePath, offset, endOffset, config)
+              val (dataStream2, headerStream2, _) = getStreams(filePath, offset, endOffset, readerProperties.gpgPrivateKey, readerProperties.gpgPrivateKeyPassphrase, config)
               try {
                 val extractorOpt2 = reader.asInstanceOf[ReaderVarLenNestedReader[_]].recordExtractor(1, dataStream2, headerStream2)
 

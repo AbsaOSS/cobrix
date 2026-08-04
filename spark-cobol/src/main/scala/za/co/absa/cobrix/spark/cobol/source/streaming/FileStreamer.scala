@@ -17,8 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
-import org.slf4j.{Logger, LoggerFactory}
 import org.apache.hadoop.fs.{ContentSummary, Path}
+import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.reader.common.Constants
 import za.co.absa.cobrix.cobol.reader.stream.SimpleStream
 import za.co.absa.cobrix.spark.cobol.utils.FileUtils
@@ -55,10 +55,7 @@ class FileStreamer(filePath: String,
   private var wasOpened = false
   private var bufferedStream: BufferedFSDataInputStream = _
 
-  private lazy val isCompressedStream = {
-    ensureOpened()
-    bufferedStream.isCompressed
-  }
+  private lazy val isCompressedStream = gpgKeyringAsc.isDefined || FileUtils.isCompressed(hadoopPath, hadoopConfig)
 
   private lazy val fileSize = getHadoopFileSize(hadoopPath)
 

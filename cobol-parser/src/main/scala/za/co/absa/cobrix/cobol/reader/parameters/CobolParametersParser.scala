@@ -68,6 +68,8 @@ object CobolParametersParser extends Logging {
   val PARAM_RECORD_TRAILER_NAME2      = "file_trailer_field"
   val PARAM_IS_XCOM                   = "is_xcom"
   val PARAM_IS_TEXT                   = "is_text"
+  val PARAM_GPG_PRIVATE_KEY           = "gpg_private_key"
+  val PARAM_GPG_PRIVATE_KEY_PASSPHRASE = "gpg_private_key_passphrase"
 
   // Schema transformation parameters
   val PARAM_GENERATE_RECORD_ID        = "generate_record_id"
@@ -302,6 +304,9 @@ object CobolParametersParser extends Logging {
       )
     }
 
+    val gpgPrivateKey = params.get(PARAM_GPG_PRIVATE_KEY)
+    val gpgPrivateKeyPassphraseOpt = params.get(PARAM_GPG_PRIVATE_KEY_PASSPHRASE)
+
     val variableSizeOccursPolicy = VariableSizeOccursPolicy(params.getOrElse(PARAM_VARIABLE_SIZE_OCCURS, "false"))
 
     val writerParameters = if (isWriter) {
@@ -326,6 +331,8 @@ object CobolParametersParser extends Logging {
       asciiCharset,
       getFieldCodepageMap(params),
       params.getOrElse(PARAM_IS_UTF16_BIG_ENDIAN, "true").toBoolean,
+      gpgPrivateKey,
+      gpgPrivateKeyPassphraseOpt,
       getFloatingPointFormat(params),
       params.getOrElse(PARAM_RECORD_START_OFFSET, "0").toInt,
       params.getOrElse(PARAM_RECORD_END_OFFSET, "0").toInt,
@@ -493,6 +500,8 @@ object CobolParametersParser extends Logging {
       asciiCharset = parameters.asciiCharset,
       fieldCodePage = parameters.fieldCodePage,
       isUtf16BigEndian = parameters.isUtf16BigEndian,
+      gpgPrivateKey = parameters.gpgPrivateKey,
+      gpgPrivateKeyPassphrase = parameters.gpgPrivateKeyPassphrase,
       floatingPointFormat = parameters.floatingPointFormat,
       redefineRuleExpressions = ruleExpressionMap,
       variableSizeOccurs = parameters.variableSizeOccurs,

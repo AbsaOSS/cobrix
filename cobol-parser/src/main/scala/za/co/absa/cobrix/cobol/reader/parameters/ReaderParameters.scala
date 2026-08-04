@@ -37,6 +37,8 @@ import za.co.absa.cobrix.cobol.reader.policies.SchemaRetentionPolicy.SchemaReten
   * @param asciiCharset            A charset for ASCII data
   * @param fieldCodePage           Specifies a mapping between a field name and the code page
   * @param isUtf16BigEndian        If true UTF-16 strings are considered big-endian.
+  * @param gpgPrivateKey           GPG private key content
+  * @param gpgPrivateKeyPassphrase GPG private key passphrase
   * @param floatingPointFormat     A format of floating-point numbers
   * @param redefineRuleExpressions A map of REDEFINE field names to expressions that determine which redefine alternative to use when parsing records.
   * @param variableSizeOccurs      Specifies how to handle OCCURS DEPENDING ON when the actual number of elements in arrays is less than the maximum array size
@@ -95,6 +97,8 @@ case class ReaderParameters(
                              asciiCharset:            Option[String] = None,
                              fieldCodePage:           Map[String, String] = Map.empty[String, String],
                              isUtf16BigEndian:        Boolean = true,
+                             gpgPrivateKey:           Option[String] = None,
+                             gpgPrivateKeyPassphrase: Option[String] = None,
                              floatingPointFormat:     FloatingPointFormat = FloatingPointFormat.IBM,
                              redefineRuleExpressions: Map[String, ExpressionEvaluator] = Map.empty,
                              variableSizeOccurs:      VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize,

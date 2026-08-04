@@ -1678,17 +1678,33 @@ You can chain multiple transformers by providing transformer classes as a comma-
 3. Custom transformers run before binary properties are calculated. So inserting or removing fields changes the copybook
    layout.
 
+### GPG Transparent Decryption (Experimental)
+
+Cobrix supports transparent decryption of GPG/PGP-encrypted files. You just need to provide the content of ASCII-armored
+private key, and the passphrase (if non-empty).
+
+```scala
+val df = spark.read
+  .format("cobol")
+  .option("copybook", someCopybook)
+  .option("gpg_private_key", gpgPrivateKey)
+  .option("gpg_private_key_passphrase", gpgPrivateKeyPassphrase)
+  .load("/some/path")
+```
+
 ## Summary of all available options
 
 ##### File reading options
 
-| Option (usage example)                 | Description                                                                                                    |
-|----------------------------------------|:---------------------------------------------------------------------------------------------------------------|
-| .option("data_paths", "/path1,/path2") | Allows loading data from multiple unrelated paths on the same filesystem.                                      |
-| .option("file_start_offset", "0")      | Specifies the number of bytes to skip at the beginning of each file.                                           |
-| .option("file_end_offset", "0")        | Specifies the number of bytes to skip at the end of each file.                                                 |
-| .option("record_start_offset", "0")    | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data. |
-| .option("record_end_offset", "0")      | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data.        |
+| Option (usage example)                              | Description                                                                                                                                     |
+|-----------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| .option("data_paths", "/path1,/path2")              | Allows loading data from multiple unrelated paths on the same filesystem.                                                                       |
+| .option("file_start_offset", "0")                   | Specifies the number of bytes to skip at the beginning of each file.                                                                            |
+| .option("file_end_offset", "0")                     | Specifies the number of bytes to skip at the end of each file.                                                                                  |
+| .option("record_start_offset", "0")                 | Specifies the number of bytes to skip at the beginning of each record before applying copybook fields to data.                                  |
+| .option("record_end_offset", "0")                   | Specifies the number of bytes to skip at the end of each record after applying copybook fields to data.                                         |
+| .option("gpg_private_key", ascGpgKeyContent)        | Specifies the ASCII-armored GPG private key for decrypting data files.                                                                          |
+| .option("gpg_private_key_passphrase", "passphrase") | Specifies the passphrase for the ASCII-armored GPG private key used for decrypting data files. If not specified, empty passphrase will be used. |
 
 ##### Copybook parsing options
 

@@ -17,9 +17,8 @@
 package za.co.absa.cobrix.spark.cobol.source.streaming
 
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.statistics.IOStatisticsSource
-import org.apache.hadoop.fs.{FSDataInputStream, Path, Seekable}
-import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils, ResourceUtils}
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils}
 
 import java.io.{IOException, InputStream}
 
@@ -28,12 +27,10 @@ class BufferedFSDataInputStream(filePath: Path,
                                 startOffset: Long,
                                 bufferSizeInMegabytes: Int,
                                 maximumBytes: Long,
-                                gpgKeyringAsc1: Option[String],
+                                gpgKeyringAsc: Option[String],
                                 gpgPassphrase: Option[String]) {
   val bytesInMegabyte: Int = 1048576
   private var isCompressedStream = false
-
-  val gpgKeyringAsc: Option[String] = Some(ResourceUtils.readResourceAsString("/test/test_gpg_key.asc"))
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
     throw new IllegalArgumentException(s"Invalid buffer size $bufferSizeInMegabytes MB.")

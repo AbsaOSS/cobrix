@@ -64,7 +64,8 @@ class DefaultSource
 
     val filesList = CobolRelation.getListFilesWithOrder(cobolParameters.sourcePaths, sqlContext, isRecursiveRetrieval(sqlContext))
 
-    val hasCompressedFiles = filesList.exists(_.isCompressed)
+    val hasGpg = cobolParameters.gpgPrivateKey.isDefined
+    val hasCompressedFiles = hasGpg || filesList.exists(_.isCompressed)
 
     if (hasCompressedFiles) {
       logger.info(s"Compressed files found. Binary parallelism and indexes will be adjusted accordingly.")

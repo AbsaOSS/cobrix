@@ -234,8 +234,8 @@ object SparkCobolProcessor {
           val numOfBytesMsg = if (numOfBytes > 0) s"${numOfBytes / Constants.megabyte} MB" else "until the end"
 
           log.info(s"Going to process offsets ${indexEntry.offsetFrom}...${indexEntry.offsetTo} ($numOfBytesMsg) of $fileName")
-          val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes)
-          val headerStream = new FileStreamer(filePathName, sconf.value)
+          val dataStream = new FileStreamer(filePathName, sconf.value, indexEntry.offsetFrom, numOfBytes, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)
+          val headerStream = new FileStreamer(filePathName, sconf.value, 0L, 0L, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)
 
           CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, dataStream, Some(headerStream))
         })
@@ -243,7 +243,7 @@ object SparkCobolProcessor {
       case _ =>
         spark.sparkContext.parallelize(listOfFiles).flatMap { inputFile =>
           log.info(s"Going to process data from $inputFile")
-          val ifs = new FileStreamer(inputFile, sconf.value)
+          val ifs = new FileStreamer(inputFile, sconf.value, 0L, 0L, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)
 
           CobolProcessorBase.getRecordExtractor(readerParameters, copybookContents, ifs, None)
         }
@@ -282,16 +282,16 @@ object SparkCobolProcessor {
         } else
           0L
 
-        val recordCount = UsingUtils.using(new FileStreamer(inputFile, sconf.value, fileStartOffset, maximumBytes)) { ifs =>
+        val recordCount = UsingUtils.using(new FileStreamer(inputFile, sconf.value, fileStartOffset, maximumBytes, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)) { ifs =>
           UsingUtils.using(new BufferedOutputStream(outputFs.create(outputFile, true))) { ofs =>
             if (fileStartOffset > 0 && retainStartAndEndOffsets) {
-              val tempStream = new FileStreamer(inputFile, sconf.value)
+              val tempStream = new FileStreamer(inputFile, sconf.value, 0L, 0L, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)
               ofs.write(tempStream.next(fileStartOffset))
               tempStream.close()
             }
             val recordsProcessed = cobolProcessor.process(ifs, ofs)(rawRecordProcessor)
             if (fileEndOffset > 0 && retainStartAndEndOffsets) {
-              val tempStream = new FileStreamer(inputFile, sconf.value, maximumBytes + fileStartOffset)
+              val tempStream = new FileStreamer(inputFile, sconf.value, maximumBytes + fileStartOffset, 0L, readerParameters.gpgPrivateKey, readerParameters.gpgPrivateKeyPassphrase)
               ofs.write(tempStream.next(fileEndOffset))
               tempStream.close()
             }

@@ -18,10 +18,12 @@ package za.co.absa.cobrix.spark.cobol.source.integration
 
 import org.scalatest.wordspec.AnyWordSpec
 import org.slf4j.{Logger, LoggerFactory}
-import za.co.absa.cobrix.spark.cobol.mocks.AstTransformerSpy
 import za.co.absa.cobrix.spark.cobol.source.base.{SimpleComparisonBase, SparkTestBase}
 import za.co.absa.cobrix.spark.cobol.source.fixtures.BinaryFileFixture
-import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, ResourceUtils}
+
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -29,20 +31,52 @@ class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with Bi
   private val exampleName = "Test41"
   private val inputCopybookPath = "file://../data/test41_copybook.cob"
   private val inputDataPath = "../data/test41_data"
-
+  private val expectedResultsAPath = "../data/test41_expected/test41a.txt"
+  private val actualResultsAPath = "../data/test41_expected/test41a_actual.txt"
+  private val expectedResultsBPath = "../data/test41_expected/test41b.txt"
+  private val actualResultsBPath = "../data/test41_expected/test41b_actual.txt"
 
   "gpg encrypted files" should {
-    "load normally" in {
+    "load normally a fixed-record-length file" in {
+      val gpgPrivateKey = ResourceUtils.readResourceAsString("/test/test_gpg_key.asc")
       val df = spark.read
         .format("cobol")
         .option("copybook", inputCopybookPath)
-        .option("generate_record_id", "true")
-        .option("enable_indexes", "false")
+        .option("gpg_private_key", gpgPrivateKey)
+        .option("pedantic", "true")
+        //.option("generate_record_id", "true")
+        //.option("enable_indexes", "false")
         //.option("debug_ignore_file_size", "true")
         .load(inputDataPath)
 
-      println(df.count())
-      df.show(false)
+      val actual = df.toJSON.take(60)
+      val expected = Files.readAllLines(Paths.get(expectedResultsAPath), StandardCharsets.ISO_8859_1).toArray
+
+      if (!actual.sameElements(expected)) {
+        FileUtils.writeStringsToFile(actual, actualResultsAPath)
+        assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsAPath to $actualResultsAPath for details.")
+      }
     }
+
+    "load normally a fixed-record-length file without indexes and with record ids" in {
+      val gpgPrivateKey = ResourceUtils.readResourceAsString("/test/test_gpg_key.asc")
+      val df = spark.read
+        .format("cobol")
+        .option("copybook", inputCopybookPath)
+        .option("gpg_private_key", gpgPrivateKey)
+        .option("pedantic", "true")
+        .option("generate_record_id", "true")
+        .option("enable_indexes", "false")
+        .load(inputDataPath)
+
+      val actual = df.toJSON.take(60)
+      val expected = Files.readAllLines(Paths.get(expectedResultsBPath), StandardCharsets.ISO_8859_1).toArray
+
+      if (!actual.sameElements(expected)) {
+        FileUtils.writeStringsToFile(actual, actualResultsBPath)
+        assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsBPath to $actualResultsBPath for details.")
+      }
+    }
+
   }
 }
