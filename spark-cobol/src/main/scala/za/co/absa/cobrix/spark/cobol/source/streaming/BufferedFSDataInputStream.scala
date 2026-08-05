@@ -21,6 +21,7 @@ import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils}
 
 import java.io.{IOException, InputStream}
+import scala.util.Try
 
 class BufferedFSDataInputStream(filePath: Path,
                                 hadoopConfig: Configuration,
@@ -131,7 +132,17 @@ class BufferedFSDataInputStream(filePath: Path,
     val baseStream = gpgKeyringAsc match {
       case Some(keyring) =>
         isCompressedStream = true
-        GpgUtils.decryptStream(fileSystem.open(filePath), keyring, gpgPassphrase.map(_.toCharArray).getOrElse(Array.emptyCharArray))
+        val rawStream = fileSystem.open(filePath)
+        try {
+          GpgUtils.decryptStream(rawStream, keyring, gpgPassphrase.map(_.toCharArray).getOrElse(Array.emptyCharArray))
+        } catch {
+          case ex: Throwable =>
+            // Close rawStream only if decryptStream() fails to return a decrypted stream. Ignore errors that might happen on close.
+            Try {
+              rawStream.close()
+            }
+            throw ex
+        }
       case None =>
         val codec = FileUtils.getCompressionCodec(filePath, hadoopConfig)
         val fsIn: FSDataInputStream = fileSystem.open(filePath)

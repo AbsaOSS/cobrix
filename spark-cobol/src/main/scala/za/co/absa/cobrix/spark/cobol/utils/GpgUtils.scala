@@ -60,7 +60,7 @@ object GpgUtils {
       .toSeq
 
     val (encryptedData, privateKey) = publicKeyEncryptedData
-      .flatMap(data => findPrivateKey(secretKeyRings, data.getKeyID, passphrase).map(key => (data, key)))
+      .flatMap(data => findPrivateKey(secretKeyRings, data.getKeyIdentifier.getKeyId, passphrase).map(key => (data, key)))
       .headOption
       .getOrElse(throw new IllegalArgumentException("No secret key in the provided keychain matches the encrypted data."))
 
@@ -74,15 +74,19 @@ object GpgUtils {
   /**
     * The BouncyCastle security provider used for all PGP cryptographic operations.
     *
-    * The provider instance is registered on demand and passed explicitly to the JCE builders so that the
-    * code does not depend on the "BC" provider alias being present in the JVM security provider list.
-    * This is required when the BouncyCastle classes are shaded/relocated.
+    * The provider instance is passed explicitly to the JCE builders so that the code does not depend on the "BC"
+    * provider alias being present in the JVM security provider list. This is required when the BouncyCastle classes
+    * are shaded/relocated.
+    *
+    * A provider already registered in the JVM under the BouncyCastle provider name is reused only when it is an
+    * instance of the same, possibly relocated, `BouncyCastleProvider` class used by this code. Otherwise, for
+    * instance, when a different (non-relocated) BouncyCastle copy occupies that name, a private instance is created
+    * and used directly, without being registered in the JVM security provider list.
     */
   private lazy val bcProvider: Provider = {
-    Option(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)).getOrElse {
-      val provider = new BouncyCastleProvider
-      Security.addProvider(provider)
-      provider
+    Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) match {
+      case provider: BouncyCastleProvider => provider
+      case _                              => new BouncyCastleProvider
     }
   }
 
