@@ -204,7 +204,7 @@ class BinaryExtractorSpec extends AnyFunSuite {
     val thrown4 = intercept[IllegalStateException] {
       val resultImpossible4: Any = copybook.getFieldValueByName(notPrimitiveName2, bytes, startOffset)
     }
-    assert(thrown4.getMessage === s"'$notPrimitiveName2' is a GROUP and not a primitive field. Cannot extract it's value.")
+    assert(thrown4.getMessage === s"'$notPrimitiveName2' is a GROUP and not a primitive field. Cannot extract its value.")
   }
 
   test("Test set field value by name") {

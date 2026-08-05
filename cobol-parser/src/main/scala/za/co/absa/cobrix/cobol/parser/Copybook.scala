@@ -141,7 +141,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
     def getFieldByPathInGroup(group: Group, path: Array[String]): scala.collection.Seq[Statement] = {
       if (path.length == 0) {
-        throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract it's value.")
+        throw new IllegalStateException(s"'$fieldName' is a GROUP and not a primitive field. Cannot extract its value.")
       } else {
         group.children.flatMap {
           case g: Group      =>

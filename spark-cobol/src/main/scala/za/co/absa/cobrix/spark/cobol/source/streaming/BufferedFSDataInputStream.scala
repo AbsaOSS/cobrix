@@ -20,7 +20,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils}
 
-import java.io.{IOException, InputStream}
+import java.io.InputStream
 import scala.util.Try
 
 class BufferedFSDataInputStream(filePath: Path,
@@ -29,9 +29,10 @@ class BufferedFSDataInputStream(filePath: Path,
                                 bufferSizeInMegabytes: Int,
                                 maximumBytes: Long,
                                 gpgKeyringAsc: Option[String],
-                                gpgPassphrase: Option[String]) {
+                                gpgPassphrase: Option[String]) extends AutoCloseable {
   val bytesInMegabyte: Int = 1048576
   private var isCompressedStream = false
+  private var rawStream: FSDataInputStream = _
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
     throw new IllegalArgumentException(s"Invalid buffer size $bufferSizeInMegabytes MB.")
@@ -47,11 +48,18 @@ class BufferedFSDataInputStream(filePath: Path,
   private var bufferContainBytes = 0
   private var bytesRead = 0L
 
-  @throws[IOException]
-  def close(): Unit = {
+  override def close(): Unit = {
     if (!isStreamClosed) {
-      in.close()
+      Try {
+        if (rawStream != null) {
+          rawStream.close()
+        }
+        if (in != null) {
+          in.close()
+        }
+      }
       in = null
+      rawStream = null
       isStreamClosed = true
     }
   }
@@ -132,15 +140,18 @@ class BufferedFSDataInputStream(filePath: Path,
     val baseStream = gpgKeyringAsc match {
       case Some(keyring) =>
         isCompressedStream = true
-        val rawStream = fileSystem.open(filePath)
+        rawStream = fileSystem.open(filePath)
         try {
           GpgUtils.decryptStream(rawStream, keyring, gpgPassphrase.map(_.toCharArray).getOrElse(Array.emptyCharArray))
         } catch {
           case ex: Throwable =>
             // Close rawStream only if decryptStream() fails to return a decrypted stream. Ignore errors that might happen on close.
             Try {
-              rawStream.close()
+              if (rawStream != null) {
+                rawStream.close()
+              }
             }
+            rawStream = null
             throw ex
         }
       case None =>
