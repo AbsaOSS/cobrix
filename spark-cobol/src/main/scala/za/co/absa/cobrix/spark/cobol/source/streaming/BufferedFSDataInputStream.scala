@@ -22,6 +22,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, GpgUtils}
 
 import java.io.InputStream
 import scala.util.Try
+import scala.util.control.NonFatal
 
 class BufferedFSDataInputStream(filePath: Path,
                                 hadoopConfig: Configuration,
@@ -32,7 +33,7 @@ class BufferedFSDataInputStream(filePath: Path,
                                 gpgPassphrase: Option[String]) extends AutoCloseable {
   val bytesInMegabyte: Int = 1048576
   private var isCompressedStream = false
-  private var rawStream: FSDataInputStream = _
+  private var rawStream: FSDataInputStream = _ // This is the base stream for GPG-encrypted files. Used for closing only, never for actual read.
 
   if (bufferSizeInMegabytes <=0 || bufferSizeInMegabytes > 1000) {
     throw new IllegalArgumentException(s"Invalid buffer size $bufferSizeInMegabytes MB.")
@@ -51,11 +52,13 @@ class BufferedFSDataInputStream(filePath: Path,
   override def close(): Unit = {
     if (!isStreamClosed) {
       Try {
-        if (rawStream != null) {
-          rawStream.close()
-        }
         if (in != null) {
           in.close()
+        }
+      }
+      Try {
+        if (rawStream != null) {
+          rawStream.close()
         }
       }
       in = null
@@ -168,15 +171,23 @@ class BufferedFSDataInputStream(filePath: Path,
     }
 
     if (startOffset > 0) {
-      if (!isCompressedStream) {
-        baseStream.asInstanceOf[FSDataInputStream].seek(startOffset)
-      } else {
-        var toSkip = startOffset
-        while (toSkip > 0) {
-          val skipped = baseStream.skip(toSkip)
-          if (skipped <= 0) return baseStream
-          toSkip -= skipped
+      try {
+        if (!isCompressedStream) {
+          baseStream.asInstanceOf[FSDataInputStream].seek(startOffset)
+        } else {
+          var toSkip = startOffset
+          while (toSkip > 0) {
+            val skipped = baseStream.skip(toSkip)
+            if (skipped <= 0) return baseStream
+            toSkip -= skipped
+          }
         }
+      } catch {
+        case NonFatal(ex) =>
+          Try {
+            baseStream.close()
+          }
+          throw ex
       }
     }
     baseStream
