@@ -25,7 +25,7 @@ import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, ResourceUtils}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
 
-class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
+class Test45GpgEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with BinaryFileFixture with SimpleComparisonBase {
   private implicit val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   private val exampleName = "Test41"
@@ -35,6 +35,8 @@ class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with Bi
   private val actualResultsAPath = "../data/test41_expected/test41a_actual.txt"
   private val expectedResultsBPath = "../data/test41_expected/test41b.txt"
   private val actualResultsBPath = "../data/test41_expected/test41b_actual.txt"
+  private val expectedResultsCPath = "../data/test41_expected/test41c.txt"
+  private val actualResultsCPath = "../data/test41_expected/test41c_actual.txt"
 
   "gpg encrypted files" should {
     "load normally a fixed-record-length file" in {
@@ -44,9 +46,6 @@ class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with Bi
         .option("copybook", inputCopybookPath)
         .option("gpg_private_key", gpgPrivateKey)
         .option("pedantic", "true")
-        //.option("generate_record_id", "true")
-        //.option("enable_indexes", "false")
-        //.option("debug_ignore_file_size", "true")
         .load(inputDataPath)
 
       val actual = df.toJSON.take(60)
@@ -78,5 +77,24 @@ class Test45PgpEncryptedFilesSpec extends AnyWordSpec with SparkTestBase with Bi
       }
     }
 
+    "load normally a variable-record-length file with indexes" in {
+      val gpgPrivateKey = ResourceUtils.readResourceAsString("/test/test_gpg_key.asc")
+      val df = spark.read
+        .format("cobol")
+        .option("copybook", inputCopybookPath)
+        .option("gpg_private_key", gpgPrivateKey)
+        .option("generate_record_id", "true")
+        .option("input_split_records", 1)
+        .option("pedantic", "true")
+        .load(inputDataPath)
+
+      val actual = df.toJSON.take(60)
+      val expected = Files.readAllLines(Paths.get(expectedResultsCPath), StandardCharsets.ISO_8859_1).toArray
+
+      if (!actual.sameElements(expected)) {
+        FileUtils.writeStringsToFile(actual, actualResultsCPath)
+        assert(false, s"The actual data doesn't match what is expected for $exampleName example. Please compare contents of $expectedResultsCPath to $actualResultsCPath for details.")
+      }
+    }
   }
 }
