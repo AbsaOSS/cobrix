@@ -19,8 +19,7 @@ package za.co.absa.cobrix.cobol.processor.impl
 import org.scalatest.wordspec.AnyWordSpec
 import za.co.absa.cobrix.cobol.mock.ByteStreamMock
 import za.co.absa.cobrix.cobol.parser.recordformats.RecordFormat
-import za.co.absa.cobrix.cobol.processor.CobolProcessor
-import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedRecordLengthRawRecordExtractor, TextFullRecordExtractor}
+import za.co.absa.cobrix.cobol.reader.extractors.raw.{FixedRecordLengthRawRecordExtractor, TextFullRecordExtractor, VariableRecordLengthRecordExtractor}
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 
 class CobolProcessorBaseSuite extends AnyWordSpec {
@@ -43,7 +42,27 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
       assert(!ext.hasNext)
     }
 
-    "work for an variable-record-length files" in {
+    "work for an variable-record-length files with RDWs" in {
+      val stream = new ByteStreamMock(Array(
+        0x02, 0x00, 0x00, 0x00, 0xF1, 0xF2,
+        0x02, 0x00, 0x00, 0x00, 0xF3, 0xF4).map(_.toByte))
+
+      val ext = CobolProcessorBase.getRecordExtractor(
+        ReaderParameters(
+          recordFormat = RecordFormat.VariableLength,
+          isRecordSequence = true
+        ), copybook, stream, None
+      )
+
+      assert(ext.isInstanceOf[VariableRecordLengthRecordExtractor])
+
+      assert(ext.hasNext)
+      assert(ext.next().sameElements(Array(0xF1, 0xF2).map(_.toByte)))
+      assert(ext.next().sameElements(Array(0xF3, 0xF4).map(_.toByte)))
+      assert(!ext.hasNext)
+    }
+
+    "work for an variable-record-length text files" in {
       val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
 
       val ext = CobolProcessorBase.getRecordExtractor(ReaderParameters(
@@ -52,19 +71,6 @@ class CobolProcessorBaseSuite extends AnyWordSpec {
       ), copybook, stream, None)
 
       assert(ext.isInstanceOf[TextFullRecordExtractor])
-    }
-
-    "throw an exception on a non-supported record format for processing" in {
-      val stream = new ByteStreamMock(Array(0xF1, 0xF2, 0xF3, 0xF4).map(_.toByte))
-
-      val ex = intercept[IllegalArgumentException] {
-        CobolProcessorBase.getRecordExtractor(ReaderParameters(
-          recordFormat = RecordFormat.VariableLength,
-          isRecordSequence = true
-        ), copybook, stream, None)
-      }
-
-      assert(ex.getMessage.contains("Cannot create a record extractor for the given reader parameters."))
     }
   }
 }

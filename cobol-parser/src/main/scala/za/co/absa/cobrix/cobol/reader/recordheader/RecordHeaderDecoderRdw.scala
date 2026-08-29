@@ -20,7 +20,7 @@ package za.co.absa.cobrix.cobol.reader.recordheader
   * This class represent a header decoder for standard RDW headers
   * according to: https://www.ibm.com/docs/en/zos/2.3.0?topic=records-record-descriptor-word-rdw
   */
-class RecordHeaderDecoderRdw(rdwParameters: RecordHeaderParameters) extends RecordHeaderDecoderCommon {
+class RecordHeaderDecoderRdw(val rdwParameters: RecordHeaderParameters) extends RecordHeaderDecoderCommon {
   final val RDW_HEADER_LENGTH = 4
 
   override def headerSize: Int = RDW_HEADER_LENGTH

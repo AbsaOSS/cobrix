@@ -149,6 +149,106 @@ class SparkCobolProcessorSuite extends AnyWordSpec with SparkTestBase with Binar
       }
     }
 
+    "convert from VRL+RDW into VRL+RDW simple" in {
+      val expected = """{"T":"0"}{"T":"1"}{"T":"2"}{"T":"3"}"""
+      withTempDirectory("spark_cobol_processor") { tempDir =>
+        val binData = Array(
+          0x00, 0x00, 0x02, 0x00, 0xF1,
+          0x00, 0x00, 0x02, 0x00, 0xF2,
+          0x00, 0x00, 0x02, 0x00, 0xF3,
+          0x00, 0x00, 0x02, 0x00, 0xF4).map(_.toByte)
+
+        val inputPath = new Path(tempDir, "input.dat").toString
+        val outputPath = new Path(tempDir, "output").toString
+        val outputFile = new Path(outputPath, "input.dat").toString
+
+        writeBinaryFile(inputPath, binData)
+
+        SparkCobolProcessor.builder
+          .withCopybookContents(copybook)
+          .option("record_format", "V")
+          .option("rdw_adjustment", "-1")
+          .option("is_rdw_big_endian", "false")
+          .withProcessingStrategy(CobolProcessingStrategy.ToVariableLength)
+          .withRecordProcessor(new SerializableRawRecordProcessor {
+            override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
+              record.map(v => (v - 1).toByte)
+            }
+          })
+          .load(inputPath)
+          .save(outputPath)
+
+        val outputData = readBinaryFile(outputFile)
+
+        assert(outputData.sameElements(
+          Array(0, 1, 0, 0, -16, 0, 1, 0, 0, -15, 0, 1, 0, 0, -14, 0, 1, 0, 0, -13).map(_.toByte)
+        ))
+
+        val actual = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "true")
+          .option("pedantic", "true")
+          .load(outputFile)
+          .toJSON
+          .collect()
+          .mkString
+
+        assert(actual == expected)
+      }
+    }
+
+    "convert from VRL+RDW into VRL+RDW with RDW part of record length" in {
+      val expected = """{"T":"0"}{"T":"1"}{"T":"2"}{"T":"3"}"""
+      withTempDirectory("spark_cobol_processor") { tempDir =>
+        val binData = Array(
+          0x00, 0x00, 0x05, 0x00, 0xF1,
+          0x00, 0x00, 0x05, 0x00, 0xF2,
+          0x00, 0x00, 0x05, 0x00, 0xF3,
+          0x00, 0x00, 0x05, 0x00, 0xF4).map(_.toByte)
+
+        val inputPath = new Path(tempDir, "input.dat").toString
+        val outputPath = new Path(tempDir, "output").toString
+        val outputFile = new Path(outputPath, "input.dat").toString
+
+        writeBinaryFile(inputPath, binData)
+
+        SparkCobolProcessor.builder
+          .withCopybookContents(copybook)
+          .option("record_format", "V")
+          .option("is_rdw_part_of_record_length", "true")
+          .option("is_rdw_big_endian", "false")
+          .withProcessingStrategy(CobolProcessingStrategy.ToVariableLength)
+          .withRecordProcessor(new SerializableRawRecordProcessor {
+            override def processRecord(record: Array[Byte], ctx: CobolProcessorContext): Array[Byte] = {
+              record.map(v => (v - 1).toByte)
+            }
+          })
+          .load(inputPath)
+          .save(outputPath)
+
+        val outputData = readBinaryFile(outputFile)
+
+        assert(outputData.sameElements(
+          Array(0, 1, 0, 0, -16, 0, 1, 0, 0, -15, 0, 1, 0, 0, -14, 0, 1, 0, 0, -13).map(_.toByte)
+        ))
+
+        val actual = spark.read
+          .format("cobol")
+          .option("copybook_contents", copybook)
+          .option("record_format", "V")
+          .option("is_rdw_big_endian", "true")
+          .option("pedantic", "true")
+          .load(outputFile)
+          .toJSON
+          .collect()
+          .mkString
+
+        assert(actual == expected)
+      }
+    }
+
     "support file_start_offset and file_end_offset with InPlace strategy" in {
       val expected = """{"T":"0"}{"T":"1"}{"T":"2"}{"T":"3"}"""
       withTempDirectory("spark_cobol_processor") { tempDir =>

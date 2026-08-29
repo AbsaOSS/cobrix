@@ -25,6 +25,7 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
                             fileHeaderBytes: Int,
                             fileFooterBytes: Int,
                             rdwAdjustment: Int) extends Serializable with RecordHeaderParser {
+  import RecordHeaderParserRDW._
 
   /** RDW header is a 4 byte header */
   override def getHeaderLength: Int = 4
@@ -48,21 +49,23 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
     } else if (fileSize > 0L && fileFooterBytes > 0 && fileSize - fileOffset <= fileFooterBytes) {
       RecordMetadata((fileSize - fileOffset - fileFooterBytes).toInt, isValid = false)
     } else {
-      processRdwHeader(header, fileOffset)
+      processRdwHeader(header, fileOffset, isBigEndian, rdwAdjustment)
     }
   }
+}
 
+object RecordHeaderParserRDW {
   /**
     * Parses an RDW header.
     *
-    * @param header A record header as an array of bytes
-    * @param offset An offset from the beginning of the underlying file
-    *
+    * @param header        A record header as an array of bytes
+    * @param offset        An offset from the beginning of the underlying file
+    * @param isBigEndian   A flag indicating if the header is in big-endian format
+    * @param rdwAdjustment An adjustment value for the RDW header
     * @return A parsed record metadata
     */
-  private def processRdwHeader(header: Array[Byte], offset: Long): RecordMetadata = {
-    val rdwHeaderBlock = getHeaderLength
-    if (header.length < rdwHeaderBlock) {
+  def processRdwHeader(header: Array[Byte], offset: Long, isBigEndian: Boolean, rdwAdjustment: Int): RecordMetadata = {
+    if (header.length < 4) {
       RecordMetadata(-1, isValid = false)
     }
     else {
@@ -91,5 +94,4 @@ class RecordHeaderParserRDW(isBigEndian: Boolean,
       }
     }
   }
-
 }
