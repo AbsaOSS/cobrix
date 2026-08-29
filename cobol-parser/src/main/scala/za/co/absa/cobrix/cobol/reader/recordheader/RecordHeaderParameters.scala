@@ -22,5 +22,7 @@ case class RecordHeaderParameters(
 
                                    /* Sometime the size includes only payload, and sometimes it includes headers themselves.
                                    * This allows flexible adjustments. */
-                                   adjustment: Int
+                                   adjustment: Int,
+
+                                   headersPartOfRecordLength: Boolean
                                  )

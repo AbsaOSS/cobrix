@@ -51,19 +51,19 @@ object RawRecordContext {
       inputStream,
       headerStream,
       copybook,
-      new RecordHeaderDecoderRdw(RecordHeaderParameters(isBigEndian = true, 0)),
-      new RecordHeaderDecoderBdw(RecordHeaderParameters(isBigEndian = true, 0)),
+      new RecordHeaderDecoderRdw(RecordHeaderParameters(isBigEndian = true, 0, headersPartOfRecordLength = false)),
+      new RecordHeaderDecoderBdw(RecordHeaderParameters(isBigEndian = true, 0, headersPartOfRecordLength = false)),
       "",
       Map.empty[String, String]
     )
 
     def withReaderParams(readerParameters: ReaderParameters): RawRecordContextBuilder = {
-      val rdwParams = RecordHeaderParameters(readerParameters.isRdwBigEndian, readerParameters.rdwAdjustment)
+      val rdwParams = RecordHeaderParameters(readerParameters.isRdwBigEndian, readerParameters.rdwAdjustment, readerParameters.isRdwPartRecLength)
 
       val rdwDecoder = new RecordHeaderDecoderRdw(rdwParams)
 
       val bdwOpt = readerParameters.bdw
-      val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment))
+      val bdwParamsOpt = bdwOpt.map(bdw => RecordHeaderParameters(bdw.isBigEndian, bdw.adjustment, headersPartOfRecordLength = false))
       val bdwDecoderOpt = bdwParamsOpt.map(bdwParams => new RecordHeaderDecoderBdw(bdwParams))
 
       withAdditionalInfo(readerParameters.reAdditionalInfo)

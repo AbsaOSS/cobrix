@@ -26,6 +26,31 @@ import za.co.absa.cobrix.cobol.utils.StringUtils
 
 import scala.util.Try
 
+/**
+  * A raw record extractor for files that consist of records having a variable length that is determined by
+  * the contents of the record itself rather than by an RDW header.
+  *
+  * The length of each record is resolved in one of the following ways, depending on the reader parameters:
+  *   - by reading a copybook field that contains the record length as a number,
+  *   - by reading a copybook field and translating its value into a record length using a value-to-length
+  *     mapping, where the key `"_"` can be used to define the default length for unmapped values,
+  *   - by evaluating an expression based on one or more copybook fields.
+  *
+  * The extractor reads only the leading portion of a record that is required to obtain the length (taking into
+  * account the configured start offset), then fetches the remaining bytes of the record, applying the end
+  * offset and the record length adjustment. Records that do not fall into the configured minimum and maximum
+  * record length range are skipped. When a segment id field is defined, its value is extracted for each record
+  * as well.
+  *
+  * The extractor reads records eagerly, one record ahead, so that the current offset in the underlying stream
+  * always points to the beginning of the record that has not been returned yet.
+  *
+  * @param ctx              the context of the raw record extraction containing the copybook, the input stream
+  *                         positioned at the first record, and the header stream, which is closed on construction
+  * @param readerProperties the parameters defining the record length field or expression, the length value
+  *                         mapping, the file start offset, record start and end offsets, minimum and maximum
+  *                         record lengths, the record length adjustment, and multisegment settings
+  */
 class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
                                                   readerProperties: ReaderParameters) extends Serializable with RawRecordExtractor {
   private val log = LoggerFactory.getLogger(this.getClass)
