@@ -23,7 +23,7 @@ object Dependencies {
   private val jacksonVersion = "2.15.4"
   private val bouncycastleVersion = "1.84"
 
-  private val scalatestVersion = "3.2.19"
+  private val scalatestVersion = "3.2.20"
   private val mockitoVersion = "4.11.0"
 
   private val defaultSparkVersionForScala211 = "2.4.8"

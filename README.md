@@ -2165,12 +2165,12 @@ A: Update hadoop dll to version 3.2.2 or newer.
     - [#869](https://github.com/AbsaOSS/cobrix/pull/869) Added support for REDEFINES when writing EBCDIC files from Spark DataFrames. Thanks @Il-Pela!
     - [#757](https://github.com/AbsaOSS/cobrix/issues/757) Added support for GPG transparent decryption when reading data files
       ```scala
-      val df = spark.read
+      spark.read
         .format("cobol")
         .option("copybook", copybookPath)
         .option("gpg_private_key", gpgPrivateKey) // -----BEGIN PGP PRIVATE KEY BLOCK----- ...
-        .option("gpg_private_key", gpg_private_key_passphrase)
-        .load("/some/path")
+        .option("gpg_private_key_passphrase", gpg_private_key_passphrase)
+        .load("/some/path/*.gpg")
       ```
  
 - #### 2.10.8 released 3 August 2026.
