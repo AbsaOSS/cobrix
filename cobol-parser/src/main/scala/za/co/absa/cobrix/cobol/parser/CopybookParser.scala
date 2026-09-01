@@ -112,7 +112,7 @@ object CopybookParser extends Logging {
     * @param dropGroupFillers      Drop groups marked as fillers from the output AST.
     * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST.
     * @param fillerNamingPolicy    Specifies a naming policy for fillers.
-    * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param segmentIdRedefineMap  A map from segment id values to corresponding field names
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping.
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed.
@@ -135,7 +135,7 @@ object CopybookParser extends Logging {
             dropGroupFillers: Boolean = false,
             dropValueFillers: Boolean = true,
             fillerNamingPolicy: FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
-            segmentRedefines: Seq[String] = Nil,
+            segmentIdRedefineMap: Map[String, String] = Map.empty,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
             isDisplayAlwaysString: Boolean = false,
@@ -159,7 +159,7 @@ object CopybookParser extends Logging {
       dropGroupFillers,
       dropValueFillers,
       fillerNamingPolicy,
-      segmentRedefines,
+      segmentIdRedefineMap,
       fieldParentMap,
       stringTrimmingPolicy,
       isDisplayAlwaysString,
@@ -208,7 +208,7 @@ object CopybookParser extends Logging {
                 dropGroupFillers: Boolean = false,
                 dropValueFillers: Boolean = true,
                 fillerNamingPolicy: FillerNamingPolicy = FillerNamingPolicy.SequenceNumbers,
-                segmentRedefines: Seq[String] = Nil,
+                segmentIdRedefineMap: Map[String, String] = Map.empty,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
                 isDisplayAlwaysString: Boolean = false,
@@ -232,7 +232,7 @@ object CopybookParser extends Logging {
       dropGroupFillers,
       dropValueFillers,
       fillerNamingPolicy,
-      segmentRedefines,
+      segmentIdRedefineMap,
       fieldParentMap,
       stringTrimmingPolicy,
       isDisplayAlwaysString,
@@ -261,7 +261,7 @@ object CopybookParser extends Logging {
     * @param dropGroupFillers      Drop groups marked as fillers from the output AST
     * @param dropValueFillers      Drop primitive fields marked as fillers from the output AST
     * @param fillerNamingPolicy    Specifies a naming policy for fillers
-    * @param segmentRedefines      A list of redefined fields that correspond to various segments. This needs to be specified for automatically
+    * @param segmentIdRedefineMap  A map from segment id values to corresponding field names
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed
@@ -283,7 +283,7 @@ object CopybookParser extends Logging {
                 dropGroupFillers: Boolean,
                 dropValueFillers: Boolean,
                 fillerNamingPolicy: FillerNamingPolicy,
-                segmentRedefines: Seq[String],
+                segmentIdRedefineMap: Map[String, String],
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
                 isDisplayAlwaysString: Boolean,
@@ -324,7 +324,7 @@ object CopybookParser extends Logging {
       // Renames FILLERs that will be kept in the ast
       GroupFillersRenamer(dropGroupFillers, dropValueFillers, fillerNamingPolicy),
       // Sets isSegmentRedefine property of redefined groups
-      SegmentRedefinesMarker(segmentRedefines),
+      SegmentRedefinesMarker(segmentIdRedefineMap),
       // Sets parent groups for child segment redefines.
       SegmentParentsSetter(correctedFieldParentMap),
       // Add debugging fields if debug mode is enabled.

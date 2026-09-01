@@ -91,7 +91,7 @@ object CobolSchema {
     }
 
     val encoding = if (readerParameters.isEbcdic) EBCDIC else ASCII
-    val segmentRedefines = readerParameters.multisegment.map(r => r.segmentIdRedefineMap.values.toList.distinct).getOrElse(Nil)
+    val segmentIdRedefineMap = readerParameters.multisegment.map(r => r.segmentIdRedefineMap).getOrElse(Map.empty[String, String])
     val fieldParentMap = readerParameters.multisegment.map(r => r.fieldParentMap).getOrElse(HashMap[String, String]())
     val codePage = getCodePage(readerParameters.ebcdicCodePage, readerParameters.ebcdicCodePageClass)
     val asciiCharset = readerParameters.asciiCharset match {
@@ -107,7 +107,7 @@ object CobolSchema {
         readerParameters.dropGroupFillers,
         readerParameters.dropValueFillers,
         readerParameters.fillerNamingPolicy,
-        segmentRedefines,
+        segmentIdRedefineMap,
         fieldParentMap,
         readerParameters.stringTrimmingPolicy,
         readerParameters.isDisplayAlwaysString,
@@ -133,7 +133,7 @@ object CobolSchema {
           readerParameters.dropGroupFillers,
           readerParameters.dropValueFillers,
           readerParameters.fillerNamingPolicy,
-          segmentRedefines,
+          segmentIdRedefineMap,
           fieldParentMap,
           readerParameters.stringTrimmingPolicy,
           readerParameters.isDisplayAlwaysString,

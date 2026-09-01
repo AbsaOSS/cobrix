@@ -32,9 +32,9 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines: Seq[String] = Nil
+    val segmentIdRedefineMap: Map[String, String] = Map.empty
 
-    CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+    CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentIdRedefineMap)
   }
 
   test ("Test segment redefines should worked if only one segment is specified") {
@@ -46,9 +46,9 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines = "SEGMENT-A" :: Nil
+    val segmentIdRedefineMap = Map("A" -> "SEGMENT-A")
 
-    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentIdRedefineMap)
 
     assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
     assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
@@ -69,14 +69,24 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefinesOk = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: Nil
-    val segmentRedefinesMissing = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-B" :: "SEGMENT-D" :: Nil
+    val segmentIdRedefineMapOk = Map(
+      "A" -> "SEGMENT-A",
+      "C" -> "SEGMENT-C",
+      "B" -> "SEGMENT-B"
+    )
 
-    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesOk)
+    val segmentIdRedefineMapMissing = Map(
+      "A" -> "SEGMENT-A",
+      "C" -> "SEGMENT-C",
+      "B" -> "SEGMENT-B",
+      "D" -> "SEGMENT-D"
+    )
+
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentIdRedefineMapOk)
 
     // If a segment redefine is missing in the copybook an exception should be raised
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesMissing)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentIdRedefineMapMissing)
     }
     assert(exception1.getMessage.contains("The following segment redefines not found: [ SEGMENT_D ]"))
 
@@ -105,9 +115,13 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+    val segmentIdRedefineMapOk = Map(
+      "A" -> "SEGMENT-A",
+      "C" -> "SEGMENT-C",
+      "D" -> "SEGMENT-D"
+    )
 
-    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+    val parsedCopybook = CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentIdRedefineMapOk)
 
     assert(!parsedCopybook.ast.children.head.asInstanceOf[Group].children(0).asInstanceOf[Group].isSegmentRedefine)
     assert(parsedCopybook.ast.children.head.asInstanceOf[Group].children(1).asInstanceOf[Group].isSegmentRedefine)
@@ -135,9 +149,15 @@ class SegmentRedefinesSpec extends AnyFunSuite {
       """.stripMargin
 
     val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+    val segmentRedefinesMap = Map(
+      "A" -> "SEGMENT-A",
+      "B" -> "SEGMENT-B",
+      "C" -> "SEGMENT-C",
+      "D" -> "SEGMENT-D"
+    )
 
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesMap)
     }
     assert(exception1.getMessage.contains("The 'SEGMENT_C' field is specified to be a segment redefine."))
   }
@@ -159,10 +179,15 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+    val segmentRedefinesMap = Map(
+      "A" -> "SEGMENT-A",
+      "B" -> "SEGMENT-B",
+      "C" -> "SEGMENT-C",
+      "D" -> "SEGMENT-D"
+    )
 
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesMap)
     }
     assert(exception1.getMessage.contains("The following segment redefines not found: [ SEGMENT_A ]."))
   }
@@ -184,10 +209,15 @@ class SegmentRedefinesSpec extends AnyFunSuite {
         |           03 FIELD5 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+    val segmentRedefinesMap = Map(
+      "A" -> "SEGMENT-A",
+      "B" -> "SEGMENT-B",
+      "C" -> "SEGMENT-C",
+      "D" -> "SEGMENT-D"
+    )
 
     val exception1 = intercept[IllegalStateException] {
-      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefines)
+      CopybookParser.parseTree(copybook, dropGroupFillers = false, dropValueFillers = true, fillerNamingPolicy = FillerNamingPolicy.SequenceNumbers, segmentRedefinesMap)
     }
     assert(exception1.getMessage.contains("The segment redefine field 'SEGMENT_C' is not a REDEFINE or redefined by another field."))
   }

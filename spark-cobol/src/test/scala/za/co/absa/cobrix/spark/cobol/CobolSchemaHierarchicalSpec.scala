@@ -46,10 +46,10 @@ class CobolSchemaHierarchicalSpec extends AnyWordSpec {
           | |    |-- FIELD3: string (nullable = true)
           |""".stripMargin.replace("\r\n", "\n")
 
-      val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: Nil
+      val segmentIdRedefineMap = Map("A" -> "SEGMENT-A", "B" -> "SEGMENT-B")
       val fieldParentMap = HashMap[String, String]("SEGMENT-B" -> "SEGMENT-A")
 
-      val cobolSchema = parseSchema(copybook, segmentRedefines, fieldParentMap)
+      val cobolSchema = parseSchema(copybook, segmentIdRedefineMap, fieldParentMap)
 
       assert(cobolSchema.getSparkSchema.treeString == expectedSchema)
     }
@@ -72,7 +72,12 @@ class CobolSchemaHierarchicalSpec extends AnyWordSpec {
         |           03 FIELD-6 PIC X(2).
       """.stripMargin
 
-    val segmentRedefines = "SEGMENT-A" :: "SEGMENT-B" :: "SEGMENT-C" :: "SEGMENT-D" :: Nil
+    val segmentIdRedefineMap = Map(
+      "A" -> "SEGMENT-A",
+      "B" -> "SEGMENT-B",
+      "C" -> "SEGMENT-C",
+      "D" -> "SEGMENT-D"
+    )
     val fieldParentMap = HashMap[String, String]("SEGMENT-C" -> "SEGMENT-A", "SEGMENT-B" -> "SEGMENT-A", "SEGMENT-D" -> "SEGMENT-C")
 
     val expectedSchema =
@@ -94,13 +99,13 @@ class CobolSchemaHierarchicalSpec extends AnyWordSpec {
         | |    |-- FIELD_6: string (nullable = true)
         |""".stripMargin.replace("\r\n", "\n")
 
-    val cobolSchema = parseSchema(copybook, segmentRedefines, fieldParentMap)
+    val cobolSchema = parseSchema(copybook, segmentIdRedefineMap, fieldParentMap)
 
     assert(cobolSchema.getSparkSchema.treeString == expectedSchema)
   }
 
-  private def parseSchema(copybook: String, segmentRedefines: List[String], fieldParentMap: Map[String, String]): CobolSchema = {
-    val parsedSchema = CopybookParser.parseTree(copybook, segmentRedefines = segmentRedefines, fieldParentMap = fieldParentMap)
+  private def parseSchema(copybook: String, segmentIdRedefineMap: Map[String, String], fieldParentMap: Map[String, String]): CobolSchema = {
+    val parsedSchema = CopybookParser.parseTree(copybook, segmentIdRedefineMap = segmentIdRedefineMap, fieldParentMap = fieldParentMap)
     CobolSchema.builder(parsedSchema).build()
   }
 }

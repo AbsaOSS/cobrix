@@ -17,16 +17,16 @@
 package za.co.absa.cobrix.cobol.parser.asttransform
 
 import za.co.absa.cobrix.cobol.parser.CopybookParser
-import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
+import za.co.absa.cobrix.cobol.parser.CopybookParser.{CopybookAST, transformIdentifier}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
-  * @param segmentRedefines The list of fields names that correspond to segment GROUPs.
+  * @param segmentIdRedefineMap The map from segment ID values to group names. Key = a segment id, Value = a redefined field
   */
-class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransformer {
+class SegmentRedefinesMarker(segmentIdRedefineMap: Map[String, String]) extends AstTransformer {
   /**
     * Sets isSegmentRedefine property of redefined groups so the row extractor be able to skip parsing segment groups
     * that do not belong to a particular segment id.
@@ -42,8 +42,8 @@ class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransform
     */
   final override def transform(ast: CopybookAST): CopybookAST = {
     val foundRedefines = new mutable.HashSet[String]
-    val transformedSegmentRedefines = segmentRedefines.map(CopybookParser.transformIdentifier)
-    val allowNonRedefines = segmentRedefines.lengthCompare(1) == 0
+    val transformedSegmentRedefines = segmentIdRedefineMap.values.toSeq.distinct.map(CopybookParser.transformIdentifier)
+    val allowNonRedefines = transformedSegmentRedefines.lengthCompare(1) == 0
     var redefineGroupState = 0
 
     def ensureSegmentRedefinesAreIneGroup(currentField: String, isCurrentFieldASegmentRedefine: Boolean): Unit = {
@@ -76,9 +76,11 @@ class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransform
             if (redefineGroupState == 1 && g.redefines.isEmpty)
               throw new IllegalStateException(s"The segment redefine field '${g.name}' is not a REDEFINE or redefined by another field.")
 
+            val allowedValues = segmentIdRedefineMap.filter(_._2.equalsIgnoreCase(g.name)).keys.toSeq.distinct
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
             foundRedefines += g.name
             g.withUpdatedIsSegmentRedefine(true)
+              .withUpdatedSegmentRedefineValues(allowedValues)
           } else {
             // Allow redefines in between segment redefines.
             val fieldMightBeRedefine = if (redefineGroupState == 1 && g.redefines.nonEmpty)
@@ -117,7 +119,7 @@ class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransform
       }
     }
 
-    if (segmentRedefines.isEmpty) {
+    if (segmentIdRedefineMap.isEmpty) {
       ast
     } else {
       val isFlatAst = ast.children.exists(_.isInstanceOf[Primitive])
@@ -133,5 +135,10 @@ class SegmentRedefinesMarker(segmentRedefines: Seq[String]) extends AstTransform
 }
 
 object SegmentRedefinesMarker {
-  def apply(segmentRedefines: Seq[String]): SegmentRedefinesMarker = new SegmentRedefinesMarker(segmentRedefines)
+  def apply(segmentIdRedefineMap: Map[String, String]): SegmentRedefinesMarker = {
+    val transformerMap = segmentIdRedefineMap.map {
+      case (k, v) => (k, transformIdentifier(v))
+    }
+    new SegmentRedefinesMarker(transformerMap)
+  }
 }

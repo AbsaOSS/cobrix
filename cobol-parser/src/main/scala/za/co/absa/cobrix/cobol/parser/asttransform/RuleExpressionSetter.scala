@@ -30,7 +30,7 @@ class RuleExpressionSetter(
   private val log = LoggerFactory.getLogger(this.getClass)
 
   /**
-    * Sets isDependee attribute for fields in the schema which are used by other fields in DEPENDING ON clause
+    * Sets newIsUsedInRules attribute for fields in the schema which are used by other fields in redefine rule expressions
     *
     * @param ast An AST as a set of copybook records
     * @return The same AST with binary properties set for every field
