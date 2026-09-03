@@ -332,14 +332,21 @@ object CopybookParser extends Logging {
       // For each group calculates the number of non-filler items.
       NonFillerCountSetter(),
       // Sets isUsedInRules and rule expressions for each field
-      RuleExpressionSetter(redefineRuleExpressions)
+      RuleExpressionSetter(redefineRuleExpressions),
+      // Updates 'parent' field of each of the fields in case they are inconsistent
+      ParentGroupSetter()
     )
 
     val transformedAst = transformers.foldLeft(schemaANTLR) {
       (ast, transformer) => transformer.transform(ast)
     }
 
-    new Copybook(transformedAst)
+    val finalAst = if (transformers.nonEmpty)
+      ParentGroupSetter().transform(transformedAst)
+    else
+      transformedAst
+
+    new Copybook(finalAst)
   }
 
   /**
