@@ -411,7 +411,8 @@ object Copybook {
     }
 
     // recompute sizes
-    val schema = BinaryPropertiesAdder().transform(newRoot)
+    val schema1 = BinaryPropertiesAdder().transform(newRoot)
+    val schema = ParentGroupSetter().transform(schema1)
 
     new Copybook(schema)
   }

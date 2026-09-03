@@ -63,7 +63,7 @@ case class Group(
                   ruleExpression: Option[ExpressionEvaluator] = None,
                   binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                 )
-                (val parent: Option[Group] = None)
+                (var parent: Option[Group] = None)
   extends Statement {
 
   /** This method is used to add a [[za.co.absa.cobrix.cobol.parser.ast.Statement]] object as a child of

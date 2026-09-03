@@ -61,7 +61,7 @@ case class Primitive(
                       encode: Option[EncoderSelector.Encoder],
                       binaryProperties: BinaryProperties = BinaryProperties(0, 0, 0)
                     )
-                    (val parent: Option[Group] = None)
+                    (var parent: Option[Group] = None)
   extends Statement {
 
   /** This is cached value specifying if the field is a string */
