@@ -28,7 +28,7 @@ import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
 import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
-import za.co.absa.cobrix.cobol.parser.policies.{CommentPolicy, DebugFieldsPolicy, FillerNamingPolicy, StringTrimmingPolicy}
+import za.co.absa.cobrix.cobol.parser.policies._
 
 import java.nio.charset.{Charset, StandardCharsets}
 import scala.annotation.tailrec
@@ -116,6 +116,7 @@ object CopybookParser extends Logging {
     *                              resolving segment redefines.
     * @param fieldParentMap        A segment fields parent mapping.
     * @param stringTrimmingPolicy  Specifies if and how strings should be trimmed when parsed.
+    * @param variableSizeOccursPolicy Specifies the policy of OCCURS DEPENDING ON layout.
     * @param isDisplayAlwaysString If true, all fields having DISPLAY format will remain strings and won't be converted to numbers.
     * @param strictSignOverpunch   If true sign overpunching is not allowed for unsigned numbers.
     * @param improvedNullDetection If true, string values that contain only zero bytes (0x0) will be considered null.
@@ -138,6 +139,7 @@ object CopybookParser extends Logging {
             segmentIdRedefineMap: Map[String, String] = Map.empty,
             fieldParentMap: Map[String, String] = HashMap[String, String](),
             stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+            variableSizeOccursPolicy: VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize,
             isDisplayAlwaysString: Boolean = false,
             commentPolicy: CommentPolicy = CommentPolicy(),
             strictSignOverpunch: Boolean = true,
@@ -162,6 +164,7 @@ object CopybookParser extends Logging {
       segmentIdRedefineMap,
       fieldParentMap,
       stringTrimmingPolicy,
+      variableSizeOccursPolicy,
       isDisplayAlwaysString,
       commentPolicy,
       strictSignOverpunch,
@@ -211,6 +214,7 @@ object CopybookParser extends Logging {
                 segmentIdRedefineMap: Map[String, String] = Map.empty,
                 fieldParentMap: Map[String, String] = HashMap[String, String](),
                 stringTrimmingPolicy: StringTrimmingPolicy = StringTrimmingPolicy.TrimBoth,
+                variableSizeOccursPolicy: VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize,
                 isDisplayAlwaysString: Boolean = false,
                 commentPolicy: CommentPolicy = CommentPolicy(),
                 strictSignOverpunch: Boolean = true,
@@ -235,6 +239,7 @@ object CopybookParser extends Logging {
       segmentIdRedefineMap,
       fieldParentMap,
       stringTrimmingPolicy,
+      variableSizeOccursPolicy,
       isDisplayAlwaysString,
       commentPolicy,
       strictSignOverpunch,
@@ -286,6 +291,7 @@ object CopybookParser extends Logging {
                 segmentIdRedefineMap: Map[String, String],
                 fieldParentMap: Map[String, String],
                 stringTrimmingPolicy: StringTrimmingPolicy,
+                variableSizeOccursPolicy: VariableSizeOccursPolicy,
                 isDisplayAlwaysString: Boolean,
                 commentPolicy: CommentPolicy,
                 strictSignOverpunch: Boolean,
@@ -346,7 +352,10 @@ object CopybookParser extends Logging {
     else
       transformedAst
 
-    new Copybook(finalAst)
+    val cpy = new Copybook(finalAst)
+    cpy.setVariableSizeOccursPolicy(variableSizeOccursPolicy)
+
+    cpy
   }
 
   /**

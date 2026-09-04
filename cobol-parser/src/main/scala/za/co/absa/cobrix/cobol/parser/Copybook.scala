@@ -20,10 +20,14 @@ import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser.CopybookAST
 import za.co.absa.cobrix.cobol.parser.ast.datatype.{AlphaNumeric, COMP3, Decimal, Integral}
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive, Statement}
-import za.co.absa.cobrix.cobol.parser.asttransform.BinaryPropertiesAdder
+import za.co.absa.cobrix.cobol.parser.asttransform.{BinaryPropertiesAdder, ParentGroupSetter}
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors
+import za.co.absa.cobrix.cobol.reader.extractors.record.RecordExtractors.canExtract
 import za.co.absa.cobrix.cobol.reader.parameters.WriterParameters
 
 import java.util.concurrent.ConcurrentHashMap
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -33,6 +37,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
 
   private val cachePrimitives = new ConcurrentHashMap[String, Primitive]()
   private val cacheStatements = new ConcurrentHashMap[String, Statement]()
+  private[cobrix] var variableSizeOccursPolicy: VariableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize
 
   val isFlatCopybook: Boolean = ast.children.exists(f => f.isInstanceOf[Primitive])
 
@@ -75,6 +80,203 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       scala.collection.Seq(ast)
     } else {
       ast.children
+    }
+  }
+
+  lazy val hasRedefineRules: Boolean = {
+    def hasAnyRules(group: Group): Boolean = {
+      group.children.exists {
+        case g: Group => g.ruleExpression.nonEmpty || hasAnyRules(g)
+        case p: Primitive => p.isUsedInRules || p.ruleExpression.nonEmpty
+      }
+    }
+    hasAnyRules(ast)
+  }
+
+  /**
+    * Traverses the copybook AST over the given record and collects the values of all fields that
+    * participate in expression evaluation, such as fields referenced by conditional expressions
+    * ("is used in rules") and fields used as `DEPENDING ON` counters of variable size arrays.
+    *
+    * Fields are decoded lazily: groups and primitives that cannot be extracted for the given record,
+    * as well as segment redefines that do not match the provided segment id, are skipped while the
+    * offset is advanced according to their binary size.
+    *
+    * @param recordBytes              The raw bytes of the record to extract the variables from.
+    * @param segmentIdValue           The value of the segment id of the record, if the copybook contains
+    *                                 segment redefines. Redefined groups that do not allow this segment id
+    *                                 are not decoded.
+    * @param startOffset              The offset, in bits, at which the root record starts inside the given bytes.
+    * @return A mutable map from field names to their decoded values that can be used as the variable
+    *         context for expression evaluation.
+    */
+  def extractExpressionVariablesFromRecord(recordBytes: Array[Byte],
+                                           segmentIdValue: Option[String] = None,
+                                           startOffset: Int = 0): mutable.HashMap[String, Any] = {
+    if (!hasRedefineRules) return mutable.HashMap.empty[String, Any]
+
+    val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
+    val variables = new mutable.HashMap[String, Any]()
+
+    def skipArray(field: Statement): Int = {
+      val arraySize = field.arrayMaxSize
+      val actualSize = field.dependingOn match {
+        case None => arraySize
+        case Some(dependingOn) =>
+          val dependValue: Int = dependFields.getOrElse(dependingOn, Left(arraySize)) match {
+            case Left(n) => n
+            case Right(s) => field.dependingOnHandlers.getOrElse(s, arraySize)
+          }
+          if (dependValue >= field.arrayMinSize && dependValue <= arraySize)
+            dependValue
+          else
+            arraySize
+      }
+
+      variableSizeOccursPolicy match {
+        case VariableSizeOccursPolicy.MaxSize =>
+          field.binaryProperties.actualSize
+        case VariableSizeOccursPolicy.ShiftRecord =>
+          (field.binaryProperties.actualSize / arraySize) * actualSize
+        case VariableSizeOccursPolicy.PadRecord =>
+          (field.binaryProperties.actualSize / arraySize) * actualSize
+      }
+    }
+
+    def processValue(field: Statement, offset: Int): Int = {
+      field match {
+        case grp: Group =>
+          if (grp.isSegmentRedefine && segmentIdValue.nonEmpty && !grp.segmentRedefineAllowedValues.contains(segmentIdValue.get)) {
+            grp.binaryProperties.actualSize
+          } else {
+            val extract = canExtract(grp, variables)
+            if (extract) {
+              processGroup(grp, offset)
+            } else {
+              grp.binaryProperties.actualSize
+            }
+          }
+        case st: Primitive =>
+          val extract = canExtract(st, variables)
+          if (extract && (st.isUsedInRules || st.isDependee)) {
+            val value = st.decodeTypeValue(offset, recordBytes)
+            if (st.isUsedInRules) {
+              variables += st.name -> value
+            }
+            if (value != null && st.isDependee) {
+              val intStringVal: Either[Int, String] = value match {
+                case v: Int    => Left(v)
+                case v: Number => Left(v.intValue())
+                case v: String => Right(v)
+                case v         => throw new IllegalStateException(s"Field ${st.name} is an a DEPENDING ON field of an OCCURS, should be integral or 'occurs_mapping' should be defined, found ${v.getClass}.")
+              }
+              dependFields += st.name -> intStringVal
+            }
+            st.binaryProperties.actualSize
+          } else {
+            st.binaryProperties.actualSize
+          }
+      }
+    }
+
+    def processGroup(group: Group, offset: Int): Int = {
+      var bitOffset = offset
+      var j = 0
+      var i = 0
+      while (i < group.children.length) {
+        val field = group.children(i)
+        if (field.isArray) {
+          val size = skipArray(field)
+          if (!field.isRedefined) {
+            bitOffset += size
+          }
+        } else {
+          val size = processValue(field, bitOffset)
+          if (!field.isRedefined) {
+            if (field.redefines.isDefined) {
+              bitOffset += field.binaryProperties.actualSize
+            } else {
+              bitOffset += size
+            }
+          }
+        }
+        if (!field.isFiller) {
+          j += 1
+        }
+        i += 1
+      }
+      bitOffset - offset
+    }
+
+    processGroup(ast, startOffset)
+    variables
+  }
+
+  /**
+    * Determines whether a given field should be processed for the current record.
+    *
+    * A field is considered enabled when both of the following conditions hold:
+    * it belongs to the segment identified by the provided segment id value (when a segment id value
+    * is available; if no segment id value is provided, the segment check is skipped and the field is
+    * treated as belonging to the current segment), and it can be extracted according to the values of
+    * expression variables (defined by REDEFINE rules) collected from the record.
+    *
+    * Use `extractExpressionVariablesFromRecord` to obtain the values of expression variables for the current record.
+    *
+    * @param field             A field (AST statement) of the copybook to check.
+    * @param segmentIdValueOpt An optional value of the segment id of the current record.
+    * @param recordVariables   A map of expression variable names to their values extracted from the current record.
+    * @return true if the field is part of the current segment and can be extracted from the record.
+    */
+  def isFieldEnabled(field: Statement, segmentIdValueOpt: Option[String], recordVariables: mutable.HashMap[String, Any]): Boolean = {
+    val isCorrectSegment = segmentIdValueOpt match {
+      case Some(segmentIdValue) =>
+        isPartOfSegment(field, segmentIdValue)
+      case None => true
+    }
+
+    if (isCorrectSegment) {
+      RecordExtractors.canExtract(field, recordVariables)
+    } else {
+      false
+    }
+  }
+
+  /**
+    * Determines whether a given field belongs to a segment identified by the specified segment id value.
+    *
+    * The method walks up the AST from the field's parent looking for the closest enclosing group that is
+    * a segment redefine. If such a group is found, the field is considered part of the segment only when
+    * the group's allowed segment id values contain the given segment id value. If the field is not
+    * located inside any segment redefine (or has no parent at all), it is considered to be part of
+    * every segment.
+    *
+    * @param field          A field (AST statement) of the copybook to check.
+    * @param segmentIdValue A value of the segment id of the current record.
+    * @return true if the field belongs to the segment corresponding to the given segment id value.
+    */
+  def isPartOfSegment(field: Statement, segmentIdValue: String): Boolean = {
+    @tailrec
+    def getSegmentRedefineGroup(g: Group): Option[Group] = {
+      if (g.isSegmentRedefine) {
+        Some(g)
+      } else{
+        g.parent match {
+          case Some(parent) => getSegmentRedefineGroup(parent)
+          case None => None
+        }
+      }
+    }
+
+    field.parent match {
+      case Some(p) =>
+        getSegmentRedefineGroup(p) match {
+          case Some(segmentRedefine) =>
+            segmentRedefine.segmentRedefineAllowedValues.contains(segmentIdValue)
+          case None =>
+            true
+        }
+      case None => true
     }
   }
 
@@ -279,7 +481,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       throw new RuntimeException("All elements of the root element must be record groups.")
 
     val newRoot = ast.children.head.asInstanceOf[Group].copy()(None)
-    new Copybook(BinaryPropertiesAdder().transform(newRoot))
+    val cpy = new Copybook(BinaryPropertiesAdder().transform(newRoot))
+    cpy.setVariableSizeOccursPolicy(variableSizeOccursPolicy)
+    cpy
   }
 
   def dropFillers(dropGroupFillers: Boolean, dropValueFillers: Boolean): Copybook = {
@@ -305,7 +509,10 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     }
 
     dropFillersAst(ast) match {
-      case Some(newAst) => new Copybook(newAst)
+      case Some(newAst) =>
+        val cpy = new Copybook(newAst)
+        cpy.setVariableSizeOccursPolicy(variableSizeOccursPolicy)
+        cpy
       case None => throw new IllegalArgumentException("Removing of fillers made the copybook empty.")
     }
   }
@@ -316,7 +523,9 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       throw new RuntimeException("Can only restrict the copybook to a group element.")
     val newRoot = Group.root.copy(children = mutable.ArrayBuffer(stmt))(None)
     val schema = new BinaryPropertiesAdder().transform(newRoot)
-    new Copybook(schema)
+    val cpy = new Copybook(schema)
+    cpy.setVariableSizeOccursPolicy(variableSizeOccursPolicy)
+    cpy
   }
 
   /**
@@ -332,6 +541,10 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       }
     }
     visitGroup(ast)
+  }
+
+  private[cobrix] def setVariableSizeOccursPolicy(variableSizeOccursPolicy: VariableSizeOccursPolicy): Unit = {
+    this.variableSizeOccursPolicy = variableSizeOccursPolicy
   }
 
   private def getPrimitiveFieldByName(fieldName: String): Primitive = {
@@ -414,7 +627,9 @@ object Copybook {
     val schema1 = BinaryPropertiesAdder().transform(newRoot)
     val schema = ParentGroupSetter().transform(schema1)
 
-    new Copybook(schema)
+    val cpy = new Copybook(schema)
+    cpy.setVariableSizeOccursPolicy(copybooks.head.variableSizeOccursPolicy)
+    cpy
   }
 
   /**
