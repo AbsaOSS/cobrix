@@ -29,6 +29,8 @@ import za.co.absa.cobrix.cobol.parser.expression.ExpressionEvaluator
 import za.co.absa.cobrix.cobol.parser.policies.DebugFieldsPolicy.DebugFieldsPolicy
 import za.co.absa.cobrix.cobol.parser.policies.StringTrimmingPolicy.StringTrimmingPolicy
 import za.co.absa.cobrix.cobol.parser.policies._
+import za.co.absa.cobrix.cobol.reader.parameters.{CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 
 import java.nio.charset.{Charset, StandardCharsets}
 import scala.annotation.tailrec
@@ -44,14 +46,36 @@ object CopybookParser extends Logging {
 
   type CopybookAST = Group
 
-  case class StatementLine(lineNumber: Int, text: String)
+  /**
+    * Parses a COBOL copybook and returns the corresponding [[Copybook]] (the parsed AST with all
+    * properties resolved: field sizes, offsets, redefines, segment parents, fillers, etc.).
+    *
+    * This is a convenience entry point that derives all parsing settings from a map of Cobrix
+    * options (the same options that are passed to the `spark-cobol` data source), so callers do not
+    * need to provide every individual parsing parameter explicitly.
+    *
+    * Example:
+    * {{{
+    *   val copybook = CopybookParser.parse(copybookContents, Map("encoding" -> "ascii", "ascii_charset" -> "UTF-8"))
+    * }}}
+    *
+    * @param copyBookContents A string containing all lines of a copybook.
+    * @param cobolOptions     A map of Cobrix reader options (option name -> option value) that define
+    *                         how the copybook and the corresponding data should be interpreted,
+    *                         e.g. encoding, code page, string trimming policy, filler handling, etc.
+    *                         Options that are not specified retain their default values.
+    * @throws za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException if the copybook cannot be parsed.
+    * @return A [[Copybook]] containing the AST of the parsed copybook.
+    */
+  def parse(copyBookContents: String, cobolOptions: Map[String, String]): Copybook = {
+    val caseInsensitiveMap = cobolOptions.map {
+      case (k, v) => (k.toLowerCase, v)
+    }
+    val cobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveMap))
+    val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
 
-  case class StatementTokens(lineNumber: Int, tokens: Array[String])
-
-  case class CopybookLine(level: Int, name: String, lineNumber: Int, modifiers: Map[String, String])
-
-  case class RecordBoundary(name: String, begin: Int, end: Int)
-
+    CobolSchema.fromReaderParameters(Seq(copyBookContents), readerParameters).copybook
+  }
 
   /**
     * Tokenizes a Cobol Copybook contents and returns the AST.

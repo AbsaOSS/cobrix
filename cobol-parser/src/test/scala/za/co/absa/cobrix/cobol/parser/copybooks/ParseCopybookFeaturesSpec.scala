@@ -197,6 +197,49 @@ class ParseCopybookFeaturesSpec extends AnyFunSuite with SimpleComparisonBase {
     assert(!copybook.ast.children(0).asInstanceOf[Group].children(2).isFiller)
   }
 
+  test("Test parse() with option passed from spark-cobol") {
+    val options = Map(
+      "drop_group_fillers" -> "false",
+      "drop_value_fillers" -> "false",
+      "pedantic" -> "true"
+    )
+    val copybook = CopybookParser.parse(copybookFillers, options)
+    val layout = copybook.generateRecordLayoutPositions()
+
+    val expectedLayout =
+      """-------- FIELD LEVEL/NAME --------- --ATTRIBS--    FLD  START     END  LENGTH
+        |
+        |1 RECORD                                              1      1    156    156
+        |  5 FILLER_P1                                         2      1      1      1
+        |  5 COMPANY_PREFIX                                    3      2      4      3
+        |  5 FIELD1                                            4      5    100     96
+        |    7 FILLER_1                         []             5      5    100     96
+        |      10 CHILD1                                       6      5      8      4
+        |      10 CHILD2                                       7      9     12      4
+        |  5 FILLER_P2                                         8    101    101      1
+        |  5 FILLER_P3                                         9    102    102      1
+        |  5 COMPANY_NAME                       r             10    103    111      9
+        |  5 FILLER_2                           R             11    103    111      9
+        |    10 STR1                                          12    103    107      5
+        |    10 STR2                                          13    108    109      2
+        |    10 FILLER_P4                                     14    110    110      1
+        |  5 ADDRESS                            r             15    112    141     30
+        |  5 FILLER_3                           R             16    112    141     30
+        |    10 STR4                                          17    112    121     10
+        |    10 FILLER_P5                                     18    122    141     20
+        |  5 FILL_FIELD                         r             19    142    148      7
+        |    10 FILLER_P6                                     20    142    146      5
+        |    10 FILLER_P7                                     21    147    148      2
+        |  5 CONTACT_PERSON                     R             22    142    148      7
+        |    10 FIRST_NAME                                    23    142    147      6
+        |  5 AMOUNT                                           24    149    156      8
+        |"""
+        .stripMargin.replace("\r\n", "\n")
+
+    assertEqualsMultiline(layout, expectedLayout)
+    assert(!copybook.ast.children(0).asInstanceOf[Group].children(2).isFiller)
+  }
+
   test("Test parseSimple() renaming all fillers using previous field name policy") {
     val copybook = CopybookParser.parse(copybookFillers,
       dropGroupFillers = false,
