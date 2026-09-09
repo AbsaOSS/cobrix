@@ -29,7 +29,7 @@ import za.co.absa.cobrix.cobol.reader.parameters.WriterParameters
 import java.util.concurrent.ConcurrentHashMap
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 
 class Copybook(val ast: CopybookAST) extends Logging with Serializable {
@@ -75,6 +75,7 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
   def getRootSegmentIds(segmentIdRedefineMap: Map[String, String], fieldParentMap: Map[String, String]): List[String] =
     CopybookParser.getRootSegmentIds(segmentIdRedefineMap, fieldParentMap)
 
+  /** Returns the top-level records of the copybook.  */
   def getRootRecords: scala.collection.Seq[Statement] = {
     if (isFlatCopybook) {
       scala.collection.Seq(ast)
@@ -83,6 +84,12 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
     }
   }
 
+  /**
+    * Indicates whether the copybook contains any REDEFINE rules that need to be evaluated at parsing time.
+    *
+    * When this flag is false, no expression variables need to be extracted from records and all fields
+    * can be treated as enabled, which allows skipping the rule evaluation logic entirely.
+    */
   lazy val hasRedefineRules: Boolean = {
     def hasAnyRules(group: Group): Boolean = {
       group.children.exists {
@@ -91,6 +98,30 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       }
     }
     hasAnyRules(ast)
+  }
+
+  /**
+    * A list of primitive fields of the copybook that are referenced by REDEFINE rules
+    * (conditional expressions that determine which redefined group applies to a record).
+    *
+    * The value is computed on first access and cached afterwards.
+    */
+  lazy val fieldsUsedInRedefineRules: Seq[Primitive] = {
+    val primitives = new ListBuffer[Primitive]
+
+    def processGroup(group: Group): Unit = {
+      group.children.foreach {
+        case g: Group     => processGroup(g)
+        case p: Primitive => if (p.isUsedInRules) primitives += p
+      }
+    }
+
+    if (!hasRedefineRules) {
+      Seq.empty
+    } else {
+      processGroup(ast)
+      primitives.toList
+    }
   }
 
   /**
@@ -114,6 +145,25 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
                                            segmentIdValue: Option[String] = None,
                                            startOffset: Int = 0): mutable.HashMap[String, Any] = {
     if (!hasRedefineRules) return mutable.HashMap.empty[String, Any]
+    if (variableSizeOccursPolicy == VariableSizeOccursPolicy.MaxSize) {
+      val variables = new mutable.HashMap[String, Any]()
+
+      segmentIdValue match {
+        case Some(segId) =>
+          fieldsUsedInRedefineRules.foreach { f =>
+            if (isPartOfSegment(f, segId)) {
+              val value = Copybook.extractPrimitiveField(f, recordBytes, startOffset)
+              variables += (f.name -> value)
+            }
+          }
+        case None        =>
+          fieldsUsedInRedefineRules.foreach { f =>
+            val value = Copybook.extractPrimitiveField(f, recordBytes, startOffset)
+            variables += (f.name -> value)
+          }
+      }
+      return variables
+    }
 
     val dependFields = scala.collection.mutable.HashMap.empty[String, Either[Int, String]]
     val variables = new mutable.HashMap[String, Any]()
