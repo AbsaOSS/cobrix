@@ -18,6 +18,7 @@ package za.co.absa.cobrix.cobol.parser.copybooks
 
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
+import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.parser.{Copybook, CopybookParser}
 import za.co.absa.cobrix.cobol.testutils.SimpleComparisonBase
 
@@ -175,6 +176,39 @@ class MergeCopybooksSpec extends AnyFunSuite with SimpleComparisonBase {
     }
     assert(exception.getMessage.contains("Cannot merge copybooks with differing root levels"))
   }
+
+  test("Test merge copybooks fail: differing variable size occurs policies") {
+    val copyBookContents1: String =
+      """        01  RECORD-COPYBOOK-1.
+        |           05  GROUP-1.
+        |              06  FIELD-1            PIC X(10).
+        |              06  FILLER             PIC X(5).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(10).
+        |                 10  FILLER          PIC 9(5).
+        |""".stripMargin
+    val copyBookContents2: String =
+      """        01  RECORD-COPYBOOK-2A.
+        |           05  GROUP-1.
+        |              06  FIELD-1            PIC X(20).
+        |              06  FILLER             PIC X(10).
+        |              06  GROUP-2.
+        |                 10  NESTED-FIELD-1  PIC 9(20).
+        |                 10  FILLER          PIC 9(10).
+        |""".stripMargin
+
+    val copybook1 = CopybookParser.parseTree(copyBookContents1, variableSizeOccursPolicy = VariableSizeOccursPolicy.MaxSize)
+    val copybook2 = CopybookParser.parseTree(copyBookContents2, variableSizeOccursPolicy = VariableSizeOccursPolicy.ShiftRecord)
+
+    assert(copybook1.getRecordSize == 30)
+    assert(copybook2.getRecordSize == 60)
+
+    val exception = intercept[IllegalArgumentException] {
+      Copybook.merge(List(copybook1, copybook2))
+    }
+    assert(exception.getMessage.contains("Cannot merge copybooks with different variable-size OCCURS policies"))
+  }
+
 
   test("Test merge copybooks fail: repeated identifiers") {
     val copyBookContents1: String =
