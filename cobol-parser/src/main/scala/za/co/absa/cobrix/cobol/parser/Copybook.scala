@@ -318,7 +318,12 @@ class Copybook(val ast: CopybookAST) extends Logging with Serializable {
       }
     }
 
-    field.parent match {
+    val startGroup = field match {
+      case group: Group => Some(group)
+      case _            => field.parent
+    }
+
+    startGroup match {
       case Some(p) =>
         getSegmentRedefineGroup(p) match {
           case Some(segmentRedefine) =>
@@ -677,8 +682,15 @@ object Copybook {
     val schema1 = BinaryPropertiesAdder().transform(newRoot)
     val schema = ParentGroupSetter().transform(schema1)
 
+    val occursPolicies = copybooks.map(_.variableSizeOccursPolicy).distinct
+    if (occursPolicies.size > 1) {
+      throw new IllegalArgumentException(
+        "Cannot merge copybooks with different variable-size OCCURS policies."
+      )
+    }
+
     val cpy = new Copybook(schema)
-    cpy.setVariableSizeOccursPolicy(copybooks.head.variableSizeOccursPolicy)
+    cpy.setVariableSizeOccursPolicy(occursPolicies.head)
     cpy
   }
 

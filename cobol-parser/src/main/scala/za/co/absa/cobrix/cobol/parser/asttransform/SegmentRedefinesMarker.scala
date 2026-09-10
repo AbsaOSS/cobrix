@@ -76,7 +76,11 @@ class SegmentRedefinesMarker(segmentIdRedefineMap: Map[String, String]) extends 
             if (redefineGroupState == 1 && g.redefines.isEmpty)
               throw new IllegalStateException(s"The segment redefine field '${g.name}' is not a REDEFINE or redefined by another field.")
 
-            val allowedValues = segmentIdRedefineMap.filter(_._2.equalsIgnoreCase(g.name)).keys.toSeq.distinct
+            val allowedValues = segmentIdRedefineMap.collect {
+              case (segmentId, redefineName)
+                if transformIdentifier(redefineName).equalsIgnoreCase(g.name) => segmentId
+            }.toSeq.distinct
+
             ensureSegmentRedefinesAreIneGroup(g.name, isCurrentFieldASegmentRedefine = true)
             foundRedefines += g.name
             g.withUpdatedIsSegmentRedefine(true)
