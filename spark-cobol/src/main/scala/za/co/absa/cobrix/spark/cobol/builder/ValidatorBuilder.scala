@@ -17,9 +17,10 @@
 package za.co.absa.cobrix.spark.cobol.builder
 
 import org.apache.spark.sql.SparkSession
+import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_SOURCE_PATHS
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
 import za.co.absa.cobrix.spark.cobol.source.DefaultSource.buildEitherReader
-import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
+import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParametersValidator, LocalityParameters}
 import za.co.absa.cobrix.spark.cobol.source.{CobolRelation, DefaultSource}
 
 import scala.collection.mutable
@@ -39,16 +40,26 @@ class ValidatorBuilder(implicit spark: SparkSession) {
 
 
   /**
+    * This methods validates options when reading data files.
+    *
     * Validates the list of data files against spark-cobol options.
     * File paths can contain wildcards, e.g. "/somedur/test*"
     */
-  def validate(filePaths: String*): Unit = {
+  def validateLoad(filePaths: String*): Unit = {
     val sqlContext = spark.sqlContext
+
+    // Validating options compatibility
+    val cobolOptions = caseInsensitiveOptions.toMap + (PARAM_SOURCE_PATHS -> filePaths.mkString(","))
+    CobolParametersValidator.validateOrThrow(cobolOptions, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
 
     val cobolParameters0: CobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
     val varLenOptions = cobolParameters0.variableLengthParams.map(_.copy(generateRecordId = false))
     val cobolParameters: CobolParameters = cobolParameters0
       .copy(sourcePaths = filePaths, generateRecordBytes = false, debugIgnoreFileSize = false, variableLengthParams = varLenOptions)
+
+    // Validating cobol parameters after parsing
+    CobolParametersValidator.checkSanity(cobolParameters)
+
     val isRecursiveRetrieval = DefaultSource.isRecursiveRetrieval(sqlContext)
     val filesList = CobolRelation.getListFilesWithOrder(filePaths, sqlContext, isRecursiveRetrieval)
     val hasGpg = cobolParameters.gpgPrivateKey.isDefined
@@ -61,6 +72,7 @@ class ValidatorBuilder(implicit spark: SparkSession) {
       cobolParameters.debugIgnoreFileSize,
       cobolParameters.recordLimit)(sqlContext)
 
+    // Validating reader requirements
     relation.validateRelation()
   }
 }
