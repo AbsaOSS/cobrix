@@ -45,8 +45,10 @@ class ValidatorBuilder(implicit spark: SparkSession) {
   def validate(filePaths: String*): Unit = {
     val sqlContext = spark.sqlContext
 
-    val cobolParameters: CobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
-      .copy(sourcePaths = filePaths)
+    val cobolParameters0: CobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
+    val varLenOptions = cobolParameters0.variableLengthParams.map(_.copy(generateRecordId = false))
+    val cobolParameters: CobolParameters = cobolParameters0
+      .copy(sourcePaths = filePaths, generateRecordBytes = false, debugIgnoreFileSize = false, variableLengthParams = varLenOptions)
     val isRecursiveRetrieval = DefaultSource.isRecursiveRetrieval(sqlContext)
     val filesList = CobolRelation.getListFilesWithOrder(filePaths, sqlContext, isRecursiveRetrieval)
     val hasGpg = cobolParameters.gpgPrivateKey.isDefined
@@ -59,6 +61,6 @@ class ValidatorBuilder(implicit spark: SparkSession) {
       cobolParameters.debugIgnoreFileSize,
       cobolParameters.recordLimit)(sqlContext)
 
-    relation.buildScan()
+    relation.validateRelation()
   }
 }
