@@ -16,15 +16,16 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.{DataOutputStream, File, FileOutputStream}
-import java.util.UUID
-import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
-class HDFSUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
+import java.io.{DataOutputStream, File, FileOutputStream}
+import java.util.UUID
+
+class HadoopFsUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
 
   private val baseTestDir = TempDir.getNew
   private val validFile = new File(baseTestDir, "a_valid_file")
@@ -42,17 +43,17 @@ class HDFSUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     CommonsFileUtils.deleteDirectory(baseTestDir)
   }
 
-  behavior of HDFSUtils.getClass.getName
+  behavior of HadoopFsUtils.getClass.getName
 
   it should "throw if offsets are invalid" in {
 
     val errorLength = intercept[IllegalArgumentException] {
-     HDFSUtils.getBlocksLocations(toHDFSPath(validFile), 0, 0, fileSystem)
+     HadoopFsUtils.getBlocksLocations(toHDFSPath(validFile), 0, 0, fileSystem)
     }
     assert(errorLength.getMessage.contains("Invalid"))
 
     val errorOffset = intercept[IllegalArgumentException] {
-      HDFSUtils.getBlocksLocations(toHDFSPath(validFile), -1, 10, fileSystem)
+      HadoopFsUtils.getBlocksLocations(toHDFSPath(validFile), -1, 10, fileSystem)
     }
     assert(errorOffset.getMessage.contains("Invalid"))
   }
@@ -60,14 +61,14 @@ class HDFSUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
   it should "throw if file is actually a directory" in {
 
     val error = intercept[IllegalArgumentException] {
-      HDFSUtils.getBlocksLocations(toHDFSPath(invalidFile), 0, 10, fileSystem)
+      HadoopFsUtils.getBlocksLocations(toHDFSPath(invalidFile), 0, 10, fileSystem)
     }
 
     assert(!error.getMessage.isEmpty)
   }
 
   it should "return the correct locations for the files blocks" in {
-    val locations = HDFSUtils.getBlocksLocations(toHDFSPath(validFile), 0, 10, fileSystem)
+    val locations = HadoopFsUtils.getBlocksLocations(toHDFSPath(validFile), 0, 10, fileSystem)
 
     assert(locations.size == 1)
     assert(locations.head == "localhost")

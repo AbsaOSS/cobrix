@@ -512,7 +512,7 @@ object SparkUtils extends Logging {
       case None => FileSystem.get(conf)
     }
 
-    val hdfsBlockSize = HDFSUtils.getHDFSDefaultBlockSizeMB(fileSystem)
+    val hdfsBlockSize = HadoopFsUtils.getHDFSDefaultBlockSizeMB(fileSystem)
     hdfsBlockSize match {
       case None => logger.info(s"Unable to get default block size for '${fileSystem.getScheme}://.")
       case Some(size) => logger.info(s"Default block size for '${fileSystem.getScheme}://' is $size MB.")

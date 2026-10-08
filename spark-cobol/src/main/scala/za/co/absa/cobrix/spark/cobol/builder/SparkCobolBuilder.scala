@@ -17,15 +17,15 @@
 package za.co.absa.cobrix.spark.cobol.builder
 
 import org.apache.spark.sql.SparkSession
-import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
+import za.co.absa.cobrix.spark.cobol.utils.HadoopFsUtils
 
-class SparkCobolBuilder {
-  def copybookContents(copybookContent: String)(implicit spark: SparkSession): SparkCobolOptionsBuilder = {
+class SparkCobolBuilder(implicit spark: SparkSession) {
+  def copybookContents(copybookContent: String): SparkCobolOptionsBuilder = {
     new SparkCobolOptionsBuilder(copybookContent)
   }
 
-  def copybookPath(copybookPath: String)(implicit spark: SparkSession): SparkCobolOptionsBuilder = {
-    val copybook = HDFSUtils.loadTextFileFromHadoop(spark.sparkContext.hadoopConfiguration, copybookPath)
+  def copybookPath(copybookPath: String): SparkCobolOptionsBuilder = {
+    val copybook = HadoopFsUtils.loadTextFileFromHadoop(spark.sparkContext.hadoopConfiguration, copybookPath)
     new SparkCobolOptionsBuilder(copybook)
   }
 }

@@ -24,7 +24,7 @@ import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser._
 import za.co.absa.cobrix.cobol.reader.parameters.ReaderParameters
 import za.co.absa.cobrix.spark.cobol.reader.{FixedLenNestedReader, FixedLenReader}
 import za.co.absa.cobrix.spark.cobol.source.parameters.CobolParametersValidator
-import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
+import za.co.absa.cobrix.spark.cobol.utils.HadoopFsUtils
 
 /**
  * Provides an integration point for adding streaming support to the Spark-Cobol library.
@@ -34,7 +34,7 @@ import za.co.absa.cobrix.spark.cobol.utils.HDFSUtils
 object CobolStreamer {
   
   def getReader(implicit ssc: StreamingContext): FixedLenReader = {
-    val copybooks = Seq(HDFSUtils.loadTextFileFromHadoop(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
+    val copybooks = Seq(HadoopFsUtils.loadTextFileFromHadoop(ssc.sparkContext.hadoopConfiguration, ssc.sparkContext.getConf.get(PARAM_COPYBOOK_PATH)))
     new FixedLenNestedReader(copybooks, readerProperties = ReaderParameters())
   }
   

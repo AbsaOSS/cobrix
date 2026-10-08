@@ -16,12 +16,13 @@
 
 package za.co.absa.cobrix.spark.cobol.source.integration
 
-import java.nio.charset.StandardCharsets
-import java.nio.file.{Files, Paths}
-
 import org.scalatest.funsuite.AnyFunSuite
+import za.co.absa.cobrix.spark.cobol.Cobrix
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, SparkUtils}
+
+import java.nio.charset.StandardCharsets
+import java.nio.file.{Files, Paths}
 
 //noinspection NameBooleanParameters
 class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
@@ -83,6 +84,22 @@ class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
 
     val exception = intercept[IllegalArgumentException]{
       df1.take(60).foreach(_ => true)
+    }
+    assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
+  }
+
+  test(s"Test failure of validation on an invalid copybook") {
+    val copybook =
+      """        01  COMPANY-DETAILS.
+        |            05  SEGMENT-ID           PIC X(5).
+        |            05  COMPANY-ID           PIC X(11).
+        |""".stripMargin
+
+    val exception = intercept[IllegalArgumentException]{
+      Cobrix.validateOptions
+        .option("copybook_contents", copybook)
+        .option("schema_retention_policy", "collapse_root")
+        .validate(inpudDataPath)
     }
     assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
   }
