@@ -840,7 +840,7 @@ import za.co.absa.cobrix.spark.cobol.Cobrix
 Cobrix.validateOptions
   .option("copybook_contents", copybook)
   .option("some_option", "some_value")
-  .validate(inpudDataPath)
+  .validateLoad(inpudDataPath)
 ```
 
 ## EBCDIC code pages

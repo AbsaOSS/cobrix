@@ -99,7 +99,7 @@ class Test1FixedLengthRecordsSpec extends AnyFunSuite with SparkTestBase {
       Cobrix.validateOptions
         .option("copybook_contents", copybook)
         .option("schema_retention_policy", "collapse_root")
-        .validate(inpudDataPath)
+        .validateLoad(inpudDataPath)
     }
     assert(exception.getMessage.contains("NOT DIVISIBLE by the RECORD SIZE"))
   }
