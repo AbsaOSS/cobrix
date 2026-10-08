@@ -104,6 +104,14 @@ class CobolRelation(sourceDirs: Seq[String],
       }
     })
   }
+
+  private[cobrix] def validateRelation(): Unit = {
+    cobolReader match {
+      case blockReader: FixedLenReader =>
+        CobolScanners.buildScanForFixedLength(blockReader, sourceDirs, parseRecords, debugIgnoreFileSize, sqlContext)
+      case _ => // skip for other readers
+    }
+  }
 }
 
 object CobolRelation {

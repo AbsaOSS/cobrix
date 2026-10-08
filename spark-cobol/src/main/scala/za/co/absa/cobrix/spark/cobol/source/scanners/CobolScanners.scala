@@ -99,26 +99,29 @@ private[source] object CobolScanners extends Logging {
     val conf = new Configuration(sqlContext.sparkContext.hadoopConfiguration)
     val recordSize = reader.getRecordSize
 
-    sourceDirs.foreach(sourceDir => {
-      if (!debugIgnoreFileSize) {
-        val nonDivisibleFiles = getNonDivisibleFiles(sourceDir, conf, recordSize)
-
-        if (nonDivisibleFiles.nonEmpty) {
-          nonDivisibleFiles.head match {
-            case (name, size) =>
-              if (nonDivisibleFiles.length > 1) {
-                throw new IllegalArgumentException(s"Multiple file sizes are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Example file: $name size ($size bytes).")
-              } else {
-                throw new IllegalArgumentException(s"File $name size ($size bytes) is NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record).")
-              }
-          }
-        }
-      }
-    })
+    if (!debugIgnoreFileSize)
+      validateFixedRecordLengthFileSizes(sourceDirs, conf, recordSize)
 
     val records = sourceDirs.map(sourceDir => sqlContext.sparkContext.binaryRecords(sourceDir, recordSize, conf))
       .reduce((a ,b) => a.union(b))
     recordParser(reader, records)
+  }
+
+  private[source] def validateFixedRecordLengthFileSizes(sourceDirs: Seq[String], conf: Configuration, recordSize: Int): Unit = {
+    sourceDirs.foreach(sourceDir => {
+      val nonDivisibleFiles = getNonDivisibleFiles(sourceDir, conf, recordSize)
+
+      if (nonDivisibleFiles.nonEmpty) {
+        nonDivisibleFiles.head match {
+          case (name, size) =>
+            if (nonDivisibleFiles.length > 1) {
+              throw new IllegalArgumentException(s"Multiple file sizes are NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record). Example file: $name size ($size bytes).")
+            } else {
+              throw new IllegalArgumentException(s"File $name size ($size bytes) is NOT DIVISIBLE by the RECORD SIZE calculated from the copybook ($recordSize bytes per record).")
+            }
+        }
+      }
+    })
   }
 
   private[source] def buildScanForTextFiles(reader: FixedLenTextReader,
