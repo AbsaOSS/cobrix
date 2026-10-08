@@ -141,14 +141,6 @@ class DefaultSource
 
   //TODO fix with the correct implementation once the correct Reader hierarchy is put in place.
   override def buildReader(spark: SparkSession, parameters: Map[String, String]): FixedLenReader = null
-
-  /**
-    * Checks if the recursive file retrieval flag is set
-    */
-  private def isRecursiveRetrieval(sqlContext: SQLContext): Boolean = {
-    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
-    hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
-  }
 }
 
 object DefaultSource {
@@ -321,5 +313,13 @@ object DefaultSource {
     new VarLenNestedReader(
       copybookContent, getReaderProperties(parameters, defaultHdfsBlockSize)
     )
+  }
+
+  /**
+    * Checks if the recursive file retrieval flag is set
+    */
+  def isRecursiveRetrieval(sqlContext: SQLContext): Boolean = {
+    val hadoopConf = sqlContext.sparkContext.hadoopConfiguration
+    hadoopConf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE, false)
   }
 }

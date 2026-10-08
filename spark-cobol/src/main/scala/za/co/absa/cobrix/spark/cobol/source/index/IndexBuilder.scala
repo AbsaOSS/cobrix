@@ -32,7 +32,7 @@ import za.co.absa.cobrix.spark.cobol.source.SerializableConfiguration
 import za.co.absa.cobrix.spark.cobol.source.parameters.LocalityParameters
 import za.co.absa.cobrix.spark.cobol.source.streaming.FileStreamer
 import za.co.absa.cobrix.spark.cobol.source.types.FileWithOrder
-import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HDFSUtils, LRUCache, SparkUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{FileUtils, HadoopFsUtils, LRUCache, SparkUtils}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -91,7 +91,7 @@ private[cobol] object IndexBuilder extends Logging {
         index.map { entry =>
           val offset = if (entry.offsetFrom >= 0) entry.offsetFrom else 0
           val length = getBlockLengthByIndexEntry(entry)
-          (entry, HDFSUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
+          (entry, HadoopFsUtils.getBlocksLocations(new Path(filePath), offset, length, fileSystem))
         }
       }
     }
@@ -359,7 +359,7 @@ private[cobol] object IndexBuilder extends Logging {
     val fileSystem = FileSystem.get(conf)
 
     val filesWithPreferredLocations = filesList.map(file => {
-      (file, HDFSUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
+      (file, HadoopFsUtils.getBlocksLocations(new Path(file.filePath), fileSystem))
     }).toSeq
 
     filesWithPreferredLocations.foreach(a => logDebug(a.toString()))

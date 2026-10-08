@@ -18,8 +18,7 @@ package za.co.absa.cobrix.spark.cobol.source.copybook
 
 import org.apache.hadoop.conf.Configuration
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParameters
-import za.co.absa.cobrix.spark.cobol.utils.FsType.LocalFs
-import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType, HDFSUtils, ResourceUtils}
+import za.co.absa.cobrix.spark.cobol.utils.{FileNameUtils, FsType, HadoopFsUtils, ResourceUtils}
 
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Paths}
@@ -46,7 +45,7 @@ object CopybookContentLoader {
     fsType match {
       case FsType.LocalFs  => loadCopybookFromLocalFS(copyBookFileName)
       case FsType.JarFs    => loadCopybookFromJarResources(copyBookFileName)
-      case FsType.HadoopFs => HDFSUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
+      case FsType.HadoopFs => HadoopFsUtils.loadTextFileFromHadoop(hadoopConf, copyBookFileName)
     }
   }
 
