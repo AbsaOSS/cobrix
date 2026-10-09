@@ -20,6 +20,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.SaveMode
 import org.scalatest.Assertion
 import org.scalatest.wordspec.AnyWordSpec
+import za.co.absa.cobrix.spark.cobol.Cobrix
 import za.co.absa.cobrix.spark.cobol.source.base.SparkTestBase
 import za.co.absa.cobrix.spark.cobol.source.fixtures.{BinaryFileFixture, TextComparisonFixture}
 import za.co.absa.cobrix.spark.cobol.utils.SparkUtils
@@ -42,6 +43,10 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val df = List(("A", "First"), ("B", "Scnd"), ("C", "Last")).toDF("A", "B")
 
         val path = new Path(tempDir, "writer1")
+
+        Cobrix.validateOptions
+          .option("copybook_contents", copybookContents)
+          .validateSave(df)
 
         df.coalesce(1)
           .orderBy("A")
@@ -86,6 +91,11 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
         val df = List(("A", "F|rst"), ("B", "S€nd"), ("C", "Last]")).toDF("A", "B")
 
         val path = new Path(tempDir, "writer1")
+
+        Cobrix.validateOptions
+          .option("copybook_contents", copybookContents)
+          .option("ebcdic_code_page", "cp1144")
+          .validateSave(df)
 
         df.coalesce(1)
           .orderBy("A")
@@ -466,6 +476,11 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           .save(path.toString)
 
         assertThrows[IllegalArgumentException] {
+          Cobrix.validateOptions
+            .validateSave(df)
+        }
+
+        assertThrows[IllegalArgumentException] {
           df.write
             .format("cobol")
             .mode(SaveMode.ErrorIfExists)
@@ -561,6 +576,12 @@ class FixedLengthEbcdicWriterSuite extends AnyWordSpec with SparkTestBase with B
           val df = List(("X", 12345, "ABCDE")).toDF("A", "B1", "B2")
 
           val path = new Path(tempDir, "writer_redefines_conflict")
+
+          Cobrix.validateOptions
+            .option("copybook_contents", copybookContentsWithRedefines)
+            .option("write_strict_redefines", "true")
+            .option("pedantic", "true")
+            .validateSave(df)
 
           val thrown = intercept[Throwable] {
             df.coalesce(1)

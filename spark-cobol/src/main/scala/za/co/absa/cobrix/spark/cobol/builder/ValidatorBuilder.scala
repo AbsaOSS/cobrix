@@ -16,12 +16,15 @@
 
 package za.co.absa.cobrix.spark.cobol.builder
 
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import za.co.absa.cobrix.cobol.reader.parameters.CobolParametersParser.PARAM_SOURCE_PATHS
 import za.co.absa.cobrix.cobol.reader.parameters.{CobolParameters, CobolParametersParser, Parameters}
+import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
 import za.co.absa.cobrix.spark.cobol.source.DefaultSource.buildEitherReader
+import za.co.absa.cobrix.spark.cobol.source.copybook.CopybookContentLoader
 import za.co.absa.cobrix.spark.cobol.source.parameters.{CobolParametersValidator, LocalityParameters}
 import za.co.absa.cobrix.spark.cobol.source.{CobolRelation, DefaultSource}
+import za.co.absa.cobrix.spark.cobol.writer.RecordCombinerSelector
 
 import scala.collection.mutable
 
@@ -50,7 +53,7 @@ class ValidatorBuilder(implicit spark: SparkSession) {
 
     // Validating options compatibility
     val cobolOptions = caseInsensitiveOptions.toMap + (PARAM_SOURCE_PATHS -> filePaths.mkString(","))
-    CobolParametersValidator.validateOrThrow(cobolOptions, sqlContext.sparkSession.sparkContext.hadoopConfiguration)
+    CobolParametersValidator.validateOrThrow(cobolOptions, spark.sparkContext.hadoopConfiguration)
 
     val cobolParameters0: CobolParameters = CobolParametersParser.parse(new Parameters(caseInsensitiveOptions.toMap))
     val varLenOptions = cobolParameters0.variableLengthParams.map(_.copy(generateRecordId = false))
@@ -74,5 +77,25 @@ class ValidatorBuilder(implicit spark: SparkSession) {
 
     // Validating reader requirements
     relation.validateRelation()
+  }
+
+  /**
+    * This method validates options when writing a DataFrame.
+    *
+    * Validates spark-cobol options are consistent with a write request.
+    */
+  def validateSave(df: DataFrame): Unit = {
+    val cobolOptions = caseInsensitiveOptions.toMap
+
+    val cobolParameters = CobolParametersParser.parse(new Parameters(cobolOptions), isWriter = true)
+    CobolParametersValidator.checkSanity(cobolParameters)
+
+    val readerParameters = CobolParametersParser.getReaderProperties(cobolParameters, None)
+    CobolParametersValidator.validateParametersForWriting(readerParameters)
+
+    val copybookContent = CopybookContentLoader.load(cobolParameters, spark.sparkContext.hadoopConfiguration)
+    val cobolSchema = CobolSchema.fromReaderParameters(copybookContent, readerParameters)
+    val combiner = RecordCombinerSelector.selectCombiner(cobolSchema, readerParameters)
+    combiner.combine(df, cobolSchema, readerParameters)
   }
 }
