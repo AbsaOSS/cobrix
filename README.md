@@ -830,17 +830,23 @@ When converting from an RDD some of the options like `record_format` or `generat
 data is assumed to be already split by records and the information about file names and relative order of records is not available.
 
 ### Options validation
-You can validate options to `spark-cobol` options without reading data files. This is useful for quick validation
+You can validate options to `spark-cobol` options without reading ro writing data files. This is useful for quick validation
 separately from the routine that processes the files.
 
 An example:
 ```scala
 import za.co.absa.cobrix.spark.cobol.Cobrix
 
+// Validation options when reading data
 Cobrix.validateOptions
   .option("copybook_contents", copybook)
   .option("some_option", "some_value")
   .validateLoad(inpudDataPath)
+
+// Validation options when writing data
+Cobrix.validateOptions
+  .option("copybook_contents", copybookContents)
+  .validateSave(df)
 ```
 
 ## EBCDIC code pages
