@@ -26,9 +26,9 @@ import scala.collection.JavaConverters._
 import scala.util.control.NonFatal
 
 /**
-  * This object provides utility methods for interacting with HDFS internals.
+  * This object provides utility methods for interacting with Hadoop filesystem internals.
   */
-object HDFSUtils {
+object HadoopFsUtils {
   private val log: Logger = LoggerFactory.getLogger(this.getClass)
   final val bytesInMegabyte = 1048576
 
