@@ -75,13 +75,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.11.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.11.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.11.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.11.2</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.11.1</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.11.2</pre>
 </td>
 </tr>
 </table>
@@ -92,17 +92,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.11.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.11.2
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.2
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.11.1
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.11.2
 ```
 
 ## Usage
@@ -231,8 +231,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.11.1.jar
-* cobol-parser_2.12-2.11.1.jar
+* spark-cobol_2.12-2.11.2.jar
+* cobol-parser_2.12-2.11.2.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -240,9 +240,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.1
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.2
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.11.1.jar,cobol-parser_2.12-2.11.1.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.11.2.jar,cobol-parser_2.12-2.11.2.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -310,7 +310,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.11.2-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.11.3-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -2180,6 +2180,18 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.11.2
+    - [#875](https://github.com/AbsaOSS/cobrix/pull/875) Added the ability to validate options to `spark-cobol` without reading data files:
+      ```scala
+      import za.co.absa.cobrix.spark.cobol.Cobrix
+
+      // Validation options when reading data
+      Cobrix.validateOptions
+      .option("copybook_contents", copybook)
+      .option("some_option", "some_value")
+      .validateLoad(inpudDataPath)
+      ```
+
 - #### 2.11.1 released 17 September 2026.
     - [#870](https://github.com/AbsaOSS/cobrix/pull/870) Added support for in-place processing of VRL files with RDWs
     - [#871](https://github.com/AbsaOSS/cobrix/pull/871) Added methods allowing to apply redefine rules when files are processed in-place
@@ -2278,6 +2290,9 @@ A: Update hadoop dll to version 3.2.2 or newer.
     ```
   - [#833](https://github.com/AbsaOSS/cobrix/pull/833) Added strict schema check option for the EBCDIC writer 
     (`.option("strict_schema", "true)` [default]).
+
+<details><summary>Older versions</summary>
+<p>
 
 - #### 2.9.9 released 24 February 2026.
   - [#822](https://github.com/AbsaOSS/cobrix/pull/822) Allow '_corrupt_records' to extract data in HEX instead of binary data type.
@@ -2539,9 +2554,6 @@ A: Update hadoop dll to version 3.2.2 or newer.
      .option("record_length_field", "RECORD-LENGTH")
      .option("enable_indexes", "true") // true by default so can me omitted
      ```
-
-<details><summary>Older versions</summary>
-<p>
 
 - #### 2.6.11 released 8 April 2024.
    - [#659](https://github.com/AbsaOSS/cobrix/issues/659) Fixed record length option when record id generation is turned on.
