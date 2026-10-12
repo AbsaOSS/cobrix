@@ -2180,7 +2180,7 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
-- #### 2.11.2
+- #### 2.11.2 released 12 October 2026.
     - [#875](https://github.com/AbsaOSS/cobrix/pull/875) Added the ability to validate options to `spark-cobol` without reading data files:
       ```scala
       import za.co.absa.cobrix.spark.cobol.Cobrix
