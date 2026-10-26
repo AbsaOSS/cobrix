@@ -159,6 +159,17 @@ class ParseCopybookFeaturesSpec extends AnyFunSuite with SimpleComparisonBase {
     assert(ex.msg.contains("The field should be numeric"))
   }
 
+  test("Test not throwing an exception when a full line contains unknown character") {
+    val copybookContents =
+      """
+      01  ROOT-GROUP.
+    =====================
+          05  NUM PIC X(4).
+      """
+
+    CopybookParser.parseTree(copybookContents)
+  }
+
   test("Test parseSimple() renaming all fillers using sequence number policy") {
     val copybook = CopybookParser.parseSimple(copybookFillers, dropGroupFillers = false, dropValueFillers = false, dropFillersFromAst = false)
     val layout = copybook.generateRecordLayoutPositions()
