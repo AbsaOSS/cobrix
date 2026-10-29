@@ -19,7 +19,6 @@ package za.co.absa.cobrix.cobol.parser.parse
 import org.scalatest.funsuite.AnyFunSuite
 import org.slf4j.{Logger, LoggerFactory}
 import za.co.absa.cobrix.cobol.base.SimpleComparisonBase
-import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.CopybookParser
 import za.co.absa.cobrix.cobol.parser.ast.{Group, Primitive}
 import za.co.absa.cobrix.cobol.parser.exceptions.SyntaxErrorException
@@ -390,4 +389,146 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     assert(syntaxErrorException.lineNumber == 3)
     assert(syntaxErrorException.getMessage.toUpperCase.contains("REDEFINES"))
   }
+
+  test("The multiple REDEFINES clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1).
+        |           10  FILED3 REDEFINES FILED1 REDEFINES FILED2 PIC X(1).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.getMessage.contains("Duplicate REDEFINES clause"))
+  }
+
+  test("The multiple REDEFINES clause in group") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1).
+        |           10  FILED3 REDEFINES FILED1 REDEFINES FILED2.
+        |              15 FIELD3      PIC X(1).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.getMessage.contains("Duplicate REDEFINES clause"))
+  }
+
+  test("The multiple OCCURS clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1) OCCURS 2 TIMES OCCURS 3 TIMES.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate OCCURS clause"))
+  }
+
+  test("The multiple OCCURS clause in group") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2 OCCURS 2 TIMES OCCURS 3 TIMES.
+        |              15 FIELD3      PIC X(1).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate OCCURS clause"))
+  }
+
+  test("The multiple USAGE clause in group") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2 USAGE COMP USAGE COMP.
+        |              15 FIELD3      PIC 9(4).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate USAGE clause"))
+  }
+
+  test("The multiple SIGN SEPARATE clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC S9(4) SIGN IS LEADING SEPARATE
+        |                                       SIGN IS TRAILING SEPARATE.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate SEPARATE SIGN clause"))
+  }
+
+  test("The multiple PIC clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1) PIC X(2).
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate PIC clause"))
+  }
+
+  test("The multiple VALUE clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1) VALUE 'A' VALUE 'B'.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate VALUE clause"))
+  }
+
+  test("The multiple VALUE clause in group") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        VALUE 'A' VALUE 'B'.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.getMessage.contains("Duplicate VALUE clause"))
+  }
+
 }
