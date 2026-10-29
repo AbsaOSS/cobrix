@@ -503,13 +503,13 @@ class ParserVisitor(enc: Encoding,
     val section = ctx.section.getText.toInt
     val parent: Group = getParentFromLevel(section)
 
-    assert(ctx.redefines.size() < 2)
-    assert(ctx.usageGroup.size() < 2)
-    assert(ctx.occurs.size() < 2)
-    assert(ctx.values.size() < 2)
-
     val identifier = visitIdentifier(ctx.identifier()).value
     val originalIdentifier = visitIdentifier(ctx.identifier()).originalValue
+
+    require(ctx.redefines.size() < 2, ctx, Option(identifier), "Duplicate REDEFINES clause")
+    require(ctx.usageGroup.size() < 2, ctx, Option(identifier), "Duplicate USAGE clause")
+    require(ctx.occurs.size() < 2, ctx, Option(identifier), "Duplicate OCCURS clause")
+    require(ctx.values.size() < 2, ctx, Option(identifier), "Duplicate VALUE clause")
 
     val redefines: Option[String] = ctx.redefines().asScala.toList match {
       case Nil => None
@@ -793,14 +793,16 @@ class ParserVisitor(enc: Encoding,
     val section = ctx.section.getText.toInt
     val parent: Group = getParentFromLevel(section)
 
-    assert(ctx.redefines.size() < 2)
-    assert(ctx.usage.size() < 2)
-    assert(ctx.occurs.size() < 2)
-    assert(ctx.separateSign.size() < 2)
-    assert(ctx.pic.size() == 1)
-
     val identifier = visitIdentifier(ctx.identifier()).value
     val originalIdentifier = visitIdentifier(ctx.identifier()).originalValue
+
+    require(ctx.redefines.size() < 2, ctx, Option(identifier), "Duplicate REDEFINES clause")
+    require(ctx.usage.size() < 2, ctx, Option(identifier), "Duplicate USAGE clause")
+    require(ctx.occurs.size() < 2, ctx, Option(identifier), "Duplicate OCCURS clause")
+    require(ctx.separateSign.size() < 2, ctx, Option(identifier), "Duplicate SEPARATE SIGN clause")
+    require(ctx.values.size() < 2, ctx, Option(identifier), "Duplicate VALUE clause")
+    require(ctx.pic.size() < 2, ctx, Option(identifier), "Duplicate PIC clauses")
+    require(ctx.pic.size() > 0, ctx, Option(identifier), "Missing PIC clauses")
 
     var pic: PicExpr = visitPic(ctx.pic(0))
 
@@ -874,9 +876,9 @@ class ParserVisitor(enc: Encoding,
   override def visitLevel66statement(ctx: copybookParser.Level66statementContext): Expr = {
     throw new RuntimeException("Renames not supported yet")
   }
-}
 
-
-
-
-
+  def require(condition: => Boolean, ctx: ParserRuleContext, field: Option[String], message: String): Unit = {
+    if (!condition) {
+      throw new SyntaxErrorException(ctx.start.getLine, None, field, message)
+    }
+  }}
