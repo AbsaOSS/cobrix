@@ -403,6 +403,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.fieldOpt.contains("FILED3"))
     assert(syntaxErrorException.getMessage.contains("Duplicate REDEFINES clause"))
   }
 
@@ -412,7 +413,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
         |           10  FILED1        PIC X(1).
         |           10  FILED2        PIC X(1).
         |           10  FILED3 REDEFINES FILED1 REDEFINES FILED2.
-        |              15 FIELD3      PIC X(1).
+        |              15 FIELD4      PIC X(1).
         |""".stripMargin
 
     val syntaxErrorException = intercept[SyntaxErrorException] {
@@ -420,6 +421,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 4)
+    assert(syntaxErrorException.fieldOpt.contains("FILED3"))
     assert(syntaxErrorException.getMessage.contains("Duplicate REDEFINES clause"))
   }
 
@@ -435,6 +437,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate OCCURS clause"))
   }
 
@@ -451,6 +454,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate OCCURS clause"))
   }
 
@@ -467,6 +471,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate USAGE clause"))
   }
 
@@ -483,7 +488,24 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate SEPARATE SIGN clause"))
+  }
+
+  test("The multiple USAGE clause in primitive") {
+    val copyBookContents =
+      """        01  RECORD.
+        |           10  FILED1        PIC X(1).
+        |           10  FILED2        PIC X(1) USAGE COMP USAGE COMP.
+        |""".stripMargin
+
+    val syntaxErrorException = intercept[SyntaxErrorException] {
+      CopybookParser.parseTree(copyBookContents)
+    }
+
+    assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
+    assert(syntaxErrorException.getMessage.contains("Duplicate USAGE clause"))
   }
 
   test("The multiple PIC clause in primitive") {
@@ -498,6 +520,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate PIC clause"))
   }
 
@@ -513,6 +536,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate VALUE clause"))
   }
 
@@ -528,6 +552,7 @@ class SyntaxErrorsSpec extends AnyFunSuite with SimpleComparisonBase {
     }
 
     assert(syntaxErrorException.lineNumber == 3)
+    assert(syntaxErrorException.fieldOpt.contains("FILED2"))
     assert(syntaxErrorException.getMessage.contains("Duplicate VALUE clause"))
   }
 
