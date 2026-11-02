@@ -104,7 +104,7 @@
         <!-- Frameworks and libraries -->
         <scala.version>2.12.21</scala.version>
         <scala.compat.version>2.12</scala.compat.version>
-        <spark.version>3.5.7</spark.version>
+        <spark.version>3.5.8</spark.version>
         <scalatest.version>3.2.20</scalatest.version>
         <specs.version>2.4.16</specs.version>
         <jackson.version>2.15.4</jackson.version>
