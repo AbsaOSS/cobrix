@@ -18,7 +18,6 @@ package za.co.absa.cobrix.cobol.reader.iterator
 
 import za.co.absa.cobrix.cobol.internal.Logging
 import za.co.absa.cobrix.cobol.parser.Copybook
-import za.co.absa.cobrix.cobol.parser.policies.VariableSizeOccursPolicy
 import za.co.absa.cobrix.cobol.reader.extractors.record.{RecordExtractors, RecordHandler}
 import za.co.absa.cobrix.cobol.reader.parameters.{CorruptFieldsPolicy, ReaderParameters}
 import za.co.absa.cobrix.cobol.reader.schema.CobolSchema
@@ -113,7 +112,9 @@ class FixedLenNestedRowIterator[T: ClassTag](
     segmentIdField.map(field => {
       val fieldValue = Copybook.getPrimitiveField(field, data, offset)
       if (fieldValue == null) {
-        logger.error(s"An unexpected null encountered for segment id at $byteIndex")
+        if (logger.isDebugEnabled) {
+          logger.debug(s"An unexpected null encountered for segment id at $byteIndex")
+        }
         ""
       } else {
         fieldValue.toString.trim

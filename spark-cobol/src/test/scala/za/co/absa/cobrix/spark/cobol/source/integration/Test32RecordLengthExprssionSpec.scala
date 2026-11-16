@@ -128,6 +128,31 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
       }
     }
 
+    "throw an exception on zero record length expression" in {
+      val copybook =
+        """      01  R.
+                03 L      PIC S9(1).
+                03 X      PIC X(10).
+    """
+
+      val data = Array(0xD1.toByte, 0xF4.toByte, 0xF0.toByte, 0xF1.toByte,
+        0xF2.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
+        0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
+
+      withTempBinFile("record_length", ".bin", data) { fileName =>
+        intercept[SparkException] {
+          val df = spark.read
+            .format("cobol")
+            .option("copybook_contents", copybook)
+            .option("record_format", "F")
+            .option("record_length_field", "L + 1")
+            .load(fileName)
+
+          df.select("X").collect()
+        }
+      }
+    }
+
     "throw an exception on negative record length field" in {
       val copybook =
         """      01  R.
@@ -136,6 +161,30 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
     """
 
       val data = Array(0xD5.toByte, 0xF4.toByte, 0xF0.toByte, 0xF1.toByte,
+        0xF2.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
+        0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
+
+      withTempBinFile("record_length", ".bin", data) { fileName =>
+        intercept[SparkException] {
+          val df = spark.read
+            .format("cobol")
+            .option("copybook_contents", copybook)
+            .option("record_format", "F")
+            .option("record_length_field", "L")
+            .load(fileName)
+
+          df.select("X").collect()
+        }
+      }
+    }
+    "throw an exception on zero record length field" in {
+      val copybook =
+        """      01  R.
+                03 L      PIC S9(1).
+                03 X      PIC X(10).
+    """
+
+      val data = Array(0xC0.toByte, 0xF4.toByte, 0xF0.toByte, 0xF1.toByte,
         0xF2.toByte, 0xF5.toByte, 0xF1.toByte, 0xF2.toByte, 0xF3.toByte, 0xF4.toByte,
         0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
 
