@@ -67,7 +67,7 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
   type RawRecord = (String, Array[Byte])
 
   private var cachedValue: Option[RawRecord] = _
-  private var byteIndex = readerProperties.fileStartOffset
+  private var byteIndex: Long = readerProperties.fileStartOffset
 
   final private val segmentIdField = ReaderParametersValidator.getSegmentIdField(readerProperties.multisegment, ctx.copybook)
   final private val recordLengthAdjustment = readerProperties.rdwAdjustment
@@ -135,6 +135,9 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
       case Some(lengthAST) => getRecordLengthFromField(lengthAST, binaryDataStart)
       case None            => copyBookRecordSize
     }
+
+    if (recordLength < 1)
+      throw new IllegalStateException(s"Illegal record length encountered ($recordLength) at position $byteIndex of ${ctx.inputStream.inputFileName}.")
 
     val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
 
@@ -206,6 +209,8 @@ class FixedWithRecordLengthExprRawRecordExtractor(ctx: RawRecordContext,
     }
 
     val recordLength = evaluator.evalInt()
+    if (recordLength < 1)
+      throw new IllegalStateException(s"Illegal record length encountered ($recordLength) at position $byteIndex of ${ctx.inputStream.inputFileName}.")
 
     val restOfDataLength = recordLength - lengthFieldBlock + readerProperties.endOffset
 
