@@ -115,7 +115,7 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
         0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
 
       withTempBinFile("record_length", ".bin", data) { fileName =>
-        intercept[SparkException] {
+        val ex = intercept[SparkException] {
           val df = spark.read
             .format("cobol")
             .option("copybook_contents", copybook)
@@ -125,6 +125,9 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
 
           df.select("X").collect()
         }
+
+        assert(ex.getCause.isInstanceOf[IllegalStateException])
+        assert(ex.getCause.getMessage.contains("Illegal record length encountered (-4) at position 1"))
       }
     }
 
@@ -140,7 +143,7 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
         0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
 
       withTempBinFile("record_length", ".bin", data) { fileName =>
-        intercept[SparkException] {
+        val ex = intercept[SparkException] {
           val df = spark.read
             .format("cobol")
             .option("copybook_contents", copybook)
@@ -150,6 +153,9 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
 
           df.select("X").collect()
         }
+
+        assert(ex.getCause.isInstanceOf[IllegalStateException])
+        assert(ex.getCause.getMessage.contains("Illegal record length encountered (0) at position 1"))
       }
     }
 
@@ -165,7 +171,7 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
         0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
 
       withTempBinFile("record_length", ".bin", data) { fileName =>
-        intercept[SparkException] {
+        val ex = intercept[SparkException] {
           val df = spark.read
             .format("cobol")
             .option("copybook_contents", copybook)
@@ -175,6 +181,9 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
 
           df.select("X").collect()
         }
+
+        assert(ex.getCause.isInstanceOf[IllegalStateException])
+        assert(ex.getCause.getMessage.contains("Illegal record length encountered (-5) at position 1"))
       }
     }
     "throw an exception on zero record length field" in {
@@ -189,7 +198,7 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
         0xF2.toByte, 0xF2.toByte, 0xF9.toByte)
 
       withTempBinFile("record_length", ".bin", data) { fileName =>
-        intercept[SparkException] {
+        val ex = intercept[SparkException] {
           val df = spark.read
             .format("cobol")
             .option("copybook_contents", copybook)
@@ -199,6 +208,9 @@ class Test32RecordLengthExprssionSpec extends AnyWordSpec with SparkTestBase wit
 
           df.select("X").collect()
         }
+
+        assert(ex.getCause.isInstanceOf[IllegalStateException])
+        assert(ex.getCause.getMessage.contains("Illegal record length encountered (0) at position 1"))
       }
     }
   }
