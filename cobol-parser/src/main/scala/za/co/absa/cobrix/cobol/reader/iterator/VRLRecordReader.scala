@@ -154,7 +154,7 @@ class VRLRecordReader(cobolSchema: Copybook,
       val fieldValue = Copybook.getPrimitiveField(field, data, readerProperties.startOffset)
       if (fieldValue == null) {
         if (logger.isDebugEnabled) {
-          logger.error(s"An unexpected null encountered for segment id at $byteIndex")
+          logger.debug(s"An unexpected null encountered for segment id at $byteIndex")
         }
         ""
       } else {
