@@ -68,7 +68,7 @@ object SparkCobolProcessor {
       val filePaths = FileUtils
         .getFiles(path, spark.sparkContext.hadoopConfiguration)
 
-      load(filePaths)
+      load(filePaths.map(_.filePath))
     }
 
     def load(filePaths: Seq[String]): SparkCobolProcessorLoader = {

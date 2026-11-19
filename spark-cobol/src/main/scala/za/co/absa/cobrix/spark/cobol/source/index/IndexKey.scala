@@ -16,4 +16,4 @@
 
 package za.co.absa.cobrix.spark.cobol.source.index
 
-case class IndexKey(fileName: String, optionsHashCode: Long)
+case class IndexKey(fileName: String, modificationTime: Long, optionsHashCode: Long)
