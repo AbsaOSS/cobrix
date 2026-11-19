@@ -16,14 +16,15 @@
 
 package za.co.absa.cobrix.spark.cobol.utils
 
-import java.io.{File, RandomAccessFile}
-import java.util.{Random, UUID}
 import org.apache.commons.io.{FileUtils => CommonsFileUtils}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import org.slf4j.LoggerFactory
+
+import java.io.{File, RandomAccessFile}
+import java.util.{Random, UUID}
 
 class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAfterEach {
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -83,7 +84,7 @@ class FileUtilsSpec extends AnyFlatSpec with BeforeAndAfterAll with BeforeAndAft
     // Workaround for Windows absolute paths that ctart with C:\...
     if (!file.startsWith("/"))
       file = "/" + file
-    val paths = FileUtils.getFiles(file, fileSystem, recursive = false)
+    val paths = FileUtils.getFiles(file, fileSystem, recursive = false).map(_.filePath)
     assert(paths.size == 1)
     assert(paths.head.contains(file))
   }

@@ -48,7 +48,7 @@ object FileUtils extends Logging {
     *
     * The directory may be informed through a glob pattern.
     */
-  def getFiles(dir: String, hadoopConf: Configuration, recursive: Boolean = false): List[String] = {
+  def getFiles(dir: String, hadoopConf: Configuration, recursive: Boolean = false): List[HadoopFile] = {
     getFiles(dir, new Path(dir).getFileSystem(hadoopConf), recursive)
   }
 
@@ -57,7 +57,7 @@ object FileUtils extends Logging {
     *
     * The directory may be informed through a glob pattern.
     */
-  def getFiles(dir: String, fileSystem: FileSystem, recursive: Boolean): List[String] = {
+  def getFiles(dir: String, fileSystem: FileSystem, recursive: Boolean): List[HadoopFile] = {
 
     val dirPath = new Path(dir)
     val stats: Array[FileStatus] = fileSystem.globStatus(dirPath, hiddenFileFilter)
@@ -80,7 +80,7 @@ object FileUtils extends Logging {
       }
     })
 
-    allFiles.map(_.getPath.toString).toList
+    allFiles.map(stat => HadoopFile(stat.getPath.toString, stat.getModificationTime)).toList
   }
 
   /**

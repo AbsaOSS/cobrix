@@ -141,11 +141,11 @@ object CobolRelation {
 
     allFiles
       .zipWithIndex
-      .map { case (fileName, order) =>
-        val codec = factory.getCodec(new Path(fileName))
+      .map { case (file, order) =>
+        val codec = factory.getCodec(new Path(file.filePath))
         val isCompressed = codec != null
 
-        FileWithOrder(fileName, order, isCompressed)
+        FileWithOrder(file.filePath, order, file.modificationTime, isCompressed)
       }
   }
 }

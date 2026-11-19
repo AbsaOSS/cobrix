@@ -128,7 +128,7 @@ private[cobol] object IndexBuilder extends Logging {
 
     // Splitting between files for which indexes are cached and the list of files for which indexes are not cached
     val cachedFiles = if (cachingAllowed) {
-      filesList.filter(f => indexCache.containsKey(IndexKey(f.filePath, readerOptionsHashCode)))
+      filesList.filter(f => indexCache.containsKey(IndexKey(f.filePath, f.modificationTime, readerOptionsHashCode)))
     } else {
       Array.empty[FileWithOrder]
     }
@@ -155,11 +155,11 @@ private[cobol] object IndexBuilder extends Logging {
     // Storing new indexes in the cache
     if (cachingAllowed && newIndexes.length > 0) {
       newIndexes.groupBy(_.fileId).foreach { case (fileId, indexEntries) =>
-        val filePathOpt = filesList.find(_.order == fileId).map(_.filePath)
+        val filePathOpt = filesList.find(_.order == fileId)
 
-        filePathOpt.foreach { filePath =>
-          logger.info(s"Index stored to cache for file: $filePath.")
-          indexCache.put(IndexKey(filePath, readerOptionsHashCode), indexEntries.sortBy(_.offsetFrom))
+        filePathOpt.foreach { file =>
+          logger.info(s"Index stored to cache for file: ${file.filePath}.")
+          indexCache.put(IndexKey(file.filePath, file.modificationTime, readerOptionsHashCode), indexEntries.sortBy(_.offsetFrom))
         }
       }
     }
@@ -167,7 +167,7 @@ private[cobol] object IndexBuilder extends Logging {
     // Getting indexes for files for which indexes are in the cache
     val cachedIndexes = cachedFiles.flatMap { f =>
       logger.info("Index fetched from cache for file: " + f.filePath)
-      indexCache(IndexKey(f.filePath, readerOptionsHashCode))
+      indexCache(IndexKey(f.filePath, f.modificationTime, readerOptionsHashCode))
         .map(ind => ind.copy(fileId = f.order))
     }
 
