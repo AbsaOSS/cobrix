@@ -337,7 +337,7 @@ object SparkUtils extends Logging {
               val newType = processArray(at, fieldFrom, fieldTo)
               fieldTo.copy(dataType = newType, metadata = newMetadata)
             case _ =>
-              if (copyDataType && isPrimitive(fieldFrom.dataType)) {
+              if (copyDataType && isPrimitive(fieldFrom.dataType) && isPrimitive(fieldTo.dataType)) {
                 fieldTo.copy(dataType = fieldFrom.dataType, metadata = newMetadata)
               } else {
                 fieldTo.copy(metadata = newMetadata)
