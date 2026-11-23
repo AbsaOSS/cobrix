@@ -724,6 +724,50 @@ class SparkUtilsSuite extends AnyFunSuite with SparkTestBase with BinaryFileFixt
     assert(fields(5).dataType.asInstanceOf[ArrayType].elementType.asInstanceOf[StructType].fields.head.metadata.getString("comment") == "Test4")
   }
 
+  test("copyMetadata should replace primitive to struct types and vice versa") {
+    val schemaFrom = StructType(
+      Seq(
+        StructField("string_field", StringType, nullable = true, metadata = new MetadataBuilder().putLong("maxLength", 120).putString("comment", "Test20").build()),
+        StructField("int_field", StructType(
+          Seq(
+            StructField("int_field2", IntegerType, nullable = true, metadata = new MetadataBuilder().build())
+          )
+        ), nullable = true)
+      )
+    )
+
+    val schemaTo = StructType(
+      Seq(
+        StructField("string_field", StructType(
+          Seq(
+            StructField("int_field", IntegerType, nullable = true)
+          )
+        ), nullable = true),
+        StructField("int_field", IntegerType, nullable = true)
+      )
+    )
+
+    val schemaWithMetadata = SparkUtils.copyMetadata(schemaFrom, schemaTo, copyDataType = true)
+    val fields = schemaWithMetadata.fields
+
+    // Ensure data types are copied
+    // Expected schema:
+    // root
+    // |-- string_field: struct (nullable = true)
+    // |    |-- int_field2: boolean (nullable = true)
+    // |-- int_field: integer (nullable = true)
+
+    assert(fields.head.name == "string_field")
+    assert(fields.head.dataType.isInstanceOf[StructType])
+    assert(fields.head.dataType.asInstanceOf[StructType].fields.head.name == "int_field")
+    assert(fields.head.dataType.asInstanceOf[StructType].fields.head.dataType == IntegerType)
+    assert(fields(1).name == "int_field")
+    assert(fields(1).dataType == IntegerType)
+
+    // Ensure metadata is copied
+    assert(fields.head.metadata.getLong("maxLength") == 120)
+  }
+
   test("copyMetadata should retain metadata on conflicts by default") {
     val df1 = List(1, 2, 3).toDF("col1")
     val df2 = List(1, 2, 3).toDF("col1")
