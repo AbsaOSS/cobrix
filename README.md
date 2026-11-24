@@ -75,13 +75,13 @@ You can link against this library in your program at the following coordinates:
 </tr>
 <tr>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.11.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.11<br>version: 2.11.3</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.11.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.12<br>version: 2.11.3</pre>
 </td>
 <td>
-<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.11.2</pre>
+<pre>groupId: za.co.absa.cobrix<br>artifactId: spark-cobol_2.13<br>version: 2.11.3</pre>
 </td>
 </tr>
 </table>
@@ -92,17 +92,17 @@ This package can be added to Spark using the `--packages` command line option. F
 
 ### Spark compiled with Scala 2.11
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.11.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.11:2.11.3
 ```
 
 ### Spark compiled with Scala 2.12
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.3
 ```
 
 ### Spark compiled with Scala 2.13
 ```
-$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.11.2
+$SPARK_HOME/bin/spark-shell --packages za.co.absa.cobrix:spark-cobol_2.13:2.11.3
 ```
 
 ## Usage
@@ -231,8 +231,8 @@ Cobrix's `spark-cobol` data source depends on the COBOL parser that is a part of
 
 The jars that you need to get are:
 
-* spark-cobol_2.12-2.11.2.jar
-* cobol-parser_2.12-2.11.2.jar
+* spark-cobol_2.12-2.11.3.jar
+* cobol-parser_2.12-2.11.3.jar
 
 > Versions older than 2.8.0 also need `scodec-core_2.12-1.10.3.jar` and `scodec-bits_2.12-1.1.4.jar`.
 
@@ -240,9 +240,9 @@ The jars that you need to get are:
 
 After that you can specify these jars in `spark-shell` command line. Here is an example:
 ```
-$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.2
+$ spark-shell --packages za.co.absa.cobrix:spark-cobol_2.12:2.11.3
 or 
-$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.11.2.jar,cobol-parser_2.12-2.11.2.jar
+$ spark-shell --master yarn --deploy-mode client --driver-cores 4 --driver-memory 4G --jars spark-cobol_2.12-2.11.3.jar,cobol-parser_2.12-2.11.3.jar
 
 Setting default log level to "WARN".
 To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
@@ -310,7 +310,7 @@ The fat jar will have '-bundle' suffix. You can also download pre-built bundles 
 
 Then, run `spark-shell` or `spark-submit` adding the fat jar as the option.
 ```sh
-$ spark-shell --jars spark-cobol_2.12_3.3-2.11.3-SNAPSHOT-bundle.jar
+$ spark-shell --jars spark-cobol_2.12_3.3-2.11.4-SNAPSHOT-bundle.jar
 ```
 
 > <b>A note for building and running tests on Windows</b>
@@ -2158,17 +2158,6 @@ This is a new section where we are going to post common questions and workaround
 A: This is often a sign that the binary data is little-endian. Cobrix expects all binary data to be big-endian.
 The workaround is to use `COMP-9` (Cobrix extension) instead of `COMP` and `COMP-5` for the affected fields. 
 
-**Q: Getting the following error when using Spark < 2.4.3:**
-```
-ANTLR Tool version 4.7.2 used for code generation does not match the current runtime version 4.5.3ANTLR 
-Runtime version 4.7.2 used for parser compilation does not match the current runtime version 4.5.321/12/20 11:42:54
-ERROR ApplicationMaster: User class threw exception: java.lang.ExceptionInInitializerError
-```
-
-A: Option 1: Use Spark 2.4.3 or higher. Option 2: Use 'sbt assembly' as stated above in README to generate your
-`spark-cobol` artifact tailored for your Spark version. The artifact shades ANTLR so the incompatibility should
-be resolved.
-
 **Q: Getting exceptions from Hadoop classes when running Cobrix test suite on Windows:**
 ```
 exception or error caused a run to abort: org.apache.hadoop.io.nativeio.NativeIO$POSIX.stat(Ljava/lang/String;)Lorg/apache/hadoop/io/nativeio/NativeIO$POSIX$Stat;
@@ -2180,6 +2169,12 @@ at org.apache.hadoop.io.nativeio.NativeIO$POSIX.getStat(NativeIO.java:608)
 A: Update hadoop dll to version 3.2.2 or newer.
 
 ## Changelog
+- #### 2.11.3 released 24 November 2026.
+    - [#878](https://github.com/AbsaOSS/cobrix/pull/878) Replace assertions in the copybook parser with descriptive syntax errors for duplicate REDEFINES, USAGE, OCCURS, VALUE, SIGN SEPARATE, and PIC clauses
+    - [#882](https://github.com/AbsaOSS/cobrix/pull/882) Throw a descriptive error when the record length field or expression evaluates to a non-positive value
+    - [#881](https://github.com/AbsaOSS/cobrix/pull/881) Disable index cache by default and use file modification time as an additional cache key element
+    - [#886](https://github.com/AbsaOSS/cobrix/pull/886) Do not replace primitive to non-primitive types and vice versa when copying metadata between schemas
+
 - #### 2.11.2 released 12 October 2026.
     - [#875](https://github.com/AbsaOSS/cobrix/pull/875) Added the ability to validate options to `spark-cobol` without reading data files:
       ```scala
